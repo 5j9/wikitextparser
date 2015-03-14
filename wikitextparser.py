@@ -52,7 +52,7 @@ EXTERNALLINK_REGEX = re.compile(
     BRACKET_EXTERNALLINK_REGEX.pattern + r')'
 )
 
-# Todo: Avoid the <nowiki></nowiki> tags.
+# Todo: Avoid the <nowiki></nowiki> and <!-- comment --> tags.
 
 
 class WikiText:
@@ -110,7 +110,16 @@ class WikiText:
                 self.string[span[0]:span[1]],
                 self._get_subspans(span),
             ) for span in self._pftw_spans[3]
-        ]    
+        ]
+
+    def get_external_links(self):
+        """Return a list of external link objects."""
+        return [
+            ExternalLink(
+                m.group(),
+                self._get_subspans(m.span()),
+            ) for m in EXTERNALLINK_REGEX.finditer(self.string)
+        ]   
 
     def _not_in_subspans_split(self, char):
         """Split self.string using `char` unless char is in ._pftw_spans."""
@@ -226,7 +235,7 @@ class WikiText:
 
 class Template(WikiText):
 
-    """Convert strings to template objects.
+    """Convert strings to Template objects.
 
     The string should start with {{ and end with }}.
     """
@@ -368,7 +377,7 @@ class Argument(WikiText):
 
 class WikiLink(WikiText):
 
-    """Use to represent WikiLink objects."""
+    """Use to represent WikiLinks."""
 
     def __init__(self, wikilinkg_string, spans=None):
         """Detect named or keyword argument."""
@@ -385,5 +394,43 @@ class WikiLink(WikiText):
         return 'WikiLink("' + self.string + '")'
     
     def parse(self):
-        """Parse the argument."""
+        """Parse the WikiLink."""
         self.target, pipe, self.text = self.string[2:-2].partition('|')
+
+
+class ExternalLink(WikiText):
+
+    """Use to represent External Links."""
+
+    def __init__(self, extlink_string, spans=None):
+        """Detect named or keyword argument."""
+        self.string = extlink_string
+        if spans:
+            self._pftw_spans = spans
+        else:
+            self._get_pftw_spans()
+        self.parse()
+
+    def __repr__(self):
+        """Return the string representation of the Argument."""
+        return 'ExtLink("' + self.string + '")'
+    
+    def parse(self):
+        """Parse the ExtLink."""
+        string = self.string
+        if string.startswith('['):
+            self.brackets = True
+            self.url, space, self.title = string[1:-1].partition(' ')
+        else:
+            self.url = string
+            self.brackets = False
+
+    def set_title(self, new_title):
+        """Set the title to new_title.
+
+        If the link is not in brackets, they will be added.
+        """
+        self.title = new_title
+        self.string = '[' + self.url + ' ' + self.title + ']'
+        
+            

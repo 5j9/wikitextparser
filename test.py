@@ -88,6 +88,50 @@ class WikiLink(unittest.TestCase):
 class ExternalLinks(unittest.TestCase):
     """Test capturing of external links."""
     
+    def test_bare_link(self):
+        s = 'text1 http://mediawiki.org text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            'http://mediawiki.org',
+            wt.get_external_links()[0].string
+        )
+        
+    def test_with_lable(self):
+        s = 'text1 [http://mediawiki.org MediaWiki] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            'http://mediawiki.org',
+            wt.get_external_links()[0].url
+        )
+        self.assertEqual(
+            'MediaWiki',
+            wt.get_external_links()[0].title
+        )
+
+    def test_numbered_link(self):
+        s = 'text1 [http://mediawiki.org] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '[http://mediawiki.org]',
+            wt.get_external_links()[0].string
+        )
+
+    def test_protocol_relative(self):
+        s = 'text1 [//en.wikipedia.org wikipedia] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '[//en.wikipedia.org wikipedia]',
+            wt.get_external_links()[0].string
+        )
+
+    def test_mailto(self):
+        s = (
+            '[mailto:'
+            'info@example.org?Subject=URL%20Encoded%20Subject&body=Body%20Text'
+            'info]'
+        )
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.get_external_links()[0].string)
 
 
 class GetSpansFunction(unittest.TestCase):
