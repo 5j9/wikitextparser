@@ -6,19 +6,53 @@ from timeit import timeit
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-TEMPLATE_NAME_REGEX = r'[^\x00-\x1f\|\{\}\[\]<>\n]*'
-TEMPLATE_REGEX = r'\{\{\s*' + TEMPLATE_NAME_REGEX  + r'\s*(\|[^{}]*?\}\}|\}\})'
+VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]*'
+#Templates
+TEMPLATE_PATTERN = (
+    r'\{\{\s*' + VALID_TITLE_CHARS_PATTERN  + r'\s*(\|[^{}]*?\}\}|\}\})'
+)
 TEMPLATE_NOT_PARAM_REGEX = re.compile(
-    TEMPLATE_REGEX + r'(?!\})'
-    r'|(?<!{)' + TEMPLATE_REGEX
+    TEMPLATE_PATTERN + r'(?!\})'
+    r'|(?<!{)' + TEMPLATE_PATTERN
 )
-
+# Parameters
 TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{\{[^{}]*?\}\}\}')
-
-PARSER_FUNCTION_NAME_REGEX = r'[^\s]*'
+# Parser functions
+PARSER_FUNCTION_NAME_PATTERN = r'[^\s]*'
 PARSER_FUNCTION_REGEX = re.compile(
-    r'\{\{\s*#' + PARSER_FUNCTION_NAME_REGEX + r':[^{}]*?\}\}'
+    r'\{\{\s*#' + PARSER_FUNCTION_NAME_PATTERN + r':[^{}]*?\}\}'
 )
+# Wikilinks
+# https://www.mediawiki.org/wiki/Help:Links#Internal_links
+WIKILINK_REGEX = re.compile(
+    r'\[\[' + VALID_TITLE_CHARS_PATTERN + r'(\]\]|\|[\S\s]*?\]\])'
+)
+# External links
+VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
+# See DefaultSettings.php on MediaWiki and
+# https://www.mediawiki.org/wiki/Help:Links#External_links
+VALID_EXTLINK_SCHEMES_PATTERN = (
+    r'('
+    r'bitcoin:|ftp://|ftps://|geo:|git://|gopher://|http://|https://|'
+    r'irc://|ircs://|magnet:|mailto:|mms://|news:|nntp://|redis://|'
+    r'sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|'
+    r'worldwind://|xmpp:|//'
+    r')'
+)
+BARE_EXTERNALLINK_REGEX = re.compile(
+    VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
+    VALID_EXTLINK_CHARS_PATTERN
+)
+BRACKET_EXTERNALLINK_REGEX = re.compile(
+    r'\[' + VALID_EXTLINK_SCHEMES_PATTERN + VALID_EXTLINK_CHARS_PATTERN +
+    r' *[^\]\n]*\]'
+)
+EXTERNALLINK_REGEX = re.compile(
+    r'(' + BARE_EXTERNALLINK_REGEX.pattern + r'|' +
+    BRACKET_EXTERNALLINK_REGEX.pattern + r')'
+)
+
+# Todo: Avoid the <nowiki></nowiki> tags.
 
 
 class WikiText:
@@ -29,9 +63,9 @@ class WikiText:
         """Initialize the object."""
         self.string = string
         if spans:
-            self._ppft_spans = spans
+            self._pftw_spans = spans
         else:
-            self._get_ppft_spans()
+            self._get_pftw_spans()
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
@@ -47,7 +81,7 @@ class WikiText:
             Template(
                 self.string[span[0]:span[1]],
                 self._get_subspans(span),
-            ) for span in self._ppft_spans[2]
+            ) for span in self._pftw_spans[2]
         ]
 
     def get_parser_functions(self):
@@ -56,7 +90,7 @@ class WikiText:
             ParserFunction(
                 self.string[span[0]:span[1]],
                 self._get_subspans(span),
-            ) for span in self._ppft_spans[1]
+            ) for span in self._pftw_spans[1]
         ]
         
 
@@ -66,11 +100,20 @@ class WikiText:
             Parameter(
                 self.string[span[0]:span[1]],
                 self._get_subspans(span),
-            ) for span in self._ppft_spans[0]
+            ) for span in self._pftw_spans[0]
         ]
 
+    def get_wikilinks(self):
+        """Return a list of wikilink objects."""
+        return [
+            Parameter(
+                self.string[span[0]:span[1]],
+                self._get_subspans(span),
+            ) for span in self._pftw_spans[3]
+        ]    
+
     def _not_in_subspans_split(self, char):
-        """Split self.string using `char` unless char is in ._ppft_spans."""
+        """Split self.string using `char` unless char is in ._pftw_spans."""
         string = self.string
         splits = []
         findstart = 0
@@ -84,12 +127,12 @@ class WikiText:
             findstart = index+1
 
     def _get_subspans(self, span):
-        """Return a list of subpan_groups in self._ppft_spans.
+        """Return a list of subpan_groups in self._pftw_spans.
 
         Start and end of the new subspans will be changed to match span.
         """
         subspan_groups = []
-        for spans in self._ppft_spans:
+        for spans in self._pftw_spans:
             subspans = []
             for subspan in spans:
                 if span[0] < subspan[0] and subspan[1] < span[1]:
@@ -105,18 +148,32 @@ class WikiText:
 
     def _in_subspans(self, index):
         """Return True if the given index is found within one of the subspan."""
-        for spans in self._ppft_spans:
+        for spans in self._pftw_spans:
             for span in spans:
                 if span[0] <= index < span[1]:
                     return True
         return False
 
-    def _get_ppft_spans(self):
-        """Return spans of (parameters, parser functions, templates)."""
+    def _get_pftw_spans(self):
+        """Return spans of elements.
+
+        The result a tuple in containing lists of the following spans:
+        (params, parser functions, templates, wikilinks).
+        """
         string = self.string
         parameter_spans = []
         parser_function_spans = []
         template_spans = []
+        wikilink_spans = []
+        # The title in WikiLinks May contain braces that interfere with
+        # detection of templates
+        for match in WIKILINK_REGEX.finditer(string):
+            wikilink_spans.append(match.span())
+            group = match.group()
+            string = string.replace(
+                group,
+                group.replace('}', '_').replace('{', '_')
+            )
         while True:
             # Single braces will interfere with detection of other elements and
             # should be removed beforehand.
@@ -129,10 +186,6 @@ class WikiText:
             # Also Python does not support non-fixed-length lookbehinds
             head, sep, tail = string.partition('{')
             string = ''.join((head.replace('}', '_'), sep, tail))
-            # The following conditional statement is not necessary
-            # (performance?)
-            if '{' not in string and '}' not in string:
-                break
             match = None
             # Template parameters
             loop = True
@@ -142,7 +195,7 @@ class WikiText:
                     loop = True
                     parameter_spans.append(match.span())
                     group = match.group()
-                    string = string.replace(group, '___' + group[3:-3] + '___' )
+                    string = string.replace(group, '___' + group[3:-3] + '___')
             # Parser fucntions
             loop = True
             while loop:
@@ -163,10 +216,11 @@ class WikiText:
                     string = string.replace(group, '__' + group[2:-2] + '__' )
             if not match:
                 break
-        self._ppft_spans = (
+        self._pftw_spans = (
             parameter_spans,
             parser_function_spans,
-            template_spans
+            template_spans,
+            wikilink_spans,
         )
     
 
@@ -186,10 +240,10 @@ class Template(WikiText):
         """Detect template name and arguments."""
         self.string = template_string
         if spans:
-            self._ppft_spans = spans
+            self._pftw_spans = spans
         else:
-            self._get_ppft_spans()
-            self._ppft_spans[2].pop()
+            self._get_pftw_spans()
+            self._pftw_spans[2].pop()
         self.parse()
         if remove_duplicate_args:
             self.remove_duplicate_arguments()
@@ -230,8 +284,8 @@ class Template(WikiText):
                 d[an] = n
         self.arguments = arguments
         # update attributes
-        self._get_ppft_spans()
-        self._ppft_spans[2].pop()
+        self._get_pftw_spans()
+        self._pftw_spans[2].pop()
         self.string = self.__str__()
 
 
@@ -243,10 +297,10 @@ class Parameter(WikiText):
         """Detect named and keyword parameters."""
         self.string = param_string
         if spans:
-            self._ppft_spans = spans
+            self._pftw_spans = spans
         else:
-            self._get_ppft_spans()
-            self._ppft_spans[0].pop()
+            self._get_pftw_spans()
+            self._pftw_spans[0].pop()
         self.parse()
 
     def __repr__(self):
@@ -266,10 +320,10 @@ class ParserFunction(WikiText):
         """Detect name and arguments."""
         self.string = function_string
         if spans:
-            self._ppft_spans = spans
+            self._pftw_spans = spans
         else:
-            self._get_ppft_spans()
-            self._ppft_spans[1].pop()
+            self._get_pftw_spans()
+            self._pftw_spans[1].pop()
         self.parse()
 
     def __repr__(self):
@@ -298,9 +352,9 @@ class Argument(WikiText):
         """Detect named or keyword argument."""
         self.string = param_string
         if spans:
-            self._ppft_spans = spans
+            self._pftw_spans = spans
         else:
-            self._get_ppft_spans()
+            self._get_pftw_spans()
         self.parse()
 
     def __repr__(self):
@@ -312,3 +366,24 @@ class Argument(WikiText):
         self.name, self.equal_sign, self.value = self.string.partition('=')
 
 
+class WikiLink(WikiText):
+
+    """Use to represent WikiLink objects."""
+
+    def __init__(self, wikilinkg_string, spans=None):
+        """Detect named or keyword argument."""
+        self.string = wikilinkg_string
+        if spans:
+            self._pftw_spans = spans
+        else:
+            self._get_pftw_spans()
+            self._pftw_spans[3].pop()
+        self.parse()
+
+    def __repr__(self):
+        """Return the string representation of the Argument."""
+        return 'WikiLink("' + self.string + '")'
+    
+    def parse(self):
+        """Parse the argument."""
+        self.target, pipe, self.text = self.string[2:-2].partition('|')
