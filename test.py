@@ -59,6 +59,10 @@ class Template(unittest.TestCase):
         self.assertEqual(s1, t.string)
 
 
+class WikiText(unittest.TestCase):
+
+    """Test Tempate class in wtp.py."""
+    
     def test_wikilink_in_template(self):
         s1 = "{{text |[[A|}}]]}}"
         wt = wtp.WikiText(s1)
@@ -68,6 +72,25 @@ class Template(unittest.TestCase):
         s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
         wt = wtp.WikiText(s)
         self.assertEqual(s, wt.get_templates()[0].string)
+
+    def test_ignore_comments(self):
+        s1 = "{{text |<!-- }} -->}}"
+        wt = wtp.WikiText(s1)
+        self.assertEqual(s1, wt.get_templates()[0].string)
+        
+    def test_ignore_nowiki(self):
+        wt = wtp.WikiText("{{text |<nowiki>}} A </nowiki> }} B")
+        self.assertEqual(
+            "{{text |<nowiki>}} A </nowiki> }}",
+            wt.get_templates()[0].string
+        )
+
+    def test_getting_comment(self):
+        wt = wtp.WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
+        self.assertEqual(
+            "\n\ncomment\n{{A}}\n",
+            wt.get_comments()[0].contents
+        )
 
     
 class WikiLink(unittest.TestCase):
@@ -89,10 +112,10 @@ class ExternalLinks(unittest.TestCase):
     """Test capturing of external links."""
     
     def test_bare_link(self):
-        s = 'text1 http://mediawiki.org text2'
+        s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText(s)
         self.assertEqual(
-            'http://mediawiki.org',
+            'HTTP://mediawiki.org',
             wt.get_external_links()[0].string
         )
         
@@ -140,7 +163,7 @@ class GetSpansFunction(unittest.TestCase):
 
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
-        template_spans =  wt._pftw_spans[2]
+        template_spans =  wt._spans[2]
         self.assertIn((7, 13), template_spans)
         self.assertIn((14, 20), template_spans)
         self.assertIn((0, 22), template_spans)
@@ -151,14 +174,14 @@ class GetSpansFunction(unittest.TestCase):
             "text2{{cite|{{t3}}|{{t4}}}}text3"
         )
         self.assertEqual(
-            wt._pftw_spans[2],
+            wt._spans[2],
             [(12, 18), (19, 25), (39, 45), (46, 52), (5, 27), (32, 54)],
         )
 
     def test_multiline_mutitemplate(self):
         wt = wtp.WikiText("""{{cite\n    |{{t1}}\n    |{{t2}}}}""")
         self.assertEqual(
-            wt._pftw_spans[2],
+            wt._spans[2],
             [(12, 18), (24, 30), (0, 32)],
         )
 
@@ -166,64 +189,64 @@ class GetSpansFunction(unittest.TestCase):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}""")
         self.assertEqual(
             [(7, 13), (14, 20)],
-            wt._pftw_spans[2],
+            wt._spans[2],
         )
 
     def test_lacks_starting_braces(self):
         wt = wtp.WikiText("""cite|{{t1}}|{{t2}}}}""")
         self.assertEqual(
             [(5, 11), (12, 18)],
-            wt._pftw_spans[2],
+            wt._spans[2],
         )
 
     def test_template_inside_parameter(self):
         wt = wtp.WikiText("""{{{1|{{colorbox|yellow|text1}}}}}""")
         self.assertEqual(
             [(5, 30)],
-            wt._pftw_spans[2],
+            wt._spans[2],
         )
         self.assertEqual(
             [(0, 33)],
-            wt._pftw_spans[0],
+            wt._spans[0],
         )
 
     def test_parameter_inside_template(self):
         wt = wtp.WikiText("""{{colorbox|yellow|{{{1|defualt_text}}}}}""")
         self.assertEqual(
             [(0, 40)],
-            wt._pftw_spans[2],
+            wt._spans[2],
         )
         self.assertEqual(
             [(18, 38)],
-            wt._pftw_spans[0],
+            wt._spans[0],
         )
 
     def test_template_name_cannot_contain_newline(self):
         tl = wtp.WikiText('{{\nColor\nbox\n|mytext}}')
         self.assertEqual(
             [],
-            tl._pftw_spans[2],
+            tl._spans[2],
         )
 
     def test_unicode_template(self):
         wt = wtp.WikiText('{{\nرنگ\n|متن}}')
         self.assertEqual(
             [(0, 13)],
-            wt._pftw_spans[2],
+            wt._spans[2],
         )
 
     def test_unicode_parser_function(self):
         wt = wtp.WikiText('{{#اگر:|فلان}}')
         self.assertEqual(
             [(0, 14)],
-            wt._pftw_spans[1],
+            wt._spans[1],
         )
 
     def test_unicode_parameters(self):
         wt = wtp.WikiText('{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')
         self.assertEqual(
             [(9, 27), (0, 30)],
-            wt._pftw_spans[0],
+            wt._spans[0],
         ) 
 
 
@@ -233,8 +256,7 @@ class GetSubspans(unittest.TestCase):
 
     def test_1(self):
         wt = wtp.WikiText('text')
-        wt._pftw_spans = [
-            [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
+        wt._spans = [
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
@@ -245,15 +267,13 @@ class GetSubspans(unittest.TestCase):
                 [(2, 5)],
                 [(2, 5)],
                 [(2, 5)],
-                [(2, 5)],
             ],
             wt._get_subspans(span),
         )
 
     def test_2(self):
         wt = wtp.WikiText('text')
-        wt._pftw_spans = [
-            [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
+        wt._spans = [
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
             [(2, 5), (6, 10), (0, 20), (22, 24), (26, 28)],
@@ -261,7 +281,6 @@ class GetSubspans(unittest.TestCase):
         span = [5,11]
         self.assertEqual(
             [
-                [(1, 5)],
                 [(1, 5)],
                 [(1, 5)],
                 [(1, 5)],
