@@ -59,7 +59,7 @@ COMMENT_REGEX = re.compile(
     re.DOTALL,
 )
 NOWIKI_REGEX = re.compile(
-    r'<nowiki\s*.*?</nowiki\s*>',
+    r'<nowiki\s*.*?>.*?</nowiki\s*>',
     re.DOTALL,
 )
 
