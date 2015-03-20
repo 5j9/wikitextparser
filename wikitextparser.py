@@ -67,122 +67,185 @@ class WikiText:
 
     """Return a WikiText object."""
 
-    def __init__(self, string, spans=None):
+    def __init__(
+        self,
+        string,
+        spans=None,
+    ):
         """Initialize the object."""
-        self.string = string
+        self._common_init(string, spans)
+
+    def _common_init(self, string, spans):
+        if type(string) is list:
+            self._lststr = string
+        else:
+            self._lststr = [string]
         if spans:
             self._spans = spans
         else:
-            self._get_spans()
-
-    def __repr__(self):
-        """Return the string representation of the WikiText."""
-        return 'WikiText("' + self.string + '")'
+            self._spans = self._get_spans()
 
     def __str__(self):
         """Retrun result string."""
-        return self.string
+        start, end = self._get_span()
+        return self._lststr[0][start:end]
 
-    def get_templates(self):
-        """Return a list of templates as template objects."""
-        return [
-            Template(
-                self.string[span[0]:span[1]],
-                self._get_subspans(span),
-            ) for span in self._spans[2]
-        ]
+    def __repr__(self):
+        """Return the string representation of the WikiText."""
+        return 'WikiText("' + self.__str__() + '")'
 
-    def get_parser_functions(self):
-        """Return a list of parser function objects."""
-        return [
-            ParserFunction(
-                self.string[span[0]:span[1]],
-                self._get_subspans(span),
-            ) for span in self._spans[1]
-        ]
-        
+    def _get_span(self):
+        """Return the self-span."""
+        return (0, len(self._lststr[0]))
 
-    def get_parameters(self):
+    @property
+    def parameters(self):
         """Return a list of parameter objects."""
         return [
             Parameter(
-                self.string[span[0]:span[1]],
-                self._get_subspans(span),
-            ) for span in self._spans[0]
+                self._lststr,
+                self._spans,
+                index,
+            ) for index in self._gen_subspan_indices('p')
         ]
 
-    def get_wikilinks(self):
+    @property
+    def parser_functions(self):
+        """Return a list of parser function objects."""
+        return [
+            ParserFunction(
+                self._lststr,
+                self._spans,
+                index,
+            ) for index in self._gen_subspan_indices('pf')
+        ]
+
+    @property
+    def templates(self):
+        """Return a list of templates as template objects."""
+        return [
+            Template(
+                self._lststr,
+                self._spans,
+                index,
+            ) for index in self._gen_subspan_indices('t')
+        ]
+
+    @property
+    def wikilinks(self):
         """Return a list of wikilink objects."""
         return [
-            Parameter(
-                self.string[span[0]:span[1]],
-                self._get_subspans(span),
-            ) for span in self._spans[3]
+            WikiLink(
+                self._lststr,
+                self._spans,
+                index,
+            ) for index in self._gen_subspan_indices('wl')
         ]
 
-    def get_external_links(self):
-        """Return a list of external link objects."""
-        return [
-            ExternalLink(
-                m.group(),
-                self._get_subspans(m.span()),
-            ) for m in EXTERNALLINK_REGEX.finditer(self.string)
-        ]
-
-    def get_comments(self):
+    @property
+    def comments(self):
         """Return a list of comment objects."""
+
         return [
             Comment(
-                self.string[span[0]:span[1]],
-                None,
-            ) for span in self._spans[4]
+                self._lststr,
+                self._spans,
+                index,
+            ) for index in self._gen_subspan_indices('c')
         ]
 
+    @property
+    def external_links(self):
+        """Return a list of found external link objects."""
+        external_links = []
+        if 'el' not in self._spans:
+            self._spans['el'] = []
+        for m in EXTERNALLINK_REGEX.finditer(self._lststr[0]):
+            mspan = m.span()
+            if mspan not in self._spans['el']:
+                self._spans['el'].append(mspan)
+            external_links.append(
+                ExternalLink(
+                    self._lststr,
+                    self._spans,
+                    self._spans['el'].index(mspan)
+                )
+            )
+        return external_links
+
     def _not_in_subspans_split(self, char):
-        """Split self.string using `char` unless char is in ._spans."""
-        string = self.string
+        """Split self.__str__() using `char` unless char is in ._spans."""
+        spanstart, spanend = self._get_span()
+        string = self._lststr[0][spanstart:spanend]
         splits = []
         findstart = 0
+        in_spans = self._in_subspans_factory()
         while True:
             index = string.find(char, findstart)
-            while self._in_subspans(index):
+            while in_spans(spanstart + index):
                 index = string.find(char, index + 1)
             if index == -1:
                 return splits + [string[findstart:]]
             splits.append(string[findstart:index])
-            findstart = index+1
+            findstart = index + 1
 
-    def _get_subspans(self, span):
-        """Return a list of subpan_groups in self._spans.
+    def _not_in_subspans_splitspans(self, char):
+        """Like _not_in_subspans_split but return spans."""
+        spanstart, spanend = self._get_span()
+        string = self._lststr[0][spanstart:spanend]
+        results = []
+        findstart = 0
+        in_spans = self._in_subspans_factory()
+        while True:
+            index = string.find(char, findstart)
+            while in_spans(spanstart + index):
+                index = string.find(char, index + 1)
+            if index == -1:
+                return results + [(spanstart + findstart, spanend)]
+            results.append((spanstart + findstart, spanstart + index))
+            findstart = index + 1
 
-        Start and end of the new subspans will be changed to match span.
+    def _in_subspans_factory(self):
+        """Return a function that can tell if an index is in subspans.
+
+        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c').
         """
-        subspan_groups = []
-        for spans in self._spans:
-            subspans = []
-            for subspan in spans:
-                if span[0] < subspan[0] and subspan[1] < span[1]:
-                    subspans.append(
-                        (subspan[0] - span[0], subspan[1] - span[0])
-                    )
-            subspan_groups.append(subspans)
-        return subspan_groups
-
-    def _in_subspans(self, index):
-        """Return True if the given index is found within one of the subspan."""
-        for spans in self._spans:
-            for span in spans:
+        # calculate subspans
+        selfstart, selfend = self._get_span()
+        subspans = []
+        for key in ('t', 'p', 'pf', 'wl', 'c'):
+            for span in self._spans[key]:
+                if selfstart < span[0] and span[1] < selfend:
+                    subspans.append(span)
+        # the return function
+        def in_spans(index):
+            """Return True if the given index is found within one of the spans."""
+            for span in subspans:
                 if span[0] <= index < span[1]:
                     return True
-        return False
+            return False
+        return in_spans
+
+    def _gen_subspan_indices(self, type_):
+        selfstart, selfend = self._get_span()
+        for i, s in enumerate(self._spans[type_]):
+            # including self._get_span()
+            if selfstart <= s[0] and s[1] <= selfend:
+                yield i
 
     def _get_spans(self):
-        """Return spans of elements.
+        """Calculate and set self._spans.
 
-        The result a tuple in containing lists of the following spans:
-        (params, parser functions, templates, wikilinks).
+        The result a dictionary containing lists of spans:
+        {
+            'p': parameter_spans,
+            'pf': parser_function_spans,
+            't': template_spans,
+            'wl': wikilink_spans,
+            'c': comment_spans,
+        }
         """
-        string = self.string
+        string = self._lststr[0]
         parameter_spans = []
         parser_function_spans = []
         template_spans = []
@@ -248,16 +311,102 @@ class WikiText:
                     string = string.replace(group, '__' + group[2:-2] + '__' )
             if not match:
                 break
-        self._spans = (
-            parameter_spans,
-            parser_function_spans,
-            template_spans,
-            wikilink_spans,
-            comment_spans,
-        )
-    
+        return {
+            'p': parameter_spans,
+            'pf': parser_function_spans,
+            't': template_spans,
+            'wl': wikilink_spans,
+            'c': comment_spans,
+        }
+        
 
-class Template(WikiText):
+    def _remove_update(self, rmstart, rmend):
+        """Update _lststr and _spans according to the removed span.
+
+        Warning: If an operation involves both _remove_update and _add_update,
+        you might wanna consider doing the _add_update before the
+        _remove_update as this function can cause data loss in self._spans.
+        """
+        # Note: No span should be removed from _spans.
+        # Don't use self._set_spans()
+        rmlength = rmend - rmstart
+        self._lststr[0] = self._lststr[0][:rmstart] + self._lststr[0][rmend:]
+        for t, spans in self._spans.items():
+            for i, (spanstart, spanend) in enumerate(spans):
+                if rmend <= spanstart:
+                    # removed part is before the span
+                    spans[i] = (spanstart - rmlength, spanend - rmlength)
+                elif rmstart < spanstart:
+                    # spanstart needs to be changed
+                    # we already know that rmend is after the spanstart
+                    # so the new spanstart should be located at rmstart
+                    if rmend <= spanend:
+                        spans[i] = (rmstart, spanend - rmlength)
+                    else:
+                        # Shrink to an empty string.
+                        spans[i] = (rmstart, rmstart)
+                else:
+                    # we already know that spanstart is before the rmstart
+                    # so the spanstart needs no change.
+                    if rmend <= spanend:
+                        spans[i] = (spanstart, spanend - rmlength)
+                    else:
+                        spans[i] = (spanstart, rmstart)
+
+    def _add_update(self, astring, astart):
+        """Update _lststr and _spans according to the added span."""
+        # Note: No span should be removed from _spans.
+        # Don't use self._set_spans()
+        self._lststr[0] = (
+            self._lststr[0][:astart] + astring + self._lststr[0][astart:]
+        )
+        alength = len(astring)
+        for t, spans in enumerate(self._spans):
+            for i, (spanstart, spanend) in enumerate(spans):
+                if astart <= spanstart:
+                    # added part is before the span
+                    spans[i] = (spanstart + alength, spanend + alength)
+                elif spanstart < astart <= spanend:
+                    # added part is inside the span
+                    spans[i] = (spanstart, spanend + alength)
+
+
+class _Indexed_Object(WikiText):
+
+    """This is a middle-class to be used by some other subclasses.
+
+    Not intended for the final user.
+    """
+
+    def _common_init(
+        self,
+        string,
+        spans=None,
+        index=None,
+    ):
+        if type(string) is list:
+            self._lststr = string
+        else:
+            self._lststr = [string]
+        if spans is None:
+            self._spans = self._get_spans()
+        else:
+            self._spans = spans
+        if index is None:
+            self._index = -1
+        else:
+            self._index = index
+
+    def _gen_subspan_indices(self, type_):
+        selfstart, selfend = self._get_span()
+        for i, s in enumerate(self._spans[type_]):
+            # not including self._get_span()
+            if selfstart < s[0] and s[1] < selfend:
+                yield i
+
+
+
+class Template(_Indexed_Object):
 
     """Convert strings to Template objects.
 
@@ -266,18 +415,13 @@ class Template(WikiText):
 
     def __init__(
         self,
-        template_string,
+        string,
         spans=None,
+        index=None,
         remove_duplicate_args=True,
     ):
-        """Detect template name and arguments."""
-        self.string = template_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-            self._spans[2].pop()
-        self._parse()
+        """Initialize the object."""
+        self._common_init(string, spans)
         if remove_duplicate_args:
             self.remove_duplicate_arguments()
 
@@ -285,83 +429,111 @@ class Template(WikiText):
         """Return the string representation of the Template."""
         return 'Template("' + self.__str__() + '")'
 
-    def __str__(self):
-        """Retrun result string."""
-        string = '{{' + self.name + '|'
-        for a in self.arguments:
-            string += ''.join(a.string) + '|'
-        string = string[:-1] + '}}'
-        return string
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['t'][self._index]
 
-    def _parse(self):
+    @property
+    def arguments(self):
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_subspans_split('|')
-        self.name = barsplits.pop(0)[2:]
-        self.arguments = []
+        barsplits = self._not_in_subspans_splitspans('|')[1:]
+        arguments = []
+        if 'a' not in self._spans:
+            self._spans['a'] = []
         if barsplits:
-            barsplits[-1] = barsplits[-1][:-2]
-            for s in barsplits:
-                self.arguments.append(Argument(s))
-        else:
-            self.name = self.name[:-2]
+            barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
+            for aspan in barsplits:
+                if aspan not in self._spans['a']:
+                    self._spans['a'].append(aspan)
+                arguments.append(
+                    Argument(
+                        self._lststr,
+                        self._spans,
+                        self._spans['a'].index(aspan)
+                    )
+                )
+        return arguments
+
+    @property
+    def name(self):
+        """Return template's name part. (includes whitespace)"""
+        barsplits = self._not_in_subspans_split('|')
+        if len(barsplits) > 1:
+            return barsplits[0][2:]
+        return barsplits[0][2:-2]
+
+    @name.setter
+    def name(self, newname, keep_whitespace=True):
+        """Set the new name for the template."""
+        # Todo
+        pass
+        
 
     def remove_duplicate_arguments(self):
-        """Remove duplicate keyword arguments."""
-        d = {}
-        arguments = self.arguments
-        for n, a in enumerate(self.arguments):
+        """Remove duplicate keyword arguments. Keep the last one."""
+        # todo : add test {{t|a|a}}
+        name_argument = {}
+        for a in self.arguments:
             an = a.name.strip()
-            if an in d:
-                arguments.pop(d[an])
+            if an in name_argument:
+                name_argument[an].destroy()
             elif a.equal_sign:
-                d[an] = n
-        self.arguments = arguments
-        # update attributes
-        self._get_spans()
-        self._spans[2].pop()
-        self.string = self.__str__()
+                name_argument[an] = a
 
 
-class Parameter(WikiText):
+class Parameter(_Indexed_Object):
 
     """Use to represent {{{parameters}}}."""
 
-    def __init__(self, param_string, spans=None):
-        """Detect named and keyword parameters."""
-        self.string = param_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-            self._spans[0].pop()
-        self._parse()
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object."""
+        self._common_init(string, spans, index)
 
     def __repr__(self):
         """Return the string representation of the Parameter."""
-        return 'Parameter("' + self.string + '")'
-    
-    def _parse(self):
-        """Parse the parameter."""
-        self.name, pipe, self.default_value = self.string[3:-3].partition('|')
+        return 'Parameter("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['p'][self._index]
+
+    @property
+    def name(self):
+        """Return current parameter's name."""
+        return self._not_in_subspans_split('|')[0]
+
+    @property
+    def pipe(self):
+        """Return `|` if there is an pipe (default value in the argument.
+
+         Return '' otherwise.
+         """
+        if len(self._not_in_subspans_splitspans('=')) > 1:
+            return '='
+        return ''
+
+    @property
+    def value(self):
+        """Return value of a keyword argument."""
+        return self._not_in_subspans_split('=')[1]
 
 
-class ParserFunction(WikiText):
+class ParserFunction(_Indexed_Object):
 
     """Use to represent a ParserFunction."""
 
-    def __init__(self, function_string, spans=None):
-        """Detect name and arguments."""
-        self.string = function_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-            self._spans[1].pop()
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object."""
+        self._common_init(string, spans, index)
         self._parse()
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
-        return 'ParserFunction("' + self.string + '")'
+        return 'ParserFunction("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['pf'][self._index]
 
     def _parse(self):
         """Parse the ParserFunction."""
@@ -376,78 +548,99 @@ class ParserFunction(WikiText):
         else:
             self.arguments[0] = self.arguments[0][:-2]
 
-    
-class Argument(WikiText):
 
-    """Use to represent Templates or ParserFunction arguments."""
-
-    def __init__(self, param_string, spans=None):
-        """Detect named or keyword argument."""
-        self.string = param_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-        self._parse()
-
-    def __repr__(self):
-        """Return the string representation of the Argument."""
-        return 'Argument("' + self.string + '")'
-    
-    def _parse(self):
-        """Parse the argument."""
-        self.name, self.equal_sign, self.value = self.string.partition('=')
-
-
-class WikiLink(WikiText):
+class WikiLink(_Indexed_Object):
 
     """Use to represent WikiLinks."""
 
-    def __init__(self, wikilinkg_string, spans=None):
-        """Detect named or keyword argument."""
-        self.string = wikilinkg_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-            self._spans[3].pop()
-        self._parse()
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object."""
+        self._common_init(string, spans, index)
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'WikiLink("' + self.string + '")'
-    
-    def _parse(self):
-        """Parse the WikiLink."""
-        self.target, pipe, self.text = self.string[2:-2].partition('|')
+        return 'WikiLink("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['wl'][self._index]
+
+    @property
+    def target(self):
+        """Return target of this WikiLink."""
+        self.__str__()[2:-2].partition('|')[0]
+
+    @property
+    def text(self):
+        """Return display text of this WikiLink."""
+        target, pipe, text = self.__str__()[2:-2].partition('|')
+        if pipe:
+            return text
 
 
-class ExternalLink(WikiText):
+class Comment(_Indexed_Object):
 
     """Use to represent External Links."""
 
-    def __init__(self, extlink_string, spans=None):
+    def __init__(self, string, spans=None, index=None):
         """Detect named or keyword argument."""
-        self.string = extlink_string
-        if spans:
-            self._spans = spans
-        else:
-            self._get_spans()
-        self._parse()
+        self._common_init(string, spans, index)
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'ExtLink("' + self.string + '")'
+        return 'Comment("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['c'][self._index]
+
+    @property
+    def contents(self):
+        """Return contents of this comment."""
+        return self.__str__()[4:-3]
+
+
+class ExternalLink(_Indexed_Object):
+
+    """Use to represent External Links."""
+
+    def __init__(self, string, spans=None, index=None):
+        """Detect named or keyword argument."""
+        self._common_init(string, spans, index)
+        if spans is None:
+            self._spans['el'] = [(0, len(string))]
+
+    def __repr__(self):
+        """Return the string representation of the Argument."""
+        return 'ExternalLink("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['el'][self._index]
     
-    def _parse(self):
-        """Parse the ExtLink."""
-        string = self.string
-        if string.startswith('['):
-            self.brackets = True
-            self.url, space, self.title = string[1:-1].partition(' ')
-        else:
-            self.url = string
-            self.brackets = False
+    @property
+    def url(self):
+        """Return the url part of the ExternalLink."""
+        if self.in_brackets:
+            return self.__str__()[1:].partition(' ')[0]
+        return self.__str__().partition(' ')[0]
+
+    @property
+    def text(self):
+        """Return the display text of the external link.
+
+        Return None if this is a bare link.
+        """
+        if self.in_brackets:
+            return self.__str__()[:-1].partition(' ')[2]
+        return None
+
+    @property
+    def in_brackets(self):
+        """Return true if the ExternalLink is in brackets. False otherwise."""
+        if self.__str__().startswith('['):
+            return True
+        return False
 
     def set_title(self, new_title):
         """Set the title to new_title.
@@ -457,22 +650,54 @@ class ExternalLink(WikiText):
         self.title = new_title
         self.string = '[' + self.url + ' ' + self.title + ']'
 
+    def destroy(self):
+        """Delete references this object from self._spans and self.lststr."""
+        spanstart, spanend = self._get_span()
+        self._remove_update(spanstart, spanend)
+        self._spans['el'].pop(self._index)
+        self._index = None
+
         
-class Comment(WikiText):
+class Argument(_Indexed_Object):
 
-    """Use to represent External Links."""
+    """Use to represent Template or ParserFunction arguments."""
 
-    def __init__(self, string, spans=None):
-        """Detect named or keyword argument."""
-        self.contents = string[4:-3]
-        if spans:
-            self._spans = spans
-        else:
-            self.string = '____' + self.contents + '___'
-            self._get_spans()
-        self.string = string
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object."""
+        self._common_init(string, spans, index)
+        if spans is None:
+            self._spans['a'] = [(0, len(string))]
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'ExtLink("' + self.string + '")'
-    
+        return 'Argument("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return the self-span."""
+        return self._spans['a'][self._index]
+
+    @property
+    def name(self):
+        """Return argument's name-part."""
+        return self._not_in_subspans_split('=')[0]
+
+    @property
+    def equal_sign(self):
+        """Return `=` if there is an equal sign in the argument. Else ''."""
+        if len(self._not_in_subspans_splitspans('=')) > 1:
+            return '='
+        return ''
+
+    @property
+    def value(self):
+        """Return value of a keyword argument."""
+        return self._not_in_subspans_split('=')[1]
+
+    def destroy(self):
+        """Delete references this object from self._spans and self.lststr."""
+        span = self._get_span()
+        self._remove_update(span[0] - 1, span[1])
+        self._spans['a'].pop(self._index)
+        self._index = None
+        
+
