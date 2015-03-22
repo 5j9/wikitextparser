@@ -62,6 +62,17 @@ NOWIKI_REGEX = re.compile(
     r'<nowiki\s*.*?>.*?</nowiki\s*>',
     re.DOTALL,
 )
+SECTION_HEADER_REGEX = re.compile(r'(?:(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
+LEAD_SECTION_REGEX = re.compile(
+    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r')',
+    re.DOTALL,
+)
+SECTION_REGEX = re.compile(
+    SECTION_HEADER_REGEX.pattern +
+    r'.*?(?=' + SECTION_HEADER_REGEX.pattern + '|$)',
+    re.DOTALL,
+)
+SECTION_LEVEL_TITLE = re.compile(r'(\n|^)(={0,6})([^\n]+?)\2 *(\n|$)')
 
 class WikiText:
 
@@ -158,20 +169,59 @@ class WikiText:
     def external_links(self):
         """Return a list of found external link objects."""
         external_links = []
-        if 'el' not in self._spans:
-            self._spans['el'] = []
-        for m in EXTERNALLINK_REGEX.finditer(self._lststr[0]):
+        spans = self._spans
+        selfstart, selfend = self._get_span()
+        if 'el' not in spans:
+            spans['el'] = []
+        elspans = spans['el']
+        for m in EXTERNALLINK_REGEX.finditer(self.__str__()):
             mspan = m.span()
-            if mspan not in self._spans['el']:
-                self._spans['el'].append(mspan)
+            mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+            if mspan not in elspans:
+                elspans.append(mspan)
             external_links.append(
                 ExternalLink(
                     self._lststr,
-                    self._spans,
-                    self._spans['el'].index(mspan)
+                    spans,
+                    elspans.index(mspan)
                 )
             )
         return external_links
+
+    @property
+    def sections(self):
+        """Returns a list of section in current wikitext.
+
+        The first section will always be the lead section, even if it is an
+        empty string.
+        """
+        sections = []
+        spans = self._spans
+        selfstart, selfend = self._get_span()
+        selfstring = self.__str__()
+        if 's' not in spans:
+            spans['s'] = []
+        sspans = spans['s']
+        # Lead section
+        mspan = LEAD_SECTION_REGEX.match(selfstring)
+        mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+        if mspan not in sspans:
+            sspans.append(mspan)
+        sections.append(
+            Section(
+                self._lststr,
+                spans,
+                sspans.index(mspan)
+            )
+        )
+        # Other sections
+        for m in SECTION_REGEX.finditer(selfstring):
+            mspan = LEAD_SECTION_REGEX.match(selfstring)
+            mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+            
+            
+        
+        
 
     def _not_in_subspans_split(self, char):
         """Split self.__str__() using `char` unless char is in ._spans."""
@@ -421,7 +471,7 @@ class Template(_Indexed_Object):
         remove_duplicate_args=True,
     ):
         """Initialize the object."""
-        self._common_init(string, spans)
+        self._common_init(string, spans, index)
         if remove_duplicate_args:
             self.remove_duplicate_arguments()
 
@@ -568,7 +618,7 @@ class WikiLink(_Indexed_Object):
     @property
     def target(self):
         """Return target of this WikiLink."""
-        self.__str__()[2:-2].partition('|')[0]
+        return self.__str__()[2:-2].partition('|')[0]
 
     @property
     def text(self):
@@ -622,18 +672,19 @@ class ExternalLink(_Indexed_Object):
     def url(self):
         """Return the url part of the ExternalLink."""
         if self.in_brackets:
-            return self.__str__()[1:].partition(' ')[0]
-        return self.__str__().partition(' ')[0]
+            return self.__str__()[1:-1].partition(' ')[0]
+        return self.__str__()
 
     @property
     def text(self):
         """Return the display text of the external link.
 
-        Return None if this is a bare link.
+        Return self.__str__() if this is a bare link.
+        Return 
         """
         if self.in_brackets:
-            return self.__str__()[:-1].partition(' ')[2]
-        return None
+            return self.__str__()[1:-1].partition(' ')[2]
+        return self.__str__()
 
     @property
     def in_brackets(self):
@@ -701,3 +752,43 @@ class Argument(_Indexed_Object):
         self._index = None
         
 
+class Section(_Indexed_Object):
+
+    """Use to represent wikitext Sections."""
+
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object."""
+        self._common_init(string, spans, index)
+        if spans is None:
+            self._spans['s'] = [(0, len(string))]
+
+    def __repr__(self):
+        """Return the string representation of the Argument."""
+        return 'Argument("' + self.__str__() + '")'
+
+    def _get_span(self):
+        """Return selfspan (span of self.__str__() in self._lststr[0])."""
+        return self._spans['s'][self._index]
+
+    @property
+    def level(self):
+        """Return level of this section. Level is in range(1,7)."""
+        selfstring = self.__str__()
+        m = SECTION_LEVEL_TITLE.match(selfstring)
+        if not m:
+            return 0
+        return len(m.group(2))
+            
+    @property
+    def title(self):
+        """Return title of this section. Return '' for lead sections."""
+        level = self.level
+        if level == 0:
+            return ''
+        return self.__str__().partition('\n')[0].rstrip()[level:-level]
+
+    @property
+    def contents(self):
+        if self.level == 0:
+            return self.__str__()
+        return self.__str__().partition('\n')[2]
