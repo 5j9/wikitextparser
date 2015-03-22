@@ -184,6 +184,17 @@ class GetSpansFunction(unittest.TestCase):
             wt._spans['p'],
         )
 
+    def test_extracting_sections(self):
+        wt = wtp.WikiText('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22')
+        sections = wt.sections
+        self.assertEqual(4, len(sections))
+        self.assertEqual(0, sections[0].level)
+        self.assertEqual('', sections[0].title)
+        self.assertEqual('', sections[0].contents)
+        self.assertEqual(
+            '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1])
+        )
+
         
 class Template(unittest.TestCase):
 

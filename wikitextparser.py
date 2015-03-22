@@ -68,8 +68,8 @@ LEAD_SECTION_REGEX = re.compile(
     re.DOTALL,
 )
 SECTION_REGEX = re.compile(
-    SECTION_HEADER_REGEX.pattern +
-    r'.*?(?=' + SECTION_HEADER_REGEX.pattern + '|$)',
+    SECTION_HEADER_REGEX.pattern + r'.*?(?=' +
+    SECTION_HEADER_REGEX.pattern + '|$)',
     re.DOTALL,
 )
 SECTION_LEVEL_TITLE = re.compile(r'(\n|^)(={0,6})([^\n]+?)\2 *(\n|$)')
@@ -197,27 +197,39 @@ class WikiText:
         """
         sections = []
         spans = self._spans
+        lststr = self._lststr
         selfstart, selfend = self._get_span()
         selfstring = self.__str__()
         if 's' not in spans:
             spans['s'] = []
         sspans = spans['s']
         # Lead section
-        mspan = LEAD_SECTION_REGEX.match(selfstring)
+        mspan = LEAD_SECTION_REGEX.match(selfstring).span()
         mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
         if mspan not in sspans:
             sspans.append(mspan)
-        sections.append(
-            Section(
-                self._lststr,
-                spans,
-                sspans.index(mspan)
-            )
-        )
+        sections.append(Section(lststr, spans, sspans.index(mspan)))
         # Other sections
         for m in SECTION_REGEX.finditer(selfstring):
-            mspan = LEAD_SECTION_REGEX.match(selfstring)
+            mspan = m.span()
             mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+            if mspan not in sspans:
+                sspans.append(mspan)
+            latest_section = Section(lststr, spans, sspans.index(mspan))
+            sections.append(latest_section)
+            latest_level = latest_section.level
+            # adding text of the latest_section to any parent section
+            # Note that section 0 is not a parent for any subsection
+            for i, section in enumerate(sections[1:]):
+                if section.level < latest_level:
+                    index = section._index
+                    sspans[index] = (sspans[index][0], mspan[1])
+                    sections[i+1] = Section(lststr, spans, index)
+                else:
+                    # do not extend spans that have lower level but belong
+                    # to another header.
+                    break
+        return sections
             
             
         
