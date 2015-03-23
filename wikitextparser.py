@@ -72,7 +72,7 @@ SECTION_REGEX = re.compile(
     SECTION_HEADER_REGEX.pattern + '|$)',
     re.DOTALL,
 )
-SECTION_LEVEL_TITLE = re.compile(r'(\n|^)(={0,6})([^\n]+?)\2 *(\n|$)')
+SECTION_LEVEL_TITLE = re.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
 
 class WikiText:
 
@@ -97,13 +97,34 @@ class WikiText:
             self._spans = self._get_spans()
 
     def __str__(self):
-        """Retrun result string."""
+        """Return self-object as a string."""
+        return self.string
+
+    @property
+    def string(self):
+        """Retrun str(self)."""
         start, end = self._get_span()
         return self._lststr[0][start:end]
 
+    @string.setter
+    def string(self, newstring):
+        """Set a new string for this object. Update spans accordingly."""
+        lststr = self._lststr
+        oldlength = len(self.string)
+        newlength = len(newstring)
+        oldstart, oldend = self._get_span()
+        # updating lststr
+        lststr[0] = lststr[0][:oldstart] + newstring + lststr[0][oldend:]
+        # updating spans
+        if newlength > oldlength:
+            oldstart, oldend = self._get_span()
+            self._extend_span_update(oldstart, newlength - oldlength)
+        elif newlength < oldlength:
+            self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
+
     def __repr__(self):
         """Return the string representation of the WikiText."""
-        return 'WikiText("' + self.__str__() + '")'
+        return 'WikiText("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -174,7 +195,7 @@ class WikiText:
         if 'el' not in spans:
             spans['el'] = []
         elspans = spans['el']
-        for m in EXTERNALLINK_REGEX.finditer(self.__str__()):
+        for m in EXTERNALLINK_REGEX.finditer(self.string):
             mspan = m.span()
             mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
             if mspan not in elspans:
@@ -199,7 +220,7 @@ class WikiText:
         spans = self._spans
         lststr = self._lststr
         selfstart, selfend = self._get_span()
-        selfstring = self.__str__()
+        selfstring = self.string
         if 's' not in spans:
             spans['s'] = []
         sspans = spans['s']
@@ -236,7 +257,7 @@ class WikiText:
         
 
     def _not_in_subspans_split(self, char):
-        """Split self.__str__() using `char` unless char is in ._spans."""
+        """Split self.string using `char` unless char is in ._spans."""
         spanstart, spanend = self._get_span()
         string = self._lststr[0][spanstart:spanend]
         splits = []
@@ -382,17 +403,17 @@ class WikiText:
         }
         
 
-    def _remove_update(self, rmstart, rmend):
-        """Update _lststr and _spans according to the removed span.
+    def _shrink_span_update(self, rmstart, rmend):
+        """Update self._spans according to the removed span.
 
-        Warning: If an operation involves both _remove_update and _add_update,
-        you might wanna consider doing the _add_update before the
-        _remove_update as this function can cause data loss in self._spans.
+        Warning: If an operation involves both _shrink_span_update and
+        _extend_span_update, you might wanna consider doing the
+        _extend_span_update before the _shrink_span_update as this function
+        can cause data loss in self._spans.
         """
         # Note: No span should be removed from _spans.
         # Don't use self._set_spans()
         rmlength = rmend - rmstart
-        self._lststr[0] = self._lststr[0][:rmstart] + self._lststr[0][rmend:]
         for t, spans in self._spans.items():
             for i, (spanstart, spanend) in enumerate(spans):
                 if rmend <= spanstart:
@@ -415,20 +436,16 @@ class WikiText:
                     else:
                         spans[i] = (spanstart, rmstart)
 
-    def _add_update(self, astring, astart):
-        """Update _lststr and _spans according to the added span."""
+    def _extend_span_update(self, astart, alength):
+        """Update self._spans according to the added span."""
         # Note: No span should be removed from _spans.
         # Don't use self._set_spans()
-        self._lststr[0] = (
-            self._lststr[0][:astart] + astring + self._lststr[0][astart:]
-        )
-        alength = len(astring)
-        for t, spans in enumerate(self._spans):
+        for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
-                if astart <= spanstart:
+                if astart < spanstart:
                     # added part is before the span
                     spans[i] = (spanstart + alength, spanend + alength)
-                elif spanstart < astart <= spanend:
+                elif spanstart <= astart < spanend:
                     # added part is inside the span
                     spans[i] = (spanstart, spanend + alength)
 
@@ -489,7 +506,7 @@ class Template(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Template."""
-        return 'Template("' + self.__str__() + '")'
+        return 'Template("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -500,18 +517,22 @@ class Template(_Indexed_Object):
         """Parse template content. Create self.name and self.arguments."""
         barsplits = self._not_in_subspans_splitspans('|')[1:]
         arguments = []
+        spans = self._spans
         if 'a' not in self._spans:
-            self._spans['a'] = []
+            spans['a'] = []
         if barsplits:
+            # remove the final '}}' from the last argument.
             barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
             for aspan in barsplits:
-                if aspan not in self._spans['a']:
-                    self._spans['a'].append(aspan)
+                # include the the starting '|'
+                aspan = (aspan[0] + -1, aspan[1])
+                if aspan not in spans['a']:
+                    spans['a'].append(aspan)
                 arguments.append(
                     Argument(
                         self._lststr,
-                        self._spans,
-                        self._spans['a'].index(aspan)
+                        spans,
+                        spans['a'].index(aspan)
                     )
                 )
         return arguments
@@ -533,12 +554,11 @@ class Template(_Indexed_Object):
 
     def remove_duplicate_arguments(self):
         """Remove duplicate keyword arguments. Keep the last one."""
-        # todo : add test {{t|a|a}}
         name_argument = {}
         for a in self.arguments:
             an = a.name.strip()
             if an in name_argument:
-                name_argument[an].destroy()
+                name_argument[an].string = ''
             elif a.equal_sign:
                 name_argument[an] = a
 
@@ -553,7 +573,7 @@ class Parameter(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Parameter."""
-        return 'Parameter("' + self.__str__() + '")'
+        return 'Parameter("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -591,7 +611,7 @@ class ParserFunction(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
-        return 'ParserFunction("' + self.__str__() + '")'
+        return 'ParserFunction("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -600,13 +620,15 @@ class ParserFunction(_Indexed_Object):
     def _parse(self):
         """Parse the ParserFunction."""
         barsplits = self._not_in_subspans_split('|')
+        lststr = self.lststr
+        spans = self.spans
         self.arguments = []
         self.name, arg1 = barsplits.pop(0)[2:].split(':')
-        self.arguments.append(Argument(arg1))
+        self.arguments.append(Argument(self.lststr, self.spans, '|' + arg1))
         if barsplits:
             barsplits[-1] = barsplits[-1][:-2]
             for s in barsplits:
-                self.arguments.append(Argument(s))
+                self.arguments.append(Argument(lststr, spans, '|' + s))
         else:
             self.arguments[0] = self.arguments[0][:-2]
 
@@ -621,7 +643,7 @@ class WikiLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'WikiLink("' + self.__str__() + '")'
+        return 'WikiLink("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -630,12 +652,12 @@ class WikiLink(_Indexed_Object):
     @property
     def target(self):
         """Return target of this WikiLink."""
-        return self.__str__()[2:-2].partition('|')[0]
+        return self.string[2:-2].partition('|')[0]
 
     @property
     def text(self):
         """Return display text of this WikiLink."""
-        target, pipe, text = self.__str__()[2:-2].partition('|')
+        target, pipe, text = self.string[2:-2].partition('|')
         if pipe:
             return text
 
@@ -650,7 +672,7 @@ class Comment(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Comment("' + self.__str__() + '")'
+        return 'Comment("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -659,7 +681,7 @@ class Comment(_Indexed_Object):
     @property
     def contents(self):
         """Return contents of this comment."""
-        return self.__str__()[4:-3]
+        return self.string[4:-3]
 
 
 class ExternalLink(_Indexed_Object):
@@ -674,7 +696,7 @@ class ExternalLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'ExternalLink("' + self.__str__() + '")'
+        return 'ExternalLink("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -684,24 +706,24 @@ class ExternalLink(_Indexed_Object):
     def url(self):
         """Return the url part of the ExternalLink."""
         if self.in_brackets:
-            return self.__str__()[1:-1].partition(' ')[0]
-        return self.__str__()
+            return self.string[1:-1].partition(' ')[0]
+        return self.string
 
     @property
     def text(self):
         """Return the display text of the external link.
 
-        Return self.__str__() if this is a bare link.
+        Return self.string if this is a bare link.
         Return 
         """
         if self.in_brackets:
-            return self.__str__()[1:-1].partition(' ')[2]
-        return self.__str__()
+            return self.string[1:-1].partition(' ')[2]
+        return self.string
 
     @property
     def in_brackets(self):
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        if self.__str__().startswith('['):
+        if self.string.startswith('['):
             return True
         return False
 
@@ -712,13 +734,6 @@ class ExternalLink(_Indexed_Object):
         """
         self.title = new_title
         self.string = '[' + self.url + ' ' + self.title + ']'
-
-    def destroy(self):
-        """Delete references this object from self._spans and self.lststr."""
-        spanstart, spanend = self._get_span()
-        self._remove_update(spanstart, spanend)
-        self._spans['el'].pop(self._index)
-        self._index = None
 
         
 class Argument(_Indexed_Object):
@@ -733,7 +748,7 @@ class Argument(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + self.__str__() + '")'
+        return 'Argument("' + self.string + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -742,7 +757,7 @@ class Argument(_Indexed_Object):
     @property
     def name(self):
         """Return argument's name-part."""
-        return self._not_in_subspans_split('=')[0]
+        return self._not_in_subspans_split('=')[0][1:]
 
     @property
     def equal_sign(self):
@@ -755,13 +770,6 @@ class Argument(_Indexed_Object):
     def value(self):
         """Return value of a keyword argument."""
         return self._not_in_subspans_split('=')[1]
-
-    def destroy(self):
-        """Delete references this object from self._spans and self.lststr."""
-        span = self._get_span()
-        self._remove_update(span[0] - 1, span[1])
-        self._spans['a'].pop(self._index)
-        self._index = None
         
 
 class Section(_Indexed_Object):
@@ -776,20 +784,26 @@ class Section(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + self.__str__() + '")'
+        return 'Argument("' + self.string + '")'
 
     def _get_span(self):
-        """Return selfspan (span of self.__str__() in self._lststr[0])."""
+        """Return selfspan (span of self.string in self._lststr[0])."""
         return self._spans['s'][self._index]
 
     @property
     def level(self):
         """Return level of this section. Level is in range(1,7)."""
-        selfstring = self.__str__()
+        selfstring = self.string
         m = SECTION_LEVEL_TITLE.match(selfstring)
         if not m:
             return 0
-        return len(m.group(2))
+        return len(m.group(1))
+
+    @level.setter
+    def level(self, newlevel):
+        """Change leader level of this sectoin."""
+        equals = '=' * newlevel
+        self.string = equals + self.title + equals + self.contents
             
     @property
     def title(self):
@@ -797,10 +811,34 @@ class Section(_Indexed_Object):
         level = self.level
         if level == 0:
             return ''
-        return self.__str__().partition('\n')[0].rstrip()[level:-level]
+        return self.string.partition('\n')[0].rstrip()[level:-level]
+
+    @title.setter
+    def title(self, newtitle):
+        """Set the new title for this section and update self.lststr."""
+        level = self.level
+        if level == 0:
+            raise RuntimeError(
+                "Can't set title for a lead section. "
+                "Try adding it to the contents."
+            )
+        equals = '=' * level
+        self.string = equals + newtitle + equals + '\n' + self.contents
+        
 
     @property
     def contents(self):
+        """Return contents of this section."""
         if self.level == 0:
-            return self.__str__()
-        return self.__str__().partition('\n')[2]
+            return self.string
+        return self.string.partition('\n')[2]
+
+    @contents.setter
+    def contents(self, newcontents):
+        """Set newcontents as the contents of this section."""
+        level = self.level
+        if level == 0:
+            self.string = newcontents
+        else:
+            self.string = self.string.partition('\n')[0] + '\n' + newcontents
+            
