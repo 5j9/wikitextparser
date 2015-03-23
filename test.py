@@ -46,7 +46,7 @@ class WikiText(unittest.TestCase):
     def test_destroy(self):
         s = 'text1 [//en.wikipedia.org wikipedia] text2'
         wt = wtp.WikiText(s)
-        wt.external_links[0].destroy()
+        wt.external_links[0].string = ''
         self.assertEqual(
             'text1  text2',
             str(wt),
@@ -195,6 +195,18 @@ class GetSpansFunction(unittest.TestCase):
             '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1])
         )
 
+    def test_section_title_may_contain_template_newline_etc(self):
+        wt = wtp.WikiText('=== h3 {{text\n\n|text}}<!-- \nc -->'
+                          '<nowiki>\nnw\n</nowiki> ===\nt3')
+        sections = wt.sections
+        self.assertEqual(2, len(sections))
+        self.assertEqual(
+            ' h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
+            sections[1].title
+        )
+        self.assertEqual('t3', sections[1].contents)
+    
+
         
 class Template(unittest.TestCase):
 
@@ -249,6 +261,11 @@ class Template(unittest.TestCase):
 
     def test_dont_remove_duplicate_subparameter(self):
         s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
+        t = wtp.Template(s1)
+        self.assertEqual(s1, str(t))
+
+    def test_dont_remove_nonkeyword_argument(self):
+        s1 = "{{t|a|a}}"
         t = wtp.Template(s1)
         self.assertEqual(s1, str(t))
 
@@ -322,6 +339,26 @@ class Section(unittest.TestCase):
         s = wtp.Section('lead text. \n== section ==\ntext.')
         self.assertEqual(0, s.level)
         self.assertEqual('', s.title)
+
+    def test_set_title(self):
+        s = wtp.Section('== section ==\ntext.')
+        s.title = ' newtitle '
+        self.assertEqual(' newtitle ', s.title)
+
+    @unittest.expectedFailure
+    def test_lead_set_title(self):
+        s = wtp.Section('lead text')
+        s.title = ' newtitle '
+
+    def test_set_contents(self):
+        s = wtp.Section('== title ==\ntext.')
+        s.contents = ' newcontents '
+        self.assertEqual(' newcontents ', s.contents)
+
+    def test_set_lead_contents(self):
+        s = wtp.Section('lead')
+        s.contents = 'newlead'
+        self.assertEqual('newlead', s.string)
         
 
 class Argument(unittest.TestCase):
@@ -329,7 +366,7 @@ class Argument(unittest.TestCase):
     """Test the Argument class."""
 
     def test_basic(self):
-        a = wtp.Argument(' a = b ')
+        a = wtp.Argument('| a = b ')
         self.assertEqual(' a ', a.name)
         self.assertEqual(' b ', a.value)
         self.assertEqual('=', a.equal_sign)
