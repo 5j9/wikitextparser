@@ -10,7 +10,7 @@ is that for most usual uses it will be enough.
 
 Here is a short demo of some of the functionalities:
 
-```
+```python
 >>> ================================ RESTART ================================
 >>> 
 >>> wt = WikiText("""== h2 ==
