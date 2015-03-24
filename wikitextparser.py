@@ -251,13 +251,10 @@ class WikiText:
                     # to another header.
                     break
         return sections
-            
-            
-        
-        
 
     def _not_in_subspans_split(self, char):
-        """Split self.string using `char` unless char is in ._spans."""
+        """Split self.string using `char` unless char is in self._spans."""
+        # not used?
         spanstart, spanend = self._get_span()
         string = self._lststr[0][spanstart:spanend]
         splits = []
@@ -291,12 +288,12 @@ class WikiText:
     def _in_subspans_factory(self):
         """Return a function that can tell if an index is in subspans.
 
-        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c').
+        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'nw').
         """
         # calculate subspans
         selfstart, selfend = self._get_span()
         subspans = []
-        for key in ('t', 'p', 'pf', 'wl', 'c'):
+        for key in ('t', 'p', 'pf', 'wl', 'c', 'nw'):
             for span in self._spans[key]:
                 if selfstart < span[0] and span[1] < selfend:
                     subspans.append(span)
@@ -326,6 +323,7 @@ class WikiText:
             't': template_spans,
             'wl': wikilink_spans,
             'c': comment_spans,
+            'nw': nowiki_spans,
         }
         """
         string = self._lststr[0]
@@ -334,6 +332,7 @@ class WikiText:
         template_spans = []
         wikilink_spans = []
         comment_spans = []
+        nowiki_spans = []
         # HTML comments
         for match in COMMENT_REGEX.finditer(string):
             comment_spans.append(match.span())
@@ -341,9 +340,10 @@ class WikiText:
             string = string.replace(group, '_' * len(group))
         # <nowiki>
         for match in NOWIKI_REGEX.finditer(string):
+            nowiki_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
-        # The title in WikiLinks May contain braces that interfere with
+        # The title in WikiLinks may contain braces that interfere with
         # detection of templates
         for match in WIKILINK_REGEX.finditer(string):
             wikilink_spans.append(match.span())
@@ -400,6 +400,7 @@ class WikiText:
             't': template_spans,
             'wl': wikilink_spans,
             'c': comment_spans,
+            'nw': nowiki_spans,
         }
         
 
@@ -518,21 +519,23 @@ class Template(_Indexed_Object):
         barsplits = self._not_in_subspans_splitspans('|')[1:]
         arguments = []
         spans = self._spans
-        if 'a' not in self._spans:
+        lststr = self._lststr
+        if 'a' not in spans:
             spans['a'] = []
+        aspans = spans['a']
         if barsplits:
             # remove the final '}}' from the last argument.
             barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
             for aspan in barsplits:
                 # include the the starting '|'
                 aspan = (aspan[0] + -1, aspan[1])
-                if aspan not in spans['a']:
-                    spans['a'].append(aspan)
+                if aspan not in aspans:
+                    aspans.append(aspan)
                 arguments.append(
                     Argument(
-                        self._lststr,
+                        lststr,
                         spans,
-                        spans['a'].index(aspan)
+                        aspans.index(aspan)
                     )
                 )
         return arguments
@@ -540,16 +543,16 @@ class Template(_Indexed_Object):
     @property
     def name(self):
         """Return template's name part. (includes whitespace)"""
-        barsplits = self._not_in_subspans_split('|')
-        if len(barsplits) > 1:
-            return barsplits[0][2:]
-        return barsplits[0][2:-2]
+        return self.string[2:-2].partition('|')[0]
 
     @name.setter
-    def name(self, newname, keep_whitespace=True):
+    def name(self, newname):
         """Set the new name for the template."""
-        # Todo
-        pass
+        name, pipe, paramters  = self.string[2:-2].partition('|')
+        if pipe:
+            self.string = '{{' + newname + '|' + paramters + '}}'
+        else:
+            self.string = '{{' + newname + '}}'
         
 
     def remove_duplicate_arguments(self):
@@ -582,22 +585,35 @@ class Parameter(_Indexed_Object):
     @property
     def name(self):
         """Return current parameter's name."""
-        return self._not_in_subspans_split('|')[0]
+        return self.string[3:-3].partition('|')[0]
+
+    @name.setter
+    def name(self, newname):
+        """Set the new name."""
+        name, pipe, default = self.string[3:-3].partition('|')
+        if pipe:
+            self.string = '{{{' + newname + '|' + default + '}}}'
+        else:
+            self.string = '{{{' + newname + '}}}'
 
     @property
     def pipe(self):
-        """Return `|` if there is an pipe (default value in the argument.
+        """Return `|` if there is a pipe (default value) in the Parameter.
 
          Return '' otherwise.
          """
-        if len(self._not_in_subspans_splitspans('=')) > 1:
-            return '='
-        return ''
+        return self.string[3:-3].partition('|')[1]
 
     @property
-    def value(self):
+    def default(self):
         """Return value of a keyword argument."""
-        return self._not_in_subspans_split('=')[1]
+        return self.string[3:-3].partition('|')[2]
+
+    @default.setter
+    def default(self, newdefault):
+        """Set the new value."""
+        self.string = '{{{' + self.name + '|' + newdefault + '}}}'
+        
 
 
 class ParserFunction(_Indexed_Object):
@@ -607,7 +623,6 @@ class ParserFunction(_Indexed_Object):
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
         self._common_init(string, spans, index)
-        self._parse()
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
@@ -617,20 +632,43 @@ class ParserFunction(_Indexed_Object):
         """Return the self-span."""
         return self._spans['pf'][self._index]
 
-    def _parse(self):
-        """Parse the ParserFunction."""
-        barsplits = self._not_in_subspans_split('|')
-        lststr = self.lststr
-        spans = self.spans
-        self.arguments = []
-        self.name, arg1 = barsplits.pop(0)[2:].split(':')
-        self.arguments.append(Argument(self.lststr, self.spans, '|' + arg1))
+    @property
+    def arguments(self):
+        """Parse template content. Create self.name and self.arguments."""
+        barsplits = self._not_in_subspans_splitspans('|')
+        arguments = []
+        spans = self._spans
+        lststr = self._lststr
+        if 'a' not in spans:
+            spans['a'] = []
+        aspans = spans['a']
+        selfstart, selfend = self._get_span()
+        # remove the final '}}' from the last argument.
+        barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
+        # first argument
+        aspan = barsplits.pop(0)
+        aspan = (aspan[0] + self.string.find(':'), aspan[1])
+        if aspan not in aspans:
+            aspans.append(aspan)
+        arguments.append(Argument(lststr, spans, aspans.index(aspan)))
+        # the rest of the arguments (similar to templates)
         if barsplits:
-            barsplits[-1] = barsplits[-1][:-2]
-            for s in barsplits:
-                self.arguments.append(Argument(lststr, spans, '|' + s))
-        else:
-            self.arguments[0] = self.arguments[0][:-2]
+            for aspan in barsplits:
+                # include the the starting '|'
+                aspan = (aspan[0] -1, aspan[1])
+                if aspan not in aspans:
+                    aspans.append(aspan)
+                arguments.append(
+                    Argument(lststr, spans, aspans.index(aspan))
+                )
+        return arguments
+
+    
+
+    @property
+    def name(self):
+        """Return name part of the current ParserFunction."""
+        return self.string.partition(':')[0].partition('#')[2]
 
 
 class WikiLink(_Indexed_Object):
@@ -654,12 +692,26 @@ class WikiLink(_Indexed_Object):
         """Return target of this WikiLink."""
         return self.string[2:-2].partition('|')[0]
 
+    @target.setter
+    def target(self, newtarget):
+        """Set a new target."""
+        target, pipe, text = self.string[2:-2].partition('|')
+        if pipe:
+            self.string = '[[' + newtarget + '|' + text + ']]'
+        else:
+            self.string = '[[' + newtarget + ']]'
+
     @property
     def text(self):
         """Return display text of this WikiLink."""
         target, pipe, text = self.string[2:-2].partition('|')
         if pipe:
             return text
+
+    @text.setter
+    def text(self, newtext):
+        """Set a new text."""
+        self.string = '[[' + self.target + '|' + newtext + ']]'
 
 
 class Comment(_Indexed_Object):
@@ -709,6 +761,18 @@ class ExternalLink(_Indexed_Object):
             return self.string[1:-1].partition(' ')[0]
         return self.string
 
+    @url.setter
+    def url(self, newurl):
+        """Set a new url for the current ExternalLink."""
+        text = self.text
+        if self.in_brackets:
+            if text:
+                self.string = '[' + newurl + ' ' + text + ']'
+            else:
+                self.string = '[' + newurl + ']'
+        else:
+            self.string = newurl
+        
     @property
     def text(self):
         """Return the display text of the external link.
@@ -720,6 +784,14 @@ class ExternalLink(_Indexed_Object):
             return self.string[1:-1].partition(' ')[2]
         return self.string
 
+    @text.setter
+    def text(self, newtext):
+        """Set a new text for the current ExternalLink.
+
+        Automatically puts the ExternalLink in brackets if it's not already.
+        """
+        self.string = '[' + self.url + ' ' + newtext + ']'
+
     @property
     def in_brackets(self):
         """Return true if the ExternalLink is in brackets. False otherwise."""
@@ -727,18 +799,15 @@ class ExternalLink(_Indexed_Object):
             return True
         return False
 
-    def set_title(self, new_title):
-        """Set the title to new_title.
-
-        If the link is not in brackets, they will be added.
-        """
-        self.title = new_title
-        self.string = '[' + self.url + ' ' + self.title + ']'
-
         
 class Argument(_Indexed_Object):
 
-    """Use to represent Template or ParserFunction arguments."""
+    """Use to represent Template or ParserFunction arguments.
+
+    Note that in mediawiki documentation `arguments` are (also) called
+    parameters. Here we {{{p}}} a parameter and {{t|p}} an argument.
+    See https://www.mediawiki.org/wiki/Help:Templates for more information.
+    """
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
@@ -756,20 +825,40 @@ class Argument(_Indexed_Object):
 
     @property
     def name(self):
-        """Return argument's name-part."""
-        return self._not_in_subspans_split('=')[0][1:]
+        """Return argument's name-part. Return '' for anonymous parameters."""
+        pipename, equal, value = self.string.partition('=')
+        if equal:
+            return pipename[1:]
+        # anonymous parameters
+        return ''
+
+    @name.setter
+    def name(self, newname):
+        """Changes the name of the argument."""
+        self.string = '|' + newname + '=' + self.value
 
     @property
     def equal_sign(self):
         """Return `=` if there is an equal sign in the argument. Else ''."""
-        if len(self._not_in_subspans_splitspans('=')) > 1:
-            return '='
-        return ''
+        return self.string.partition('=')[1]
 
     @property
     def value(self):
         """Return value of a keyword argument."""
-        return self._not_in_subspans_split('=')[1]
+        pipename, equal, value = self.string.partition('=')
+        if equal:
+            return value
+        # anonymous parameters
+        return pipename[1:]
+
+    @value.setter
+    def value(self, newvalue):
+        """Set a the value for the current argument."""
+        pipename, equal, value = self.string.partition('=')
+        if equal:
+            self.string = pipename + '=' + newvalue
+        else:
+            self.string = pipename[0] + newvalue
         
 
 class Section(_Indexed_Object):
@@ -825,7 +914,6 @@ class Section(_Indexed_Object):
         equals = '=' * level
         self.string = equals + newtitle + equals + '\n' + self.contents
         
-
     @property
     def contents(self):
         """Return contents of this section."""
