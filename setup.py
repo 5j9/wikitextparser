@@ -2,9 +2,9 @@ from distutils.core import setup
 
 setup(
     name='WikiTextParser',
-    version='0.1.1',
+    version='0.1.2dev',
     description ='A simple, purely python, WikiText parsing tool.',
-    long_description=open('README').read(),
+    long_description=open('README.rst').read(),
     author='Dalba',
     author_email='dalba.wiki@gmail.com',
     url='https://github.com/irdb/wikitextparser',
