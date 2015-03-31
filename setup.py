@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name='WikiTextParser',
+    name='wikitextparser',
     version='0.1.2dev',
     description ='A simple, purely python, WikiText parsing tool.',
     long_description=open('README.rst').read(),
