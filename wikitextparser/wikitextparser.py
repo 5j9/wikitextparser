@@ -498,7 +498,7 @@ class Template(_Indexed_Object):
         string,
         spans=None,
         index=None,
-        remove_duplicate_args=True,
+        remove_duplicate_args=False,
     ):
         """Initialize the object."""
         self._common_init(string, spans, index)
