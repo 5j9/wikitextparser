@@ -278,6 +278,10 @@ class Template(unittest.TestCase):
         t.name = ' u '
         self.assertEqual("{{ u |a|a}}", t.string)
 
+    def test_keyword_and_positional_args(self):
+        t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
+        self.assertEqual('1', t.arguments[2].name)
+
 
 class WikiLink(unittest.TestCase):
 
@@ -410,7 +414,7 @@ class Argument(unittest.TestCase):
 
     def test_anonymous_parameter(self):
         a = wtp.Argument('| a ')
-        self.assertEqual('', a.name)
+        self.assertEqual('1', a.name)
         self.assertEqual(' a ', a.value)
         
     def test_set_name(self):
