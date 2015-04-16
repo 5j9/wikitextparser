@@ -464,6 +464,7 @@ class _Indexed_Object(WikiText):
         spans=None,
         index=None,
     ):
+        """Set initial value for self._lststr, self._spans and self._index."""
         if type(string) is list:
             self._lststr = string
         else:
@@ -520,9 +521,10 @@ class Template(_Indexed_Object):
         arguments = []
         spans = self._spans
         lststr = self._lststr
-        if 'a' not in spans:
-            spans['a'] = []
-        aspans = spans['a']
+        typeindex = 'ta' + str(self._index)
+        if typeindex not in spans:
+            spans[typeindex] = []
+        aspans = spans[typeindex]
         if barsplits:
             # remove the final '}}' from the last argument.
             barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
@@ -535,7 +537,8 @@ class Template(_Indexed_Object):
                     Argument(
                         lststr,
                         spans,
-                        aspans.index(aspan)
+                        aspans.index(aspan),
+                        typeindex,
                     )
                 )
         return arguments
@@ -639,9 +642,10 @@ class ParserFunction(_Indexed_Object):
         arguments = []
         spans = self._spans
         lststr = self._lststr
-        if 'a' not in spans:
-            spans['a'] = []
-        aspans = spans['a']
+        typeindex = 'pfa' + str(self._index)
+        if typeindex not in spans:
+            spans[typeindex] = []
+        aspans = spans[typeindex]
         selfstart, selfend = self._get_span()
         # remove the final '}}' from the last argument.
         barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
@@ -650,7 +654,9 @@ class ParserFunction(_Indexed_Object):
         aspan = (aspan[0] + self.string.find(':'), aspan[1])
         if aspan not in aspans:
             aspans.append(aspan)
-        arguments.append(Argument(lststr, spans, aspans.index(aspan)))
+        arguments.append(
+            Argument(lststr, spans, aspans.index(aspan), typeindex)
+        )
         # the rest of the arguments (similar to templates)
         if barsplits:
             for aspan in barsplits:
@@ -659,7 +665,7 @@ class ParserFunction(_Indexed_Object):
                 if aspan not in aspans:
                     aspans.append(aspan)
                 arguments.append(
-                    Argument(lststr, spans, aspans.index(aspan))
+                    Argument(lststr, spans, aspans.index(aspan), typeindex)
                 )
         return arguments
 
@@ -810,11 +816,16 @@ class Argument(_Indexed_Object):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(self, string, spans=None, index=None, typeindex=None):
         """Initialize the object."""
         self._common_init(string, spans, index)
+        if typeindex is None:
+            self._typeindex = 'a'
+        else:
+            self._typeindex = typeindex
         if spans is None:
-            self._spans['a'] = [(0, len(string))]
+            self._spans[self._typeindex] = [(0, len(string))]
+            
 
     def __repr__(self):
         """Return the string representation of the Argument."""
@@ -822,16 +833,21 @@ class Argument(_Indexed_Object):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['a'][self._index]
+        return self._spans[self._typeindex][self._index]
 
     @property
     def name(self):
-        """Return argument's name-part. Return '' for positional arguments."""
+        """Return arg's name-part. Return the position for positional args."""
         pipename, equal, value = self.string.partition('=')
         if equal:
             return pipename[1:]
         # positional argument
-        return ''
+        position = 1
+        godstring = self._lststr[0]
+        for span in self._spans[self._typeindex][:self._index]:
+            if '=' not in godstring[span[0]:span[1]]:
+                position += 1
+        return str(position)
 
     @name.setter
     def name(self, newname):
