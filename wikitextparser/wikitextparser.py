@@ -680,7 +680,7 @@ class WikiLink(_Indexed_Object):
         self._common_init(string, spans, index)
 
     def __repr__(self):
-        """Return the string representation of the Argument."""
+        """Return the string representation of the WikiLink."""
         return 'WikiLink("' + self.string + '")'
 
     def _get_span(self):
@@ -716,14 +716,14 @@ class WikiLink(_Indexed_Object):
 
 class Comment(_Indexed_Object):
 
-    """Use to represent External Links."""
+    """Use to represent comments."""
 
     def __init__(self, string, spans=None, index=None):
-        """Detect named or keyword argument."""
+        """Run self._common_init."""
         self._common_init(string, spans, index)
 
     def __repr__(self):
-        """Return the string representation of the Argument."""
+        """Return the string representation of the Comment."""
         return 'Comment("' + self.string + '")'
 
     def _get_span(self):
@@ -741,13 +741,13 @@ class ExternalLink(_Indexed_Object):
     """Use to represent External Links."""
 
     def __init__(self, string, spans=None, index=None):
-        """Detect named or keyword argument."""
+        """Run self._common_init. Set self._spans['el'] if spans is None."""
         self._common_init(string, spans, index)
         if spans is None:
             self._spans['el'] = [(0, len(string))]
 
     def __repr__(self):
-        """Return the string representation of the Argument."""
+        """Return the string representation of the ExternalLink."""
         return 'ExternalLink("' + self.string + '")'
 
     def _get_span(self):
@@ -805,7 +805,8 @@ class Argument(_Indexed_Object):
     """Use to represent Template or ParserFunction arguments.
 
     Note that in mediawiki documentation `arguments` are (also) called
-    parameters. Here we {{{p}}} a parameter and {{t|p}} an argument.
+    parameters. In this module the convention is like this:
+    {{{parameter}}}, {{t|argument}}.
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
@@ -825,11 +826,11 @@ class Argument(_Indexed_Object):
 
     @property
     def name(self):
-        """Return argument's name-part. Return '' for anonymous parameters."""
+        """Return argument's name-part. Return '' for positional arguments."""
         pipename, equal, value = self.string.partition('=')
         if equal:
             return pipename[1:]
-        # anonymous parameters
+        # positional argument
         return ''
 
     @name.setter
