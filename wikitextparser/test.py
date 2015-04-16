@@ -459,6 +459,14 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{ Q | V }}}', p.string)
         
 
+class Tag(unittest.TestCase):
+
+    """Test the Tag class."""
+
+    @unittest.expectedFailure
+    def test_basic(self):
+        t = wtp.tag('{{{P}}}')
+
         
 if __name__ == '__main__':
     unittest.main()
