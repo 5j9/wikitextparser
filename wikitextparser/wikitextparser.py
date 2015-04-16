@@ -844,8 +844,8 @@ class Argument(_Indexed_Object):
         # positional argument
         position = 1
         godstring = self._lststr[0]
-        for span in self._spans[self._typeindex][:self._index]:
-            if '=' not in godstring[span[0]:span[1]]:
+        for span0, span1 in self._spans[self._typeindex][:self._index]:
+            if span0 < span1 and '=' not in godstring[span0:span1]:
                 position += 1
         return str(position)
 
