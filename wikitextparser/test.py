@@ -206,6 +206,30 @@ class GetSpansFunction(unittest.TestCase):
             sections[1].title
         )
         self.assertEqual('t3', sections[1].contents)
+
+    def test_keyword_and_positional_args_removal(self):
+        wt = wtp.WikiText("text{{t1|kw=a|1=|pa|kw2=a|pa2}}{{t2|a|1|1=}}text")
+        t1 = wt.templates[0]
+        t2 = wt.templates[1]
+        self.assertEqual('1', t1.arguments[2].name)
+        self.assertEqual('kw2', t1.arguments[3].name)
+        self.assertEqual('2', t1.arguments[4].name)
+        self.assertEqual('1', t2.arguments[0].name)
+        self.assertEqual('2', t2.arguments[1].name)
+        self.assertEqual('1', t2.arguments[2].name)
+        t1.arguments[0].string = ''
+        self.assertEqual('1', t1.arguments[0].name)
+        self.assertEqual('kw2', t1.arguments[2].name)
+        self.assertEqual('|pa2', t1.arguments[3].string)
+        self.assertEqual('1', t2.arguments[0].name)
+        self.assertEqual('2', t2.arguments[1].name)
+        self.assertEqual('1', t2.arguments[2].name)
+        t1.arguments[1].string = ''
+        self.assertEqual("text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text", wt.string)
+        self.assertEqual('pa2', t1.arguments[2].value)
+        self.assertEqual('1', t1.arguments[2].name)
+        self.assertEqual('a', t2.arguments[0].value)
+        self.assertEqual('1', t2.arguments[0].name)
     
 
         
