@@ -614,10 +614,40 @@ class Parameter(_Indexed_Object):
 
     @default.setter
     def default(self, newdefault):
-        """Set the new value."""
+        """Set the new value. If a default exist, change it. Add ow."""
         self.string = '{{{' + self.name + '|' + newdefault + '}}}'
-        
 
+    def append_default_param(self, new_default_name):
+        """Append a new default parameter in the appropriate place.
+
+        The new default will be added to the innter-most parameter.
+        If the parameter already exists among defaults, don't change anything.
+        """
+        stripped_default_name = new_default_name.strip()
+        if stripped_default_name == self.name.strip():
+            return
+        dig = True
+        innermost_param = self
+        while dig:
+            dig = False
+            default = innermost_param.default
+            for p in innermost_param.parameters:
+                if p.string == default:
+                    if stripped_default_name == p.name.strip():
+                        return
+                    innermost_param = p
+                    dig = True
+        if innermost_param.pipe:
+            innermost_param.string = (
+                '{{{' + innermost_param.name + '|{{{' + 
+                new_default_name + '|' + innermost_param.default + '}}}}}}'
+            )
+        else:
+            innermost_param.string = (
+                '{{{' + innermost_param.name + '|{{{' + 
+                new_default_name + '}}}}}}'
+            )
+        
 
 class ParserFunction(_Indexed_Object):
 
