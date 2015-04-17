@@ -485,7 +485,40 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{ Q |D}}}', p.string)
         p.default = ' V '
         self.assertEqual('{{{ Q | V }}}', p.string)
-        
+
+    def test_appending_default(self):
+        p = wtp.Parameter('{{{p1|{{{p2|}}}}}}')
+        p.append_default_param('p3')
+        self.assertEqual('{{{p1|{{{p2|{{{p3|}}}}}}}}}', p.string)
+        # What happens if we try it again
+        p.append_default_param('p4')
+        self.assertEqual('{{{p1|{{{p2|{{{p4|{{{p3|}}}}}}}}}}}}', p.string)
+        # Appending to and inner parameter without default
+        p = wtp.Parameter('{{{p1|{{{p2}}}}}}')
+        p.append_default_param('p3')
+        self.assertEqual('{{{p1|{{{p2|{{{p3}}}}}}}}}', p.string)
+        # Don't change and inner parameter which is not a default
+        p = wtp.Parameter('{{{p1|head {{{p2}}} tail}}}')
+        p.append_default_param('p3')
+        self.assertEqual('{{{p1|{{{p3|head {{{p2}}} tail}}}}}}', p.string)
+        # Appending to parameter with no default
+        p = wtp.Parameter('{{{p1}}}')
+        p.append_default_param('p3')
+        self.assertEqual('{{{p1|{{{p3}}}}}}', p.string)
+        # Preserve whitespace
+        p = wtp.Parameter('{{{ p1 |{{{ p2 | }}}}}}')
+        p.append_default_param(' p3 ')
+        self.assertEqual('{{{ p1 |{{{ p2 |{{{ p3 | }}}}}}}}}', p.string)
+        # White space before or after a prameter makes it a value (not default)
+        p = wtp.Parameter('{{{ p1 | {{{ p2 | }}} }}}')
+        p.append_default_param(' p3 ')
+        self.assertEqual('{{{ p1 |{{{ p3 | {{{ p2 | }}} }}}}}}', p.string)
+        # If the parameter already exists among defaults, it won't be added.
+        p = wtp.Parameter('{{{p1|{{{p2|}}}}}}')
+        p.append_default_param('p1')
+        self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
+        p.append_default_param('p2')
+        self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
 
 class Tag(unittest.TestCase):
 
