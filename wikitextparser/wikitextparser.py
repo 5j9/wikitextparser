@@ -499,12 +499,9 @@ class Template(_Indexed_Object):
         string,
         spans=None,
         index=None,
-        remove_duplicate_args=False,
     ):
         """Initialize the object."""
         self._common_init(string, spans, index)
-        if remove_duplicate_args:
-            self.remove_duplicate_arguments()
 
     def __repr__(self):
         """Return the string representation of the Template."""
@@ -558,8 +555,11 @@ class Template(_Indexed_Object):
             self.string = '{{' + newname + '}}'
         
 
-    def remove_duplicate_arguments(self):
-        """Remove duplicate keyword arguments. Keep the last one."""
+    def rm_first_of_dup_args(self):
+        """Remove duplicate keyword arguments by only keeping the last ones.
+
+        This function does not care about values.
+        """
         name_argument = {}
         for a in self.arguments:
             an = a.name.strip()

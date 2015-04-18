@@ -266,20 +266,20 @@ class Template(unittest.TestCase):
         s1 = '{{template|url=||work=|accessdate=}}'
         s2 = '{{template|url=||work=|accessdate=}}'
         t = wtp.Template(s1)
-        t.remove_duplicate_arguments()
+        t.rm_first_of_dup_args()
         self.assertEqual(s2, str(t))
 
     def test_remove_first_duplicate_keep_last(self):
         s1 = '{{template|year=9999|year=2000}}'
         s2 = '{{template|year=2000}}'
         t = wtp.Template(s1)
-        t.remove_duplicate_arguments()
+        t.rm_first_of_dup_args()
         self.assertEqual(s2, str(t))
 
     def test_duplicate_replace(self):
         s1 = """{{cite|{{t1}}|{{t1}}}}"""
         t = wtp.Template(s1)
-        t.remove_duplicate_arguments()
+        t.rm_first_of_dup_args()
         self.assertEqual(s1, str(t))
 
     def test_name(self):
@@ -287,10 +287,10 @@ class Template(unittest.TestCase):
         t = wtp.Template(s1)
         self.assertEqual(' wrapper ', t.name)
 
-    def test_dont_remove_duplicate_subparameter(self):
+    def test_dont_remove_duplicate_subargs(self):
         s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
         t = wtp.Template(s1)
-        t.remove_duplicate_arguments()
+        t.rm_first_of_dup_args()
         self.assertEqual(s1, str(t))
 
     def test_dont_remove_nonkeyword_argument(self):
