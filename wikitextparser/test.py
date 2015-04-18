@@ -301,6 +301,14 @@ class Template(unittest.TestCase):
         t = wtp.Template(s1)
         t.rm_first_of_dup_args()
         self.assertEqual(s2, str(t))
+        # Positional args
+        t = wtp.Template('{{t|1=v|v}}')
+        t.rm_first_of_dup_args()
+        self.assertEqual('{{t|v}}', str(t))
+        # Triple duplicates:
+        t = wtp.Template('{{t|1=v|v|1=v}}')
+        t.rm_first_of_dup_args()
+        self.assertEqual('{{t|1=v}}', str(t))
 
     def test_rm_dup_args_safe(self):
         # Don't remove duplicate positional args in different positions
@@ -316,18 +324,26 @@ class Template(unittest.TestCase):
         # Detect positional and keyword duplicates
         t = wtp.Template('{{t|1=|}}')
         t.rm_dup_args_safe()
-        self.assertEqual('{{t|1=}}', t.string)
+        self.assertEqual('{{t|}}', t.string)
         # Detect same-name same-value.
         # It's OK to ignore whitespace in positional arguments.
         t = wtp.Template('{{t|n=v|  n=v  }}')
         t.rm_dup_args_safe()
-        self.assertEqual('{{t|n=v}}', t.string)
+        self.assertEqual('{{t|  n=v  }}', t.string)
         # It's not OK to ignore whitespace in positional arguments.
         t = wtp.Template('{{t| v |1=v}}')
         t.rm_dup_args_safe()
         self.assertEqual('{{t| v |1=v}}', t.string)
+        # Don't remove other arguments while removing one.
+        t = wtp.Template("{{t|1=|||}}")
+        t.rm_dup_args_safe()
+        self.assertEqual("{{t|||}}", t.string)
+        # Triple duplicates:
+        t = wtp.Template('{{t|1=v|v|1=v}}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t|1=v}}', t.string)
 
-
+        
 class WikiLink(unittest.TestCase):
 
     """Test WikiLink functionalities."""

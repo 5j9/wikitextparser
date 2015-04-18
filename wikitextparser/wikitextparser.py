@@ -565,13 +565,15 @@ class Template(_Indexed_Object):
 
         Also see `rm_dup_args_safe` function.
         """
-        name_argument = {}
-        for a in self.arguments:
-            an = a.name.strip()
-            if an in name_argument:
-                name_argument[an].string = ''
-            elif a.equal_sign:
-                name_argument[an] = a
+        names = set()
+        args = self.arguments
+        args.reverse()
+        for a in args:
+            name = a.name.strip()
+            if name in names:
+                a.string = ''
+            else:
+                names.add(name)
 
     def rm_dup_args_safe(self):
         """Remove duplicate arguments in a safe manner.
@@ -590,7 +592,11 @@ class Template(_Indexed_Object):
         """
         template_stripped_name = self.name.strip()
         an_arg_val = {}
-        for arg in self.arguments:
+        args = self.arguments
+        # Removing positional args affects their name. By reversing the list
+        # we avoid encountering those kind of args.
+        args.reverse()
+        for arg in args:
             an = arg.name.strip()
             if arg.equal_sign:
                 # It's OK to strip whitespace in positional arguments.
