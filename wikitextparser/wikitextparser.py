@@ -559,6 +559,11 @@ class Template(_Indexed_Object):
         """Remove duplicate keyword arguments by only keeping the last ones.
 
         This function does not care about values.
+        Result of the rendered wikitext should remain the same.
+
+        Warning: Some meaningful data may be removed from wikitext.
+
+        Also see `rm_dup_args_safe` function.
         """
         name_argument = {}
         for a in self.arguments:
@@ -568,7 +573,44 @@ class Template(_Indexed_Object):
             elif a.equal_sign:
                 name_argument[an] = a
 
+    def rm_dup_args_safe(self):
+        """Remove duplicate arguments in a safe manner.
 
+    `   Remove of the duplicate arguments only if:
+        1. Both arguments have the same name AND value.
+        2. Arguments have the same name and one of them is empty. (Remove the
+            empty one.)
+
+        Warning: Although this is considered to be safe as no meaningful data
+            is removed but the result of the renedered wikitext may actually
+            change if the second arg is empty and removed but the first has a
+            value.
+
+        Also see `rm_first_of_dup_args` function.
+        """
+        template_stripped_name = self.name.strip()
+        an_arg_val = {}
+        for arg in self.arguments:
+            an = arg.name.strip()
+            if arg.equal_sign:
+                # It's OK to strip whitespace in positional arguments.
+                val = arg.value.strip()
+            else:
+                # But not in keyword arguments.
+                val = arg.value
+            if an in an_arg_val:
+                if not val:
+                    # This duplacate argument is empty. It's safe to remove it.
+                    arg.string = ''
+                elif not an_arg_val[an][1]:
+                    # The duplicate of this argument is empty. Remove it.
+                    an_arg_val[an][0].string = ''
+                elif an_arg_val[an][1] == val:
+                    arg.string = ''
+            else:
+                an_arg_val[an] = (arg, val)
+
+        
 class Parameter(_Indexed_Object):
 
     """Use to represent {{{parameters}}}."""
