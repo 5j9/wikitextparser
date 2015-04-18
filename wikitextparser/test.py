@@ -262,36 +262,10 @@ class Template(unittest.TestCase):
         t = wtp.Template(s)
         self.assertEqual(s, str(t))
 
-    def test_dont_touch_empty_strings(self):
-        s1 = '{{template|url=||work=|accessdate=}}'
-        s2 = '{{template|url=||work=|accessdate=}}'
-        t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
-        self.assertEqual(s2, str(t))
-
-    def test_remove_first_duplicate_keep_last(self):
-        s1 = '{{template|year=9999|year=2000}}'
-        s2 = '{{template|year=2000}}'
-        t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
-        self.assertEqual(s2, str(t))
-
-    def test_duplicate_replace(self):
-        s1 = """{{cite|{{t1}}|{{t1}}}}"""
-        t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
-        self.assertEqual(s1, str(t))
-
     def test_name(self):
         s1 = "{{ wrapper | p1 | {{ cite | sp1 | dateformat = ymd}} }}"
         t = wtp.Template(s1)
         self.assertEqual(' wrapper ', t.name)
-
-    def test_dont_remove_duplicate_subargs(self):
-        s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
-        t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
-        self.assertEqual(s1, str(t))
 
     def test_dont_remove_nonkeyword_argument(self):
         t = wtp.Template("{{t|a|a}}")
@@ -305,6 +279,53 @@ class Template(unittest.TestCase):
     def test_keyword_and_positional_args(self):
         t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
         self.assertEqual('1', t.arguments[2].name)
+
+    def test_rm_first_of_dup_args(self):
+        # Remove first of duplicates, keep last
+        t = wtp.Template('{{template|year=9999|year=2000}}')
+        t.rm_first_of_dup_args()
+        self.assertEqual('{{template|year=2000}}', str(t))
+        # Don't remove duplicate positional args in different positions
+        s = """{{cite|{{t1}}|{{t1}}}}"""
+        t = wtp.Template(s)
+        t.rm_first_of_dup_args()
+        self.assertEqual(s, str(t))
+        # Don't remove duplicate subargs
+        s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
+        t = wtp.Template(s1)
+        t.rm_first_of_dup_args()
+        self.assertEqual(s1, str(t))
+        # test_dont_touch_empty_strings
+        s1 = '{{template|url=||work=|accessdate=}}'
+        s2 = '{{template|url=||work=|accessdate=}}'
+        t = wtp.Template(s1)
+        t.rm_first_of_dup_args()
+        self.assertEqual(s2, str(t))
+
+    def test_rm_dup_args_safe(self):
+        # Don't remove duplicate positional args in different positions
+        s = "{{cite|{{t1}}|{{t1}}}}"
+        t = wtp.Template(s)
+        t.rm_dup_args_safe()
+        self.assertEqual(s, t.string)
+        # Don't remove duplicate args if the have different values
+        s = '{{template|year=9999|year=2000}}'
+        t = wtp.Template(s)
+        t.rm_dup_args_safe()
+        self.assertEqual(s, t.string)
+        # Detect positional and keyword duplicates
+        t = wtp.Template('{{t|1=|}}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t|1=}}', t.string)
+        # Detect same-name same-value.
+        # It's OK to ignore whitespace in positional arguments.
+        t = wtp.Template('{{t|n=v|  n=v  }}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t|n=v}}', t.string)
+        # It's not OK to ignore whitespace in positional arguments.
+        t = wtp.Template('{{t| v |1=v}}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t| v |1=v}}', t.string)
 
 
 class WikiLink(unittest.TestCase):
