@@ -280,39 +280,35 @@ class Template(unittest.TestCase):
         t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
         self.assertEqual('1', t.arguments[2].name)
 
-    def test_rm_or_tag_dup_args(self):
+    def test_rm_first_of_dup_args(self):
         # Remove first of duplicates, keep last
         t = wtp.Template('{{template|year=9999|year=2000}}')
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual('{{template|year=2000}}', str(t))
         # Don't remove duplicate positional args in different positions
         s = """{{cite|{{t1}}|{{t1}}}}"""
         t = wtp.Template(s)
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual(s, str(t))
         # Don't remove duplicate subargs
         s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
         t = wtp.Template(s1)
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual(s1, str(t))
         # test_dont_touch_empty_strings
         s1 = '{{template|url=||work=|accessdate=}}'
         s2 = '{{template|url=||work=|accessdate=}}'
         t = wtp.Template(s1)
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual(s2, str(t))
         # Positional args
         t = wtp.Template('{{t|1=v|v}}')
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual('{{t|v}}', str(t))
         # Triple duplicates:
         t = wtp.Template('{{t|1=v|v|1=v}}')
-        t.rm_or_tag_dup_args()
+        t.rm_first_of_dup_args()
         self.assertEqual('{{t|1=v}}', str(t))
-        # tag
-        t = wtp.Template('{{t|1=v|v|1=v}}')
-        t.rm_or_tag_dup_args('<!-- dup -->')
-        self.assertEqual('{{t|1=v<!-- dup -->|v<!-- dup -->|1=v}}', t.string)
 
     def test_rm_dup_args_safe(self):
         # Don't remove duplicate positional args in different positions
@@ -346,7 +342,20 @@ class Template(unittest.TestCase):
         t = wtp.Template('{{t|1=v|v|1=v}}')
         t.rm_dup_args_safe()
         self.assertEqual('{{t|1=v}}', t.string)
-
+        # If the last duplicate has a defferent value, still remove of the
+        # first two
+        t = wtp.Template('{{t|1=v|v|1=u}}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t|v|1=u}}', t.string)
+        # tag
+        # Remove safe duplicates even if tag option is activated
+        t = wtp.Template('{{t|1=v|v|1=v}}')
+        t.rm_dup_args_safe(tag='<!-- dup -->')
+        self.assertEqual('{{t|1=v}}', t.string)
+        # Tag even if one of the duplicate values is different.
+        t = wtp.Template('{{t|1=v|v|1=u}}')
+        t.rm_dup_args_safe(tag='<!-- dup -->')
+        self.assertEqual('{{t|v<!-- dup -->|1=u}}', t.string)
         
 class WikiLink(unittest.TestCase):
 
@@ -492,6 +501,12 @@ class Argument(unittest.TestCase):
         a.value = ' c '
         self.assertEqual('| a = c ', a.string)
 
+    def test_removing_last_arg_should_not_effect_the_others(self):
+        a, b, c = wtp.Template('{{t|1=v|v|1=v}}').arguments
+        c.string = ''
+        self.assertEqual('|1=v', a.string)
+        self.assertEqual('|v', b.string)
+        
 
 class ParserFunction(unittest.TestCase):
 

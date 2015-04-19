@@ -121,7 +121,7 @@ class WikiText:
             self._extend_span_update(oldstart, newlength - oldlength)
         elif newlength < oldlength:
             self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
-
+        
     def __repr__(self):
         """Return the string representation of the WikiText."""
         return 'WikiText("' + self.string + '")'
@@ -417,7 +417,9 @@ class WikiText:
         rmlength = rmend - rmstart
         for t, spans in self._spans.items():
             for i, (spanstart, spanend) in enumerate(spans):
-                if rmend <= spanstart:
+                if spanend <= rmstart:
+                    continue
+                elif rmend <= spanstart:
                     # removed part is before the span
                     spans[i] = (spanstart - rmlength, spanend - rmlength)
                 elif rmstart < spanstart:
@@ -555,37 +557,29 @@ class Template(_Indexed_Object):
             self.string = '{{' + newname + '}}'
         
 
-    def rm_or_tag_dup_args(self, tag=None):
-        """Tag or remove duplicate keyword arguments.
+    def rm_first_of_dup_args(self):
+        """Eliminate duplicate arguments by removing the first occurrences.
 
-        If tag is not defined, first occurances of duplicate arguments will be
-        removed--no matter what their value is.
-        In this case result of the rendered wikitext should remain the same.
+        Remove first occurances of duplicate arguments-- no matter what their
+        value is. Result of the rendered wikitext should remain the same.
         Warning: Some meaningful data may be removed from wikitext.
-
-        If `tag` is defined, it should be a string that will be appended to the
-        value of the argument. For example use:
-        >>> t.rm_or_tag_dup_args('<! duplicate argument -->')
         
         Also see `rm_dup_args_safe` function.
         """
-        names = set()
+        names = []
         args = self.arguments
         args.reverse()
         for a in args:
             name = a.name.strip()
             if name in names:
-                if tag is None:
-                    a.string = ''
-                else:
-                    a.value += tag
+                a.string = ''
             else:
-                names.add(name)
+                names.append(name)
 
-    def rm_dup_args_safe(self):
+    def rm_dup_args_safe(self, tag=None):
         """Remove duplicate arguments in a safe manner.
 
-    `   Remove of the duplicate arguments only if:
+    `   Remove the duplicate arguments only if:
         1. Both arguments have the same name AND value.
         2. Arguments have the same name and one of them is empty. (Remove the
             empty one.)
@@ -595,33 +589,51 @@ class Template(_Indexed_Object):
             change if the second arg is empty and removed but the first has a
             value.
 
-        Also see `rm_or_tag_dup_args` function.
+        If `tag` is defined, it should be a string, tag the remaining
+        arguments by appending the provided tag to their value.
+
+        Also see `rm_first_of_dup_args` function.
         """
         template_stripped_name = self.name.strip()
-        an_arg_val = {}
         args = self.arguments
+        name_args_vals = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         args.reverse()
         for arg in args:
-            an = arg.name.strip()
+            name = arg.name.strip()
             if arg.equal_sign:
                 # It's OK to strip whitespace in positional arguments.
                 val = arg.value.strip()
             else:
-                # But not in keyword arguments.
+                 # But not in keyword arguments.
                 val = arg.value
-            if an in an_arg_val:
+            if name in name_args_vals:
+                # This is a duplicate argument.
                 if not val:
                     # This duplacate argument is empty. It's safe to remove it.
                     arg.string = ''
-                elif not an_arg_val[an][1]:
-                    # The duplicate of this argument is empty. Remove it.
-                    an_arg_val[an][0].string = ''
-                elif an_arg_val[an][1] == val:
-                    arg.string = ''
+                else:
+                    # Try to remove any of the detected duplicates of this
+                    # that are empty or their value equals to this one.
+                    name_args = name_args_vals[name][0]
+                    name_vals = name_args_vals[name][1]
+                    if val in name_vals:
+                        arg.string = ''
+                    elif '' in name_vals:
+                        i = name_vals.index('')
+                        a = name_args.pop(i)
+                        a.string = ''
+                        name_vals.pop(i)
+                    else:
+                        # It was not possible to remove any of the duplicates.
+                        name_vals.append(arg)
+                        name_vals.append(val)
+                        if tag:
+                            arg.value += tag
             else:
-                an_arg_val[an] = (arg, val)
+                name_args_vals[name] = ([arg], [val])
+            
 
         
 class Parameter(_Indexed_Object):
