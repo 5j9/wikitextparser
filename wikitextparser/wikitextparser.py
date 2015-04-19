@@ -555,14 +555,18 @@ class Template(_Indexed_Object):
             self.string = '{{' + newname + '}}'
         
 
-    def rm_first_of_dup_args(self):
-        """Remove duplicate keyword arguments by only keeping the last ones.
+    def rm_or_tag_dup_args(self, tag=None):
+        """Tag or remove duplicate keyword arguments.
 
-        This function does not care about values.
-        Result of the rendered wikitext should remain the same.
-
+        If tag is not defined, first occurances of duplicate arguments will be
+        removed--no matter what their value is.
+        In this case result of the rendered wikitext should remain the same.
         Warning: Some meaningful data may be removed from wikitext.
 
+        If `tag` is defined, it should be a string that will be appended to the
+        value of the argument. For example use:
+        >>> t.rm_or_tag_dup_args('<! duplicate argument -->')
+        
         Also see `rm_dup_args_safe` function.
         """
         names = set()
@@ -571,7 +575,10 @@ class Template(_Indexed_Object):
         for a in args:
             name = a.name.strip()
             if name in names:
-                a.string = ''
+                if tag is None:
+                    a.string = ''
+                else:
+                    a.value += tag
             else:
                 names.add(name)
 
@@ -588,7 +595,7 @@ class Template(_Indexed_Object):
             change if the second arg is empty and removed but the first has a
             value.
 
-        Also see `rm_first_of_dup_args` function.
+        Also see `rm_or_tag_dup_args` function.
         """
         template_stripped_name = self.name.strip()
         an_arg_val = {}

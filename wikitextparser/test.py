@@ -280,35 +280,39 @@ class Template(unittest.TestCase):
         t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
         self.assertEqual('1', t.arguments[2].name)
 
-    def test_rm_first_of_dup_args(self):
+    def test_rm_or_tag_dup_args(self):
         # Remove first of duplicates, keep last
         t = wtp.Template('{{template|year=9999|year=2000}}')
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual('{{template|year=2000}}', str(t))
         # Don't remove duplicate positional args in different positions
         s = """{{cite|{{t1}}|{{t1}}}}"""
         t = wtp.Template(s)
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual(s, str(t))
         # Don't remove duplicate subargs
         s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
         t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual(s1, str(t))
         # test_dont_touch_empty_strings
         s1 = '{{template|url=||work=|accessdate=}}'
         s2 = '{{template|url=||work=|accessdate=}}'
         t = wtp.Template(s1)
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual(s2, str(t))
         # Positional args
         t = wtp.Template('{{t|1=v|v}}')
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual('{{t|v}}', str(t))
         # Triple duplicates:
         t = wtp.Template('{{t|1=v|v|1=v}}')
-        t.rm_first_of_dup_args()
+        t.rm_or_tag_dup_args()
         self.assertEqual('{{t|1=v}}', str(t))
+        # tag
+        t = wtp.Template('{{t|1=v|v|1=v}}')
+        t.rm_or_tag_dup_args('<!-- dup -->')
+        self.assertEqual('{{t|1=v<!-- dup -->|v<!-- dup -->|1=v}}', t.string)
 
     def test_rm_dup_args_safe(self):
         # Don't remove duplicate positional args in different positions
@@ -334,11 +338,11 @@ class Template(unittest.TestCase):
         t = wtp.Template('{{t| v |1=v}}')
         t.rm_dup_args_safe()
         self.assertEqual('{{t| v |1=v}}', t.string)
-        # Don't remove other arguments while removing one.
+        # Removing a positional argument affects the name of later ones.
         t = wtp.Template("{{t|1=|||}}")
         t.rm_dup_args_safe()
         self.assertEqual("{{t|||}}", t.string)
-        # Triple duplicates:
+        # Triple duplicates
         t = wtp.Template('{{t|1=v|v|1=v}}')
         t.rm_dup_args_safe()
         self.assertEqual('{{t|1=v}}', t.string)
@@ -557,13 +561,14 @@ class Parameter(unittest.TestCase):
         p.append_default_param('p2')
         self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
 
+
 class Tag(unittest.TestCase):
 
     """Test the Tag class."""
 
     @unittest.expectedFailure
     def test_basic(self):
-        t = wtp.tag('{{{P}}}')
+        t = wtp.tag('<ref>text</ref>')
 
         
 if __name__ == '__main__':
