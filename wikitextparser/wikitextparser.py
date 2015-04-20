@@ -62,6 +62,11 @@ NOWIKI_REGEX = re.compile(
     r'<nowiki\s*.*?>.*?</nowiki\s*>',
     re.DOTALL,
 )
+HTML_TAG_REGEX = re.compile(
+    r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
+    re.DOTALL,
+    re.IGNORECASE,
+)
 SECTION_HEADER_REGEX = re.compile(r'(?:(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
 LEAD_SECTION_REGEX = re.compile(
     r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r')',
@@ -121,7 +126,7 @@ class WikiText:
             self._extend_span_update(oldstart, newlength - oldlength)
         elif newlength < oldlength:
             self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
-        
+
     def __repr__(self):
         """Return the string representation of the WikiText."""
         return 'WikiText("' + self.string + '")'
@@ -402,7 +407,7 @@ class WikiText:
             'c': comment_spans,
             'nw': nowiki_spans,
         }
-        
+
 
     def _shrink_span_update(self, rmstart, rmend):
         """Update self._spans according to the removed span.
@@ -555,7 +560,7 @@ class Template(_Indexed_Object):
             self.string = '{{' + newname + '|' + paramters + '}}'
         else:
             self.string = '{{' + newname + '}}'
-        
+
 
     def rm_first_of_dup_args(self):
         """Eliminate duplicate arguments by removing the first occurrences.
@@ -563,7 +568,7 @@ class Template(_Indexed_Object):
         Remove first occurances of duplicate arguments-- no matter what their
         value is. Result of the rendered wikitext should remain the same.
         Warning: Some meaningful data may be removed from wikitext.
-        
+
         Also see `rm_dup_args_safe` function.
         """
         names = []
@@ -633,9 +638,9 @@ class Template(_Indexed_Object):
                             arg.value += tag
             else:
                 name_args_vals[name] = ([arg], [val])
-            
 
-        
+
+
 class Parameter(_Indexed_Object):
 
     """Use to represent {{{parameters}}}."""
@@ -706,15 +711,15 @@ class Parameter(_Indexed_Object):
                     dig = True
         if innermost_param.pipe:
             innermost_param.string = (
-                '{{{' + innermost_param.name + '|{{{' + 
+                '{{{' + innermost_param.name + '|{{{' +
                 new_default_name + '|' + innermost_param.default + '}}}}}}'
             )
         else:
             innermost_param.string = (
-                '{{{' + innermost_param.name + '|{{{' + 
+                '{{{' + innermost_param.name + '|{{{' +
                 new_default_name + '}}}}}}'
             )
-        
+
 
 class ParserFunction(_Indexed_Object):
 
@@ -766,7 +771,7 @@ class ParserFunction(_Indexed_Object):
                 )
         return arguments
 
-    
+
 
     @property
     def name(self):
@@ -856,7 +861,7 @@ class ExternalLink(_Indexed_Object):
     def _get_span(self):
         """Return the self-span."""
         return self._spans['el'][self._index]
-    
+
     @property
     def url(self):
         """Return the url part of the ExternalLink."""
@@ -875,13 +880,13 @@ class ExternalLink(_Indexed_Object):
                 self.string = '[' + newurl + ']'
         else:
             self.string = newurl
-        
+
     @property
     def text(self):
         """Return the display text of the external link.
 
         Return self.string if this is a bare link.
-        Return 
+        Return
         """
         if self.in_brackets:
             return self.string[1:-1].partition(' ')[2]
@@ -902,7 +907,7 @@ class ExternalLink(_Indexed_Object):
             return True
         return False
 
-        
+
 class Argument(_Indexed_Object):
 
     """Use to represent Template or ParserFunction arguments.
@@ -922,7 +927,7 @@ class Argument(_Indexed_Object):
             self._typeindex = typeindex
         if spans is None:
             self._spans[self._typeindex] = [(0, len(string))]
-            
+
 
     def __repr__(self):
         """Return the string representation of the Argument."""
@@ -973,7 +978,7 @@ class Argument(_Indexed_Object):
             self.string = pipename + '=' + newvalue
         else:
             self.string = pipename[0] + newvalue
-        
+
 
 class Section(_Indexed_Object):
 
@@ -1007,7 +1012,7 @@ class Section(_Indexed_Object):
         """Change leader level of this sectoin."""
         equals = '=' * newlevel
         self.string = equals + self.title + equals + self.contents
-            
+
     @property
     def title(self):
         """Return title of this section. Return '' for lead sections."""
@@ -1027,7 +1032,7 @@ class Section(_Indexed_Object):
             )
         equals = '=' * level
         self.string = equals + newtitle + equals + '\n' + self.contents
-        
+
     @property
     def contents(self):
         """Return contents of this section."""
@@ -1043,4 +1048,4 @@ class Section(_Indexed_Object):
             self.string = newcontents
         else:
             self.string = self.string.partition('\n')[0] + '\n' + newcontents
-            
+

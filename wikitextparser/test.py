@@ -583,7 +583,7 @@ class Tag(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_basic(self):
-        t = wtp.tag('<ref>text</ref>')
+        t = wtp.Tag('<ref>text</ref>')
 
         
 if __name__ == '__main__':
