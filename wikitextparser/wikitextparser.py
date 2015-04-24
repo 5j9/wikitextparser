@@ -688,11 +688,17 @@ class Parameter(_Indexed_Object):
         """Set the new value. If a default exist, change it. Add ow."""
         self.string = '{{{' + self.name + '|' + newdefault + '}}}'
 
-    def append_default_param(self, new_default_name):
+    def append_default(self, new_default_name):
         """Append a new default parameter in the appropriate place.
 
-        The new default will be added to the innter-most parameter.
+        Add the new default to the innter-most parameter.
         If the parameter already exists among defaults, don't change anything.
+
+        Example:
+            >>> p = Parameter('{{{p1|{{{p2|}}}}}}')
+            >>> p.append_default('p3')
+            >>> p
+            Parameter("'{{{p1|{{{p2|{{{p3|}}}}}}}}}'")
         """
         stripped_default_name = new_default_name.strip()
         if stripped_default_name == self.name.strip():
