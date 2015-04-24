@@ -64,8 +64,7 @@ NOWIKI_REGEX = re.compile(
 )
 HTML_TAG_REGEX = re.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
-    re.DOTALL,
-    re.IGNORECASE,
+    re.DOTALL|re.IGNORECASE,
 )
 SECTION_HEADER_REGEX = re.compile(r'(?:(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
 LEAD_SECTION_REGEX = re.compile(
@@ -129,7 +128,7 @@ class WikiText:
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
-        return 'WikiText("' + self.string + '")'
+        return 'WikiText("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -512,7 +511,7 @@ class Template(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Template."""
-        return 'Template("' + self.string + '")'
+        return 'Template("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -643,7 +642,7 @@ class Template(_Indexed_Object):
 
 class Parameter(_Indexed_Object):
 
-    """Use to represent {{{parameters}}}."""
+    """Create a new {{{parameters}}} object."""
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
@@ -651,7 +650,7 @@ class Parameter(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Parameter."""
-        return 'Parameter("' + self.string + '")'
+        return 'Parameter("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -723,7 +722,7 @@ class Parameter(_Indexed_Object):
 
 class ParserFunction(_Indexed_Object):
 
-    """Use to represent a ParserFunction."""
+    """Create a new ParserFunction object."""
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
@@ -731,7 +730,7 @@ class ParserFunction(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
-        return 'ParserFunction("' + self.string + '")'
+        return 'ParserFunction("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -781,7 +780,7 @@ class ParserFunction(_Indexed_Object):
 
 class WikiLink(_Indexed_Object):
 
-    """Use to represent WikiLinks."""
+    """Create a new WikiLink object."""
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
@@ -789,7 +788,7 @@ class WikiLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the WikiLink."""
-        return 'WikiLink("' + self.string + '")'
+        return 'WikiLink("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -824,7 +823,7 @@ class WikiLink(_Indexed_Object):
 
 class Comment(_Indexed_Object):
 
-    """Use to represent comments."""
+    """Create a new <!-- comment --> object."""
 
     def __init__(self, string, spans=None, index=None):
         """Run self._common_init."""
@@ -832,7 +831,7 @@ class Comment(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Comment."""
-        return 'Comment("' + self.string + '")'
+        return 'Comment("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -846,7 +845,7 @@ class Comment(_Indexed_Object):
 
 class ExternalLink(_Indexed_Object):
 
-    """Use to represent External Links."""
+    """Create a new ExternalLink object."""
 
     def __init__(self, string, spans=None, index=None):
         """Run self._common_init. Set self._spans['el'] if spans is None."""
@@ -856,7 +855,7 @@ class ExternalLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the ExternalLink."""
-        return 'ExternalLink("' + self.string + '")'
+        return 'ExternalLink("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -910,7 +909,7 @@ class ExternalLink(_Indexed_Object):
 
 class Argument(_Indexed_Object):
 
-    """Use to represent Template or ParserFunction arguments.
+    """Create a new Argument Object.
 
     Note that in mediawiki documentation `arguments` are (also) called
     parameters. In this module the convention is like this:
@@ -931,7 +930,7 @@ class Argument(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + self.string + '")'
+        return 'Argument("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return the self-span."""
@@ -982,7 +981,7 @@ class Argument(_Indexed_Object):
 
 class Section(_Indexed_Object):
 
-    """Use to represent wikitext Sections."""
+    """Create a new Section object."""
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
@@ -992,7 +991,7 @@ class Section(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + self.string + '")'
+        return 'Argument("' + repr(self.string) + '")'
 
     def _get_span(self):
         """Return selfspan (span of self.string in self._lststr[0])."""
