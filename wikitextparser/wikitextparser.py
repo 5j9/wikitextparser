@@ -1177,6 +1177,7 @@ class Section(_Indexed_Object):
         else:
             self.string = self.string.partition('\n')[0] + '\n' + newcontents
 
+
 def mode(list_):
     """Return the most (one the most) common data point(s)."""
     return max(set(list_), key=list_.count)
