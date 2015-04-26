@@ -77,6 +77,8 @@ SECTION_REGEX = re.compile(
     re.DOTALL,
 )
 SECTION_LEVEL_TITLE = re.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
+POSITIONAL_ARG_NAME = re.compile('[1-9][0-9]*')
+
 
 class WikiText:
 
@@ -128,7 +130,7 @@ class WikiText:
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
-        return 'WikiText("' + repr(self.string) + '")'
+        return 'WikiText(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -511,7 +513,7 @@ class Template(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Template."""
-        return 'Template("' + repr(self.string) + '")'
+        return 'Template(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -571,9 +573,7 @@ class Template(_Indexed_Object):
         Also see `rm_dup_args_safe` function.
         """
         names = []
-        args = self.arguments
-        args.reverse()
-        for a in args:
+        for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
                 a.string = ''
@@ -599,14 +599,12 @@ class Template(_Indexed_Object):
         Also see `rm_first_of_dup_args` function.
         """
         template_stripped_name = self.name.strip()
-        args = self.arguments
         name_args_vals = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
-        args.reverse()
-        for arg in args:
+        for arg in reversed(self.arguments):
             name = arg.name.strip()
-            if arg.equal_sign:
+            if arg.positional:
                 # It's OK to strip whitespace in positional arguments.
                 val = arg.value.strip()
             else:
@@ -638,6 +636,128 @@ class Template(_Indexed_Object):
             else:
                 name_args_vals[name] = ([arg], [val])
 
+    def set_arg(
+        self, name, value, positional=None, before=None, after=None,
+        preserve_spacing=True
+    ):
+        """Set the value for `name` argument. Add it if it doesn't exist.
+
+        Use `positional`, `before` and `after` keyword arguments only when
+            adding a new argument.
+        If `before` is passed, ignore `after`.
+        If neither `before` nor `after` are passed and it's needed to add a new
+            argument, then append the new argument to the end.
+        If `positional` is passed and it's True, try to add the given value
+            as a positional argument. If it's None, do as appropriate.
+            Ignore `preserve_spacing` if positional is True.
+        """
+        args = list(reversed(self.arguments))
+        arg = self._get_arg(name, args)
+        if arg:
+            if preserve_spacing:
+                val = arg.value
+                arg.value = val.replace(val.strip(), value)
+            else:
+                arg.value = value
+            return
+        if positional is None:
+            if POSITIONAL_ARG_NAME.match(name) and value.strip() == value:
+                positional = True
+        if preserve_spacing and args:
+            before_names = []
+            name_lengths = []
+            before_values = []
+            after_values = []
+            for arg in args:
+                aname = arg.name
+                before_names.append(re.match(r'\s*', aname).group())
+                name_lengths.append(len(aname))
+                bv, av = re.match(r'(\s*).*(\s*)$', arg.value).groups()
+                before_values.append(bv)
+                after_values.append(av)
+            before_name = mode(before_names)
+            name_length = mode(name_lengths)
+            after_value = mode(
+                [re.match(r'.*?(\s*)\|', self.string).group(1)] +
+                after_values[1:]
+            )
+            before_value = mode(before_values)
+        else:
+            preserve_spacing = False
+        if positional:
+                # ignore preserve_spacing for positional args
+                string = '|' + value
+        else:
+            if preserve_spacing:
+                string = (
+                    '|' + (before_name + name.strip()).ljust(name_length) +
+                    '=' + before_value + value + after_value
+                )
+            else:
+                string = '|' + name + '=' + value
+        if before:
+            arg = self._get_arg(before, args)
+            arg.string = string + arg.string
+        elif after:
+            arg = self._get_arg(after, args)
+            arg.string += string
+        else:
+            if args:
+                arg = args[0]
+                arg.string = (
+                    arg.string.rstrip() + after_value + string.rstrip() +
+                    after_values[0]
+                )
+            else:
+                # The template has no arguments
+                self.string = self.string[:-2] + string + '}}'
+
+
+    def _get_arg(self, name, args):
+        """Return the first argument in the args that has the given name.
+
+        Return None if no such argument is found.
+        
+        As the computation of self.arguments is a little costly, this
+        function was created so that other methods that have already computed
+        the arguments use it instead of calling get_arg directly.
+        """
+        for arg in args:
+            if arg.name.strip() == name.strip():
+                return arg
+            
+    def get_arg(self, name):
+        """Return the last argument with the given name.
+
+        Return None if no such argument is found.
+        """
+        return self._get_arg(name, reversed(self.arguments))
+
+    def has_arg(self, name, value=None):
+        """Return true if the is an arg named `name`.
+
+        Also check equality of values if `value` is provided.
+
+        Note: If you just need to get an argument and you want to LBYL, it's
+            better to get_arg directly and then check if the returned value
+            is None.
+        """
+        for arg in reversed(self.arguments):
+            if arg.name.strip() == name.strip():
+                if value:
+                    if arg.positional:
+                        if arg.value == value:
+                            return True
+                        else:
+                            return False
+                    else:
+                        if arg.value.strip() == value.strip():
+                            return True
+                        else:
+                            return False
+                else:
+                    return True
+        return False
 
 
 class Parameter(_Indexed_Object):
@@ -650,7 +770,7 @@ class Parameter(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Parameter."""
-        return 'Parameter("' + repr(self.string) + '")'
+        return 'Parameter(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -736,7 +856,7 @@ class ParserFunction(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
-        return 'ParserFunction("' + repr(self.string) + '")'
+        return 'ParserFunction(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -794,7 +914,7 @@ class WikiLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the WikiLink."""
-        return 'WikiLink("' + repr(self.string) + '")'
+        return 'WikiLink(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -837,7 +957,7 @@ class Comment(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Comment."""
-        return 'Comment("' + repr(self.string) + '")'
+        return 'Comment(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -861,7 +981,7 @@ class ExternalLink(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the ExternalLink."""
-        return 'ExternalLink("' + repr(self.string) + '")'
+        return 'ExternalLink(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -936,7 +1056,7 @@ class Argument(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + repr(self.string) + '")'
+        return 'Argument(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return the self-span."""
@@ -962,9 +1082,12 @@ class Argument(_Indexed_Object):
         self.string = '|' + newname + '=' + self.value
 
     @property
-    def equal_sign(self):
-        """Return `=` if there is an equal sign in the argument. Else ''."""
-        return self.string.partition('=')[1]
+    def positional(self):
+        """Return True if there is an equal sign in the argument. Else False."""
+        if self.string.partition('=')[1]:
+            return True
+        else:
+            return False
 
     @property
     def value(self):
@@ -997,7 +1120,7 @@ class Section(_Indexed_Object):
 
     def __repr__(self):
         """Return the string representation of the Argument."""
-        return 'Argument("' + repr(self.string) + '")'
+        return 'Argument(' + repr(self.string) + ')'
 
     def _get_span(self):
         """Return selfspan (span of self.string in self._lststr[0])."""
@@ -1054,3 +1177,6 @@ class Section(_Indexed_Object):
         else:
             self.string = self.string.partition('\n')[0] + '\n' + newcontents
 
+def mode(list_):
+    """Return the most (one the most) common data point(s)."""
+    return max(set(list_), key=list_.count)

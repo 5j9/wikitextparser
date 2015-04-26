@@ -357,6 +357,55 @@ class Template(unittest.TestCase):
         t.rm_dup_args_safe(tag='<!-- dup -->')
         self.assertEqual('{{t|v<!-- dup -->|1=u}}', t.string)
 
+    def test_has_arg(self):
+        t = wtp.Template('{{t|a|b=c}}')
+        self.assertEqual(True, t.has_arg('1'))
+        self.assertEqual(True, t.has_arg('1', 'a'))
+        self.assertEqual(True, t.has_arg('b'))
+        self.assertEqual(True, t.has_arg('b', 'c'))
+        self.assertEqual(False, t.has_arg('2'))
+        self.assertEqual(False, t.has_arg('1', 'b'))
+        self.assertEqual(False, t.has_arg('c'))
+        self.assertEqual(False, t.has_arg('b', 'd'))
+
+    def test_get_arg(self):
+        t = wtp.Template('{{t|a|b=c}}')
+        self.assertEqual('|a', t.get_arg('1').string)
+        self.assertEqual(None, t.get_arg('c'))
+
+    def test_set_arg(self):
+        # Template with no args, keyword
+        t = wtp.Template('{{t}}')
+        t.set_arg('a', 'b')
+        self.assertEqual('{{t|a=b}}', t.string)
+        # Template with no args, auto positional
+        t = wtp.Template('{{t}}')
+        t.set_arg('1', 'b')
+        self.assertEqual('{{t|b}}', t.string)
+        # Force keyword
+        t = wtp.Template('{{t}}')
+        t.set_arg('1', 'b', positional=False)
+        self.assertEqual('{{t|1=b}}', t.string)
+        # Arg already exist, positional
+        t = wtp.Template('{{t|a}}')
+        t.set_arg('1', 'b')
+        self.assertEqual('{{t|b}}', t.string)
+        # Append new keyword when there is more than one arg
+        t = wtp.Template('{{t|a}}')
+        t.set_arg('z', 'z')
+        self.assertEqual('{{t|a|z=z}}', t.string)
+        # Preserve spacing
+        t = wtp.Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
+        t.set_arg('z', 'z')
+        self.assertEqual(
+            '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}', t.string
+        )
+        # Preserve spacing, only one argument
+        t = wtp.Template('{{t\n  |  afadfaf =   value \n}}')
+        t.set_arg('z', 'z')
+        self.assertEqual(
+            '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
+        )
         
 class WikiLink(unittest.TestCase):
 
@@ -485,7 +534,7 @@ class Argument(unittest.TestCase):
         a = wtp.Argument('| a = b ')
         self.assertEqual(' a ', a.name)
         self.assertEqual(' b ', a.value)
-        self.assertEqual('=', a.equal_sign)
+        self.assertEqual(True, a.positional)
 
     def test_anonymous_parameter(self):
         a = wtp.Argument('| a ')
