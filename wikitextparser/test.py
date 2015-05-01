@@ -7,6 +7,11 @@ class WikiText(unittest.TestCase):
 
     """Test Tempate class in wtp.py."""
 
+    def test_grab_the_final_newline_for_the_last_section(self):
+        s = 'text1 HTTP://mediawiki.org text2'
+        wt = wtp.WikiText('== s ==\nc\n')
+        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+        
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText(s)

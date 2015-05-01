@@ -66,13 +66,13 @@ HTML_TAG_REGEX = re.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
     re.DOTALL|re.IGNORECASE,
 )
-SECTION_HEADER_REGEX = re.compile(r'(?:(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
+SECTION_HEADER_REGEX = re.compile(r'(?<=(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
 LEAD_SECTION_REGEX = re.compile(
     r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r')',
     re.DOTALL,
 )
 SECTION_REGEX = re.compile(
-    SECTION_HEADER_REGEX.pattern + r'.*?(?=' +
+    SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
     SECTION_HEADER_REGEX.pattern + '|$)',
     re.DOTALL,
 )
