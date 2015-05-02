@@ -539,7 +539,7 @@ class Argument(unittest.TestCase):
         a = wtp.Argument('| a = b ')
         self.assertEqual(' a ', a.name)
         self.assertEqual(' b ', a.value)
-        self.assertEqual(True, a.positional)
+        self.assertEqual(False, a.positional)
 
     def test_anonymous_parameter(self):
         a = wtp.Argument('| a ')
@@ -561,6 +561,12 @@ class Argument(unittest.TestCase):
         c.string = ''
         self.assertEqual('|1=v', a.string)
         self.assertEqual('|v', b.string)
+
+    def test_nowikied_arg(self):
+        a = wtp.Argument('|<nowiki>1=3</nowiki>')
+        self.assertEqual(True, a.positional)
+        self.assertEqual('1', a.name)
+        self.assertEqual('<nowiki>1=3</nowiki>', a.value)
         
 
 class ParserFunction(unittest.TestCase):

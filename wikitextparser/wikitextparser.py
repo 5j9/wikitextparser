@@ -261,34 +261,47 @@ class WikiText:
     def _not_in_subspans_split(self, char):
         """Split self.string using `char` unless char is in self._spans."""
         # not used?
-        spanstart, spanend = self._get_span()
-        string = self._lststr[0][spanstart:spanend]
+        selfstart, selfend = self._get_span()
+        string = self._lststr[0][selfstart:selfend]
         splits = []
         findstart = 0
         in_spans = self._in_subspans_factory()
         while True:
             index = string.find(char, findstart)
-            while in_spans(spanstart + index):
+            while in_spans(selfstart + index):
                 index = string.find(char, index + 1)
             if index == -1:
                 return splits + [string[findstart:]]
             splits.append(string[findstart:index])
             findstart = index + 1
 
-    def _not_in_subspans_splitspans(self, char):
+    def _not_in_subspans_partition(self, char):
+        """Partition self.string using `char` unless char is in self._spans."""
+        selfstart, selfend = self._get_span()
+        string = self._lststr[0][selfstart:selfend]
+        findstart = 0
+        in_spans = self._in_subspans_factory()
+        index = string.find(char, findstart)
+        while in_spans(selfstart + index):
+            index = string.find(char, index + 1)
+        if index == -1:
+            return (string, '', '')
+        return (string[:index], char, string[index+1:])
+            
+    def _not_in_subspans_split_spans(self, char):
         """Like _not_in_subspans_split but return spans."""
-        spanstart, spanend = self._get_span()
-        string = self._lststr[0][spanstart:spanend]
+        selfstart, selfend = self._get_span()
+        string = self._lststr[0][selfstart:selfend]
         results = []
         findstart = 0
         in_spans = self._in_subspans_factory()
         while True:
             index = string.find(char, findstart)
-            while in_spans(spanstart + index):
+            while in_spans(selfstart + index):
                 index = string.find(char, index + 1)
             if index == -1:
-                return results + [(spanstart + findstart, spanend)]
-            results.append((spanstart + findstart, spanstart + index))
+                return results + [(selfstart + findstart, selfend)]
+            results.append((selfstart + findstart, selfstart + index))
             findstart = index + 1
 
     def _in_subspans_factory(self):
@@ -301,11 +314,11 @@ class WikiText:
         subspans = []
         for key in ('t', 'p', 'pf', 'wl', 'c', 'nw'):
             for span in self._spans[key]:
-                if selfstart < span[0] and span[1] < selfend:
+                if selfstart < span[0] and span[1] <= selfend:
                     subspans.append(span)
         # the return function
         def in_spans(index):
-            """Return True if the given index is found within one of the spans."""
+            """Return True if the given index is found within a subspans."""
             for span in subspans:
                 if span[0] <= index < span[1]:
                     return True
@@ -522,7 +535,7 @@ class Template(_Indexed_Object):
     @property
     def arguments(self):
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_subspans_splitspans('|')[1:]
+        barsplits = self._not_in_subspans_split_spans('|')[1:]
         arguments = []
         spans = self._spans
         lststr = self._lststr
@@ -605,11 +618,11 @@ class Template(_Indexed_Object):
         for arg in reversed(self.arguments):
             name = arg.name.strip()
             if arg.positional:
-                # It's OK to strip whitespace in positional arguments.
-                val = arg.value.strip()
-            else:
-                 # But not in keyword arguments.
+                # Value of keyword arguments is automatically stripped by MW.
                 val = arg.value
+            else:
+                # But it's not OK to strip whitespace in positional arguments.
+                val = arg.value.strip()
             if name in name_args_vals:
                 # This is a duplicate argument.
                 if not val:
@@ -865,7 +878,7 @@ class ParserFunction(_Indexed_Object):
     @property
     def arguments(self):
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_subspans_splitspans('|')
+        barsplits = self._not_in_subspans_split_spans('|')
         arguments = []
         spans = self._spans
         lststr = self._lststr
@@ -1065,7 +1078,7 @@ class Argument(_Indexed_Object):
     @property
     def name(self):
         """Return arg's name-part. Return the position for positional args."""
-        pipename, equal, value = self.string.partition('=')
+        pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             return pipename[1:]
         # positional argument
@@ -1084,15 +1097,15 @@ class Argument(_Indexed_Object):
     @property
     def positional(self):
         """Return True if there is an equal sign in the argument. Else False."""
-        if self.string.partition('=')[1]:
-            return True
-        else:
+        if self._not_in_subspans_partition('=')[1]:
             return False
+        else:
+            return True
 
     @property
     def value(self):
         """Return value of a keyword argument."""
-        pipename, equal, value = self.string.partition('=')
+        pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             return value
         # anonymous parameters
@@ -1101,7 +1114,7 @@ class Argument(_Indexed_Object):
     @value.setter
     def value(self, newvalue):
         """Set a the value for the current argument."""
-        pipename, equal, value = self.string.partition('=')
+        pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             self.string = pipename + '=' + newvalue
         else:
