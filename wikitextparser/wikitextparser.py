@@ -60,7 +60,11 @@ COMMENT_REGEX = re.compile(
 )
 NOWIKI_REGEX = re.compile(
     r'<nowiki\s*.*?>.*?</nowiki\s*>',
-    re.DOTALL,
+    re.DOTALL|re.IGNORECASE,
+)
+MATH_REGEX = re.compile(
+    r'<math\s*.*?>.*?</math\s*>',
+    re.DOTALL|re.IGNORECASE,
 )
 HTML_TAG_REGEX = re.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
@@ -307,12 +311,12 @@ class WikiText:
     def _in_subspans_factory(self):
         """Return a function that can tell if an index is in subspans.
 
-        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'nw').
+        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'nw', 'm').
         """
         # calculate subspans
         selfstart, selfend = self._get_span()
         subspans = []
-        for key in ('t', 'p', 'pf', 'wl', 'c', 'nw'):
+        for key in ('t', 'p', 'pf', 'wl', 'c', 'nw', 'm'):
             for span in self._spans[key]:
                 if selfstart < span[0] and span[1] <= selfend:
                     subspans.append(span)
@@ -343,6 +347,7 @@ class WikiText:
             'wl': wikilink_spans,
             'c': comment_spans,
             'nw': nowiki_spans,
+            'm': math_spans,
         }
         """
         string = self._lststr[0]
@@ -352,6 +357,7 @@ class WikiText:
         wikilink_spans = []
         comment_spans = []
         nowiki_spans = []
+        math_spans = []
         # HTML comments
         for match in COMMENT_REGEX.finditer(string):
             comment_spans.append(match.span())
@@ -360,6 +366,11 @@ class WikiText:
         # <nowiki>
         for match in NOWIKI_REGEX.finditer(string):
             nowiki_spans.append(match.span())
+            group = match.group()
+            string = string.replace(group, '_' * len(group))
+        # <math>
+        for match in MATH_REGEX.finditer(string):
+            math_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
         # The title in WikiLinks may contain braces that interfere with
@@ -420,6 +431,7 @@ class WikiText:
             'wl': wikilink_spans,
             'c': comment_spans,
             'nw': nowiki_spans,
+            'm': math_spans,
         }
 
 

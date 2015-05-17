@@ -97,9 +97,9 @@ class WikiText(unittest.TestCase):
         self.assertEqual(s, str(wt.wikilinks[0]))
 
 
-class GetSpansFunction(unittest.TestCase):
+class SpansFunction(unittest.TestCase):
 
-    """Test _ppft_spans."""
+    """Test _spans."""
 
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
@@ -236,7 +236,9 @@ class GetSpansFunction(unittest.TestCase):
         self.assertEqual('a', t2.arguments[0].value)
         self.assertEqual('1', t2.arguments[0].name)
     
-
+    def test_template_end_in_math_tag(self):
+        wt = wtp.WikiText("""{{text|<math>}}</math>}}""")
+        self.assertEqual([(0, 24)], wt._spans['t'])
         
 class Template(unittest.TestCase):
 
