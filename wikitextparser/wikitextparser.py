@@ -54,16 +54,39 @@ EXTERNALLINK_REGEX = re.compile(
     BRACKET_EXTERNALLINK_REGEX.pattern + r')',
     re.IGNORECASE,
 )
+# For a complete list of extension tags in a wiki, see the
+# "Parser extension tags" section at the end of [[Special:Version]]
+# <templatedata> and <includeonly> are added manually.
+TAG_EXTENSIONS = [
+    'ref',
+    'math',
+    'source',
+    'syntaxhighlight',
+    'pre',
+    'poem',
+    'hiero',
+    'score',
+    'includeonly',
+    'timeline',
+    'nowiki',
+    'categorytree',
+    'charinsert',
+    'references',
+    'imagemap',
+    'inputbox',
+    'section',
+    'templatedata',
+    'gallery',
+    'graph',
+    'imagemap',
+    'indicator',
+]
 COMMENT_REGEX = re.compile(
     r'<!--.*?-->',
     re.DOTALL,
 )
-NOWIKI_REGEX = re.compile(
-    r'<nowiki\s*.*?>.*?</nowiki\s*>',
-    re.DOTALL|re.IGNORECASE,
-)
-MATH_REGEX = re.compile(
-    r'<math\s*.*?>.*?</math\s*>',
+EXTENSION_TAGS_REGEX = re.compile(
+    r'<(' + '|'.join(TAG_EXTENSIONS)+ r')\s*.*?>.*?</\1\s*>',
     re.DOTALL|re.IGNORECASE,
 )
 HTML_TAG_REGEX = re.compile(
@@ -311,12 +334,12 @@ class WikiText:
     def _in_subspans_factory(self):
         """Return a function that can tell if an index is in subspans.
 
-        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'nw', 'm').
+        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'et').
         """
         # calculate subspans
         selfstart, selfend = self._get_span()
         subspans = []
-        for key in ('t', 'p', 'pf', 'wl', 'c', 'nw', 'm'):
+        for key in ('t', 'p', 'pf', 'wl', 'c', 'et'):
             for span in self._spans[key]:
                 if selfstart < span[0] and span[1] <= selfend:
                     subspans.append(span)
@@ -346,8 +369,7 @@ class WikiText:
             't': template_spans,
             'wl': wikilink_spans,
             'c': comment_spans,
-            'nw': nowiki_spans,
-            'm': math_spans,
+            'et': extension_tag_spans,
         }
         """
         string = self._lststr[0]
@@ -356,21 +378,16 @@ class WikiText:
         template_spans = []
         wikilink_spans = []
         comment_spans = []
-        nowiki_spans = []
-        math_spans = []
-        # HTML comments
+        extension_tag_spans = []
+        c = []
+        # HTML <!-- comments -->
         for match in COMMENT_REGEX.finditer(string):
             comment_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
-        # <nowiki>
-        for match in NOWIKI_REGEX.finditer(string):
-            nowiki_spans.append(match.span())
-            group = match.group()
-            string = string.replace(group, '_' * len(group))
-        # <math>
-        for match in MATH_REGEX.finditer(string):
-            math_spans.append(match.span())
+        # <extension tags>
+        for match in EXTENSION_TAGS_REGEX.finditer(string):
+            extension_tag_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
         # The title in WikiLinks may contain braces that interfere with
@@ -430,8 +447,7 @@ class WikiText:
             't': template_spans,
             'wl': wikilink_spans,
             'c': comment_spans,
-            'nw': nowiki_spans,
-            'm': math_spans,
+            'et': extension_tag_spans,
         }
 
 

@@ -235,10 +235,16 @@ class SpansFunction(unittest.TestCase):
         self.assertEqual('1', t1.arguments[2].name)
         self.assertEqual('a', t2.arguments[0].value)
         self.assertEqual('1', t2.arguments[0].name)
-    
-    def test_template_end_in_math_tag(self):
-        wt = wtp.WikiText("""{{text|<math>}}</math>}}""")
-        self.assertEqual([(0, 24)], wt._spans['t'])
+
+    def test_extension_tags(self):
+        for tag in wtp.TAG_EXTENSIONS:
+            s = "{{text|<" + tag + ">}}</" + tag + ">}}"
+            wt = wtp.WikiText(s)
+            self.assertEqual((0, len(s)), wt._spans['t'][0])
+            
+        s = "{{text|<!-- }} -->}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual((0, len(s)), wt._spans['t'][0])
         
 class Template(unittest.TestCase):
 
