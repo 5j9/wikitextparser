@@ -54,9 +54,18 @@ EXTERNALLINK_REGEX = re.compile(
     BRACKET_EXTERNALLINK_REGEX.pattern + r')',
     re.IGNORECASE,
 )
-# For a complete list of extension tags in a wiki, see the
-# "Parser extension tags" section at the end of [[Special:Version]]
+# For a complete list of extension tags on your wiki, see the
+# "Parser extension tags" section at the end of [[Special:Version]].
 # <templatedata> and <includeonly> are added manually.
+# A simple trick to find out if a tag should be listed here or not is as
+# follows:
+# Create the {{text}} template in your wiki (You can copy the source code from
+# English Wikipedia). Then save the following in test page:
+# {{text|0<tagname>1}}2</tagname>3}}4
+# If the ending braces in the redered result appear between 3 and 4, then
+# `tagname` is not an extension (e.g. <small>). Otherwise, i.e. if those
+# braces appear between 1 and 2 or completely don't show up, `tagname` is
+# probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
     'ref',
     'math',
