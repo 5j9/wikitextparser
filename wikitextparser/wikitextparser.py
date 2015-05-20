@@ -279,13 +279,12 @@ class WikiText:
             if mspan not in sspans:
                 sspans.append(mspan)
             latest_section = Section(lststr, spans, sspans.index(mspan))
-            # adding text of the latest_section to any parent section
-            # Note that section 0 is not a parent for any subsection
+            # Add text of the latest_section to any parent section.
+            # Note that section 0 is not a parent for any subsection.
             min_level_added = latest_section.level
             for section in reversed(sections[1:]):
                 section_level = section.level
                 if section_level < min_level_added:
-                    # section.string += latest_section.string
                     index = section._index
                     sspans[index] = (sspans[index][0], mspan[1])
                     min_level_added = section_level
@@ -294,7 +293,7 @@ class WikiText:
 
     def _not_in_subspans_split(self, char):
         """Split self.string using `char` unless char is in self._spans."""
-        # not used?
+        # not used
         selfstart, selfend = self._get_span()
         string = self._lststr[0][selfstart:selfend]
         splits = []
