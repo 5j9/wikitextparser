@@ -199,6 +199,22 @@ class SpansFunction(unittest.TestCase):
         self.assertEqual(
             '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1])
         )
+        wt = wtp.WikiText(
+            '\n== 1 ==\n== 2 ==\n=== 2.1 ===\n==== 2.1.1 ====\n'
+            '===== 2.1.1.1 =====\n=== 2.2 ===\n=== 2.3 ===\n==== 2.3.1 ====\n'
+            '2.3.1\n== 3 ==\n'
+        )
+        wt.sections == (
+            "[Argument('\\n'), Argument('== 1 ==\\n'), "
+            "Argument('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
+            "===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n"
+            "==== 2.3.1 ====\\n2.3.1\\n'), Argument('=== 2.1 ===\\n"
+            "==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
+            "Argument('==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
+            "Argument('===== 2.1.1.1 =====\\n'), Argument('=== 2.2 ===\\n'), "
+            "Argument('=== 2.3 ===\\n==== 2.3.1 ====\\n2.3.1\\n'), "
+            "Argument('==== 2.3.1 ====\\n2.3.1\\n'), Argument('== 3 ==\\n')]"
+        )
 
     @unittest.skip
     def test_section_title_may_contain_template_newline_etc(self):
