@@ -1228,3 +1228,6 @@ class Section(_Indexed_Object):
 def mode(list_):
     """Return the most (one the most) common data point(s)."""
     return max(set(list_), key=list_.count)
+
+
+parse = WikiText
