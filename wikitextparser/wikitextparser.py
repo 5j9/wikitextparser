@@ -104,7 +104,7 @@ HTML_TAG_REGEX = re.compile(
 )
 SECTION_HEADER_REGEX = re.compile(r'(?<=(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
 LEAD_SECTION_REGEX = re.compile(
-    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r')',
+    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|$)',
     re.DOTALL,
 )
 SECTION_REGEX = re.compile(

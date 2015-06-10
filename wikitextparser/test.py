@@ -6,11 +6,6 @@ from pprint import pprint as pp
 class WikiText(unittest.TestCase):
 
     """Test Tempate class in wtp.py."""
-
-    def test_grab_the_final_newline_for_the_last_section(self):
-        s = 'text1 HTTP://mediawiki.org text2'
-        wt = wtp.WikiText('== s ==\nc\n')
-        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
         
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
@@ -95,6 +90,21 @@ class WikiText(unittest.TestCase):
         s = '[[A | faf a\n\nfads]]'
         wt = wtp.WikiText(s)
         self.assertEqual(s, str(wt.wikilinks[0]))
+
+
+class WikiTextSections(unittest.TestCase):
+    
+    """Test section extracting capabilities of WikiText class."""
+    
+    def test_grab_the_final_newline_for_the_last_section(self):
+        s = 'text1 HTTP://mediawiki.org text2'
+        wt = wtp.WikiText('== s ==\nc\n')
+        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+
+    def test_only_lead_section(self):
+        s = 'text1 HTTP://mediawiki.org text2'
+        wt = wtp.WikiText('== s ==\nc\n')
+        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
 
 
 class SpansFunction(unittest.TestCase):
@@ -204,7 +214,7 @@ class SpansFunction(unittest.TestCase):
             '===== 2.1.1.1 =====\n=== 2.2 ===\n=== 2.3 ===\n==== 2.3.1 ====\n'
             '2.3.1\n== 3 ==\n'
         )
-        wt.sections == (
+        self.assertEqual(
             "[Argument('\\n'), Argument('== 1 ==\\n'), "
             "Argument('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
             "===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n"
@@ -213,7 +223,8 @@ class SpansFunction(unittest.TestCase):
             "Argument('==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
             "Argument('===== 2.1.1.1 =====\\n'), Argument('=== 2.2 ===\\n'), "
             "Argument('=== 2.3 ===\\n==== 2.3.1 ====\\n2.3.1\\n'), "
-            "Argument('==== 2.3.1 ====\\n2.3.1\\n'), Argument('== 3 ==\\n')]"
+            "Argument('==== 2.3.1 ====\\n2.3.1\\n'), Argument('== 3 ==\\n')]",
+            str(wt.sections)
         )
 
     @unittest.skip
@@ -264,7 +275,7 @@ class SpansFunction(unittest.TestCase):
         
 class Template(unittest.TestCase):
 
-    """Test Tempate class in wtp.py."""
+    """Test Tempate class."""
 
     def test_named_parameters(self):
         s = '{{یادکرد کتاب|عنوان = ش{{--}}ش|سال=۱۳۴۵}}'
