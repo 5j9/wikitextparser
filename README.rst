@@ -13,7 +13,7 @@ is that for most usual uses it will be enough.
 Installation
 ============
 
-Use `pip install wikitextparser`
+Use ``pip install wikitextparser``
 
 Usage
 =====
@@ -27,36 +27,24 @@ Here is a short demo of some of the functionalities:
     >>> wt = wtp.WikiText("""
     == h2 ==
     t2
-    
+
     === h3 ===
     t3
-    
+
     == h22 ==
     t22
-    
+
     {{text|value1{{text|value2}}}}
-    
+
     [[A|B]]""")
     >>> 
     >>> wt.templates
-    [Template("{{text|value2}}"), Template("{{text|value1{{text|value2}}}}")]
+    [Template('{{text|value2}}'), Template('{{text|value1{{text|value2}}}}')]
     >>> _[1].arguments
     [Argument("|value1{{text|value2}}")]
     >>> _[0].value = 'value3'
     >>> wt
-    WikiText("
-    == h2 ==
-    t2
-    
-    === h3 ===
-    t3
-    
-    == h22 ==
-    t22
-    
-    {{text|value3}}
-    
-    [[A|B]]")
+    WikiText('\n== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22\n\n{{text|value3}}\n\n[[A|B]]')
     >>> 
     >>> 
     >>> wt.wikilinks
@@ -64,50 +52,29 @@ Here is a short demo of some of the functionalities:
     >>> wt.wikilinks[0].target = 'Z'
     >>> wt.wikilinks[0].text = 'X'
     >>> wt
-    WikiText("
-    == h2 ==
-    t2
-    
-    === h3 ===
-    t3
-    
-    == h22 ==
-    t22
-    
-    {{text|value3}}
-    
-    [[Z|X]]")
+    WikiText('\n== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')
     >>> 
+    >>> from pprint import pprint
+    >>> pprint(wt.sections)
+    [Argument('\n'),
+     Argument('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n'),
+     Argument('=== h3 ===\nt3\n\n'),
+     Argument('== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')]
     >>> 
-    >>> wt.sections
-    [Argument(""), Argument("== h2 ==
-    t2
-    
-    === h3 ===
-    t3
-    
-    "), Argument("=== h3 ===
-    t3
-    
-    "), Argument("== h22 ==
-    t22
-    
-    {{text|value3}}
-    
-    [[Z|X]]")]
     >>> wt.sections[1].title = 'newtitle'
-    >>> print(wt)
+    >>> print(wt.string)
+
     ==newtitle==
     t2
-    
+
     === h3 ===
     t3
-    
+
     == h22 ==
     t22
-    
+
     {{text|value3}}
-    
+
     [[Z|X]]
     >>> 
 
