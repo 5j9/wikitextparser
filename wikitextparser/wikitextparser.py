@@ -168,6 +168,22 @@ class WikiText:
         """Return the string representation of the WikiText."""
         return 'WikiText(' + repr(self.string) + ')'
 
+    def __contains__(self, parsed_wikitext):
+        """Return True if parsed_wikitext is inside self. False otherwise.
+
+        Also self and parsed_wikitext should belong to the same parsed
+        wikitext object for this function to return True.
+        """
+        # Is it usefull (and a good practice) to also accepts str inputs
+        # and check if self.string contains it?
+        if self._lststr is not parsed_wikitext._lststr:
+            return False
+        ps, pe = parsed_wikitext._get_span()
+        ss, se = self._get_span()
+        if ss <= ps and se >= pe:
+            return True
+        return False
+
     def _get_span(self):
         """Return the self-span."""
         return (0, len(self._lststr[0]))
@@ -320,7 +336,7 @@ class WikiText:
         if index == -1:
             return (string, '', '')
         return (string[:index], char, string[index+1:])
-            
+
     def _not_in_subspans_split_spans(self, char):
         """Like _not_in_subspans_split but return spans."""
         selfstart, selfend = self._get_span()
@@ -764,7 +780,7 @@ class Template(_Indexed_Object):
         """Return the first argument in the args that has the given name.
 
         Return None if no such argument is found.
-        
+
         As the computation of self.arguments is a little costly, this
         function was created so that other methods that have already computed
         the arguments use it instead of calling get_arg directly.
@@ -772,7 +788,7 @@ class Template(_Indexed_Object):
         for arg in args:
             if arg.name.strip() == name.strip():
                 return arg
-            
+
     def get_arg(self, name):
         """Return the last argument with the given name.
 
@@ -1226,7 +1242,21 @@ class Section(_Indexed_Object):
 
 
 def mode(list_):
-    """Return the most (one the most) common data point(s)."""
+    """Return the most common item in the list.
+
+    Return the first one if there are more than one most common items.
+
+    Example:
+
+    >>> mode([1,1,2,2,])
+    1
+    >>> mode([1,2,2])
+    2
+    >>> mode([])
+    ...
+    ValueError: max() arg is an empty sequence
+
+    """
     return max(set(list_), key=list_.count)
 
 

@@ -6,7 +6,7 @@ from pprint import pprint as pp
 class WikiText(unittest.TestCase):
 
     """Test Tempate class in wtp.py."""
-        
+
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText(s)
@@ -14,7 +14,7 @@ class WikiText(unittest.TestCase):
             'HTTP://mediawiki.org',
             str(wt.external_links[0]),
         )
-        
+
     def test_with_lable(self):
         s = 'text1 [http://mediawiki.org MediaWiki] text2'
         wt = wtp.WikiText(s)
@@ -51,7 +51,7 @@ class WikiText(unittest.TestCase):
             'text1  text2',
             str(wt),
         )
-        
+
     def test_wikilink_in_template(self):
         s1 = "{{text |[[A|}}]]}}"
         wt = wtp.WikiText(s1)
@@ -66,7 +66,7 @@ class WikiText(unittest.TestCase):
         s1 = "{{text |<!-- }} -->}}"
         wt = wtp.WikiText(s1)
         self.assertEqual(s1, str(wt.templates[0]))
-        
+
     def test_ignore_nowiki(self):
         wt = wtp.WikiText("{{text |<nowiki>}} A </nowiki> }} B")
         self.assertEqual(
@@ -92,10 +92,38 @@ class WikiText(unittest.TestCase):
         self.assertEqual(s, str(wt.wikilinks[0]))
 
 
+class Contains(unittest.TestCase):
+
+    """Test the __contains__ method of the WikiText class."""
+
+    def test_a_is_actually_in_b(self):
+        s = '{{b|{{a}}}}'
+        a, b = wtp.WikiText(s).templates
+        self.assertTrue(a in b)
+        self.assertFalse(b in a)
+
+    def test_a_seems_to_be_in_b_but_in_another_span(self):
+        s = '{{b|{{a}}}}{{a}}'
+        a1, a2, b = wtp.WikiText(s).templates
+        self.assertTrue(a1 in b)
+        self.assertFalse(a2 in b)
+        self.assertFalse(a2 in a1)
+        self.assertFalse(a1 in a2)
+
+    def test_a_b_from_different_objects(self):
+        s = '{{b|{{a}}}}'
+        a1, b1 = wtp.WikiText(s).templates
+        a2, b2 = wtp.WikiText(s).templates
+        self.assertTrue(a1 in b1)
+        self.assertTrue(a2 in b2)
+        self.assertFalse(a2 in b1)
+        self.assertFalse(a1 in b2)
+
+
 class WikiTextSections(unittest.TestCase):
-    
+
     """Test section extracting capabilities of WikiText class."""
-    
+
     def test_grab_the_final_newline_for_the_last_section(self):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText('== s ==\nc\n')
@@ -268,11 +296,11 @@ class SpansFunction(unittest.TestCase):
             s = "{{text|<" + tag + ">}}</" + tag + ">}}"
             wt = wtp.WikiText(s)
             self.assertEqual((0, len(s)), wt._spans['t'][0])
-            
+
         s = "{{text|<!-- }} -->}}"
         wt = wtp.WikiText(s)
         self.assertEqual((0, len(s)), wt._spans['t'][0])
-        
+
 class Template(unittest.TestCase):
 
     """Test Tempate class."""
@@ -446,7 +474,7 @@ class Template(unittest.TestCase):
         self.assertEqual(
             '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
         )
-        
+
 class WikiLink(unittest.TestCase):
 
     """Test WikiLink functionalities."""
@@ -465,7 +493,7 @@ class WikiLink(unittest.TestCase):
         wl = wtp.WikiLink('[[A | B]]')
         wl.text = ' C '
         self.assertEqual('[[A | C ]]', wl.string)
-        
+
 
 
 class ExternalLinks(unittest.TestCase):
@@ -509,9 +537,9 @@ class ExternalLinks(unittest.TestCase):
         el = wtp.ExternalLink('ftp://mediawiki.org')
         el.url = 'https://www.mediawiki.org/'
         self.assertEqual('https://www.mediawiki.org/', el.string)
-        
 
-        
+
+
 class Section(unittest.TestCase):
 
     """Test the Section class."""
@@ -531,11 +559,11 @@ class Section(unittest.TestCase):
         s = wtp.Section('====== ==   \n')
         self.assertEqual(2, s.level)
         self.assertEqual('==== ', s.title)
-        
+
         s = wtp.Section('== ======   \n')
         self.assertEqual(2, s.level)
         self.assertEqual(' ====', s.title)
-        
+
         s = wtp.Section('========  \n')
         self.assertEqual(3, s.level)
         self.assertEqual('==', s.title)
@@ -564,7 +592,7 @@ class Section(unittest.TestCase):
         s = wtp.Section('lead')
         s.contents = 'newlead'
         self.assertEqual('newlead', s.string)
-        
+
 
 class Argument(unittest.TestCase):
 
@@ -580,12 +608,12 @@ class Argument(unittest.TestCase):
         a = wtp.Argument('| a ')
         self.assertEqual('1', a.name)
         self.assertEqual(' a ', a.value)
-        
+
     def test_set_name(self):
         a = wtp.Argument('| a = b ')
         a.name = ' c '
         self.assertEqual('| c = b ', a.string)
-        
+
     def test_set_value(self):
         a = wtp.Argument('| a = b ')
         a.value = ' c '
@@ -602,7 +630,7 @@ class Argument(unittest.TestCase):
         self.assertEqual(True, a.positional)
         self.assertEqual('1', a.name)
         self.assertEqual('<nowiki>1=3</nowiki>', a.value)
-        
+
 
 class ParserFunction(unittest.TestCase):
 
@@ -681,6 +709,6 @@ class Tag(unittest.TestCase):
     def test_basic(self):
         t = wtp.Tag('<ref>text</ref>')
 
-        
+
 if __name__ == '__main__':
     unittest.main()
