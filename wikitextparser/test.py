@@ -644,6 +644,11 @@ class ParserFunction(unittest.TestCase):
             [a.string for a in pf.arguments]
         )
 
+    def test_pipes_inside_params(self):
+        pf = wtp.ParserFunction('{{ #if: test | {{ text | aaa }} }}')
+        self.assertEqual(pf.parameters, [])
+        
+
 class Parameter(unittest.TestCase):
 
     """Test the ParserFunction class."""

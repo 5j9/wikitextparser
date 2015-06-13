@@ -18,9 +18,9 @@ TEMPLATE_NOT_PARAM_REGEX = re.compile(
 # Parameters
 TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{\{[^{}]*?\}\}\}')
 # Parser functions
-PARSER_FUNCTION_NAME_PATTERN = r'[^\s]*'
+PARSER_FUNCTION_NAME_PATTERN = r'#[^{}\s]*?:'
 PARSER_FUNCTION_REGEX = re.compile(
-    r'\{\{\s*#' + PARSER_FUNCTION_NAME_PATTERN + r':[^{}]*?\}\}'
+    r'\{\{\s*' + PARSER_FUNCTION_NAME_PATTERN + r'[^{}]*?\}\}'
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
@@ -443,19 +443,20 @@ class WikiText:
                     parameter_spans.append(match.span())
                     group = match.group()
                     string = string.replace(group, '___' + group[3:-3] + '___')
-            # Parser fucntions
-            loop = True
-            while loop:
-                loop = False
-                for match in PARSER_FUNCTION_REGEX.finditer(string):
-                    loop = True
-                    parser_function_spans.append(match.span())
-                    group = match.group()
-                    string = string.replace(group, '__' + group[2:-2] + '__' )
             # Templates
             loop = True
             while loop:
-                loop = False
+                # Parser fucntions
+                while loop:
+                    loop = False
+                    for match in PARSER_FUNCTION_REGEX.finditer(string):
+                        loop = True
+                        parser_function_spans.append(match.span())
+                        group = match.group()
+                        string = string.replace(
+                            group, '__' + group[2:-2] + '__'
+                        )
+                # loop is False at this point
                 for match in TEMPLATE_NOT_PARAM_REGEX.finditer(string):
                     loop = True
                     template_spans.append(match.span())
@@ -471,7 +472,6 @@ class WikiText:
             'c': comment_spans,
             'et': extension_tag_spans,
         }
-
 
     def _shrink_span_update(self, rmstart, rmend):
         """Update self._spans according to the removed span.
@@ -958,8 +958,6 @@ class ParserFunction(_Indexed_Object):
                     Argument(lststr, spans, aspans.index(aspan), typeindex)
                 )
         return arguments
-
-
 
     @property
     def name(self):
