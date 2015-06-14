@@ -644,9 +644,13 @@ class ParserFunction(unittest.TestCase):
             [a.string for a in pf.arguments]
         )
 
-    def test_pipes_inside_params(self):
+    def test_pipes_inside_params_or_templates(self):
         pf = wtp.ParserFunction('{{ #if: test | {{ text | aaa }} }}')
-        self.assertEqual(pf.parameters, [])
+        self.assertEqual([], pf.parameters)
+        self.assertEqual(2, len(pf.arguments))
+        pf = wtp.ParserFunction('{{ #if: test | {{{ text | aaa }}} }}')
+        self.assertEqual(1, len(pf.parameters))
+        self.assertEqual(2, len(pf.arguments))
         
 
 class Parameter(unittest.TestCase):
