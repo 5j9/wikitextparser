@@ -162,22 +162,21 @@ class WikiText:
         To be safe, always append to the left or shrink to an empty string.
         """
         lststr = self._lststr
-        oldstring = lststr[0]
-        oldlength = len(self.string)
-        newlength = len(newstring)
+        lststr0 = lststr[0]
         oldstart, oldend = self._get_span()
-        # updating lststr
-        lststr[0] = oldstring[:oldstart] + newstring + oldstring[oldend:]
-        # updating spans
+        oldstring = lststr0[oldstart:oldend]
+        oldlength = len(oldstring)
+        newlength = len(newstring)
+        # Updating lststr
+        lststr[0] = lststr0[:oldstart] + newstring + lststr0[oldend:]
+        # Updating spans
         if newlength > oldlength:
             oldstart, oldend = self._get_span()
             self._extend_span_update(oldstart, newlength - oldlength)
         elif newlength < oldlength:
             self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
-            
-        '''# An unsuccessful attempt to rewrite this function
+        '''# A more intelligent but slower mothod.
         sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
-        print(sm.get_opcodes())
         for (tag, i1, i2, j1, j2) in sm.get_opcodes():
             if tag == 'replace':
                 # a[i1:i2] should be replaced by b[j1:j2].
@@ -206,7 +205,8 @@ class WikiText:
                 self._extend_span_update(
                     estart=oldstart + i2,
                     elength=j2 - j1,
-                )'''
+                )
+        '''
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
