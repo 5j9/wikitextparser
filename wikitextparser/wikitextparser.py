@@ -1,4 +1,5 @@
 import re
+from difflib import SequenceMatcher
 from datetime import datetime
 from pprint import pprint as pp
 from timeit import timeit
@@ -150,19 +151,62 @@ class WikiText:
 
     @string.setter
     def string(self, newstring):
-        """Set a new string for this object. Update spans accordingly."""
+        """Set a new string for this object. Update spans accordingly.
+
+        Warning:
+        All the spans will be updated as if the string was updated/shrinked
+        from the end. This means that on concatination only the end of
+        self.span and spans after this string will be affected. And on shrink
+        some spans may be not effected as expected.
+
+        To be safe, always append to the left or shrink to an empty string.
+        """
         lststr = self._lststr
+        oldstring = lststr[0]
         oldlength = len(self.string)
         newlength = len(newstring)
         oldstart, oldend = self._get_span()
         # updating lststr
-        lststr[0] = lststr[0][:oldstart] + newstring + lststr[0][oldend:]
+        lststr[0] = oldstring[:oldstart] + newstring + oldstring[oldend:]
         # updating spans
         if newlength > oldlength:
             oldstart, oldend = self._get_span()
             self._extend_span_update(oldstart, newlength - oldlength)
         elif newlength < oldlength:
             self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
+            
+        '''# An unsuccessful attempt to rewrite this function
+        sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
+        print(sm.get_opcodes())
+        for (tag, i1, i2, j1, j2) in sm.get_opcodes():
+            if tag == 'replace':
+                # a[i1:i2] should be replaced by b[j1:j2].
+                len1 = i2 - i1
+                len2 = j2 - j1
+                if len2 < len1:
+                    self._shrink_span_update(
+                        rmstart=oldstart + i1 + len2,
+                        rmend=oldstart + i2,
+                    )
+                elif len2 > len1:
+                    self._extend_span_update(
+                        estart=oldstart + i2,
+                        elength=len2 - len1,
+                    )
+            elif tag == 'delete':
+                # a[i1:i2] should be deleted.
+                # Note that j1 == j2 in this case.
+                self._shrink_span_update(
+                    rmstart=oldstart + i1,
+                    rmend=oldstart + i2,
+                )
+            elif tag == 'insert':
+                # b[j1:j2] should be inserted at a[i1:i1].
+                # Note that i1 == i2 in this case.
+                self._extend_span_update(
+                    estart=oldstart + i2,
+                    elength=j2 - j1,
+                )'''
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
@@ -508,18 +552,18 @@ class WikiText:
                     else:
                         spans[i] = (spanstart, rmstart)
 
-    def _extend_span_update(self, astart, alength):
+    def _extend_span_update(self, estart, elength):
         """Update self._spans according to the added span."""
         # Note: No span should be removed from _spans.
         # Don't use self._set_spans()
         for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
-                if astart < spanstart:
+                if estart < spanstart:
                     # added part is before the span
-                    spans[i] = (spanstart + alength, spanend + alength)
-                elif spanstart <= astart < spanend:
+                    spans[i] = (spanstart + elength, spanend + elength)
+                elif spanstart <= estart < spanend:
                     # added part is inside the span
-                    spans[i] = (spanstart, spanend + alength)
+                    spans[i] = (spanstart, spanend + elength)
 
 
 class _Indexed_Object(WikiText):
