@@ -170,14 +170,24 @@ class WikiText:
         # Updating lststr
         lststr[0] = lststr0[:oldstart] + newstring + lststr0[oldend:]
         # Updating spans
+        '''
         if newlength > oldlength:
             oldstart, oldend = self._get_span()
             self._extend_span_update(oldstart, newlength - oldlength)
         elif newlength < oldlength:
             self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
-        '''# A more intelligent but slower mothod.
+        '''
+        # A more intelligent but slower mothod.
         sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
-        for (tag, i1, i2, j1, j2) in sm.get_opcodes():
+        opcodes = [oc for oc in sm.get_opcodes() if oc[0] != 'equal']
+        # TODO: delete ..opcodes_max_index = len(opcodes) - 1 
+        # Opcodes also need adjustment as the spans change.
+        opcodes_spans = [
+            (i, j) for o in opcodes for i in o[1::4] for j in o[2::4]
+        ]
+        self._spans['opcodes'] = opcodes_spans
+        for tag, i1, i2, j1, j2 in opcodes:
+            i1, i2 = opcodes_spans.pop(0)
             if tag == 'replace':
                 # a[i1:i2] should be replaced by b[j1:j2].
                 len1 = i2 - i1
@@ -206,7 +216,7 @@ class WikiText:
                     estart=oldstart + i2,
                     elength=j2 - j1,
                 )
-        '''
+        del self._spans['opcodes']
 
     def __repr__(self):
         """Return the string representation of the WikiText."""
@@ -526,7 +536,6 @@ class WikiText:
         can cause data loss in self._spans.
         """
         # Note: No span should be removed from _spans.
-        # Don't use self._set_spans()
         rmlength = rmend - rmstart
         for t, spans in self._spans.items():
             for i, (spanstart, spanend) in enumerate(spans):
@@ -552,16 +561,15 @@ class WikiText:
                     else:
                         spans[i] = (spanstart, rmstart)
 
-    def _extend_span_update(self, estart, elength):
+    def _extend_span_update(self, estart, elength, selfstart):
         """Update self._spans according to the added span."""
         # Note: No span should be removed from _spans.
-        # Don't use self._set_spans()
         for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
-                if estart < spanstart:
+                if estart <= spanstart:
                     # added part is before the span
                     spans[i] = (spanstart + elength, spanend + elength)
-                elif spanstart <= estart < spanend:
+                elif spanstart < estart < spanend:
                     # added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
