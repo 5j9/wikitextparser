@@ -136,13 +136,21 @@ class WikiTextSections(unittest.TestCase):
 
 
 class WikiTextShrink(unittest.TestCase):
+    
     """Test the _shrink_span_update function."""
+    
     def test_stripping_template_name_should_update_its_arg_spans(self):
         t = wtp.Template('{{ t\n |1=2}}')
         a = t.arguments[0]
         t.name = t.name.strip()
         self.assertEqual('|1=2', a.string)
-
+    def test_opcodes_in_spans_should_be_referenced_based_on_self_lststr0(self):
+        wt = wtp.WikiText('{{a}}{{ b\n|d=}}')
+        template = wt.templates[1]
+        arg = template.arguments[0]
+        template.name = template.name.strip()
+        self.assertEqual('|d=', arg.string)
+        
 
 class WikiTextExtend(unittest.TestCase):
     """Test the _expand_span_update function."""

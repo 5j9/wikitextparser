@@ -182,11 +182,13 @@ class WikiText:
         opcodes = [oc for oc in sm.get_opcodes() if oc[0] != 'equal']
         # Opcodes also need adjustment as the spans change.
         opcodes_spans = [
-            (i, j) for o in opcodes for i in o[1::4] for j in o[2::4]
+            (oldstart + i, oldstart + j) for o in opcodes for i in o[1::4] for j in o[2::4]
         ]
         self._spans['opcodes'] = opcodes_spans
         for tag, i1, i2, j1, j2 in opcodes:
             i1, i2 = opcodes_spans.pop(0)
+            i1 -= oldstart
+            i2 -= oldstart
             if tag == 'replace':
                 # a[i1:i2] should be replaced by b[j1:j2].
                 len1 = i2 - i1
