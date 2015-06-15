@@ -5,7 +5,7 @@ from pprint import pprint as pp
 
 class WikiText(unittest.TestCase):
 
-    """Test Tempate class in wtp.py."""
+    """Test Template class in wtp.py."""
 
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
@@ -133,6 +133,24 @@ class WikiTextSections(unittest.TestCase):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+
+
+class WikiTextShrink(unittest.TestCase):
+    """Test the _shrink_span_update function."""
+    def test_stripping_template_name_should_update_its_arg_spans(self):
+        t = wtp.Template('{{ t\n |1=2}}')
+        a = t.arguments[0]
+        t.name = t.name.strip()
+        self.assertEqual('|1=2', a.string)
+
+
+class WikiTextExtend(unittest.TestCase):
+    """Test the _expand_span_update function."""
+    def test_extending_template_name_should_not_effect_arg_string(self):
+        t = wtp.Template('{{t|1=2}}')
+        a = t.arguments[0]
+        t.name = 't\\n    '
+        self.assertEqual('|1=2', a.string)
 
 
 class SpansFunction(unittest.TestCase):
