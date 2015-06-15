@@ -180,7 +180,6 @@ class WikiText:
         # A more intelligent but slower mothod.
         sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
         opcodes = [oc for oc in sm.get_opcodes() if oc[0] != 'equal']
-        # TODO: delete ..opcodes_max_index = len(opcodes) - 1 
         # Opcodes also need adjustment as the spans change.
         opcodes_spans = [
             (i, j) for o in opcodes for i in o[1::4] for j in o[2::4]
@@ -561,15 +560,19 @@ class WikiText:
                     else:
                         spans[i] = (spanstart, rmstart)
 
-    def _extend_span_update(self, estart, elength, selfstart):
+    def _extend_span_update(self, estart, elength):
         """Update self._spans according to the added span."""
         # Note: No span should be removed from _spans.
+        selfstart, selfend = self._get_span()
         for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
-                if estart <= spanstart:
+                if estart < spanstart or estart == spanstart != selfstart:
                     # added part is before the span
                     spans[i] = (spanstart + elength, spanend + elength)
-                elif spanstart < estart < spanend:
+                elif (
+                    spanstart <= estart < spanend or
+                    estart == spanend != selfstart
+                ):
                     # added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
