@@ -568,14 +568,17 @@ class WikiText:
         selfstart, selfend = self._get_span()
         for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
-                if estart < spanstart or estart == spanstart != selfstart:
-                    # added part is before the span
-                    spans[i] = (spanstart + elength, spanend + elength)
-                elif (
-                    spanstart <= estart < spanend or
-                    estart == spanend != selfstart
+                if estart < spanstart or (
+                    # Not at the beginning of selfspan
+                    estart == spanstart != selfstart and spanend != selfend
                 ):
-                    # added part is inside the span
+                    # Added part is before the span
+                    spans[i] = (spanstart + elength, spanend + elength)
+                elif spanstart <= estart < spanend or (
+                    # At the end of selfspan
+                    spanstart == selfstart and estart == spanend == selfend
+                ):
+                    # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
 
