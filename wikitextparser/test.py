@@ -157,8 +157,15 @@ class WikiTextExtend(unittest.TestCase):
     def test_extending_template_name_should_not_effect_arg_string(self):
         t = wtp.Template('{{t|1=2}}')
         a = t.arguments[0]
-        t.name = 't\\n    '
+        t.name = 't\n    '
         self.assertEqual('|1=2', a.string)
+    def test_extend_selfspan_when_inserting_at_the_end_of_selfspan(self):
+        wt = wtp.WikiText('{{ t|a={{#if:c|a}}|b=}}\n')
+        a = wt.templates[0].arguments[0]
+        pf = wt.parser_functions[0]
+        a.value = a.value + '    \n'
+        self.assertEqual('|a={{#if:c|a}}    \n', a.string)
+        self.assertEqual('{{#if:c|a}}', pf.string)
 
 
 class SpansFunction(unittest.TestCase):
