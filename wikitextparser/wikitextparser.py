@@ -153,36 +153,63 @@ class WikiText:
     def string(self, newstring):
         """Set a new string for this object. Update spans accordingly.
 
-        Warning:
-        All the spans will be updated as if the string was updated/shrinked
-        from the end. This means that on concatination only the end of
-        self.span and spans after this string will be affected. And on shrink
-        some spans may be not effected as expected.
+        This method can be slow because it uses SequenceMatcher to find-out
+        the exact position of each change occured in the newstring.
 
-        To be safe, always append to the left or shrink to an empty string.
+        It tries to avoid the SequenceMatcher. By checking to see if the
+        newnewstring is a simple concatination at the start or end of the
+        oldstring. For long strings, it's highly recommended to use this
+        feature and avoid inserting in the middle of the string.
         """
         lststr = self._lststr
         lststr0 = lststr[0]
         oldstart, oldend = self._get_span()
         oldstring = lststr0[oldstart:oldend]
-        oldlength = len(oldstring)
-        newlength = len(newstring)
         # Updating lststr
         lststr[0] = lststr0[:oldstart] + newstring + lststr0[oldend:]
         # Updating spans
-        '''
-        if newlength > oldlength:
-            oldstart, oldend = self._get_span()
-            self._extend_span_update(oldstart, newlength - oldlength)
-        elif newlength < oldlength:
-            self._shrink_span_update(oldstart, oldstart + oldlength - newlength)
-        '''
-        # A more intelligent but slower mothod.
+        oldlength = oldend - oldstart
+        newlength = len(newstring)
+        if oldlength == newlength:
+            if newstring == oldstring:
+                return
+        elif oldlength < newlength:
+            if newstring.startswith(oldstring):
+                # The has been an insertion at the end of oldstring.
+                self._extend_span_update(
+                    estart=oldstart + oldlength,
+                    elength=newlength - oldlength,
+                )
+                return
+            if newstring.endswith(oldstring):
+                # The has been an insertion at the beggining of oldstring.
+                self._extend_span_update(
+                    estart=oldstart,
+                    elength=newlength - oldlength,
+                )
+                return
+        else: # oldlength > newlength
+            if oldstring.startswith(newstring):
+                # The ending part of oldstring has been deleted.
+                self._shrink_span_update(
+                    rmstart=oldstart + newlength,
+                    rmend=oldstart + oldlength,
+                )
+                return
+            if oldstring.endswith(newstring):
+                # The starting part of oldstring has been deleted.
+                self._shrink_span_update(
+                    rmstart=oldstart,
+                    rmend=oldstart + oldlength - newlength,
+                )
+                return
         sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
         opcodes = [oc for oc in sm.get_opcodes() if oc[0] != 'equal']
         # Opcodes also need adjustment as the spans change.
         opcodes_spans = [
-            (oldstart + i, oldstart + j) for o in opcodes for i in o[1::4] for j in o[2::4]
+            (oldstart + i, oldstart + j)
+            for o in opcodes
+            for i in o[1::4] for j in o[2::4]
         ]
         self._spans['opcodes'] = opcodes_spans
         for tag, i1, i2, j1, j2 in opcodes:
@@ -820,7 +847,7 @@ class Template(_Indexed_Object):
                 string = '|' + name + '=' + value
         if before:
             arg = self._get_arg(before, args)
-            arg.string = string + arg.string
+            arg.string += arg.string
         elif after:
             arg = self._get_arg(after, args)
             arg.string += string
