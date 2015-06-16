@@ -688,6 +688,24 @@ class ParserFunction(unittest.TestCase):
         pf = wtp.ParserFunction('{{ #if: test | {{{ text | aaa }}} }}')
         self.assertEqual(1, len(pf.parameters))
         self.assertEqual(2, len(pf.arguments))
+
+    @unittest.expectedFailure
+    def test_parser_function_without_hash_sign(self):
+        """There doesn't seem to be any simple way to detect these.
+
+        Details:
+        Technically, any magic word that takes a parameter is a parser function,
+        and the name is sometimes prefixed with a hash to distinguish them from
+        templates.
+
+        Can you think of any way for the parser to know that
+        `{{formatnum:somestring|R}}`
+        is actually a parser function an not a template like
+        `{{namespace:title|R}}`
+        ?
+        """
+        wt = wtp.WikiText("""{{formatnum:text|R}}""")
+        self.assertEqual(1, len(wt.parser_functions))
         
 
 class Parameter(unittest.TestCase):
