@@ -26,7 +26,8 @@ PARSER_FUNCTION_REGEX = re.compile(
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_REGEX = re.compile(
-    r'\[\[' + VALID_TITLE_CHARS_PATTERN + r'(\]\]|\|[\S\s]*?\]\])'
+    r'\[\[' + VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') +
+    r'(\]\]|\|[\S\s]*?\]\])'
 )
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
