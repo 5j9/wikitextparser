@@ -52,6 +52,14 @@ class WikiText(unittest.TestCase):
             str(wt),
         )
 
+    def test_wikilink_inside_parser_function(self):
+        wt = wtp.WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
+        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", wt.wikilinks[0].string)
+
+    def test_template_inside_wikilink(self):
+        wt = wtp.WikiText("{{text |  [[ A | {{text|b}} ]] }}")
+        self.assertEqual(2, len(wt.templates))
+
     def test_wikilink_in_template(self):
         s1 = "{{text |[[A|}}]]}}"
         wt = wtp.WikiText(s1)
@@ -338,6 +346,7 @@ class SpansFunction(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual((0, len(s)), wt._spans['t'][0])
 
+
 class Template(unittest.TestCase):
 
     """Test Tempate class."""
@@ -530,7 +539,6 @@ class WikiLink(unittest.TestCase):
         wl = wtp.WikiLink('[[A | B]]')
         wl.text = ' C '
         self.assertEqual('[[A | C ]]', wl.string)
-
 
 
 class ExternalLinks(unittest.TestCase):

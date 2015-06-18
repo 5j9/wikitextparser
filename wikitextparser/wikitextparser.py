@@ -246,6 +246,23 @@ class WikiText:
                 )
         del self._spans['opcodes']
 
+    def strins(self, start, string):
+        """Insert the given string at the specified index."""
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        start += self._get_span()[0]
+        # Updating lststr
+        lststr[0] = lststr0[:start] + string + lststr0[start:]
+        # Updating spans
+        self._extend_span_update(
+            estart=start,
+            elength=len(string),
+        )
+
+    def strdel(self, start, end):
+        """Remove the given range from self.string."""
+            
+
     def __repr__(self):
         """Return the string representation of the WikiText."""
         return 'WikiText(' + repr(self.string) + ')'
@@ -477,32 +494,74 @@ class WikiText:
         }
         """
         string = self._lststr[0]
-        parameter_spans = []
-        parser_function_spans = []
-        template_spans = []
-        wikilink_spans = []
-        comment_spans = []
-        extension_tag_spans = []
-        c = []
         # HTML <!-- comments -->
+        comment_spans = []
         for match in COMMENT_REGEX.finditer(string):
             comment_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
         # <extension tags>
+        extension_tag_spans = []
         for match in EXTENSION_TAGS_REGEX.finditer(string):
             extension_tag_spans.append(match.span())
             group = match.group()
             string = string.replace(group, '_' * len(group))
+        mainloop = self._get_spans_main_loop
         # The title in WikiLinks may contain braces that interfere with
         # detection of templates
+        wikilink_spans = []
+        parameter_spans = []
+        parser_function_spans = []
+        template_spans = []
         for match in WIKILINK_REGEX.finditer(string):
-            wikilink_spans.append(match.span())
+            span = match.span()
+            wikilink_spans.append(span)
             group = match.group()
+            parameter_spans, parser_function_spans, template_spans = mainloop(
+                group,
+                span[0],
+                parameter_spans,
+                parser_function_spans,
+                template_spans,
+            )
             string = string.replace(
                 group,
                 group.replace('}', '_').replace('{', '_'),
             )
+        parameter_spans, parser_function_spans, template_spans = mainloop(
+            string,
+            0,
+            parameter_spans,
+            parser_function_spans,
+            template_spans,
+        )
+        return {
+            'p': parameter_spans,
+            'pf': parser_function_spans,
+            't': template_spans,
+            'wl': wikilink_spans,
+            'c': comment_spans,
+            'et': extension_tag_spans,
+        }
+
+    def _get_spans_main_loop(
+        self,
+        string,
+        index,
+        parameter_spans,
+        parser_function_spans,
+        template_spans
+    ):
+        """Run the main loop for _get_spans.
+
+        `string`: The string or part of string that we are looking up.
+        `index`: Add to every returned index.
+        
+        This function was created because the _get_spans function needs to
+        call it n + 1 time. One time for the whole string and n times for
+        each of the n WikiLinks.
+        """
+        
         while True:
             # Single braces will interfere with detection of other elements and
             # should be removed beforehand.
@@ -522,7 +581,8 @@ class WikiText:
                 loop = False
                 for match in TEMPLATE_PARAMETER_REGEX.finditer(string):
                     loop = True
-                    parameter_spans.append(match.span())
+                    ss, se = match.span()
+                    parameter_spans.append((ss + index, se + index))
                     group = match.group()
                     string = string.replace(group, '___' + group[3:-3] + '___')
             # Templates
@@ -533,7 +593,8 @@ class WikiText:
                     loop = False
                     for match in PARSER_FUNCTION_REGEX.finditer(string):
                         loop = True
-                        parser_function_spans.append(match.span())
+                        ss, se = match.span()
+                        parser_function_spans.append((ss + index, se + index))
                         group = match.group()
                         string = string.replace(
                             group, '__' + group[2:-2] + '__'
@@ -541,19 +602,14 @@ class WikiText:
                 # loop is False at this point
                 for match in TEMPLATE_NOT_PARAM_REGEX.finditer(string):
                     loop = True
-                    template_spans.append(match.span())
+                    ss, se = match.span()
+                    template_spans.append((ss + index, se + index))
                     group = match.group()
                     string = string.replace(group, '__' + group[2:-2] + '__' )
             if not match:
                 break
-        return {
-            'p': parameter_spans,
-            'pf': parser_function_spans,
-            't': template_spans,
-            'wl': wikilink_spans,
-            'c': comment_spans,
-            'et': extension_tag_spans,
-        }
+        return parameter_spans, parser_function_spans, template_spans
+        
 
     def _shrink_span_update(self, rmstart, rmend):
         """Update self._spans according to the removed span.
