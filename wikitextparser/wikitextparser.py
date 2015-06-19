@@ -248,7 +248,7 @@ class WikiText:
         del self._spans['opcodes']
 
     def strins(self, start, string):
-        """Insert the given string at the specified index."""
+        """Insert the given string at the specified index. Where start >= 0."""
         lststr = self._lststr
         lststr0 = lststr[0]
         start += self._get_span()[0]
@@ -261,7 +261,26 @@ class WikiText:
         )
 
     def strdel(self, start, end):
-        """Remove the given range from self.string."""
+        """Remove the given range from self.string.
+
+        0 <= start <= end
+        
+        If an operation includes both insertion and deletion. It's safer to
+        use the `strins` function first. Otherwise there is a possibility
+        of insertion in the wrong spans.
+        """
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        ss = self._get_span()[0]
+        end += ss
+        start += ss
+        # Updating lststr
+        lststr[0] = lststr0[:start] + lststr0[end:]
+        # Updating spans
+        self._shrink_span_update(
+            rmstart=start,
+            rmend=end,
+        )
             
 
     def __repr__(self):
@@ -349,13 +368,13 @@ class WikiText:
         """Return a list of found external link objects."""
         external_links = []
         spans = self._spans
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         if 'el' not in spans:
             spans['el'] = []
         elspans = spans['el']
         for m in EXTERNALLINK_REGEX.finditer(self.string):
             mspan = m.span()
-            mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+            mspan = (mspan[0] + ss, mspan[1] + ss)
             if mspan not in elspans:
                 elspans.append(mspan)
             external_links.append(
@@ -377,21 +396,21 @@ class WikiText:
         sections = []
         spans = self._spans
         lststr = self._lststr
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         selfstring = self.string
         if 's' not in spans:
             spans['s'] = []
         sspans = spans['s']
         # Lead section
         mspan = LEAD_SECTION_REGEX.match(selfstring).span()
-        mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+        mspan = (mspan[0] + ss, mspan[1] + ss)
         if mspan not in sspans:
             sspans.append(mspan)
         sections.append(Section(lststr, spans, sspans.index(mspan)))
         # Other sections
         for m in SECTION_REGEX.finditer(selfstring):
             mspan = m.span()
-            mspan = (mspan[0] + selfstart, mspan[1] + selfstart)
+            mspan = (mspan[0] + ss, mspan[1] + ss)
             if mspan not in sspans:
                 sspans.append(mspan)
             latest_section = Section(lststr, spans, sspans.index(mspan))
@@ -410,14 +429,14 @@ class WikiText:
     def _not_in_subspans_split(self, char):
         """Split self.string using `char` unless char is in self._spans."""
         # not used
-        selfstart, selfend = self._get_span()
-        string = self._lststr[0][selfstart:selfend]
+        ss, se = self._get_span()
+        string = self._lststr[0][ss:se]
         splits = []
         findstart = 0
         in_spans = self._in_subspans_factory()
         while True:
             index = string.find(char, findstart)
-            while in_spans(selfstart + index):
+            while in_spans(ss + index):
                 index = string.find(char, index + 1)
             if index == -1:
                 return splits + [string[findstart:]]
@@ -426,12 +445,12 @@ class WikiText:
 
     def _not_in_subspans_partition(self, char):
         """Partition self.string using `char` unless char is in self._spans."""
-        selfstart, selfend = self._get_span()
-        string = self._lststr[0][selfstart:selfend]
+        ss, se = self._get_span()
+        string = self._lststr[0][ss:se]
         findstart = 0
         in_spans = self._in_subspans_factory()
         index = string.find(char, findstart)
-        while in_spans(selfstart + index):
+        while in_spans(ss + index):
             index = string.find(char, index + 1)
         if index == -1:
             return (string, '', '')
@@ -439,18 +458,18 @@ class WikiText:
 
     def _not_in_subspans_split_spans(self, char):
         """Like _not_in_subspans_split but return spans."""
-        selfstart, selfend = self._get_span()
-        string = self._lststr[0][selfstart:selfend]
+        ss, se = self._get_span()
+        string = self._lststr[0][ss:se]
         results = []
         findstart = 0
         in_spans = self._in_subspans_factory()
         while True:
             index = string.find(char, findstart)
-            while in_spans(selfstart + index):
+            while in_spans(ss + index):
                 index = string.find(char, index + 1)
             if index == -1:
-                return results + [(selfstart + findstart, selfend)]
-            results.append((selfstart + findstart, selfstart + index))
+                return results + [(ss + findstart, se)]
+            results.append((ss + findstart, ss + index))
             findstart = index + 1
 
     def _in_subspans_factory(self):
@@ -459,11 +478,11 @@ class WikiText:
         Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'et').
         """
         # calculate subspans
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         subspans = []
         for key in ('t', 'p', 'pf', 'wl', 'c', 'et'):
             for span in self._spans[key]:
-                if selfstart < span[0] and span[1] <= selfend:
+                if ss < span[0] and span[1] <= se:
                     subspans.append(span)
         # the return function
         def in_spans(index):
@@ -475,10 +494,10 @@ class WikiText:
         return in_spans
 
     def _gen_subspan_indices(self, type_):
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
             # including self._get_span()
-            if selfstart <= s[0] and s[1] <= selfend:
+            if ss <= s[0] and s[1] <= se:
                 yield i
 
     def _get_spans(self):
@@ -649,18 +668,18 @@ class WikiText:
     def _extend_span_update(self, estart, elength):
         """Update self._spans according to the added span."""
         # Note: No span should be removed from _spans.
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         for spans in self._spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
                 if estart < spanstart or (
                     # Not at the beginning of selfspan
-                    estart == spanstart != selfstart and spanend != selfend
+                    estart == spanstart != ss and spanend != se
                 ):
                     # Added part is before the span
                     spans[i] = (spanstart + elength, spanend + elength)
                 elif spanstart <= estart < spanend or (
                     # At the end of selfspan
-                    spanstart == selfstart and estart == spanend == selfend
+                    spanstart == ss and estart == spanend == se
                 ):
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
@@ -694,10 +713,10 @@ class _Indexed_Object(WikiText):
             self._index = index
 
     def _gen_subspan_indices(self, type_):
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
             # not including self._get_span()
-            if selfstart < s[0] and s[1] < selfend:
+            if ss < s[0] and s[1] < se:
                 yield i
 
 
@@ -763,11 +782,9 @@ class Template(_Indexed_Object):
     @name.setter
     def name(self, newname):
         """Set the new name for the template."""
-        name, pipe, paramters  = self.string[2:-2].partition('|')
-        if pipe:
-            self.string = '{{' + newname + '|' + paramters + '}}'
-        else:
-            self.string = '{{' + newname + '}}'
+        name  = self.string[2:-2].partition('|')[0]
+        self.strins(2, newname)
+        self.strdel(2 + len(newname), 2 + len(newname + name))
 
 
     def rm_first_of_dup_args(self):
@@ -783,7 +800,8 @@ class Template(_Indexed_Object):
         for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
-                a.string = ''
+                # a.string = ''
+                a.strdel(0, len(a.string))
             else:
                 names.append(name)
 
@@ -821,18 +839,18 @@ class Template(_Indexed_Object):
                 # This is a duplicate argument.
                 if not val:
                     # This duplacate argument is empty. It's safe to remove it.
-                    arg.string = ''
+                    arg.strdel(0, len(arg.string))
                 else:
                     # Try to remove any of the detected duplicates of this
                     # that are empty or their value equals to this one.
                     name_args = name_args_vals[name][0]
                     name_vals = name_args_vals[name][1]
                     if val in name_vals:
-                        arg.string = ''
+                        arg.strdel(0, len(arg.string))
                     elif '' in name_vals:
                         i = name_vals.index('')
                         a = name_args.pop(i)
-                        a.string = ''
+                        a.strdel(0, len(a.string))
                         name_vals.pop(i)
                     else:
                         # It was not possible to remove any of the duplicates.
@@ -860,6 +878,7 @@ class Template(_Indexed_Object):
         """
         args = list(reversed(self.arguments))
         arg = self._get_arg(name, args)
+        # Updating an existing argument
         if arg:
             if preserve_spacing:
                 val = arg.value
@@ -867,10 +886,12 @@ class Template(_Indexed_Object):
             else:
                 arg.value = value
             return
+        # Adding a new argument
         if positional is None:
             if POSITIONAL_ARG_NAME.match(name) and value.strip() == value:
                 positional = True
-        if preserve_spacing and args:
+        # Calculate the whitespace needed before arg-name and after arg-value
+        if not positional and preserve_spacing and args:
             before_names = []
             name_lengths = []
             before_values = []
@@ -891,33 +912,42 @@ class Template(_Indexed_Object):
             before_value = mode(before_values)
         else:
             preserve_spacing = False
+        # Calculate the string that needs to be added to the Template
         if positional:
                 # ignore preserve_spacing for positional args
-                string = '|' + value
+                addstring = '|' + value
         else:
             if preserve_spacing:
-                string = (
+                addstring = (
                     '|' + (before_name + name.strip()).ljust(name_length) +
                     '=' + before_value + value + after_value
                 )
             else:
-                string = '|' + name + '=' + value
+                addstring = '|' + name + '=' + value
+        # Place the addstring in the right position
         if before:
             arg = self._get_arg(before, args)
-            arg.string += arg.string
+            arg.strins(0, addstring)
         elif after:
             arg = self._get_arg(after, args)
-            arg.string += string
+            # arg.string += addstring
+            arg.strins(len(arg.string), addstring)
         else:
             if args:
+                # Insert after the last argument
+                # The addstring needs to be recalculated because we don't
+                # want to change the the whitespace before the final braces.
                 arg = args[0]
-                arg.string = (
-                    arg.string.rstrip() + after_value + string.rstrip() +
+                arg_string = arg.string
+                arg.strins(
+                    len(arg_string),
+                    arg.string.rstrip() + after_value + addstring.rstrip() +
                     after_values[0]
                 )
+                arg.strdel(0, len(arg_string))
             else:
                 # The template has no arguments
-                self.string = self.string[:-2] + string + '}}'
+                self.strins(len(self.string) - 2, addstring)
 
 
     def _get_arg(self, name, args):
@@ -1080,7 +1110,7 @@ class ParserFunction(_Indexed_Object):
         if typeindex not in spans:
             spans[typeindex] = []
         aspans = spans[typeindex]
-        selfstart, selfend = self._get_span()
+        ss, se = self._get_span()
         # remove the final '}}' from the last argument.
         barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
         # first argument

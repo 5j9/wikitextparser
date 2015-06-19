@@ -487,6 +487,11 @@ class Template(unittest.TestCase):
         self.assertEqual('|a', t.get_arg('1').string)
         self.assertEqual(None, t.get_arg('c'))
 
+
+class TemplateSetArg(unittest.TestCase):
+
+    """Test set_arg function of Template class."""
+
     def test_set_arg(self):
         # Template with no args, keyword
         t = wtp.Template('{{t}}')
@@ -520,6 +525,17 @@ class Template(unittest.TestCase):
         self.assertEqual(
             '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
         )
+
+    def test_before(self):
+        t = wtp.Template('{{t|a|b|c=c|d}}')
+        t.set_arg('e', 'e', before='c')
+        self.assertEqual('{{t|a|b|e=e|c=c|d}}', t.string)
+
+    def test_after(self):
+        t = wtp.Template('{{t|a|b|c=c|d}}')
+        t.set_arg('e', 'e', after='c')
+        self.assertEqual('{{t|a|b|c=c|e=e|d}}', t.string)
+
 
 class WikiLink(unittest.TestCase):
 
