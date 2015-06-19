@@ -660,6 +660,11 @@ class Section(unittest.TestCase):
         s.contents = 'newlead'
         self.assertEqual('newlead', s.string)
 
+    def test_set_level(self):
+        s = wtp.Section('=== t ===\ntext')
+        s.level = 2
+        self.assertEqual('== t ==\ntext', s.string)
+
 
 class Argument(unittest.TestCase):
 
