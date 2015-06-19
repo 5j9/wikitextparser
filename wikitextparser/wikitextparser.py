@@ -1442,8 +1442,9 @@ class Section(_Indexed_Object):
                 "Can't set title for a lead section. "
                 "Try adding it to the contents."
             )
-        equals = '=' * level
-        self.string = equals + newtitle + equals + '\n' + self.contents
+        title = self.title
+        self.strins(level, newtitle)
+        self.strdel(level + len(newtitle), level + len(newtitle+ title))
 
     @property
     def contents(self):
@@ -1456,10 +1457,17 @@ class Section(_Indexed_Object):
     def contents(self, newcontents):
         """Set newcontents as the contents of this section."""
         level = self.level
+        contents = self.contents
         if level == 0:
-            self.string = newcontents
+            self.strins(0, newcontents)
+            self.strdel(len(newcontents), len(newcontents + contents))
         else:
-            self.string = self.string.partition('\n')[0] + '\n' + newcontents
+            title = self.title
+            self.strins(level + len(title) + level + 1, newcontents)
+            self.strdel(
+                level + len(title) + level + len('\n' + newcontents),
+                level + len(title) + level + len('\n' + newcontents + contents)
+            )
 
 
 def mode(list_):
