@@ -802,7 +802,6 @@ class Template(_Indexed_Object):
         for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
-                # a.string = ''
                 a.strdel(0, len(a.string))
             else:
                 names.append(name)
@@ -932,7 +931,6 @@ class Template(_Indexed_Object):
             arg.strins(0, addstring)
         elif after:
             arg = self._get_arg(after, args)
-            # arg.string += addstring
             arg.strins(len(arg.string), addstring)
         else:
             if args:
@@ -1378,9 +1376,12 @@ class Argument(_Indexed_Object):
                 len(pipename + equal + newvalue),
                 len(pipename + equal + newvalue + value)
             )
-            #self.string = pipename + '=' + newvalue
         else:
-            self.string = pipename[0] + newvalue
+            self.strins(1, newvalue)
+            self.strdel(
+                len('|' + newvalue),
+                len('|' + newvalue + pipename[1:])
+            )
 
 
 class Section(_Indexed_Object):
@@ -1413,8 +1414,16 @@ class Section(_Indexed_Object):
     @level.setter
     def level(self, newlevel):
         """Change leader level of this sectoin."""
+        level = self.level
+        title = self.title
         equals = '=' * newlevel
-        self.string = equals + self.title + equals + self.contents
+        self.strins(0, equals)
+        self.strdel(newlevel, newlevel + level)
+        self.strins(len(equals + title), equals)
+        self.strdel(
+            len(equals + title + equals),
+            len(equals + title + equals) + level,
+        )
 
     @property
     def title(self):
