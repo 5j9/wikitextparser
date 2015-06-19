@@ -673,13 +673,15 @@ class WikiText:
             for i, (spanstart, spanend) in enumerate(spans):
                 if estart < spanstart or (
                     # Not at the beginning of selfspan
-                    estart == spanstart != ss and spanend != se
+                    estart == spanstart and spanstart != ss and spanend != se
                 ):
                     # Added part is before the span
                     spans[i] = (spanstart + elength, spanend + elength)
-                elif spanstart <= estart < spanend or (
+                elif spanstart < estart < spanend or (
                     # At the end of selfspan
-                    spanstart == ss and estart == spanend == se
+                    estart == spanstart and spanstart== ss and spanend == se
+                ) or (
+                    estart == spanend and spanend == se and spanstart == ss
                 ):
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
@@ -1045,13 +1047,13 @@ class Parameter(_Indexed_Object):
         """Set the new value. If a default exist, change it. Add ow."""
         olddefault = self.default
         if olddefault is None:
-            self.strins(3 + len(self.name), '|' + newdefault)
+            self.strins(len('{{{' + self.name), '|' + newdefault)
         else:
             name = self.name
-            self.strins(3 + len(name), '|' + newdefault)
+            self.strins(len('{{{' + name), '|' + newdefault)
             self.strdel(
-                3 + len(name + '|' + newdefault),
-                3 + len(name + '|' + newdefault + '|' + olddefault)
+                len('{{{' + name + '|' + newdefault),
+                len('{{{' + name + '|' + newdefault + '|' + olddefault)
             )
     def append_default(self, new_default_name):
         """Append a new default parameter in the appropriate place.
@@ -1079,15 +1081,24 @@ class Parameter(_Indexed_Object):
                         return
                     innermost_param = p
                     dig = True
-        if innermost_param.pipe:
-            innermost_param.string = (
-                '{{{' + innermost_param.name + '|{{{' +
-                new_default_name + '|' + innermost_param.default + '}}}}}}'
+        innermost_default = innermost_param.default
+        if innermost_default is None:
+            innermost_param.strins(
+                len(innermost_param.string) - 3,
+                '|{{{' + new_default_name + '}}}'
             )
         else:
-            innermost_param.string = (
-                '{{{' + innermost_param.name + '|{{{' +
-                new_default_name + '}}}}}}'
+            name = innermost_param.name
+            innermost_param.strins(
+                len('{{{' + name),
+                '|{{{' + new_default_name
+            )
+            innermost_param.strins(
+                len(
+                    '{{{' + name + '|{{{' + new_default_name +
+                    '|' + innermost_default
+                ),
+                '}}}',
             )
 
 
@@ -1172,10 +1183,8 @@ class WikiLink(_Indexed_Object):
     def target(self, newtarget):
         """Set a new target."""
         target, pipe, text = self.string[2:-2].partition('|')
-        if pipe:
-            self.string = '[[' + newtarget + '|' + text + ']]'
-        else:
-            self.string = '[[' + newtarget + ']]'
+        self.strins(2, newtarget)
+        self.strdel(len('[[' + newtarget), len('[[' + newtarget + target))
 
     @property
     def text(self):
@@ -1187,7 +1196,12 @@ class WikiLink(_Indexed_Object):
     @text.setter
     def text(self, newtext):
         """Set a new text."""
-        self.string = '[[' + self.target + '|' + newtext + ']]'
+        target, pipe, text = self.string[2:-2].partition('|')
+        self.strins(len('[[' + target + pipe), newtext)
+        self.strdel(
+            len('[[' + target + pipe + newtext),
+            len('[[' + target + pipe + newtext + text),
+        )
 
 
 class Comment(_Indexed_Object):
@@ -1240,14 +1254,14 @@ class ExternalLink(_Indexed_Object):
     @url.setter
     def url(self, newurl):
         """Set a new url for the current ExternalLink."""
-        text = self.text
         if self.in_brackets:
-            if text:
-                self.string = '[' + newurl + ' ' + text + ']'
-            else:
-                self.string = '[' + newurl + ']'
+            url = self.url
+            self.strins(1, newurl)
+            self.strdel(len('[' + newurl), len('[' + newurl + url))
         else:
-            self.string = newurl
+            url = self.url
+            self.strins(0, newurl)
+            self.strdel(len(newurl), len(newurl + url))
 
     @property
     def text(self):
@@ -1266,14 +1280,24 @@ class ExternalLink(_Indexed_Object):
 
         Automatically puts the ExternalLink in brackets if it's not already.
         """
-        self.string = '[' + self.url + ' ' + newtext + ']'
+        if not self.in_brackets:
+            url = self.string
+            self.strins(len(url), ' ]')
+            self.strins(0, '[')
+            text = ''
+        else:
+            url = self.url
+            text = self.text
+        self.strins(len('[' + url + ' '), newtext)
+        self.strdel(
+            len('[' + url + ' ' + newtext),
+            len('[' + url + ' ' + newtext + text),
+        )
 
     @property
     def in_brackets(self):
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        if self.string.startswith('['):
-            return True
-        return False
+        return self.string.startswith('[')
 
 
 class Argument(_Indexed_Object):
@@ -1322,7 +1346,9 @@ class Argument(_Indexed_Object):
     @name.setter
     def name(self, newname):
         """Changes the name of the argument."""
-        self.string = '|' + newname + '=' + self.value
+        name = self.name
+        self.strins(1, newname)
+        self.strdel(len('|' + newname), len('|' + name + newname))
 
     @property
     def positional(self):
@@ -1345,8 +1371,14 @@ class Argument(_Indexed_Object):
     def value(self, newvalue):
         """Set a the value for the current argument."""
         pipename, equal, value = self._not_in_subspans_partition('=')
+        
         if equal:
-            self.string = pipename + '=' + newvalue
+            self.strins(len(pipename + equal), newvalue)
+            self.strdel(
+                len(pipename + equal + newvalue),
+                len(pipename + equal + newvalue + value)
+            )
+            #self.string = pipename + '=' + newvalue
         else:
             self.string = pipename[0] + newvalue
 
