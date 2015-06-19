@@ -550,6 +550,9 @@ class WikiLink(unittest.TestCase):
         wl = wtp.WikiLink('[[A | B]]')
         wl.target = ' C '
         self.assertEqual('[[ C | B]]', wl.string)
+        wl = wtp.WikiLink('[[A]]')
+        wl.target = ' C '
+        self.assertEqual('[[ C ]]', wl.string)
 
     def test_set_text(self):
         wl = wtp.WikiLink('[[A | B]]')
@@ -557,7 +560,7 @@ class WikiLink(unittest.TestCase):
         self.assertEqual('[[A | C ]]', wl.string)
 
 
-class ExternalLinks(unittest.TestCase):
+class ExternalLink(unittest.TestCase):
     """Test capturing of external links."""
 
     def test_numberedmailto(self):
@@ -598,6 +601,9 @@ class ExternalLinks(unittest.TestCase):
         el = wtp.ExternalLink('ftp://mediawiki.org')
         el.url = 'https://www.mediawiki.org/'
         self.assertEqual('https://www.mediawiki.org/', el.string)
+        el = wtp.ExternalLink('[ftp://mediawiki.org]')
+        el.url = 'https://www.mediawiki.org/'
+        self.assertEqual('[https://www.mediawiki.org/]', el.string)
 
 
 
