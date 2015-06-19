@@ -1043,9 +1043,16 @@ class Parameter(_Indexed_Object):
     @default.setter
     def default(self, newdefault):
         """Set the new value. If a default exist, change it. Add ow."""
-        #self.strins(3 + len(self.name), '|' + newdefault)
-        self.string = '{{{' + self.name + '|' + newdefault + '}}}'
-
+        olddefault = self.default
+        if olddefault is None:
+            self.strins(3 + len(self.name), '|' + newdefault)
+        else:
+            name = self.name
+            self.strins(3 + len(name), '|' + newdefault)
+            self.strdel(
+                3 + len(name + '|' + newdefault),
+                3 + len(name + '|' + newdefault + '|' + olddefault)
+            )
     def append_default(self, new_default_name):
         """Append a new default parameter in the appropriate place.
 

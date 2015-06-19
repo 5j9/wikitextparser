@@ -745,14 +745,22 @@ class Parameter(unittest.TestCase):
         self.assertEqual('', p.default)
         p.name = ' Q '
         self.assertEqual('{{{ Q |}}}', p.string)
-        p.default = ' V '
-        self.assertEqual('{{{ Q | V }}}', p.string)
         p = wtp.Parameter('{{{P|D}}}')
         self.assertEqual('P', p.name)
         self.assertEqual('|', p.pipe)
         self.assertEqual('D', p.default)
         p.name = ' Q '
         self.assertEqual('{{{ Q |D}}}', p.string)
+        p.default = ' V '
+        self.assertEqual('{{{ Q | V }}}', p.string)
+
+    def test_default_setter(self):
+        # The default is not None
+        p = wtp.Parameter('{{{ Q |}}}')
+        p.default = ' V '
+        self.assertEqual('{{{ Q | V }}}', p.string)
+        # The default is None
+        p = wtp.Parameter('{{{ Q }}}')
         p.default = ' V '
         self.assertEqual('{{{ Q | V }}}', p.string)
 
