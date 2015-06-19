@@ -740,9 +740,11 @@ class Parameter(unittest.TestCase):
         p = wtp.Parameter('{{{P}}}')
         self.assertEqual('P', p.name)
         self.assertEqual('', p.pipe)
+        self.assertEqual(None, p.default)
+        p = wtp.Parameter('{{{P|}}}')
         self.assertEqual('', p.default)
         p.name = ' Q '
-        self.assertEqual('{{{ Q }}}', p.string)
+        self.assertEqual('{{{ Q |}}}', p.string)
         p.default = ' V '
         self.assertEqual('{{{ Q | V }}}', p.string)
         p = wtp.Parameter('{{{P|D}}}')

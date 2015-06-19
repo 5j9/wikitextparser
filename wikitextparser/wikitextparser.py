@@ -1022,10 +1022,8 @@ class Parameter(_Indexed_Object):
     def name(self, newname):
         """Set the new name."""
         name, pipe, default = self.string[3:-3].partition('|')
-        if pipe:
-            self.string = '{{{' + newname + '|' + default + '}}}'
-        else:
-            self.string = '{{{' + newname + '}}}'
+        self.strins(3, newname)
+        self.strdel(3 + len(newname), 3 + len(newname + name))
 
     @property
     def pipe(self):
@@ -1038,11 +1036,14 @@ class Parameter(_Indexed_Object):
     @property
     def default(self):
         """Return value of a keyword argument."""
-        return self.string[3:-3].partition('|')[2]
+        string = self.string[3:-3]
+        if '|' in string:
+            return string.partition('|')[2]
 
     @default.setter
     def default(self, newdefault):
         """Set the new value. If a default exist, change it. Add ow."""
+        #self.strins(3 + len(self.name), '|' + newdefault)
         self.string = '{{{' + self.name + '|' + newdefault + '}}}'
 
     def append_default(self, new_default_name):
