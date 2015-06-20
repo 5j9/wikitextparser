@@ -194,6 +194,9 @@ class WikiText:
             estart=start,
             elength=len(string),
         )
+        for k, v in parse_to_spans(string).items():
+            for ss, se in v:
+                self._spans[k].append((ss + start, se + start))
 
     def strdel(self, start, end):
         """Remove the given range from self.string.
@@ -503,7 +506,6 @@ class _Indexed_Object(WikiText):
         self,
         string,
         spans=None,
-        index=None,
     ):
         """Set initial value for self._lststr, self._spans and self._index."""
         if type(string) is list:
@@ -514,10 +516,6 @@ class _Indexed_Object(WikiText):
             self._spans = parse_to_spans(self._lststr[0])
         else:
             self._spans = spans
-        if index is None:
-            self._index = -1
-        else:
-            self._index = index
 
     def _gen_subspan_indices(self, type_):
         ss, se = self._get_span()
@@ -542,7 +540,11 @@ class Template(_Indexed_Object):
         index=None,
     ):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['t']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the Template."""
@@ -808,7 +810,11 @@ class Parameter(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['p']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the Parameter."""
@@ -893,15 +899,18 @@ class Parameter(_Indexed_Object):
         else:
             name = innermost_param.name
             innermost_param.strins(
-                len('{{{' + name),
-                '|{{{' + new_default_name
+                len('{{{' + name + '|'),
+                '{{{' + new_default_name + '|' + innermost_default + '}}}'
             )
-            innermost_param.strins(
+            innermost_param.strdel(
                 len(
                     '{{{' + name + '|{{{' + new_default_name +
-                    '|' + innermost_default
+                    '|' + innermost_default + '}}}'
                 ),
-                '}}}',
+                len(
+                    '{{{' + name + '|{{{' + new_default_name +
+                    '|' + innermost_default + '}}}' + innermost_default
+                ),
             )
 
 
@@ -911,7 +920,11 @@ class ParserFunction(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['pf']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the ParserFunction."""
@@ -967,7 +980,11 @@ class WikiLink(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['wl']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the WikiLink."""
@@ -1013,7 +1030,11 @@ class Comment(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Run self._common_init."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['c']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the Comment."""
@@ -1035,9 +1056,13 @@ class ExternalLink(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Run self._common_init. Set self._spans['el'] if spans is None."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
         if spans is None:
             self._spans['el'] = [(0, len(string))]
+        if index is None:
+            self._index = len(self._spans['el']) - 1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the ExternalLink."""
@@ -1115,13 +1140,17 @@ class Argument(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None, typeindex=None):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
         if typeindex is None:
             self._typeindex = 'a'
         else:
             self._typeindex = typeindex
         if spans is None:
             self._spans[self._typeindex] = [(0, len(string))]
+        if index is None:
+            self._index = len(self._spans['a']) -1
+        else:
+            self._index = index
 
 
     def __repr__(self):
@@ -1195,9 +1224,13 @@ class Section(_Indexed_Object):
 
     def __init__(self, string, spans=None, index=None):
         """Initialize the object."""
-        self._common_init(string, spans, index)
+        self._common_init(string, spans)
         if spans is None:
             self._spans['s'] = [(0, len(string))]
+        if index is None:
+            self._index = len(self._spans['s']) -1
+        else:
+            self._index = index
 
     def __repr__(self):
         """Return the string representation of the Argument."""

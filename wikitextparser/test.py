@@ -484,11 +484,17 @@ class Template(unittest.TestCase):
         t.name = 'g'
         self.assertEqual('g', t.name)
 
-    @unittest.expectedFailure
-    def test_overwriting_on_a_string_causes_loss_of_spans(self):
+    def test_overwriting_on_a_string_subspancontaining_string(self):
         t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
         t.name += 's'
         self.assertEqual('t {{{p1|d1}}} s', t.name)
+
+    @unittest.expectedFailure
+    def test_overwriting_on_a_string_causes_loss_of_spans(self):
+        t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
+        p = t.parameters[0]
+        t.name += 's'
+        self.assertEqual('{{{p1|d1}}}', p.string)
 
 
 class TemplateSetArg(unittest.TestCase):
@@ -784,7 +790,7 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{p1|{{{p2|{{{p3|}}}}}}}}}', p.string)
         # What happens if we try it again
         p.append_default('p4')
-        self.assertEqual('{{{p1|{{{p2|{{{p4|{{{p3|}}}}}}}}}}}}', p.string)
+        self.assertEqual('{{{p1|{{{p2|{{{p3|{{{p4|}}}}}}}}}}}}', p.string)
         # Appending to and inner parameter without default
         p = wtp.Parameter('{{{p1|{{{p2}}}}}}')
         p.append_default('p3')
