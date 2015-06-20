@@ -779,7 +779,7 @@ class Template(_Indexed_Object):
     @property
     def name(self):
         """Return template's name part. (includes whitespace)"""
-        return self.string[2:-2].partition('|')[0]
+        return self._not_in_subspans_partition('|')[0][2:]
 
     @name.setter
     def name(self, newname):

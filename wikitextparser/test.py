@@ -487,6 +487,11 @@ class Template(unittest.TestCase):
         self.assertEqual('|a', t.get_arg('1').string)
         self.assertEqual(None, t.get_arg('c'))
 
+    def test_name_contains_a_param_with_default(self):
+        t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
+        self.assertEqual('t {{{p1|d1}}} ', t.name)
+        self.assertEqual('| {{{p2|d2}}} ', t.arguments[0].string)
+
 
 class TemplateSetArg(unittest.TestCase):
 
