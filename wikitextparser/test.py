@@ -336,16 +336,6 @@ class SpansFunction(unittest.TestCase):
         self.assertEqual('a', t2.arguments[0].value)
         self.assertEqual('1', t2.arguments[0].name)
 
-    def test_extension_tags(self):
-        for tag in wtp.TAG_EXTENSIONS:
-            s = "{{text|<" + tag + ">}}</" + tag + ">}}"
-            wt = wtp.WikiText(s)
-            self.assertEqual((0, len(s)), wt._spans['t'][0])
-
-        s = "{{text|<!-- }} -->}}"
-        wt = wtp.WikiText(s)
-        self.assertEqual((0, len(s)), wt._spans['t'][0])
-
 
 class Template(unittest.TestCase):
 
@@ -491,6 +481,14 @@ class Template(unittest.TestCase):
         t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
         self.assertEqual('t {{{p1|d1}}} ', t.name)
         self.assertEqual('| {{{p2|d2}}} ', t.arguments[0].string)
+        t.name = 'g'
+        self.assertEqual('g', t.name)
+
+    @unittest.expectedFailure
+    def test_overwriting_on_a_string_causes_loss_of_spans(self):
+        t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
+        t.name += 's'
+        self.assertEqual('t {{{p1|d1}}} s', t.name)
 
 
 class TemplateSetArg(unittest.TestCase):
