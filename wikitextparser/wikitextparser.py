@@ -7,7 +7,7 @@ from datetime import datetime
 from pprint import pprint as pp
 from timeit import timeit
 
-from spans import innerloop, get_spans
+from spans import parse_to_spans
 
 
 # Sections
@@ -73,7 +73,7 @@ class WikiText:
         if spans:
             self._spans = spans
         else:
-            self._spans = get_spans(self._lststr[0])
+            self._spans = parse_to_spans(self._lststr[0])
 
     def __str__(self):
         """Return self-object as a string."""
@@ -511,7 +511,7 @@ class _Indexed_Object(WikiText):
         else:
             self._lststr = [string]
         if spans is None:
-            self._spans = get_spans(self._lststr[0])
+            self._spans = parse_to_spans(self._lststr[0])
         else:
             self._spans = spans
         if index is None:

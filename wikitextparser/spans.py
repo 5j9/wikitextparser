@@ -78,7 +78,7 @@ HTML_TAG_REGEX = re.compile(
 )
 
 
-def get_spans(string):
+def parse_to_spans(string):
     """Calculate and set self._spans.
 
     The result a dictionary containing lists of spans:
