@@ -99,6 +99,11 @@ class WikiText(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(s, str(wt.wikilinks[0]))
 
+    def test_template_inside_extension_tags(self):
+        s = "<includeonly>{{t}}</includeonly>"
+        wt = wtp.WikiText(s)
+        self.assertEqual('{{t}}', str(wt.templates[0]))
+
 
 class Contains(unittest.TestCase):
 
