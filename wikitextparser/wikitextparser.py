@@ -31,14 +31,14 @@ WIKILINK_REGEX = re.compile(
 )
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
-# <templatedata> and <includeonly> are added manually.
+# <templatedata> and <includeonly> were manually added to the  following list.
 # A simple trick to find out if a tag should be listed here or not is as
 # follows:
 # Create the {{text}} template in your wiki (You can copy the source code from
-# English Wikipedia). Then save the following in test page:
+# English Wikipedia). Then save the following in a test page:
 # {{text|0<tagname>1}}2</tagname>3}}4
 # If the ending braces in the redered result appear between 3 and 4, then
-# `tagname` is not an extension (e.g. <small>). Otherwise, i.e. if those
+# `tagname` is not an extension tag (e.g. <small>). Otherwise, i.e. if those
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
@@ -65,6 +65,25 @@ TAG_EXTENSIONS = [
     'imagemap',
     'indicator',
 ]
+# Contents of the some of the tags mentioned above can be parsed as wikitext.
+# For example, templates are valid inside the poem tag:
+#    <poem>{{text|Hi!}}</poem>
+# But not within math or source or ...
+# for more information about the <categorytree> tag see:
+# https://www.mediawiki.org/wiki/Extension:CategoryTree#
+#    The_.7B.7B.23categorytree.7D.7D_parser_function
+PARSABLE_TAG_EXTENSIONS = [
+    'ref',#TODO
+    'includeonly',
+    'poem',
+    'includeonly',
+    'categorytree',
+    'references',
+    'imagemap',
+    'inputbox',
+    'section',
+    'indicator',
+]   
 COMMENT_REGEX = re.compile(
     r'<!--.*?-->',
     re.DOTALL,
