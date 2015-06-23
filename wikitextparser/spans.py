@@ -61,9 +61,12 @@ TAG_EXTENSIONS = [
     'templatedata',
     'gallery',
     'graph',
-    'imagemap',
     'indicator',
 ]
+EXTENSION_TAGS_REGEX = re.compile(
+    r'<(' + '|'.join(TAG_EXTENSIONS)+ r')\s*.*?>.*?</\1\s*>',
+    re.DOTALL|re.IGNORECASE,
+)
 # Contents of the some of the tags mentioned above can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
 #    <poem>{{text|Hi!}}</poem>
@@ -72,8 +75,7 @@ TAG_EXTENSIONS = [
 # https://www.mediawiki.org/wiki/Extension:CategoryTree#
 #    The_.7B.7B.23categorytree.7D.7D_parser_function
 PARSABLE_TAG_EXTENSIONS = [
-    'ref',#TODO
-    'includeonly',
+    'ref',
     'poem',
     'includeonly',
     'categorytree',
@@ -81,20 +83,9 @@ PARSABLE_TAG_EXTENSIONS = [
     'imagemap',
     'inputbox',
     'section',
+    'gallery',
     'indicator',
-]   
-COMMENT_REGEX = re.compile(
-    r'<!--.*?-->',
-    re.DOTALL,
-)
-EXTENSION_TAGS_REGEX = re.compile(
-    r'<(' + '|'.join(TAG_EXTENSIONS)+ r')\s*.*?>.*?</\1\s*>',
-    re.DOTALL|re.IGNORECASE,
-)
-EXTENSION_TAGS_REGEX = re.compile(
-    r'<(' + '|'.join(TAG_EXTENSIONS)+ r')\s*.*?>.*?</\1\s*>',
-    re.DOTALL|re.IGNORECASE,
-)
+]
 COMMENT_REGEX = re.compile(
     r'<!--.*?-->',
     re.DOTALL,
@@ -114,33 +105,43 @@ def parse_to_spans(string):
         'et': extension_tag_spans,
     }
     """
-    # HTML <!-- comments -->
     comment_spans = []
+    extension_tag_spans = []
+    wikilink_spans = []
+    parameter_spans = []
+    parser_function_spans = []
+    template_spans = []
+    # HTML <!-- comments -->
     for match in COMMENT_REGEX.finditer(string):
         comment_spans.append(match.span())
         group = match.group()
         string = string.replace(group, '_' * len(group))
     # <extension tags>
-    extension_tag_spans = []
     for match in EXTENSION_TAGS_REGEX.finditer(string):
-        extension_tag_spans.append(match.span())
+        span = match.span()
+        extension_tag_spans.append(span)
         group = match.group()
         string = string.replace(group, '_' * len(group))
+        if any(
+            (group.startswith('<' + pte) for pte in PARSABLE_TAG_EXTENSIONS)
+        ):
+            indexed_parse_to_spans(
+                group[3:-3],
+                span[0] + 3,
+                comment_spans,
+                extension_tag_spans,
+                wikilink_spans,
+                parameter_spans,
+                parser_function_spans,
+                template_spans,
+            )
     # The title in WikiLinks may contain braces that interfere with
     # detection of templates
-    wikilink_spans = []
-    parameter_spans = []
-    parser_function_spans = []
-    template_spans = []
     for match in WIKILINK_REGEX.finditer(string):
         span = match.span()
         wikilink_spans.append(span)
         group = match.group()
-        (
-            parameter_spans,
-            parser_function_spans,
-            template_spans
-        ) = parse_to_spans_innerloop(
+        parse_to_spans_innerloop(
             group,
             span[0],
             parameter_spans,
@@ -151,11 +152,7 @@ def parse_to_spans(string):
             group,
             group.replace('}', '_').replace('{', '_'),
         )
-    (
-        parameter_spans,
-        parser_function_spans,
-        template_spans
-    ) = parse_to_spans_innerloop(
+    parse_to_spans_innerloop(
         string,
         0,
         parameter_spans,
@@ -171,6 +168,48 @@ def parse_to_spans(string):
         'et': extension_tag_spans,
     }
 
+
+def indexed_parse_to_spans(
+    string,
+    index,
+    comment_spans,
+    extension_tag_spans,
+    wikilink_spans,
+    parameter_spans,
+    parser_function_spans,
+    template_spans,
+):
+    """Basically the same as `parse_to_spans`, but with some arguments.
+
+    Accept an index and list of spans as argument.
+    Designed to deal with wikitexts within extension tags.
+    """
+    # Currently, does not work with nested <!-- comments --> or tag extensions.
+    # The title in WikiLinks may contain braces that interfere with
+    # detection of templates
+    for match in WIKILINK_REGEX.finditer(string):
+        ss, se = match.span()
+        wikilink_spans.append((index + ss, index + se))
+        group = match.group()
+        parse_to_spans_innerloop(
+            group,
+            index + ss,
+            parameter_spans,
+            parser_function_spans,
+            template_spans,
+        )
+        string = string.replace(
+            group,
+            group.replace('}', '_').replace('{', '_'),
+        )
+    parse_to_spans_innerloop(
+        string,
+        index,
+        parameter_spans,
+        parser_function_spans,
+        template_spans,
+    )
+    
 
 def parse_to_spans_innerloop(
     string,
@@ -188,7 +227,6 @@ def parse_to_spans_innerloop(
     call it n + 1 time. One time for the whole string and n times for
     each of the n WikiLinks.
     """
-    
     while True:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
@@ -235,4 +273,5 @@ def parse_to_spans_innerloop(
                 string = string.replace(group, '__' + group[2:-2] + '__' )
         if not match:
             break
-    return parameter_spans, parser_function_spans, template_spans
+    # Calls to this function make use of mutation in the arguments.
+    # There is no return value.

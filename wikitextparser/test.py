@@ -107,6 +107,11 @@ class WikiText(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual('{{t}}', str(wt.templates[0]))
 
+    def test_dont_parse_source_tag(self):
+        s = "<source>{{t}}</source>"
+        wt = wtp.WikiText(s)
+        self.assertEqual(0, len(wt.templates))
+
 
 class Contains(unittest.TestCase):
 
