@@ -1,6 +1,9 @@
+import sys
 import unittest
-import wikitextparser as wtp
 from pprint import pprint as pp
+
+sys.path.insert(0, '..')
+from wikitextparser import wikitextparser as wtp
 
 
 class WikiText(unittest.TestCase):
@@ -293,15 +296,15 @@ class SpansFunction(unittest.TestCase):
             '2.3.1\n== 3 ==\n'
         )
         self.assertEqual(
-            "[Argument('\\n'), Argument('== 1 ==\\n'), "
-            "Argument('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
+            "[Section('\\n'), Section('== 1 ==\\n'), "
+            "Section('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
             "===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n"
-            "==== 2.3.1 ====\\n2.3.1\\n'), Argument('=== 2.1 ===\\n"
+            "==== 2.3.1 ====\\n2.3.1\\n'), Section('=== 2.1 ===\\n"
             "==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
-            "Argument('==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
-            "Argument('===== 2.1.1.1 =====\\n'), Argument('=== 2.2 ===\\n'), "
-            "Argument('=== 2.3 ===\\n==== 2.3.1 ====\\n2.3.1\\n'), "
-            "Argument('==== 2.3.1 ====\\n2.3.1\\n'), Argument('== 3 ==\\n')]",
+            "Section('==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
+            "Section('===== 2.1.1.1 =====\\n'), Section('=== 2.2 ===\\n'), "
+            "Section('=== 2.3 ===\\n==== 2.3.1 ====\\n2.3.1\\n'), "
+            "Section('==== 2.3.1 ====\\n2.3.1\\n'), Section('== 3 ==\\n')]",
             str(wt.sections)
         )
 
