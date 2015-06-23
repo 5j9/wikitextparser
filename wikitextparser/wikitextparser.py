@@ -418,14 +418,14 @@ class WikiText:
 
         Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'et').
         """
-        # calculate subspans
+        # Calculate subspans
         ss, se = self._get_span()
         subspans = []
         for key in ('t', 'p', 'pf', 'wl', 'c', 'et'):
             for span in self._spans[key]:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
-        # the return function
+        # The return function
         def in_spans(index):
             """Return True if the given index is found within a subspans."""
             for span in subspans:
@@ -437,7 +437,7 @@ class WikiText:
     def _gen_subspan_indices(self, type_):
         ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
-            # including self._get_span()
+            # Including self._get_span()
             if ss <= s[0] and s[1] <= se:
                 yield i
         
@@ -497,22 +497,98 @@ class WikiText:
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
-    def _get_indent_level(self):
+
+    def _get_indent_level(self, with_respect_to=None):
         """Calculate the indent level for self.pprint function.
 
         Minimum returned value is 1.
         Being part of any Template or Parserfunction increases the indent level
         by one.
+
+        `with_respect_to` is an instance of WikiText object.
         """
         ss, se = self._get_span()
         level = 1 # a template is always found in itself
-        for s, e in self._spans['t']:
-            if s < ss and se < e:
-                level += 1
-        for s, e in self._spans['pf']:
-            if s < ss and se < e:
-                level += 1
-        return level
+        if with_respect_to is None:
+            for s, e in self._spans['t']:
+                if s < ss and se < e:
+                    level += 1
+            for s, e in self._spans['pf']:
+                if s < ss and se < e:
+                    level += 1
+            return level
+        else:
+            rs, re = with_respect_to._get_span()
+            for s, e in self._spans['t']:
+                if rs <= s < ss and se < e <= re:
+                    level += 1
+            for s, e in self._spans['pf']:
+                if rs <= s < ss  and se < e <= re:
+                    level += 1
+            return level
+
+    def pprint(self, indent='    '):
+        """Return a pretty print form of self.string.
+
+        May be useful in some templates. Indents parser function and template
+        arguments.
+        """
+        parsed = WikiText(self.string)
+        # first remove all current spacings
+        for template in parsed.templates:
+            level = template._get_indent_level()
+            arguments = template.arguments
+            template.name = template.name.strip()
+            if arguments:
+                template.name += '\n' + indent * level
+                for argument in arguments:
+                    # Warning:
+                    # positional arguments of tempalates are sensitive to
+                    # whitespace. See:
+                    # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
+                    argument_value = argument.value
+                    # Changing positional args to keyword args was disabled
+                    # because currently the parser can not distinguish between
+                    # some parserfunctions (e.g. {{formatnum:string|R}}) and
+                    # templates.
+                    '''if (argument.positional and
+                        argument_value.strip() == argument_value
+                    ):
+                        argument.name = argument.name
+                        argument.value = (
+                            argument_value.strip() + '\n' + indent * level
+                        )'''
+                    if not argument.positional:
+                        argument.name = argument.name.strip()
+                        argument.value = (
+                            argument_value.strip() + '\n' + indent * level
+                        )
+                # Special formatting for the last argument
+                if not argument.positional:
+                    argument.value = (
+                        argument.value.rstrip() + '\n' + indent * (level - 1)
+                    )
+
+        for parser_function in parsed.parser_functions:
+            level = parser_function._get_indent_level()
+            arguments = parser_function.arguments
+            if len(arguments) > 1:
+                arg0 = arguments[0]
+                arg0.value = arg0.value.strip() + '\n' + indent * level
+                # Whitespace, including newlines, tabs, and spaces is stripped
+                # from the beginning and end of all the parameters of
+                # parser functions. See:
+                # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
+                #    Stripping_whitespace
+                for argument in arguments[1:]:
+                    argument.value = (
+                        argument.value.strip() + '\n' + indent * level
+                    )
+                # Special formatting for the last argument
+                argument.value = (
+                    argument.value.rstrip() + '\n' + indent * (level - 1)
+                )
+        return parsed.string
 
 
 class _Indexed_WikiText(WikiText):

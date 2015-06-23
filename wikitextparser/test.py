@@ -145,11 +145,42 @@ class IndentLevel(unittest.TestCase):
 
     """Test the _get_indent_level method of the WikiText class."""
 
-    def test_a_is_actually_in_b(self):
+    def test_a_in_b(self):
         s = '{{b|{{a}}}}'
         a, b = wtp.WikiText(s).templates
         self.assertEqual(1, b._get_indent_level())
         self.assertEqual(2, a._get_indent_level())
+
+    def test_with_respect_to(self):
+        s = '{{c {{b|{{a}}}} }}'
+        a, b, c = wtp.WikiText(s).templates
+        self.assertEqual(3, a._get_indent_level())
+        self.assertEqual(2, a._get_indent_level(with_respect_to=b))
+        s = '{{#if: {{c {{b|{{a}}}} }} | ifyes }}'
+        a, b, c = wtp.WikiText(s).templates
+        self.assertEqual(4, a._get_indent_level())
+        self.assertEqual(2, a._get_indent_level(with_respect_to=b))
+
+
+class PrettyPrint(unittest.TestCase):
+
+    """Test the _get_indent_level method of the WikiText class."""
+
+    def test_template_with_multi_args(self):
+        s = "{{a|b=b|c=c|d=d|e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n    |b=b\n    |c=c\n    |d=d\n    |e=e\n}}',
+            wt.pprint(),
+        )
+
+    def test_double_space_indent(self):
+        s = "{{a|b=b|c=c|d=d|e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n  |b=b\n  |c=c\n  |d=d\n  |e=e\n}}',
+            wt.pprint('  '),
+        )
 
         
 class WikiTextSections(unittest.TestCase):
