@@ -497,6 +497,23 @@ class WikiText:
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
+    def _get_indent_level(self):
+        """Calculate the indent level for self.pprint function.
+
+        Minimum returned value is 1.
+        Being part of any Template or Parserfunction increases the indent level
+        by one.
+        """
+        ss, se = self._get_span()
+        level = 1 # a template is always found in itself
+        for s, e in self._spans['t']:
+            if s < ss and se < e:
+                level += 1
+        for s, e in self._spans['pf']:
+            if s < ss and se < e:
+                level += 1
+        return level
+
 
 class _Indexed_WikiText(WikiText):
 

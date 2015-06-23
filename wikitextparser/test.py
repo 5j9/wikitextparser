@@ -141,6 +141,17 @@ class Contains(unittest.TestCase):
         self.assertFalse(a1 in b2)
 
 
+class IndentLevel(unittest.TestCase):
+
+    """Test the _get_indent_level method of the WikiText class."""
+
+    def test_a_is_actually_in_b(self):
+        s = '{{b|{{a}}}}'
+        a, b = wtp.WikiText(s).templates
+        self.assertEqual(1, b._get_indent_level())
+        self.assertEqual(2, a._get_indent_level())
+
+        
 class WikiTextSections(unittest.TestCase):
 
     """Test section extracting capabilities of WikiText class."""
