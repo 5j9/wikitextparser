@@ -118,7 +118,7 @@ Here is a short demo of some of the functionalities:
     >>> t.rm_first_of_dup_args()
     >>> t
     Template('{{t|a=a}}')
-    >>> # Have look at test.py module for more details and probable pitfalls.
+    >>> # Have a look at test.py module for more details and probable pitfalls.
     >>> 
 
 See also: 
