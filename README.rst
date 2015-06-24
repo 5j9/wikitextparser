@@ -97,7 +97,7 @@ Here is a short demo of some of the functionalities:
     }}
     >>> # If you are dealing with a category like 
     >>> # [[Category:Pages using duplicate arguments in template calls]]
-    >>> # There are to functions that may be helpful:
+    >>> # There are two functions that may be helpful:
     >>> t = wtp.Template('{{t|a=a|a=b|a=a}}')
     >>> t.rm_dup_args_safe()
     >>> t
