@@ -571,6 +571,7 @@ class WikiText:
 
         for parser_function in parsed.parser_functions:
             level = parser_function._get_indent_level()
+            parser_function.name = parser_function.name.strip()
             arguments = parser_function.arguments
             if len(arguments) > 1:
                 arg0 = arguments[0]
