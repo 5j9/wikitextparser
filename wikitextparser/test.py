@@ -1,6 +1,5 @@
 import sys
 import unittest
-from pprint import pprint as pp
 
 sys.path.insert(0, '..')
 from wikitextparser import wikitextparser as wtp
@@ -112,6 +111,11 @@ class WikiText(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(0, len(wt.templates))
 
+    def test_comment_in_parserfanction_name(self):
+        s = "{{<!--c\n}}-->#if:|a}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(1, len(wt.parser_functions))
+
 
 class Contains(unittest.TestCase):
 
@@ -180,6 +184,14 @@ class PrettyPrint(unittest.TestCase):
         self.assertEqual(
             '{{a\n  |b=b\n  |c=c\n  |d=d\n  |e=e\n}}',
             wt.pprint('  '),
+        )
+
+    def test_remove_comments(self):
+        s = "{{a|<!--b=b|c=c|d=d|-->e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n  |e=e\n}}',
+            wt.pprint('  ', remove_comments=True),
         )
 
         

@@ -527,13 +527,16 @@ class WikiText:
                     level += 1
             return level
 
-    def pprint(self, indent='    '):
+    def pprint(self, indent='    ', remove_comments=False):
         """Return a pretty print form of self.string.
 
         May be useful in some templates. Indents parser function and template
         arguments.
         """
         parsed = WikiText(self.string)
+        if remove_comments:
+            for c in parsed.comments:
+                c.string = ''
         # first remove all current spacings
         for template in parsed.templates:
             level = template._get_indent_level()

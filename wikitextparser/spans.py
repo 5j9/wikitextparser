@@ -115,7 +115,7 @@ def parse_to_spans(string):
     for match in COMMENT_REGEX.finditer(string):
         comment_spans.append(match.span())
         group = match.group()
-        string = string.replace(group, '_' * len(group))
+        string = string.replace(group, ' ' * len(group))
     # <extension tags>
     for match in EXTENSION_TAGS_REGEX.finditer(string):
         span = match.span()
