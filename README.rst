@@ -23,9 +23,9 @@ Here is a short demo of some of the functionalities:
 .. code:: python
 
     >>> import wikitextparser as wtp
-    >>> # wikitextparser can detect section, parserfunctions, templates,
-    >>> # wikilinks, external links, template' arguments, parserfunction
-    >>> # arguments, and HTML comments
+    >>> # wikitextparser can detect sections, parserfunctions, templates,
+    >>> # wikilinks, external links, arguments, and HTML comments in
+    >>> # your wikitext:
     >>> wt = wtp.parse("""
     == h2 ==
     t2
@@ -47,8 +47,8 @@ Here is a short demo of some of the functionalities:
     >>> _[0].value = 'value3'
     >>> wt
     WikiText('\n== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22\n\n{{text|value3}}\n\n[[A|B]]')
-    >>> # It provides easy to understand properties so you can easily
-    >>> # get or set name or value of templates, arguments, wikilinks, etc.
+    >>> # It provides easy-to-use properties so you can get or set
+    >>> # name or value of templates, arguments, wikilinks, etc.
     >>> wt.wikilinks
     [WikiLink("[[A|B]]")]
     >>> wt.wikilinks[0].target = 'Z'
