@@ -23,8 +23,10 @@ Here is a short demo of some of the functionalities:
 .. code:: python
 
     >>> import wikitextparser as wtp
-    >>> 
-    >>> wt = wtp.WikiText("""
+    >>> # wikitextparser can detect section, parserfunctions, templates,
+    >>> # wikilinks, external links, template' arguments, parserfunction
+    >>> # arguments, and HTML comments
+    >>> wt = wtp.parse("""
     == h2 ==
     t2
 
@@ -45,8 +47,8 @@ Here is a short demo of some of the functionalities:
     >>> _[0].value = 'value3'
     >>> wt
     WikiText('\n== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22\n\n{{text|value3}}\n\n[[A|B]]')
-    >>> 
-    >>> 
+    >>> # It provides easy to understand properties so you can easily
+    >>> # get or set name or value of templates, arguments, wikilinks, etc.
     >>> wt.wikilinks
     [WikiLink("[[A|B]]")]
     >>> wt.wikilinks[0].target = 'Z'
@@ -76,6 +78,35 @@ Here is a short demo of some of the functionalities:
     {{text|value3}}
 
     [[Z|X]]
+    >>> # There is a pprint function that you might find useful:
+    >>> p = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
+    >>> t1, t2 = p.templates
+    >>> print(t1.pprint())
+    {{t2
+        |e=e
+        |f=f
+    }}
+    >>> print(t2.pprint())
+    {{t1
+        |b=b
+        |c=c
+        |d={{t2
+            |e=e
+            |f=f
+        }}
+    }}
+    >>> # If you are dealing with a category like 
+    >>> # [[Category:Pages using duplicate arguments in template calls]]
+    >>> # There are to functions that may be helpful:
+    >>> t = wtp.Template('{{t|a=a|a=b|a=a}}')
+    >>> t.rm_dup_args_safe()
+    >>> t
+    Template('{{t|a=b|a=a}}')
+    >>> t = wtp.Template('{{t|a=a|a=b|a=a}}')
+    >>> t.rm_first_of_dup_args()
+    >>> t
+    Template('{{t|a=a}}')
+    >>> # Have look at test.py module for more details and probable pitfalls.
     >>> 
 
 See also: 
