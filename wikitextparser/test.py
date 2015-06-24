@@ -772,13 +772,18 @@ class ParserFunction(unittest.TestCase):
 
     """Test the ParserFunction class."""
 
-    def test_basic(self):
+    def test_name_and_args(self):
         pf = wtp.ParserFunction('{{ #if: test | true | false }}')
-        self.assertEqual('if', pf.name)
+        self.assertEqual(' #if', pf.name)
         self.assertEqual(
             [': test ', '| true ', '| false '],
             [a.string for a in pf.arguments]
         )
+
+    def test_set_name(self):
+        pf = wtp.ParserFunction('{{   #if: test | true | false }}')
+        pf.name = pf.name.strip()
+        self.assertEqual('{{#if: test | true | false }}', pf.string)
 
     def test_pipes_inside_params_or_templates(self):
         pf = wtp.ParserFunction('{{ #if: test | {{ text | aaa }} }}')

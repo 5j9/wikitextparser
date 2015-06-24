@@ -1067,8 +1067,15 @@ class ParserFunction(_Indexed_WikiText):
     @property
     def name(self):
         """Return name part of the current ParserFunction."""
-        return self.string.partition(':')[0].partition('#')[2]
+        return self.string[2:].partition(':')[0]
 
+    @name.setter
+    def name(self, newname):
+        """Set a new name."""
+        name = self.name
+        self.strins(2, newname)
+        self.strdel(2 + len(newname), 2 + len(newname + name))
+    
 
 class WikiLink(_Indexed_WikiText):
 
