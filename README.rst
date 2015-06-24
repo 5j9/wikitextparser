@@ -70,10 +70,10 @@ Here is a short demo of some of the functionalities:
     >>> 
     >>> from pprint import pprint
     >>> pprint(wt.sections)
-    [Argument('\n'),
-     Argument('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n'),
-     Argument('=== h3 ===\nt3\n\n'),
-     Argument('== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')]
+    [Section('\n'),
+     Section('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n'),
+     Section('=== h3 ===\nt3\n\n'),
+     Section('== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')]
     >>> 
     >>> wt.sections[1].title = 'newtitle'
     >>> print(wt)
