@@ -540,8 +540,8 @@ class WikiText:
         # first remove all current spacings
         for template in parsed.templates:
             level = template._get_indent_level()
-            arguments = template.arguments
             template.name = template.name.strip()
+            arguments = template.arguments
             if arguments:
                 template.name += '\n' + indent * level
                 for argument in arguments:
