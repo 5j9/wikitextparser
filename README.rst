@@ -4,11 +4,12 @@ wikitextparser
 
 A simple, purely python, WikiText parsing tool.
 
-The project is still in early development stages and I'm not sure if it
-will ever succeed. It sure can't parse a page the same way the MediaWiki does 
-(for example because it's completely offline and can't expand templates and
-also has not implemented many details of MediaWiki parser), but my guess
-is that for most usual uses it will be enough.
+Be warned that the project is in it's early development stage.
+The API may change drastically and there may be some bugs.
+It sure can't parse a page the exact same way as the MediaWiki does 
+(because it's completely offline and can't expand templates and
+also has not yet implemented many details of MediaWiki parser...),
+but my guess is that for most usual cases it will be enough.
 
 Installation
 ============
