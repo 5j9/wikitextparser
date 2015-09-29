@@ -5,6 +5,12 @@ import re
 from difflib import SequenceMatcher
 
 from .spans import parse_to_spans
+from .parameter import Parameter
+from .argument import Argument
+from .externallink import ExternalLink
+from .wikilink import WikiLink
+from .section import Section
+from .comment import Comment
 
 
 # HTML
@@ -12,18 +18,6 @@ HTML_TAG_REGEX = re.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
     re.DOTALL|re.IGNORECASE,
 )
-# Sections
-SECTION_HEADER_REGEX = re.compile(r'(?<=(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
-LEAD_SECTION_REGEX = re.compile(
-    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|$)',
-    re.DOTALL,
-)
-SECTION_REGEX = re.compile(
-    SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
-    SECTION_HEADER_REGEX.pattern + '|$)',
-    re.DOTALL,
-)
-SECTION_LEVEL_TITLE = re.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
 # See DefaultSettings.php on MediaWiki and
@@ -53,6 +47,17 @@ EXTERNALLINK_REGEX = re.compile(
 )
 # Arguments
 POSITIONAL_ARG_NAME = re.compile('[1-9][0-9]*')
+# Sections
+SECTION_HEADER_REGEX = re.compile(r'(?<=(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
+LEAD_SECTION_REGEX = re.compile(
+    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|$)',
+    re.DOTALL,
+)
+SECTION_REGEX = re.compile(
+    SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
+    SECTION_HEADER_REGEX.pattern + '|$)',
+    re.DOTALL,
+)
 
 
 class WikiText:
@@ -904,116 +909,6 @@ class Template(_Indexed_WikiText):
         return False
 
 
-class Parameter(_Indexed_WikiText):
-
-    """Create a new {{{parameters}}} object."""
-
-    def __init__(self, string, spans=None, index=None):
-        """Initialize the object."""
-        self._common_init(string, spans)
-        if index is None:
-            self._index = len(self._spans['p']) -1
-        else:
-            self._index = index
-
-    def __repr__(self):
-        """Return the string representation of the Parameter."""
-        return 'Parameter(' + repr(self.string) + ')'
-
-    def _get_span(self):
-        """Return the self-span."""
-        return self._spans['p'][self._index]
-
-    @property
-    def name(self):
-        """Return current parameter's name."""
-        return self.string[3:-3].partition('|')[0]
-
-    @name.setter
-    def name(self, newname):
-        """Set the new name."""
-        name, pipe, default = self.string[3:-3].partition('|')
-        self.strins(3, newname)
-        self.strdel(3 + len(newname), 3 + len(newname + name))
-
-    @property
-    def pipe(self):
-        """Return `|` if there is a pipe (default value) in the Parameter.
-
-         Return '' otherwise.
-         """
-        return self.string[3:-3].partition('|')[1]
-
-    @property
-    def default(self):
-        """Return value of a keyword argument."""
-        string = self.string[3:-3]
-        if '|' in string:
-            return string.partition('|')[2]
-
-    @default.setter
-    def default(self, newdefault):
-        """Set the new value. If a default exist, change it. Add ow."""
-        olddefault = self.default
-        if olddefault is None:
-            self.strins(len('{{{' + self.name), '|' + newdefault)
-        else:
-            name = self.name
-            self.strins(len('{{{' + name), '|' + newdefault)
-            self.strdel(
-                len('{{{' + name + '|' + newdefault),
-                len('{{{' + name + '|' + newdefault + '|' + olddefault)
-            )
-    def append_default(self, new_default_name):
-        """Append a new default parameter in the appropriate place.
-
-        Add the new default to the innter-most parameter.
-        If the parameter already exists among defaults, don't change anything.
-
-        Example:
-            >>> p = Parameter('{{{p1|{{{p2|}}}}}}')
-            >>> p.append_default('p3')
-            >>> p
-            Parameter("'{{{p1|{{{p2|{{{p3|}}}}}}}}}'")
-        """
-        stripped_default_name = new_default_name.strip()
-        if stripped_default_name == self.name.strip():
-            return
-        dig = True
-        innermost_param = self
-        while dig:
-            dig = False
-            default = innermost_param.default
-            for p in innermost_param.parameters:
-                if p.string == default:
-                    if stripped_default_name == p.name.strip():
-                        return
-                    innermost_param = p
-                    dig = True
-        innermost_default = innermost_param.default
-        if innermost_default is None:
-            innermost_param.strins(
-                len(innermost_param.string) - 3,
-                '|{{{' + new_default_name + '}}}'
-            )
-        else:
-            name = innermost_param.name
-            innermost_param.strins(
-                len('{{{' + name + '|'),
-                '{{{' + new_default_name + '|' + innermost_default + '}}}'
-            )
-            innermost_param.strdel(
-                len(
-                    '{{{' + name + '|{{{' + new_default_name +
-                    '|' + innermost_default + '}}}'
-                ),
-                len(
-                    '{{{' + name + '|{{{' + new_default_name +
-                    '|' + innermost_default + '}}}' + innermost_default
-                ),
-            )
-
-
 class ParserFunction(_Indexed_WikiText):
 
     """Create a new ParserFunction object."""
@@ -1079,340 +974,48 @@ class ParserFunction(_Indexed_WikiText):
         name = self.name
         self.strins(2, newname)
         self.strdel(2 + len(newname), 2 + len(newname + name))
+
     
+class Parameter(Parameter, _Indexed_WikiText):
 
-class WikiLink(_Indexed_WikiText):
+    """Mix the Parameter class with _Indexed_WikiText."""
 
-    """Create a new WikiLink object."""
-
-    def __init__(self, string, spans=None, index=None):
-        """Initialize the object."""
-        self._common_init(string, spans)
-        if index is None:
-            self._index = len(self._spans['wl']) -1
-        else:
-            self._index = index
-
-    def __repr__(self):
-        """Return the string representation of the WikiLink."""
-        return 'WikiLink(' + repr(self.string) + ')'
-
-    def _get_span(self):
-        """Return the self-span."""
-        return self._spans['wl'][self._index]
-
-    @property
-    def target(self):
-        """Return target of this WikiLink."""
-        return self.string[2:-2].partition('|')[0]
-
-    @target.setter
-    def target(self, newtarget):
-        """Set a new target."""
-        target, pipe, text = self.string[2:-2].partition('|')
-        self.strins(2, newtarget)
-        self.strdel(len('[[' + newtarget), len('[[' + newtarget + target))
-
-    @property
-    def text(self):
-        """Return display text of this WikiLink."""
-        target, pipe, text = self.string[2:-2].partition('|')
-        if pipe:
-            return text
-
-    @text.setter
-    def text(self, newtext):
-        """Set a new text."""
-        target, pipe, text = self.string[2:-2].partition('|')
-        self.strins(len('[[' + target + pipe), newtext)
-        self.strdel(
-            len('[[' + target + pipe + newtext),
-            len('[[' + target + pipe + newtext + text),
-        )
+    pass
 
 
-class Comment(_Indexed_WikiText):
+class WikiLink(WikiLink, _Indexed_WikiText):
 
-    """Create a new <!-- comment --> object."""
+    """Mix the WikiLink class with _Indexed_WikiText."""
 
-    def __init__(self, string, spans=None, index=None):
-        """Run self._common_init."""
-        self._common_init(string, spans)
-        if index is None:
-            self._index = len(self._spans['c']) -1
-        else:
-            self._index = index
-
-    def __repr__(self):
-        """Return the string representation of the Comment."""
-        return 'Comment(' + repr(self.string) + ')'
-
-    def _get_span(self):
-        """Return the self-span."""
-        return self._spans['c'][self._index]
-
-    @property
-    def contents(self):
-        """Return contents of this comment."""
-        return self.string[4:-3]
+    pass
 
 
-class ExternalLink(_Indexed_WikiText):
+class ExternalLink(ExternalLink, _Indexed_WikiText):
 
-    """Create a new ExternalLink object."""
+    """Mix the ExternalLink class with _Indexed_WikiText."""
 
-    def __init__(self, string, spans=None, index=None):
-        """Run self._common_init. Set self._spans['el'] if spans is None."""
-        self._common_init(string, spans)
-        if spans is None:
-            self._spans['el'] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._spans['el']) - 1
-        else:
-            self._index = index
-
-    def __repr__(self):
-        """Return the string representation of the ExternalLink."""
-        return 'ExternalLink(' + repr(self.string) + ')'
-
-    def _get_span(self):
-        """Return the self-span."""
-        return self._spans['el'][self._index]
-
-    @property
-    def url(self):
-        """Return the url part of the ExternalLink."""
-        if self.in_brackets:
-            return self.string[1:-1].partition(' ')[0]
-        return self.string
-
-    @url.setter
-    def url(self, newurl):
-        """Set a new url for the current ExternalLink."""
-        if self.in_brackets:
-            url = self.url
-            self.strins(1, newurl)
-            self.strdel(len('[' + newurl), len('[' + newurl + url))
-        else:
-            url = self.url
-            self.strins(0, newurl)
-            self.strdel(len(newurl), len(newurl + url))
-
-    @property
-    def text(self):
-        """Return the display text of the external link.
-
-        Return self.string if this is a bare link.
-        Return
-        """
-        if self.in_brackets:
-            return self.string[1:-1].partition(' ')[2]
-        return self.string
-
-    @text.setter
-    def text(self, newtext):
-        """Set a new text for the current ExternalLink.
-
-        Automatically puts the ExternalLink in brackets if it's not already.
-        """
-        if not self.in_brackets:
-            url = self.string
-            self.strins(len(url), ' ]')
-            self.strins(0, '[')
-            text = ''
-        else:
-            url = self.url
-            text = self.text
-        self.strins(len('[' + url + ' '), newtext)
-        self.strdel(
-            len('[' + url + ' ' + newtext),
-            len('[' + url + ' ' + newtext + text),
-        )
-
-    @property
-    def in_brackets(self):
-        """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self.string.startswith('[')
+    pass
 
 
-class Argument(_Indexed_WikiText):
+class Argument(Argument, _Indexed_WikiText):
 
-    """Create a new Argument Object.
+    """Mix the Arguments class with _Indexed_WikiText."""
 
-    Note that in mediawiki documentation `arguments` are (also) called
-    parameters. In this module the convention is like this:
-    {{{parameter}}}, {{t|argument}}.
-    See https://www.mediawiki.org/wiki/Help:Templates for more information.
-    """
-
-    def __init__(self, string, spans=None, index=None, typeindex=None):
-        """Initialize the object."""
-        self._common_init(string, spans)
-        if typeindex is None:
-            self._typeindex = 'a'
-        else:
-            self._typeindex = typeindex
-        if spans is None:
-            self._spans[self._typeindex] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._spans['a']) -1
-        else:
-            self._index = index
+    pass
 
 
-    def __repr__(self):
-        """Return the string representation of the Argument."""
-        return 'Argument(' + repr(self.string) + ')'
+class Section(Section, _Indexed_WikiText):
 
-    def _get_span(self):
-        """Return the self-span."""
-        return self._spans[self._typeindex][self._index]
+    """Mix the Section class with _Indexed_WikiText."""
 
-    @property
-    def name(self):
-        """Return arg's name-part. Return the position for positional args."""
-        pipename, equal, value = self._not_in_subspans_partition('=')
-        if equal:
-            return pipename[1:]
-        # positional argument
-        position = 1
-        godstring = self._lststr[0]
-        for span0, span1 in self._spans[self._typeindex][:self._index]:
-            if span0 < span1 and '=' not in godstring[span0:span1]:
-                position += 1
-        return str(position)
-
-    @name.setter
-    def name(self, newname):
-        """Changes the name of the argument."""
-        name = self.name
-        self.strins(1, newname)
-        self.strdel(len('|' + newname), len('|' + name + newname))
-
-    @property
-    def positional(self):
-        """Return True if there is an equal sign in the argument. Else False."""
-        if self._not_in_subspans_partition('=')[1]:
-            return False
-        else:
-            return True
-
-    @property
-    def value(self):
-        """Return value of a keyword argument."""
-        pipename, equal, value = self._not_in_subspans_partition('=')
-        if equal:
-            return value
-        # anonymous parameters
-        return pipename[1:]
-
-    @value.setter
-    def value(self, newvalue):
-        """Set a the value for the current argument."""
-        pipename, equal, value = self._not_in_subspans_partition('=')
-        
-        if equal:
-            self.strins(len(pipename + equal), newvalue)
-            self.strdel(
-                len(pipename + equal + newvalue),
-                len(pipename + equal + newvalue + value)
-            )
-        else:
-            self.strins(1, newvalue)
-            self.strdel(
-                len('|' + newvalue),
-                len('|' + newvalue + pipename[1:])
-            )
+    pass
 
 
-class Section(_Indexed_WikiText):
+class Comment(Comment, _Indexed_WikiText):
 
-    """Create a new Section object."""
+    """Mix the Comment class with _Indexed_WikiText."""
 
-    def __init__(self, string, spans=None, index=None):
-        """Initialize the object."""
-        self._common_init(string, spans)
-        if spans is None:
-            self._spans['s'] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._spans['s']) -1
-        else:
-            self._index = index
-
-    def __repr__(self):
-        """Return the string representation of the Argument."""
-        return 'Section(' + repr(self.string) + ')'
-
-    def _get_span(self):
-        """Return selfspan (span of self.string in self._lststr[0])."""
-        return self._spans['s'][self._index]
-
-    @property
-    def level(self):
-        """Return level of this section. Level is in range(1,7)."""
-        selfstring = self.string
-        m = SECTION_LEVEL_TITLE.match(selfstring)
-        if not m:
-            return 0
-        return len(m.group(1))
-
-    @level.setter
-    def level(self, newlevel):
-        """Change leader level of this sectoin."""
-        level = self.level
-        title = self.title
-        equals = '=' * newlevel
-        self.strins(0, equals)
-        self.strdel(newlevel, newlevel + level)
-        self.strins(len(equals + title), equals)
-        self.strdel(
-            len(equals + title + equals),
-            len(equals + title + equals) + level,
-        )
-
-    @property
-    def title(self):
-        """Return title of this section. Return '' for lead sections."""
-        level = self.level
-        if level == 0:
-            return ''
-        return self.string.partition('\n')[0].rstrip()[level:-level]
-
-    @title.setter
-    def title(self, newtitle):
-        """Set the new title for this section and update self.lststr."""
-        level = self.level
-        if level == 0:
-            raise RuntimeError(
-                "Can't set title for a lead section. "
-                "Try adding it to the contents."
-            )
-        title = self.title
-        self.strins(level, newtitle)
-        self.strdel(level + len(newtitle), level + len(newtitle+ title))
-
-    @property
-    def contents(self):
-        """Return contents of this section."""
-        if self.level == 0:
-            return self.string
-        return self.string.partition('\n')[2]
-
-    @contents.setter
-    def contents(self, newcontents):
-        """Set newcontents as the contents of this section."""
-        level = self.level
-        contents = self.contents
-        if level == 0:
-            self.strins(0, newcontents)
-            self.strdel(len(newcontents), len(newcontents + contents))
-        else:
-            title = self.title
-            self.strins(level + len(title) + level + 1, newcontents)
-            self.strdel(
-                level + len(title) + level + len('\n' + newcontents),
-                level + len(title) + level + len('\n' + newcontents + contents)
-            )
+    pass
 
 
 def mode(list_):
