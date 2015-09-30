@@ -440,6 +440,7 @@ class WikiText:
         return in_spans
 
     def _gen_subspan_indices(self, type_):
+        """Return all the subspan indices including self._get_span()"""
         ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
             # Including self._get_span()
@@ -607,28 +608,20 @@ class _Indexed_WikiText(WikiText):
     Not intended for the final user.
     """
 
-    def _common_init(
-        self,
-        string,
-        spans=None,
-    ):
-        """Set initial value for self._lststr, self._spans and self._index."""
-        if type(string) is list:
-            self._lststr = string
-        else:
-            self._lststr = [string]
-        if spans is None:
-            self._spans = parse_to_spans(self._lststr[0])
-        else:
-            self._spans = spans
-
     def _gen_subspan_indices(self, type_):
+        """Return all the subspan indices excluding self._get_span()"""
         ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
             # not including self._get_span()
             if ss < s[0] and s[1] < se:
                 yield i
 
+
+class Section(Section, WikiText):
+
+    """Mix the Section class with _Indexed_WikiText."""
+
+    pass
 
 
 class Template(_Indexed_WikiText):
@@ -1004,13 +997,6 @@ class ExternalLink(ExternalLink, _Indexed_WikiText):
 class Argument(Argument, _Indexed_WikiText):
 
     """Mix the Arguments class with _Indexed_WikiText."""
-
-    pass
-
-
-class Section(Section, _Indexed_WikiText):
-
-    """Mix the Section class with _Indexed_WikiText."""
 
     pass
 

@@ -746,6 +746,10 @@ class Section(unittest.TestCase):
         s.level = 2
         self.assertEqual('== t ==\ntext', s.string)
 
+    def test_template_at_the_start(self):
+        ts = wtp.Section('{{t}}').templates
+        self.assertEqual(ts[0].string, '{{t}}')
+
 
 class Argument(unittest.TestCase):
 
