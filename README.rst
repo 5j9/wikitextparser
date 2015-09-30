@@ -9,7 +9,8 @@ The API may change drastically and there may be some bugs.
 It sure can't parse a page the exact same way as the MediaWiki does 
 (because it's completely offline and can't expand templates and
 also has not yet implemented many details of MediaWiki parser...),
-but my guess is that for most usual cases it will be enough.
+but my guess is that for most usual cases the current capabilities 
+will suffice.
 
 Installation
 ============
