@@ -563,6 +563,11 @@ class Template(unittest.TestCase):
         t.name += 's'
         self.assertEqual('{{{p1|d1}}}', p.string)
 
+    def test_no_param_template_name(self):
+        t = wtp.Template("{{صعود}}")
+        name = t.name
+        self.assertEqual('صعود', t.name)
+
 
 class TemplateSetArg(unittest.TestCase):
 

@@ -691,7 +691,11 @@ class Template(_Indexed_WikiText):
     @property
     def name(self):
         """Return template's name part. (includes whitespace)"""
-        return self._not_in_subspans_partition('|')[0][2:]
+        p0 = self._not_in_subspans_partition('|')[0]
+        if len(p0) == len(self.string):
+            return p0[2:-2]
+        else:
+            return p0[2:]
 
     @name.setter
     def name(self, newname):
