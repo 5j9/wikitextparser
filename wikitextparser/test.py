@@ -116,6 +116,30 @@ class WikiText(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(1, len(wt.parser_functions))
 
+    def test_wikilink2externallink_fallback(self):
+        p =wtp.parse('[[http://example.com foo bar]]')
+        self.assertEqual(
+            '[http://example.com foo bar]',
+            p.external_links[0].string
+        )
+        self.assertEqual(0, len(p.wikilinks))
+
+    @unittest.expectedFailure
+    def test_no_bare_externallink_within_wikilinks(self):
+        """Based on how Mediawiki behaves.
+
+        There is a rather simple solution for this (move the detection
+        external links to spans.py) but maybe the current implementation
+        is even more useful? Also faster when not looking for external links.
+        """
+
+        
+        p =wtp.parse('[[ https://en.wikipedia.org/]]')
+        self.assertEqual(1, len(p.wikilinks))
+        self.assertEqual(0, len(p.external_links)
+        )
+        
+
 
 class Contains(unittest.TestCase):
 
@@ -685,7 +709,6 @@ class ExternalLink(unittest.TestCase):
         el = wtp.ExternalLink('[ftp://mediawiki.org]')
         el.url = 'https://www.mediawiki.org/'
         self.assertEqual('[https://www.mediawiki.org/]', el.string)
-
 
 
 class Section(unittest.TestCase):
