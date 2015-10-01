@@ -4,7 +4,12 @@
 import re
 from difflib import SequenceMatcher
 
-from .spans import parse_to_spans
+from .spans import (
+    parse_to_spans,
+    VALID_EXTLINK_CHARS_PATTERN,
+    VALID_EXTLINK_SCHEMES_PATTERN,
+    BARE_EXTERNALLINK_PATTERN
+)
 from .parameter import Parameter
 from .argument import Argument
 from .externallink import ExternalLink
@@ -19,30 +24,13 @@ HTML_TAG_REGEX = re.compile(
     re.DOTALL|re.IGNORECASE,
 )
 # External links
-VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
-# See DefaultSettings.php on MediaWiki and
-# https://www.mediawiki.org/wiki/Help:Links#External_links
-VALID_EXTLINK_SCHEMES_PATTERN = (
-    r'('
-    r'bitcoin:|ftp://|ftps://|geo:|git://|gopher://|http://|https://|'
-    r'irc://|ircs://|magnet:|mailto:|mms://|news:|nntp://|redis://|'
-    r'sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|'
-    r'worldwind://|xmpp:|//'
-    r')'
-)
-BARE_EXTERNALLINK_REGEX = re.compile(
-    VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
-    VALID_EXTLINK_CHARS_PATTERN,
-    re.IGNORECASE,
-)
-BRACKET_EXTERNALLINK_REGEX = re.compile(
+BRACKET_EXTERNALLINK_PATTERN = (
     r'\[' + VALID_EXTLINK_SCHEMES_PATTERN + VALID_EXTLINK_CHARS_PATTERN +
-    r' *[^\]\n]*\]',
-    re.IGNORECASE,
+    r' *[^\]\n]*\]'
 )
 EXTERNALLINK_REGEX = re.compile(
-    r'(' + BARE_EXTERNALLINK_REGEX.pattern + r'|' +
-    BRACKET_EXTERNALLINK_REGEX.pattern + r')',
+    r'(' + BARE_EXTERNALLINK_PATTERN + r'|' +
+    BRACKET_EXTERNALLINK_PATTERN + r')',
     re.IGNORECASE,
 )
 # Arguments
