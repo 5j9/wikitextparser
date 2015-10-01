@@ -22,11 +22,29 @@ PARSER_FUNCTION_NAME_PATTERN = r'#[^{}\s]*?:'
 PARSER_FUNCTION_REGEX = re.compile(
     r'\{\{\s*' + PARSER_FUNCTION_NAME_PATTERN + r'[^{}]*?\}\}'
 )
+# External links
+VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
+# See DefaultSettings.php on MediaWiki and
+# https://www.mediawiki.org/wiki/Help:Links#External_links
+VALID_EXTLINK_SCHEMES_PATTERN = (
+    r'('
+    r'bitcoin:|ftp://|ftps://|geo:|git://|gopher://|http://|https://|'
+    r'irc://|ircs://|magnet:|mailto:|mms://|news:|nntp://|redis://|'
+    r'sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|'
+    r'worldwind://|xmpp:|//'
+    r')'
+)
+BARE_EXTERNALLINK_PATTERN = (
+    VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
+    VALID_EXTLINK_CHARS_PATTERN
+)
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_REGEX = re.compile(
-    r'\[\[' + VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') +
-    r'(\]\]|\|[\S\s]*?\]\])'
+    r'\[\[(?!' + BARE_EXTERNALLINK_PATTERN + r')' +
+    VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') +
+    r'(\]\]|\|[\S\s]*?\]\])',
+    re.IGNORECASE,
 )
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
@@ -136,7 +154,8 @@ def parse_to_spans(string):
                 template_spans,
             )
     # The title in WikiLinks may contain braces that interfere with
-    # detection of templates
+    # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
+    # the span of `text` template shoud be the whole string
     for match in WIKILINK_REGEX.finditer(string):
         span = match.span()
         wikilink_spans.append(span)
