@@ -1,11 +1,12 @@
 ﻿"""All independant methods of Wikitext class are defined here."""
 
+
 import re
 
 
 class WikiText:
 
-    """A class containing the independant methods of the WikiText objects."""
+    """Define the independant methods of the WikiText class."""
 
     def __str__(self):
         """Return self-object as a string."""
