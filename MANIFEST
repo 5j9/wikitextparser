@@ -11,4 +11,5 @@ wikitextparser\table.py
 wikitextparser\table_test.py
 wikitextparser\test.py
 wikitextparser\wikilink.py
+wikitextparser\wikitext.py
 wikitextparser\wikitextparser.py
