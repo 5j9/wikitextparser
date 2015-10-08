@@ -455,4 +455,3 @@ if __name__ == '__main__':
     tests = unittest.defaultTestLoader.discover('.', '*_test.py')
     runner = unittest.runner.TextTestRunner()
     runner.run(tests)
-    unittest.main()
