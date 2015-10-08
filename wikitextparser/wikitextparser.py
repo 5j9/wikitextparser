@@ -249,7 +249,7 @@ class WikiText:
                 self._lststr,
                 self._spans,
                 index,
-            ) for index in self._gen_subspan_indices('p')
+            ) for index in self._gen_subspan_indices('parameters')
         ]
 
     @property
@@ -260,7 +260,7 @@ class WikiText:
                 self._lststr,
                 self._spans,
                 index,
-            ) for index in self._gen_subspan_indices('pf')
+            ) for index in self._gen_subspan_indices('functions')
         ]
 
     @property
@@ -271,7 +271,7 @@ class WikiText:
                 self._lststr,
                 self._spans,
                 index,
-            ) for index in self._gen_subspan_indices('t')
+            ) for index in self._gen_subspan_indices('templates')
         ]
 
     @property
@@ -282,7 +282,7 @@ class WikiText:
                 self._lststr,
                 self._spans,
                 index,
-            ) for index in self._gen_subspan_indices('wl')
+            ) for index in self._gen_subspan_indices('wikilinks')
         ]
 
     @property
@@ -294,7 +294,7 @@ class WikiText:
                 self._lststr,
                 self._spans,
                 index,
-            ) for index in self._gen_subspan_indices('c')
+            ) for index in self._gen_subspan_indices('comments')
         ]
 
     @property
@@ -303,9 +303,9 @@ class WikiText:
         external_links = []
         spans = self._spans
         ss, se = self._get_span()
-        if 'el' not in spans:
-            spans['el'] = []
-        elspans = spans['el']
+        if 'extlinks' not in spans:
+            spans['extlinks'] = []
+        elspans = spans['extlinks']
         for m in EXTERNALLINK_REGEX.finditer(self.string):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
@@ -332,9 +332,9 @@ class WikiText:
         lststr = self._lststr
         ss, se = self._get_span()
         selfstring = self.string
-        if 's' not in spans:
-            spans['s'] = []
-        sspans = spans['s']
+        if 'sections' not in spans:
+            spans['sections'] = []
+        sspans = spans['sections']
         # Lead section
         mspan = LEAD_SECTION_REGEX.match(selfstring).span()
         mspan = (mspan[0] + ss, mspan[1] + ss)
@@ -409,12 +409,19 @@ class WikiText:
     def _in_subspans_factory(self):
         """Return a function that can tell if an index is in subspans.
 
-        Checked subspans types are: ('t', 'p', 'pf', 'wl', 'c', 'et').
+        Checked subspans types are:
+        (
+            'templates', 'parameters', 'functions',
+            'wikilinks', 'comments', 'exttags'
+        ).
         """
         # Calculate subspans
         ss, se = self._get_span()
         subspans = []
-        for key in ('t', 'p', 'pf', 'wl', 'c', 'et'):
+        for key in (
+            'templates', 'parameters', 'functions',
+            'wikilinks', 'comments', 'exttags'
+        ):
             for span in self._spans[key]:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
@@ -504,19 +511,19 @@ class WikiText:
         ss, se = self._get_span()
         level = 1 # a template is always found in itself
         if with_respect_to is None:
-            for s, e in self._spans['t']:
+            for s, e in self._spans['templates']:
                 if s < ss and se < e:
                     level += 1
-            for s, e in self._spans['pf']:
+            for s, e in self._spans['functions']:
                 if s < ss and se < e:
                     level += 1
             return level
         else:
             rs, re = with_respect_to._get_span()
-            for s, e in self._spans['t']:
+            for s, e in self._spans['templates']:
                 if rs <= s < ss and se < e <= re:
                     level += 1
-            for s, e in self._spans['pf']:
+            for s, e in self._spans['functions']:
                 if rs <= s < ss  and se < e <= re:
                     level += 1
             return level
@@ -628,7 +635,7 @@ class Template(_Indexed_WikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['t']) -1
+            self._index = len(self._spans['templates']) -1
         else:
             self._index = index
 
@@ -638,7 +645,7 @@ class Template(_Indexed_WikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['t'][self._index]
+        return self._spans['templates'][self._index]
 
     @property
     def arguments(self):
@@ -902,7 +909,7 @@ class ParserFunction(_Indexed_WikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['pf']) -1
+            self._index = len(self._spans['functions']) -1
         else:
             self._index = index
 
@@ -912,7 +919,7 @@ class ParserFunction(_Indexed_WikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['pf'][self._index]
+        return self._spans['functions'][self._index]
 
     @property
     def arguments(self):

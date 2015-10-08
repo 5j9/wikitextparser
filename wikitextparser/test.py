@@ -277,7 +277,7 @@ class SpansFunction(unittest.TestCase):
 
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
-        template_spans =  wt._spans['t']
+        template_spans =  wt._spans['templates']
         self.assertIn((7, 13), template_spans)
         self.assertIn((14, 20), template_spans)
         self.assertIn((0, 22), template_spans)
@@ -288,14 +288,14 @@ class SpansFunction(unittest.TestCase):
             "text2{{cite|{{t3}}|{{t4}}}}text3"
         )
         self.assertEqual(
-            wt._spans['t'],
+            wt._spans['templates'],
             [(12, 18), (19, 25), (39, 45), (46, 52), (5, 27), (32, 54)],
         )
 
     def test_multiline_mutitemplate(self):
         wt = wtp.WikiText("""{{cite\n    |{{t1}}\n    |{{t2}}}}""")
         self.assertEqual(
-            wt._spans['t'],
+            wt._spans['templates'],
             [(12, 18), (24, 30), (0, 32)],
         )
 
@@ -303,64 +303,64 @@ class SpansFunction(unittest.TestCase):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}""")
         self.assertEqual(
             [(7, 13), (14, 20)],
-            wt._spans['t'],
+            wt._spans['templates'],
         )
 
     def test_lacks_starting_braces(self):
         wt = wtp.WikiText("""cite|{{t1}}|{{t2}}}}""")
         self.assertEqual(
             [(5, 11), (12, 18)],
-            wt._spans['t'],
+            wt._spans['templates'],
         )
 
     def test_template_inside_parameter(self):
         wt = wtp.WikiText("""{{{1|{{colorbox|yellow|text1}}}}}""")
         self.assertEqual(
             [(5, 30)],
-            wt._spans['t'],
+            wt._spans['templates'],
         )
         self.assertEqual(
             [(0, 33)],
-            wt._spans['p'],
+            wt._spans['parameters'],
         )
 
     def test_parameter_inside_template(self):
         wt = wtp.WikiText("""{{colorbox|yellow|{{{1|defualt_text}}}}}""")
         self.assertEqual(
             [(0, 40)],
-            wt._spans['t'],
+            wt._spans['templates'],
         )
         self.assertEqual(
             [(18, 38)],
-            wt._spans['p'],
+            wt._spans['parameters'],
         )
 
     def test_template_name_cannot_contain_newline(self):
         tl = wtp.WikiText('{{\nColor\nbox\n|mytext}}')
         self.assertEqual(
             [],
-            tl._spans['t'],
+            tl._spans['templates'],
         )
 
     def test_unicode_template(self):
         wt = wtp.WikiText('{{\nرنگ\n|متن}}')
         self.assertEqual(
             [(0, 13)],
-            wt._spans['t'],
+            wt._spans['templates'],
         )
 
     def test_unicode_parser_function(self):
         wt = wtp.WikiText('{{#اگر:|فلان}}')
         self.assertEqual(
             [(0, 14)],
-            wt._spans['pf'],
+            wt._spans['functions'],
         )
 
     def test_unicode_parameters(self):
         wt = wtp.WikiText('{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')
         self.assertEqual(
             [(9, 27), (0, 30)],
-            wt._spans['p'],
+            wt._spans['parameters'],
         )
 
     def test_extracting_sections(self):

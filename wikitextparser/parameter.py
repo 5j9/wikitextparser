@@ -9,7 +9,7 @@ class Parameter():
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['p']) -1
+            self._index = len(self._spans['parameters']) -1
         else:
             self._index = index
 
@@ -19,7 +19,7 @@ class Parameter():
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['p'][self._index]
+        return self._spans['parameters'][self._index]
 
     @property
     def name(self):

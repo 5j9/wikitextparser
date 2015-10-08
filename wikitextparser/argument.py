@@ -15,13 +15,13 @@ class Argument():
         """Initialize the object."""
         self._common_init(string, spans)
         if typeindex is None:
-            self._typeindex = 'a'
+            self._typeindex = 'arguments'
         else:
             self._typeindex = typeindex
         if spans is None:
             self._spans[self._typeindex] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['a']) -1
+            self._index = len(self._spans['arguments']) -1
         else:
             self._index = index
 

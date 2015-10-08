@@ -6,12 +6,12 @@ class ExternalLink():
     """Create a new ExternalLink object."""
 
     def __init__(self, string, spans=None, index=None):
-        """Run self._common_init. Set self._spans['el'] if spans is None."""
+        """Run self._common_init. Set self._spans['extlinks'] if spans is None."""
         self._common_init(string, spans)
         if spans is None:
-            self._spans['el'] = [(0, len(string))]
+            self._spans['extlinks'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['el']) - 1
+            self._index = len(self._spans['extlinks']) - 1
         else:
             self._index = index
 
@@ -21,7 +21,7 @@ class ExternalLink():
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['el'][self._index]
+        return self._spans['extlinks'][self._index]
 
     @property
     def url(self):

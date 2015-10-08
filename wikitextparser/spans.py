@@ -115,12 +115,13 @@ def parse_to_spans(string):
 
     The result a dictionary containing lists of spans:
     {
-        'p': parameter_spans,
-        'pf': parser_function_spans,
-        't': template_spans,
-        'wl': wikilink_spans,
-        'c': comment_spans,
-        'et': extension_tag_spans,
+        'parameters': parameter_spans,
+        'functions': parser_function_spans,
+        'templates': template_spans,
+        'wikilinks': wikilink_spans,
+        'comments': comment_spans,
+        'exttags': extension_tag_spans,
+        'tables': tables
     }
     """
     comment_spans = []
@@ -179,12 +180,12 @@ def parse_to_spans(string):
         template_spans,
     )
     return {
-        'p': parameter_spans,
-        'pf': parser_function_spans,
-        't': template_spans,
-        'wl': wikilink_spans,
-        'c': comment_spans,
-        'et': extension_tag_spans,
+        'parameters': parameter_spans,
+        'functions': parser_function_spans,
+        'templates': template_spans,
+        'wikilinks': wikilink_spans,
+        'comments': comment_spans,
+        'exttags': extension_tag_spans,
     }
 
 

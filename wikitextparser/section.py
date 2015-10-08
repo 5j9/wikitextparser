@@ -15,9 +15,9 @@ class Section():
         """Initialize the object."""
         self._common_init(string, spans)
         if spans is None:
-            self._spans['s'] = [(0, len(string))]
+            self._spans['sections'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['s']) -1
+            self._index = len(self._spans['sections']) -1
         else:
             self._index = index
 
@@ -27,7 +27,7 @@ class Section():
 
     def _get_span(self):
         """Return selfspan (span of self.string in self._lststr[0])."""
-        return self._spans['s'][self._index]
+        return self._spans['sections'][self._index]
 
     @property
     def level(self):
