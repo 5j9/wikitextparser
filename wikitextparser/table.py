@@ -5,9 +5,12 @@ import re
 
 ROWSEP_REGEX = re.compile(r'(?:(?<=\n)|^)\s*[\|!]-.*?\n')
 CELLSEP_REGEX = re.compile(
-    r'(?:\s*[\|!][^|\n]*?[\|!](?![\|!]) *|(?:(?<=\n)|^)\s*[\|!] *)'
+    r'(?:\s*[\|!][^|\n]*?[\|!](?![\|!]) *|(?:(?<=\n)|^)\s*[\|!](?!\+) *)'
 )
 CAPTION_REGEX = re.compile(r'\|\+.*?\n')
+EVERYTHING_UNTIL_THE_FIRST_ROW_REGEX = re.compile(
+    r'.*?(?=' + CELLSEP_REGEX.pattern + r')'
+)
 
 
 class Table:
@@ -42,27 +45,37 @@ class Table:
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
         """
-        rawstring = self.string
+        data = self.string
         ss, se = self._get_span()
         for type_ in (
             'templates', 'wikilinks', 'functions',
             'exttags', 'comments'
         ):
             for sss, sse in self._gen_subspan_indices(type_):
-                rawstring = (
-                    rawstring[:sss - ss] +
+                data = (
+                    data[:sss - ss] +
                     (sss - sse) * '_' +
-                    rawstring[sse - ss:]
+                    data[sse - ss:]
                 )
         # Remove table-start and table-end marks.
-        rawstring = rawstring[:-2].partition('\n')[2].strip()
-        # Remove table caption.
+        data = data[:-2].partition('\n')[2].strip()
+        # Remove table captions.
         # Captions are optional and can only be placed
         # between table-start and the first row.
-        while rawstring.startswith('|+'):
-            rawstring = rawstring.partition('\n')[2].lstrip()
-        print('rawstring:', rawstring)
-        rawrows = ROWSEP_REGEX.split(rawstring)
+        captionline = True
+        lines = data.split('\n')
+        for i, line in enumerate(lines.copy()):
+            line = line.lstrip()
+            if line.startswith('|+'):
+                captionline = True
+                lines.pop(i)
+            elif line.startswith('|') or line.startswith('!'):
+                captionline = False
+            elif captionline:
+                lines.pop(i)
+        data = '\n'.join(lines)
+        print('data:', data)
+        rawrows = ROWSEP_REGEX.split(data)
         if not rawrows[0].rstrip():
             # When optional `|-` is used on first row.
             rawrows.pop(0)
