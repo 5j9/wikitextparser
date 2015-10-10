@@ -17,6 +17,7 @@ from .wikilink import WikiLink
 from .section import Section
 from .comment import Comment
 from .wikitext import WikiText
+from .table import Table
 
 
 # HTML
@@ -677,6 +678,13 @@ class Argument(Argument, _Indexed_WikiText):
 class Comment(Comment, _Indexed_WikiText):
 
     """Mix the Comment class with _Indexed_WikiText."""
+
+    pass
+
+
+class Table(Table, _Indexed_WikiText):
+
+    """Mix the Table class with _Indexed_WikiText."""
 
     pass
 
