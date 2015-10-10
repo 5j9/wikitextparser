@@ -121,7 +121,6 @@ def parse_to_spans(string):
         'wikilinks': wikilink_spans,
         'comments': comment_spans,
         'exttags': extension_tag_spans,
-        'tables': tables
     }
     """
     comment_spans = []
@@ -202,7 +201,7 @@ def indexed_parse_to_spans(
     """Basically the same as `parse_to_spans`, but with some arguments.
 
     Accept an index and list of spans as argument.
-    Designed to deal with wikitexts within extension tags.
+    The goal is to deal with wikitexts within extension tags.
     """
     # Currently, does not work with nested <!-- comments --> or tag extensions.
     # The title in WikiLinks may contain braces that interfere with
