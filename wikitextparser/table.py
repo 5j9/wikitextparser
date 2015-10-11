@@ -5,9 +5,14 @@ import re
 
 ROWSEP_REGEX = re.compile(r'(?:(?<=\n)|^)\s*[\|!]-.*?\n')
 CELLSEP_REGEX = re.compile(
-    r'(?:\s*[\|!][^|\n]*?[\|!](?![\|!]) *|(?:(?<=\n)|^)\s*[\|!](?!\+) *)'
+    r'\s*[|!][^|\n]*?\|(?!\|) *|(?:(?<=\n)|^)\s*[|!] *'
+    #r'\s*([|!]{2}|[|!](?:[^|\n]*\|)?)\s*'
 )
-CAPTION_REGEX = re.compile(r'\|\+.*?\n')
+CELL_REGEX = re.compile(
+    r'(?:(?<=\n)|^)\s*[|!]{1,2}(.*?)(?:\|\|(.*?))*$|',
+    re.DOTALL,
+)    
+CAPTION_REGEX = re.compile(r'(?<=(?<=\n)|^)\s*(?:\|\+[\s\S]*?)+(?=\||\!)')
 EVERYTHING_UNTIL_THE_FIRST_ROW_REGEX = re.compile(
     r'.*?(?=' + CELLSEP_REGEX.pattern + r')'
 )
@@ -45,49 +50,64 @@ class Table:
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
         """
-        data = self.string
+        string = self.string
+        length = len(string)
+        shadow = string
         ss, se = self._get_span()
         for type_ in (
             'templates', 'wikilinks', 'functions',
             'exttags', 'comments'
         ):
-            for sss, sse in self._gen_subspan_indices(type_):
-                data = (
-                    data[:sss - ss] +
-                    (sss - sse) * '_' +
-                    data[sse - ss:]
+            for sss, sse in self._spans[type_]:
+                if sss < ss or sse > se:
+                    continue
+                shadow = (
+                    shadow[:sss - ss] +
+                    (sse - sss) * '_' +
+                    shadow[sse - ss:]
                 )
         # Remove table-start and table-end marks.
-        data = data[:-2].partition('\n')[2].strip()
+        shadow = shadow[:-2].partition('\n')[2].lstrip()
+        # Remove everything until the first row
+        while not (shadow.startswith('!') or shadow.startswith('|')):
+            shadow = shadow.partition('\n')[2].lstrip()
+            if '\n' not in shadow:
+                break
+        string = string[length - len(shadow) - 2:-2]
         # Remove table captions.
-        # Captions are optional and can only be placed
-        # between table-start and the first row.
-        captionline = True
-        lines = data.split('\n')
-        for i, line in enumerate(lines.copy()):
-            line = line.lstrip()
-            if line.startswith('|+'):
-                captionline = True
-                lines.pop(i)
-            elif line.startswith('|') or line.startswith('!'):
-                captionline = False
-            elif captionline:
-                lines.pop(i)
-        data = '\n'.join(lines)
-        print('data:', data)
-        rawrows = ROWSEP_REGEX.split(data)
-        if not rawrows[0].rstrip():
-            # When optional `|-` is used on first row.
-            rawrows.pop(0)
+        # Captions are optional and should only be placed
+        # between table-start and the first row; Others are not part of table.
+        for m in CAPTION_REGEX.finditer(shadow):
+            ss, se = m.span()
+            shadow = shadow[:ss] + shadow[se:]
+            string = string[:ss] + string[se:]
+        rowspans = [[0]]
+        for m in ROWSEP_REGEX.finditer(shadow):
+            rowspans[-1].append(m.start())
+            rowspans.append([m.end()])
+        rowspans[-1].append(-1)
+        grouped_cellspans = []
+        for ss, se in rowspans:
+            if not shadow[ss:se].rstrip():
+                # When the optional `|-` for the first row is used or when 
+                # there are meaningless row seprators that result in rows
+                # containing no cells.
+                continue
+            cellspans = [[0]]
+            for m in CELLSEP_REGEX.finditer(shadow[ss:se]):
+                cellspans[-1].append(ss + m.start())
+                cellspans.append([ss + m.end()])
+            cellspans[-1].append(se)
+            grouped_cellspans.append(cellspans)
+        grouped_cellspans
         rows = []
-        for row in rawrows:
-            print('row:', row)
-            cells = []
-            for cell in CELLSEP_REGEX.split(row)[1:]:
-                # Spaces can be meaningful after the first newline
-                cells.append(cell.strip(' ').rstrip())
-            print('cells:', cells)
-            rows.append(cells)
+        for g in grouped_cellspans:
+            # The first CELLSEP is always at the beginning of the string.
+            g.pop(0)
+            rows.append([])
+            for ss, se in g:
+                # Spaces after the first newline can be meaningful
+                rows[-1].append(string[ss:se].strip(' ').rstrip())
         return rows
 
     def getrow(self, n):

@@ -128,6 +128,70 @@ class Rows(unittest.TestCase):
         table = wtp.Table('{|\n  text\n|-\n|c1\n|c2\n|}')
         self.assertEqual(table.rows, [['c1', 'c2']])
 
+    def test_empty_table(self):
+        table = wtp.Table('{||}')
+        self.assertEqual(table.rows, [])
+
+    def test_empty_cell(self):
+        table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
+        self.assertEqual(table.rows, [['a', '', 'c']])
+
+    def test_pipe_as_text(self):
+        table = wtp.Table('{|class=wikitable\n||a | || c\n|}')
+        self.assertEqual(table.rows, [['a |', 'c']])
+
+    def test_meaningless_rowsep(self):
+        table = wtp.Table('{|class=wikitable\n||a || || c\n|-\n|}')
+        self.assertEqual(table.rows, [['a', '', 'c']])
+
+    def test_template_inside_table(self):
+        table = wtp.Table('{|class=wikitable\n|-\n|{{text|a}}\n|}')
+        self.assertEqual(table.rows, [['{{text|a}}']])
+
+    def test_only_pipes_can_seprate_attributes(self):
+        """According to the note at mw:Help:Tables#Table_headers."""
+        table = wtp.Table(
+            '{|class=wikitable\n! style="text-align:left;"! '
+            'Item\n! Amount\n! Cost\n|}'
+        )
+        self.assertEqual(table.rows, [
+            ['style="text-align:left;"! Item', 'Amount', 'Cost']
+        ])
+        table = wtp.Table(
+            '{|class=wikitable\n! style="text-align:left;"| '
+            'Item\n! Amount\n! Cost\n|}'
+        )
+        self.assertEqual(table.rows, [
+            ['Item', 'Amount', 'Cost']
+        ])
+
+    def test_double_exclamation_marks_are_valid_on_header_rows(self):
+        table = wtp.Table('{|class=wikitable\n!a!!b!!c\n|}')
+        self.assertEqual(table.rows, [['a', 'b', 'c']])
+
+    def test_double_exclamation_marks_are_valid_only_on_header_rows(self):
+        # Actually I'm not sure about this in general.
+        table = wtp.Table('{|class=wikitable\n|a!!b!!c\n|}')
+        self.assertEqual(table.rows, [['a!!b!!c']])
         
+
+    def test_caption_in_row_is_treated_as_pipe_and_plut(self):
+        table = wtp.Table('{|class=wikitable\n|a|+b||c\n|}')
+        self.assertEqual(table.rows, [['+b', 'c']])
+        
+    def test_odd_case1(self):
+        table = wtp.Table(
+            '{|class=wikitable\n  [[a]]\n |+ cp1\ncp1\n! h1 '
+            '||+ h2\n|-\n! h3 !|+ h4\n|-\n! h5 |!+ h6\n'
+            '|-\n|c1\n|+hod [[that]]\n\ntext\n|c2\n|}'
+        )
+        self.assertEqual(table.rows, [
+            ['h1', '+ h2'],
+            ['+ h4'],
+            ['!+ h6'],
+            ['c1', 'c2']
+        ])
+
+  
 if __name__ == '__main__':
     unittest.main()
