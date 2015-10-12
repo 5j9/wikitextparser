@@ -8,6 +8,21 @@ CELLSEP_REGEX = re.compile(
     r'\s*[|!][^|\n]*?\|(?!\|) *|(?:(?<=\n)|^)\s*[|!] *'
     #r'\s*([|!]{2}|[|!](?:[^|\n]*\|)?)\s*'
 )
+START_CELLSEP_REGEX = re.compile(r"""
+(?:(?<=\n)|^) # catch the starting sep. and style
+\s*
+(?P<sep>[|!])
+(?: # catch the matching pipe (style holder).
+\| # immediate closure (style='')
+|
+(?P<style>.*?)
+(?<!\|) # double-pipes are cell seperators
+(?:\|)
+(?!\|) # double-pipes are cell seperators
+)? # optional := the 1st sep is a single ! or |.
+""", re.VERBOSE
+)
+                                 
 CELL_REGEX = re.compile(
     r'(?:(?<=\n)|^)\s*[|!]{1,2}(.*?)(?:\|\|(.*?))*$|',
     re.DOTALL,
@@ -16,6 +31,11 @@ CAPTION_REGEX = re.compile(r'(?<=(?<=\n)|^)\s*(?:\|\+[\s\S]*?)+(?=\||\!)')
 EVERYTHING_UNTIL_THE_FIRST_ROW_REGEX = re.compile(
     r'.*?(?=' + CELLSEP_REGEX.pattern + r')'
 )
+EE = re.compile(r'!!')
+E = re.compile(r'!')
+VV = re.compile(r'||')
+V = re.compile(r'|')
+
 
 
 class Table:
@@ -86,13 +106,35 @@ class Table:
             rowspans[-1].append(m.start())
             rowspans.append([m.end()])
         rowspans[-1].append(-1)
-        grouped_cellspans = []
+        grouped_spans = []
         for ss, se in rowspans:
-            if not shadow[ss:se].rstrip():
+            tail = shadow[rss:rse]
+            tail = tail.lstrip()
+            if not tail:
+                # Todo: this condition may be removed alltogether in the future
                 # When the optional `|-` for the first row is used or when 
                 # there are meaningless row seprators that result in rows
                 # containing no cells.
                 continue
+            len0 = se - ss + 1
+            tdspans = []
+            if tail.startswith('||'):
+                # Cells in this type of rows can only be seperated using `||`.
+                head, sep, tail = tail.partition('||')
+                while sep:
+                    head, sep, tail = tail.partition('||')
+                    tdspans.append(
+                        ss + len0 - len(head + sep + tail),
+                        ss + len0 - len(sep + tail),
+                    )
+            elif tail.startswith('!!'):
+                rowtail = rowtail[2:]
+                
+                while True:
+                    td, s, rowtail = rowtail.partition('||')
+                    if not s:
+                        break
+                    cellspans.append(td)
             cellspans = [[0]]
             for m in CELLSEP_REGEX.finditer(shadow[ss:se]):
                 cellspans[-1].append(ss + m.start())

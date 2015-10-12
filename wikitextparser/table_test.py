@@ -1,5 +1,5 @@
 ﻿"""Test the functionalities of table.py module."""
-'''
+'''Todo:
 addrow([], -1)
 getrow(n)
 addcol([], -1)
