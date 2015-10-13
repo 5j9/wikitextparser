@@ -215,8 +215,20 @@ class Caption(unittest.TestCase):
             '{| class="wikitable"\n|+foo\n|a\n|+ ignore\n|}'
         )
 
-    def test_set_attrs_before_cap(self):
-        pass
+    def test_singleline_table_set_caption_attrs(self):
+        table = wtp.Table('{| class="wikitable"|}')
+        table.caption_attrs = 'style=""'
+        self.assertEqual(table.caption_attrs, 'style=""')
+
+    def test_replace_caption_attrs(self):
+        table = wtp.Table('{|class="wikitable"\n|+old|cap\n|}')
+        table.caption_attrs = 'new'
+        self.assertEqual(table.caption_attrs, 'new')
+
+    def test_set_caption_attrs_before_cap(self):
+        table = wtp.Table('{| class="wikitable"\n|a\n|+ ignore\n|}')
+        table.caption_attrs = 'style=""'
+        self.assertEqual(table.caption_attrs, 'style=""')
     
     def test_single_line_no_caption(self):
         table = wtp.Table('{|class="wikitable"|}')

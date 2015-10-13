@@ -105,7 +105,7 @@ SEMICAPTION_REGEX = re.compile(
     """,
     re.VERBOSE
 )
-# https://regex101.com/r/tH3pU3/4
+# https://regex101.com/r/tH3pU3/6
 CAPTION_REGEX = re.compile(
     r"""
     # Everything until the caption line
@@ -270,7 +270,7 @@ class Table:
         """Set a new caption."""
         m = CAPTION_REGEX.match(self.string)
         if m:
-            preattrs = m.group('preattrs') or ''
+            preattrs = m.group('preattrs')
             attrs = m.group('attrs') or ''
             oldcaption = m.group('caption')
             self.strins(len(preattrs + attrs), newcaption)
@@ -299,7 +299,24 @@ class Table:
             return m.group('attrs')
 
     @caption_attrs.setter
-    def caption_attrs(self):
+    def caption_attrs(self, attrs):
         """Set new caption attributes."""
-        pass
-
+        string = self.string
+        h, s, t = string.partition('\n')
+        if not s:
+            # No caption and single line table
+            self.strins(len(h + s) -2, '\n|+' + attrs + '|\n')
+        else:
+            m = CAPTION_REGEX.match(self.string)
+            if not m:
+                # No caption-line and multiline table
+                self.strins(len(h + s), '|+' + attrs + '|\n')
+            else:
+                preattrs = m.group('preattrs')
+                oldattrs = m.group('attrs') or ''
+                # Caption and attrs or Caption but no attrs
+                self.strins(len(preattrs), attrs)
+                self.strdel(
+                    len(preattrs + attrs),
+                    len(preattrs + attrs + oldattrs),
+                )
