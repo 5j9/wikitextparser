@@ -105,7 +105,7 @@ SEMICAPTION_REGEX = re.compile(
     """,
     re.VERBOSE
 )
-# https://regex101.com/r/tH3pU3/3
+# https://regex101.com/r/tH3pU3/4
 CAPTION_REGEX = re.compile(
     r"""
     # Everything until the caption line
@@ -114,7 +114,7 @@ CAPTION_REGEX = re.compile(
       {\|
       (?:
         (?:
-          (?!\n\s*\|\+)
+          (?!\n\s*\|)
           [\s\S]
         )*?
       )
@@ -279,8 +279,17 @@ class Table:
                 len(preattrs + attrs + newcaption + oldcaption),
             )
         else:
-            pass
-            
+            # There is no caption. Create one.
+            string = self.string
+            h, s, t = string.partition('\n')
+            if s:
+                # The table is at least two lines.
+                # Insert caption after the first one.
+                self.strins(len(h + s), '|+' + newcaption + '\n')
+            else:
+                # Single line (empty) table.
+                # Insert the caption before the `|}`.
+                self.strins(len(string) -2, '\n|+' + newcaption + '\n')
 
     @property
     def caption_attrs(self):
@@ -288,4 +297,9 @@ class Table:
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m.group('attrs')
+
+    @caption_attrs.setter
+    def caption_attrs(self):
+        """Set new caption attributes."""
+        pass
 

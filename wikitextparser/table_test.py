@@ -205,8 +205,25 @@ class Caption(unittest.TestCase):
 
     """Test the caption and caption_attrs methods."""
 
-    def no_caption(self):
+    def test_no_caption(self):
+        table = wtp.Table('{| class="wikitable"\n|a\n|+ ignore\n|}')
+        self.assertEqual(table.caption, None)
+        self.assertEqual(table.caption_attrs, None)
+        table.caption = 'foo'
+        self.assertEqual(
+            table.string,
+            '{| class="wikitable"\n|+foo\n|a\n|+ ignore\n|}'
+        )
+
+    def test_set_attrs_before_cap(self):
         pass
+    
+    def test_single_line_no_caption(self):
+        table = wtp.Table('{|class="wikitable"|}')
+        self.assertEqual(table.caption, None)
+        self.assertEqual(table.caption_attrs, None)
+        table.caption = 'foo'
+        self.assertEqual(table.string, '{|class="wikitable"\n|+foo\n|}')
 
     def test_no_attrs_but_caption(self):
         text = (
