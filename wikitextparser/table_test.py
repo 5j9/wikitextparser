@@ -4,7 +4,6 @@ addrow([], -1)
 getrow(n)
 addcol([], -1)
 getcol(n)
-rows
 caption
 
 shitfrow(n,m)
@@ -192,6 +191,48 @@ class Rows(unittest.TestCase):
             ['c1', 'c2']
         ])
 
-  
+class GetRow(unittest.TestCase):
+
+    """Test the getrow method of the Table class."""
+
+    def test_second_of_three(self):
+        table = wtp.Table(
+            '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
+        )
+        self.assertEqual(table.getrow(1),['d', 'e', 'f'])
+
+class Caption(unittest.TestCase):
+
+    """Test the caption and caption_attrs methods."""
+
+    def no_caption(self):
+        pass
+
+    def test_no_attrs_but_caption(self):
+        text = (
+            '{|\n|+Food complements\n|-\n|Orange\n|Apple\n|-'
+            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
+        )
+        table = wtp.Table(text)
+        self.assertEqual(table.caption, 'Food complements')
+        self.assertEqual(table.caption_attrs, None)
+        table.caption = ' C '
+        self.assertEqual(table.string, text.replace('Food complements', ' C '))
+
+    def test_attrs_and_caption(self):
+        text = (
+            '{| class="wikitable"\n'
+            '|+ style="caption-side:bottom; color:#e76700;"|'
+            '\'\'Food complements\'\'\n|-\n|Orange\n|Apple\n|-'
+            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
+        )
+        table = wtp.Table(text)
+        self.assertEqual(table.caption, "''Food complements''")
+        self.assertEqual(
+            table.caption_attrs,
+            ' style="caption-side:bottom; color:#e76700;"'
+        )
+
+    
 if __name__ == '__main__':
     unittest.main()

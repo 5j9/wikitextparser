@@ -4,38 +4,135 @@ import re
 
 
 ROWSEP_REGEX = re.compile(r'(?:(?<=\n)|^)\s*[\|!]-.*?\n')
-CELLSEP_REGEX = re.compile(
-    r'\s*[|!][^|\n]*?\|(?!\|) *|(?:(?<=\n)|^)\s*[|!] *'
-    #r'\s*([|!]{2}|[|!](?:[^|\n]*\|)?)\s*'
+# https://regex101.com/r/hB4dX2/16
+NEWLINE_CELL_REGEX = re.compile(
+    r"""
+    # only for matching, not searching
+    \s*
+    (?P<sep>[|!])
+    (?:
+      # catch the matching pipe (style holder).
+      \| # immediate closure (attrs='').
+      |
+      (?P<attrs>
+        (?:
+          [^|\n] # attrs can't contain |
+          (?!(?P=sep){2})
+          # also not !! if sep is !
+        )*?
+      )
+      (?:\|)
+      (?!\|)
+      # not cell seperator: ||
+    )?
+    # optional := the 1st sep is a single ! or |.
+    (?P<data>[\s\S]*?)
+    (?=
+      # start of the next cell
+      \|\||
+      (?P=sep){2}|
+      $|
+      \n\s*[!|]
+    )
+    """,
+    re.VERBOSE
 )
-START_CELLSEP_REGEX = re.compile(r"""
-(?:(?<=\n)|^) # catch the starting sep. and style
-\s*
-(?P<sep>[|!])
-(?: # catch the matching pipe (style holder).
-\| # immediate closure (style='')
-|
-(?P<style>.*?)
-(?<!\|) # double-pipes are cell seperators
-(?:\|)
-(?!\|) # double-pipes are cell seperators
-)? # optional := the 1st sep is a single ! or |.
-""", re.VERBOSE
+# https://regex101.com/r/qK1pJ8/5
+INLINE_HAEDER_CELL_REGEX = re.compile(
+    r"""
+    [|!]{2}
+    (?:
+      # catch the matching pipe (style holder).
+      \| # immediate closure (attrs='').
+      |
+      (?P<attrs>
+        (?:
+          [^|\n] # attrs can't contain |
+          (?!\!\!)
+          # also not !! if sep is !
+        )*?
+      )
+      (?:\|)
+      (?!\|)
+      # not cell seperator: ||
+    )?
+    # optional := the 1st sep is a single ! or |.
+    (?P<data>[\s\S]*?)
+    (?=
+      # start of the next cell
+      \|\||
+      \!\!|
+      $|
+      \n\s*[!|]
+    )
+    """,
+    re.VERBOSE
 )
-                                 
-CELL_REGEX = re.compile(
-    r'(?:(?<=\n)|^)\s*[|!]{1,2}(.*?)(?:\|\|(.*?))*$|',
-    re.DOTALL,
-)    
-CAPTION_REGEX = re.compile(r'(?<=(?<=\n)|^)\s*(?:\|\+[\s\S]*?)+(?=\||\!)')
-EVERYTHING_UNTIL_THE_FIRST_ROW_REGEX = re.compile(
-    r'.*?(?=' + CELLSEP_REGEX.pattern + r')'
+# https://regex101.com/r/hW8aZ3/7
+INLINE_NONHAEDER_CELL_REGEX = re.compile(
+    r"""
+    \|\| # catch the matching pipe (style holder).
+    (?:
+      # immediate closure (attrs='').
+      \||
+      (?P<attrs>
+        [^|\n]*? # attrs can't contain |
+      )
+      (?:\|)
+      # not cell seperator: ||
+      (?!\|)
+    )
+    # optional := the 1st sep is a single ! or |.
+    ?
+    (?P<data>[\s\S]*?)
+    # start of the next cell
+    (?=\|\||$|\n\s*[!|])
+    """,
+    re.VERBOSE
 )
-EE = re.compile(r'!!')
-E = re.compile(r'!')
-VV = re.compile(r'||')
-V = re.compile(r'|')
-
+# Captions are optional and should only be placed
+# between table-start and the first row. Others captions not part of table.
+# The semi-captions regex below will match these invalid captions, too.
+SEMICAPTION_REGEX = re.compile(
+    r"""
+    (?<=
+      (?<=\n)|
+      ^
+    )
+    \s*
+    (?:\|\+[\s\S]*?)+
+    (?=\||\!)
+    """,
+    re.VERBOSE
+)
+# https://regex101.com/r/tH3pU3/3
+CAPTION_REGEX = re.compile(
+    r"""
+    # Everything until the caption line
+    (?P<preattrs>
+      # Start of table
+      {\|
+      (?:
+        (?:
+          (?!\n\s*\|\+)
+          [\s\S]
+        )*?
+      )
+      # Start of caption line
+      \n\s*\|\+
+    )
+    # Optional capation attrs
+    (?:
+      (?P<attrs>[^\n|]*)
+      (?:\|)
+      (?!\|)
+    )?
+    (?P<caption>.*?)
+    # End of caption line
+    (?:\n|\|\|)
+    """,
+    re.VERBOSE
+)
 
 
 class Table:
@@ -62,13 +159,15 @@ class Table:
 
     @property
     def rows(self):
-        """Return a tuple containing all rows.
+        """Return a tuple containing value of all rows.
 
         Due to the lots of complications it will cause, this function
         won't look inside templates, parserfunction, etc.
 
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
+
+        Todo: Do something about rowspans and colspans.
         """
         string = self.string
         length = len(string)
@@ -94,13 +193,13 @@ class Table:
             if '\n' not in shadow:
                 break
         string = string[length - len(shadow) - 2:-2]
-        # Remove table captions.
-        # Captions are optional and should only be placed
-        # between table-start and the first row; Others are not part of table.
-        for m in CAPTION_REGEX.finditer(shadow):
+        # Remove all semi-captions.
+        m = SEMICAPTION_REGEX.search(shadow)
+        while m:
             ss, se = m.span()
             shadow = shadow[:ss] + shadow[se:]
             string = string[:ss] + string[se:]
+            m = SEMICAPTION_REGEX.search(shadow)
         rowspans = [[0]]
         for m in ROWSEP_REGEX.finditer(shadow):
             rowspans[-1].append(m.start())
@@ -108,44 +207,47 @@ class Table:
         rowspans[-1].append(-1)
         grouped_spans = []
         for ss, se in rowspans:
-            tail = shadow[rss:rse]
-            tail = tail.lstrip()
-            if not tail:
-                # Todo: this condition may be removed alltogether in the future
+            row = shadow[ss:se]
+            if not row.lstrip():
                 # When the optional `|-` for the first row is used or when 
                 # there are meaningless row seprators that result in rows
                 # containing no cells.
                 continue
-            len0 = se - ss + 1
-            tdspans = []
-            if tail.startswith('||'):
-                # Cells in this type of rows can only be seperated using `||`.
-                head, sep, tail = tail.partition('||')
-                while sep:
-                    head, sep, tail = tail.partition('||')
-                    tdspans.append(
-                        ss + len0 - len(head + sep + tail),
-                        ss + len0 - len(sep + tail),
+            grouped_spans.append([])
+            endpos = ss - se
+            pos = 0
+            lastpos = -1
+            while pos != lastpos:
+                lastpos = pos
+                sep = None
+                m = NEWLINE_CELL_REGEX.match(row, pos)
+                if m:
+                    sep = m.group('sep')
+                    data = m.group('data')
+                    grouped_spans[-1].append(
+                        (ss + m.end() - len(data), ss + m.end())
                     )
-            elif tail.startswith('!!'):
-                rowtail = rowtail[2:]
-                
-                while True:
-                    td, s, rowtail = rowtail.partition('||')
-                    if not s:
-                        break
-                    cellspans.append(td)
-            cellspans = [[0]]
-            for m in CELLSEP_REGEX.finditer(shadow[ss:se]):
-                cellspans[-1].append(ss + m.start())
-                cellspans.append([ss + m.end()])
-            cellspans[-1].append(se)
-            grouped_cellspans.append(cellspans)
-        grouped_cellspans
+                    pos = m.end()
+                    if sep == '|':
+                        m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
+                        while m:
+                            data = m.group('data')
+                            grouped_spans[-1].append(
+                                (ss + m.end() - len(data), ss + m.end())
+                            )
+                            pos = m.end()
+                            m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
+                    elif sep == '!':
+                        m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
+                        while m:
+                            data = m.group('data')
+                            grouped_spans[-1].append(
+                                (ss + m.end() - len(data), ss + m.end())
+                            )
+                            pos = m.end()
+                            m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
         rows = []
-        for g in grouped_cellspans:
-            # The first CELLSEP is always at the beginning of the string.
-            g.pop(0)
+        for g in grouped_spans:
             rows.append([])
             for ss, se in g:
                 # Spaces after the first newline can be meaningful
@@ -157,38 +259,33 @@ class Table:
         return self.rows[n]
 
     @property
-    def text(self):
-        """Return the display text of the external link.
+    def caption(self):
+        """Return caption of the table."""
+        m = CAPTION_REGEX.match(self.string)
+        if m:
+            return m.group('caption')
 
-        Return self.string if this is a bare link.
-        Return
-        """
-        if self.in_brackets:
-            return self.string[1:-1].partition(' ')[2]
-        return self.string
-
-    @text.setter
-    def text(self, newtext):
-        """Set a new text for the current ExternalLink.
-
-        Automatically puts the ExternalLink in brackets if it's not already.
-        """
-        if not self.in_brackets:
-            url = self.string
-            self.strins(len(url), ' ]')
-            self.strins(0, '[')
-            text = ''
+    @caption.setter
+    def caption(self, newcaption):
+        """Set a new caption."""
+        m = CAPTION_REGEX.match(self.string)
+        if m:
+            preattrs = m.group('preattrs') or ''
+            attrs = m.group('attrs') or ''
+            oldcaption = m.group('caption')
+            self.strins(len(preattrs + attrs), newcaption)
+            self.strdel(
+                len(preattrs + attrs + newcaption),
+                len(preattrs + attrs + newcaption + oldcaption),
+            )
         else:
-            url = self.url
-            text = self.text
-        self.strins(len('[' + url + ' '), newtext)
-        self.strdel(
-            len('[' + url + ' ' + newtext),
-            len('[' + url + ' ' + newtext + text),
-        )
+            pass
+            
 
     @property
-    def in_brackets(self):
-        """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self.string.startswith('[')
-    
+    def caption_attrs(self):
+        """Return caption attributes."""
+        m = CAPTION_REGEX.match(self.string)
+        if m:
+            return m.group('attrs')
+
