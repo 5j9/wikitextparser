@@ -1,12 +1,9 @@
 ﻿"""Test the functionalities of table.py module."""
 '''Todo:
 addrow([], -1)
-getrow(n)
 addcol([], -1)
-getcol(n)
-caption
 
-shitfrow(n,m)
+shiftrow(n,m)
 shiftcol(n,m)
 
 sort?
@@ -191,15 +188,38 @@ class Rows(unittest.TestCase):
             ['c1', 'c2']
         ])
 
+    def test_colspan_and_rowspan(self):
+        """Warning: This may change in the future."""
+        table = wtp.Table(
+            '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
+            '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
+            '|31\n|colspan="2"|32\n|33\n|34\n|}'
+        )
+        self.assertEqual(table.rows, [
+            ['11'],
+            ['21', '22', '23', '24', '25'],
+            ['31', '32', '33', '34'],
+        ])
+        
+
+
 class GetRow(unittest.TestCase):
 
     """Test the getrow method of the Table class."""
 
     def test_second_of_three(self):
-        table = wtp.Table(
-            '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
-        )
+        table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
         self.assertEqual(table.getrow(1),['d', 'e', 'f'])
+
+
+class GetCol(unittest.TestCase):
+
+    """Test the getrow method of the Table class."""
+
+    def test_second_of_three(self):
+        table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
+        self.assertEqual(table.getcol(1),['b', 'e', 'h'])
+
 
 class Caption(unittest.TestCase):
 
@@ -261,6 +281,7 @@ class Caption(unittest.TestCase):
             table.caption_attrs,
             ' style="caption-side:bottom; color:#e76700;"'
         )
+
 
 class TableAttrs(unittest.TestCase):
 

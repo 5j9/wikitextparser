@@ -254,9 +254,16 @@ class Table:
                 rows[-1].append(string[ss:se].strip(' ').rstrip())
         return rows
 
-    def getrow(self, n):
-        """Return the nth row of the Table."""
-        return self.rows[n]
+    def getrow(self, i):
+        """Return the ith row of the table. Note that i starts from 0."""
+        return self.rows[i]
+
+    def getcol(self, i):
+        """Return the ith column of the table as a list.
+
+        Note that i is the index and starts from 0.
+        """
+        return [r[i]  for r in self.rows]
 
     @property
     def caption(self):
