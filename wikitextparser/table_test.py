@@ -262,6 +262,22 @@ class Caption(unittest.TestCase):
             ' style="caption-side:bottom; color:#e76700;"'
         )
 
-    
+class TableAttrs(unittest.TestCase):
+
+    """Test the table_attrs method of the Table class."""
+
+    def test_single_line_table(self):
+        table = wtp.Table('{|s|}')
+        self.assertEqual(table.table_attrs, 's')
+        table.table_attrs = 'class="wikitable"'
+        self.assertEqual(table.string, '{|class="wikitable"|}')
+
+    def test_multiline_table(self):
+        table = wtp.Table('{|s\n|a|}')
+        self.assertEqual(table.table_attrs, 's')
+        table.table_attrs = 'class="wikitable"'
+        self.assertEqual(table.string, '{|class="wikitable"\n|a|}')
+        
+                         
 if __name__ == '__main__':
     unittest.main()

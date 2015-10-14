@@ -292,6 +292,35 @@ class Table:
                 self.strins(len(string) -2, '\n|+' + newcaption + '\n')
 
     @property
+    def table_attrs(self):
+        """Return table attributes.
+
+        Placing attributes after the table start tag ({|) applies
+        attributes to the entire table.
+        See [[mw:Help:Tables#Attributes on tables]] for more info.
+        """
+        h, s, t = self.string.partition('\n')
+        if s:
+            # Multiline table
+            return h[2:]
+        else:
+            # Single-line table
+            return h[2:-2]
+
+    @table_attrs.setter
+    def table_attrs(self, attrs):
+        """Set new attributes for this table."""
+        h, s, t = self.string.partition('\n')
+        if s:
+            # Multiline table
+            self.strins(2, attrs)
+            self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:]))
+        else:
+            # Single-line table
+            self.strins(2, attrs)
+            self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:-2]))
+        
+    @property
     def caption_attrs(self):
         """Return caption attributes."""
         m = CAPTION_REGEX.match(self.string)
@@ -307,7 +336,7 @@ class Table:
             # No caption and single line table
             self.strins(len(h + s) -2, '\n|+' + attrs + '|\n')
         else:
-            m = CAPTION_REGEX.match(self.string)
+            m = CAPTION_REGEX.match(string)
             if not m:
                 # No caption-line and multiline table
                 self.strins(len(h + s), '|+' + attrs + '|\n')
