@@ -50,7 +50,7 @@ SECTION_REGEX = re.compile(
 )
 # Tables
 TABLE_REGEX = re.compile(
-    r'^\s*{\|.*?\n\s*(?:\|}|$)',
+    r'^( *){\|.*?\n\s*(?:\|}|$)',
     re.DOTALL|re.MULTILINE
 )
 
@@ -291,7 +291,9 @@ class WikiText(WikiText):
         tspans = spans['tables']
         for m in TABLE_REGEX.finditer(shadow):
             mspan = m.span()
-            mspan = (mspan[0] + ss, mspan[1] + ss)
+            # Ignore leading whitespace
+            leading_whitespace_length = len(m.group(1))
+            mspan = (ss + mspan[0] + leading_whitespace_length, ss + mspan[1])
             if mspan not in tspans:
                 tspans.append(mspan)
             tables.append(
