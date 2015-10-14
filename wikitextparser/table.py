@@ -167,20 +167,7 @@ class Table:
         """
         string = self.string
         length = len(string)
-        shadow = string
-        ss, se = self._get_span()
-        for type_ in (
-            'templates', 'wikilinks', 'functions',
-            'exttags', 'comments'
-        ):
-            for sss, sse in self._spans[type_]:
-                if sss < ss or sse > se:
-                    continue
-                shadow = (
-                    shadow[:sss - ss] +
-                    (sse - sss) * '_' +
-                    shadow[sse - ss:]
-                )
+        shadow = self._shadow()
         # Remove table-start and table-end marks.
         shadow = shadow[:-2].partition('\n')[2].lstrip()
         # Remove everything until the first row
@@ -190,6 +177,7 @@ class Table:
                 break
         string = string[length - len(shadow) - 2:-2]
         # Remove all semi-captions.
+        ss, se = self._get_span()
         m = SEMICAPTION_REGEX.search(shadow)
         while m:
             ss, se = m.span()
