@@ -38,15 +38,20 @@ EXTERNALLINK_REGEX = re.compile(
 # Arguments
 POSITIONAL_ARG_NAME = re.compile('[1-9][0-9]*')
 # Sections
-SECTION_HEADER_REGEX = re.compile(r'(?<=(?<=\n)|(?<=^))=[^\n]+?= *(?:\n|$)')
+SECTION_HEADER_REGEX = re.compile(r'^=[^\n]+?= *$', re.M)
 LEAD_SECTION_REGEX = re.compile(
-    r'^.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|$)',
-    re.DOTALL,
+    r'.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|\Z)',
+    re.DOTALL|re.MULTILINE,
 )
 SECTION_REGEX = re.compile(
     SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
-    SECTION_HEADER_REGEX.pattern + '|$)',
-    re.DOTALL,
+    SECTION_HEADER_REGEX.pattern + '|\Z)',
+    re.DOTALL|re.MULTILINE,
+)
+# Tables
+TABLE_REGEX = re.compile(
+    r'^\s*{\|.*?\n\s*(?:\|}|$)',
+    re.DOTALL|re.MULTILINE
 )
 
 
@@ -274,6 +279,29 @@ class WikiText(WikiText):
             sections.append(latest_section)
         return sections
 
+    @property
+    def tables(self):
+        """Return a list of found table objects."""
+        shadow = self._shadow()
+        tables = []
+        spans = self._spans
+        ss, se = self._get_span()
+        if 'tables' not in spans:
+            spans['tables'] = []
+        tspans = spans['tables']
+        for m in TABLE_REGEX.finditer(shadow):
+            mspan = m.span()
+            mspan = (mspan[0] + ss, mspan[1] + ss)
+            if mspan not in tspans:
+                tspans.append(mspan)
+            tables.append(
+                Table(
+                    self._lststr,
+                    spans,
+                    tspans.index(mspan)
+                )
+            )
+        return tables
 
 class _Indexed_WikiText(WikiText):
 
