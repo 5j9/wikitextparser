@@ -137,6 +137,11 @@ class WikiText(unittest.TestCase):
         self.assertEqual(0, len(p.external_links)
         )
 
+
+class Tables(unittest.TestCase):
+
+    """Test the tables property."""
+
     def test_table_extraction(self):
         s = '{|class=wikitable\n|a \n|}'
         p =wtp.parse(s)
@@ -151,6 +156,13 @@ class WikiText(unittest.TestCase):
         s = '{|class=wikitable\n|a \n<!-- \n|} \n-->\n|b\n|}'
         p =wtp.parse(s)
         self.assertEqual(s, p.tables[0].string)
+
+    def test_two_tables(self):
+        s = 'text1\n {|\n|a \n|}\ntext2\n{|\n|b\n|}\ntext3\n'
+        p =wtp.parse(s)
+        self.assertEqual(2, len(p.tables))
+        self.assertEqual('{|\n|a \n|}', p.tables[0].string)
+        self.assertEqual('{|\n|b\n|}', p.tables[1].string)
 
 
 class PrettyPrint(unittest.TestCase):
