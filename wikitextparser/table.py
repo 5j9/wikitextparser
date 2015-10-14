@@ -3,7 +3,7 @@
 import re
 
 
-ROWSEP_REGEX = re.compile(r'(?:(?<=\n)|^)\s*[\|!]-.*?\n')
+ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
 # https://regex101.com/r/hB4dX2/16
 NEWLINE_CELL_REGEX = re.compile(
     r"""
@@ -95,15 +95,11 @@ INLINE_NONHAEDER_CELL_REGEX = re.compile(
 # The semi-captions regex below will match these invalid captions, too.
 SEMICAPTION_REGEX = re.compile(
     r"""
-    (?<=
-      (?<=\n)|
-      ^
-    )
-    \s*
+    ^\s*
     (?:\|\+[\s\S]*?)+
-    (?=\||\!)
+    (?=^\s*[|!])
     """,
-    re.VERBOSE
+    re.MULTILINE|re.VERBOSE
 )
 # https://regex101.com/r/tH3pU3/6
 CAPTION_REGEX = re.compile(
