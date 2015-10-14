@@ -330,3 +330,25 @@ class WikiText:
                 if rs <= s < ss  and se < e <= re:
                     level += 1
             return level
+
+    def _shadow(
+        self,
+        types=('templates', 'wikilinks', 'functions', 'exttags', 'comments'),
+        repl='_',
+    ):
+        """Return a copy of self.string with specified subspans replaced.
+
+        This function is used before finding the spans of wikitables.
+        """
+        ss, se = self._get_span()
+        shadow = self.string
+        for type_ in types:
+            for sss, sse in self._spans[type_]:
+                if sss < ss or sse > se:
+                    continue
+                shadow = (
+                    shadow[:sss - ss] +
+                    (sse - sss) * '_' +
+                    shadow[sse - ss:]
+                )
+        return shadow
