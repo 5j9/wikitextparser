@@ -132,12 +132,25 @@ class WikiText(unittest.TestCase):
         external links to spans.py) but maybe the current implementation
         is even more useful? Also faster when not looking for external links.
         """
-
-        
         p =wtp.parse('[[ https://en.wikipedia.org/]]')
         self.assertEqual(1, len(p.wikilinks))
         self.assertEqual(0, len(p.external_links)
         )
+
+    def test_table_extraction(self):
+        s = '{|class=wikitable\n|a \n|}'
+        p =wtp.parse(s)
+        self.assertEqual(s, p.tables[0].string)
+
+    def test_table_start_after_space(self):
+        s = '   {|class=wikitable\n|a \n|}'
+        p =wtp.parse(s)
+        self.assertEqual(s.strip(), p.tables[0].string)
+
+    def test_ignore_comments_before_extracting_tables(self):
+        s = '{|class=wikitable\n|a \n<!-- \n|} \n-->\n|b\n|}'
+        p =wtp.parse(s)
+        self.assertEqual(s, p.tables[0].string)
 
 
 class PrettyPrint(unittest.TestCase):
