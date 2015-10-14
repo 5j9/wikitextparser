@@ -289,14 +289,8 @@ class Table:
             # There is no caption. Create one.
             string = self.string
             h, s, t = string.partition('\n')
-            if s:
-                # The table is at least two lines.
-                # Insert caption after the first one.
-                self.strins(len(h + s), '|+' + newcaption + '\n')
-            else:
-                # Single line (empty) table.
-                # Insert the caption before the `|}`.
-                self.strins(len(string) -2, '\n|+' + newcaption + '\n')
+            # Insert caption after the first one.
+            self.strins(len(h + s), '|+' + newcaption + '\n')
 
     @property
     def table_attrs(self):
@@ -306,26 +300,14 @@ class Table:
         attributes to the entire table.
         See [[mw:Help:Tables#Attributes on tables]] for more info.
         """
-        h, s, t = self.string.partition('\n')
-        if s:
-            # Multiline table
-            return h[2:]
-        else:
-            # Single-line table
-            return h[2:-2]
+        return self.string.partition('\n')[0][2:]
 
     @table_attrs.setter
     def table_attrs(self, attrs):
         """Set new attributes for this table."""
-        h, s, t = self.string.partition('\n')
-        if s:
-            # Multiline table
-            self.strins(2, attrs)
-            self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:]))
-        else:
-            # Single-line table
-            self.strins(2, attrs)
-            self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:-2]))
+        h = self.string.partition('\n')[0]
+        self.strins(2, attrs)
+        self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:]))
         
     @property
     def caption_attrs(self):
@@ -339,20 +321,16 @@ class Table:
         """Set new caption attributes."""
         string = self.string
         h, s, t = string.partition('\n')
-        if not s:
-            # No caption and single line table
-            self.strins(len(h + s) -2, '\n|+' + attrs + '|\n')
+        m = CAPTION_REGEX.match(string)
+        if not m:
+            # There is no caption-line
+            self.strins(len(h + s), '|+' + attrs + '|\n')
         else:
-            m = CAPTION_REGEX.match(string)
-            if not m:
-                # No caption-line and multiline table
-                self.strins(len(h + s), '|+' + attrs + '|\n')
-            else:
-                preattrs = m.group('preattrs')
-                oldattrs = m.group('attrs') or ''
-                # Caption and attrs or Caption but no attrs
-                self.strins(len(preattrs), attrs)
-                self.strdel(
-                    len(preattrs + attrs),
-                    len(preattrs + attrs + oldattrs),
-                )
+            preattrs = m.group('preattrs')
+            oldattrs = m.group('attrs') or ''
+            # Caption and attrs or Caption but no attrs
+            self.strins(len(preattrs), attrs)
+            self.strdel(
+                len(preattrs + attrs),
+                len(preattrs + attrs + oldattrs),
+            )

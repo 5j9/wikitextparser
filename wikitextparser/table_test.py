@@ -112,6 +112,11 @@ class Rows(unittest.TestCase):
             [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
         )
 
+    def test_with_caption_attrs(self):
+        table = wtp.Table('{|class=wikitable\n|+ sal | no\n|a \n|}')
+        self.assertEqual(table.rows, [['a']])
+        
+
     def test_second_caption_is_ignored(self):
         table = wtp.Table('{|\n  |+ c1\n  |+ c2\n|-\n|1\n|2\n|}')
         self.assertEqual(table.rows, [['1', '2']])
@@ -235,11 +240,6 @@ class Caption(unittest.TestCase):
             '{| class="wikitable"\n|+foo\n|a\n|+ ignore\n|}'
         )
 
-    def test_singleline_table_set_caption_attrs(self):
-        table = wtp.Table('{| class="wikitable"|}')
-        table.caption_attrs = 'style=""'
-        self.assertEqual(table.caption_attrs, 'style=""')
-
     def test_replace_caption_attrs(self):
         table = wtp.Table('{|class="wikitable"\n|+old|cap\n|}')
         table.caption_attrs = 'new'
@@ -249,13 +249,6 @@ class Caption(unittest.TestCase):
         table = wtp.Table('{| class="wikitable"\n|a\n|+ ignore\n|}')
         table.caption_attrs = 'style=""'
         self.assertEqual(table.caption_attrs, 'style=""')
-    
-    def test_single_line_no_caption(self):
-        table = wtp.Table('{|class="wikitable"|}')
-        self.assertEqual(table.caption, None)
-        self.assertEqual(table.caption_attrs, None)
-        table.caption = 'foo'
-        self.assertEqual(table.string, '{|class="wikitable"\n|+foo\n|}')
 
     def test_no_attrs_but_caption(self):
         text = (
@@ -286,12 +279,6 @@ class Caption(unittest.TestCase):
 class TableAttrs(unittest.TestCase):
 
     """Test the table_attrs method of the Table class."""
-
-    def test_single_line_table(self):
-        table = wtp.Table('{|s|}')
-        self.assertEqual(table.table_attrs, 's')
-        table.table_attrs = 'class="wikitable"'
-        self.assertEqual(table.string, '{|class="wikitable"|}')
 
     def test_multiline_table(self):
         table = wtp.Table('{|s\n|a|}')
