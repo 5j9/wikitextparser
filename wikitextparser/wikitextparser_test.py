@@ -193,6 +193,21 @@ class PrettyPrint(unittest.TestCase):
             wt.pprint('  ', remove_comments=True),
         )
 
+    def test_first_arg_of_tag_is_whitespace_sensitive(self):
+        """The second argument of #tag is an exception.
+
+        See the last warning on [[mw:Help:Magic_words#Miscellaneous]]:
+        You must write {{#tag:tagname||attribute1=value1|attribute2=value2}}
+        to pass an empty content. No space is permitted in the area reserved
+        for content between the pipe characters || before attribute1.
+        """
+        s = '{{#tag:ref||name="n1"}}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+        s = '{{#tag:foo| }}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+
         
 class Sections(unittest.TestCase):
 

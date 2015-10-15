@@ -140,7 +140,16 @@ class WikiText(WikiText):
 
         for parser_function in parsed.parser_functions:
             level = parser_function._get_indent_level()
-            parser_function.name = parser_function.name.strip()
+            name = parser_function.name.strip()
+            parser_function.name = name
+            if name == '#tag':
+                # The 2nd argument of `tag` parser function is an exception
+                # and cannot be stripped.
+                # So in `{{#tag:tagname|arg1|...}}`, no whitespace should be
+                # added/removed to/from arg1.
+                # See: [[mw:Help:Extension:ParserFunctions#Miscellaneous]]
+                # This makes things complicated. Continue.
+                continue
             arguments = parser_function.arguments
             if len(arguments) > 1:
                 arg0 = arguments[0]
@@ -291,9 +300,8 @@ class WikiText(WikiText):
         tspans = spans['tables']
         for m in TABLE_REGEX.finditer(shadow):
             mspan = m.span()
-            # Ignore leading whitespace
-            leading_whitespace_length = len(m.group(1))
-            mspan = (ss + mspan[0] + leading_whitespace_length, ss + mspan[1])
+            # Ignore leading whitespace using len(m.group(1))
+            mspan = (ss + mspan[0] + len(m.group(1)), ss + mspan[1])
             if mspan not in tspans:
                 tspans.append(mspan)
             tables.append(
