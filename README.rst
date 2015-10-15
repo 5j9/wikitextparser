@@ -4,13 +4,7 @@ wikitextparser
 
 A simple, purely python, WikiText parsing tool.
 
-Be warned that the project is in it's early development stage.
-The API may change drastically and there may be some bugs.
-It sure can't parse a page the exact same way as the MediaWiki does 
-(because it's completely offline and can't expand templates and
-also has not yet implemented many details of MediaWiki parser...),
-but my guess is that for most usual cases the current capabilities 
-will suffice.
+The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, etc. in wikitexts.
 
 Installation
 ============
@@ -92,7 +86,7 @@ Here is a short demo of some of the functionalities:
     {{text|value3}}
 
     [[Z|X]]
-    >>> # There is a pprint function that you might find useful:
+    >>> # There is a pprint function that pretty-prints templates.
     >>> p = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
     >>> t2, t1 = p.templates
     >>> print(t2.pprint())
@@ -120,7 +114,19 @@ Here is a short demo of some of the functionalities:
     >>> t.rm_first_of_dup_args()
     >>> t
     Template('{{t|a=a}}')
-    >>> # Have a look at test.py module for more details and probable pitfalls.
+    >>> # Extract cell values of a table
+    >>> p = wtp.parse("""{|
+    |  Orange    ||   Apple   ||   more
+    |-
+    |   Bread    ||   Pie     ||   more
+    |-
+    |   Butter   || Ice cream ||  and more
+    |}""")
+    >>> pprint(p.tables[0].rows)
+    [['Orange', 'Apple', 'more'],
+     ['Bread', 'Pie', 'more'],
+     ['Butter', 'Ice cream', 'and more']]
+    >>> # Have a look at test modules for more details and probable pitfalls.
     >>> 
 
 See also: 
