@@ -107,37 +107,42 @@ class WikiText(WikiText):
         for template in parsed.templates:
             level = template._get_indent_level()
             template.name = template.name.strip()
-            arguments = template.arguments
-            if arguments:
+            args = template.arguments
+            if args:
                 template.name += '\n' + indent * level
-                for argument in arguments:
+                # Required for alignment
+                max_name_len = max(
+                    (len(a.name.strip()) for a in args if not a.positional),
+                    default=None
+                )
+                for arg in args:
                     # Warning:
-                    # positional arguments of tempalates are sensitive to
+                    # Positional arguments of tempalates are sensitive to
                     # whitespace. See:
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
-                    argument_value = argument.value
+                    value = arg.value
                     # Changing positional args to keyword args was disabled
                     # because currently the parser can not distinguish between
                     # some parserfunctions (e.g. {{formatnum:string|R}}) and
                     # templates.
-                    '''if (argument.positional and
-                        argument_value.strip() == argument_value
+                    '''if (arg.positional and
+                        value.strip() == value
                     ):
-                        argument.name = argument.name
-                        argument.value = (
-                            argument_value.strip() + '\n' + indent * level
+                        arg.name = arg.name
+                        arg.value = (
+                            value.strip() + '\n' + indent * level
                         )'''
-                    if not argument.positional:
-                        argument.name = argument.name.strip()
-                        argument.value = (
-                            argument_value.strip() + '\n' + indent * level
+                    if not arg.positional:
+                        name = arg.name.strip()
+                        arg.name = (
+                            ' ' + name + ' ' + ' ' * (max_name_len - len(name))
                         )
+                        arg.value = ' ' + value.strip() + '\n' + indent * level
                 # Special formatting for the last argument
-                if not argument.positional:
-                    argument.value = (
-                        argument.value.rstrip() + '\n' + indent * (level - 1)
+                if not arg.positional:
+                    arg.value = (
+                        arg.value.rstrip() + '\n' + indent * (level - 1)
                     )
-
         for parser_function in parsed.parser_functions:
             level = parser_function._get_indent_level()
             name = parser_function.name.strip()
@@ -150,23 +155,34 @@ class WikiText(WikiText):
                 # See: [[mw:Help:Extension:ParserFunctions#Miscellaneous]]
                 # This makes things complicated. Continue.
                 continue
-            arguments = parser_function.arguments
-            if len(arguments) > 1:
-                arg0 = arguments[0]
-                arg0.value = arg0.value.strip() + '\n' + indent * level
+            args = parser_function.arguments
+            if len(args) > 1:
+                arg0 = args[0]
+                arg0.value = ' ' + arg0.value.strip() + '\n' + indent * level
+                if not arg0.positional:
+                    arg0.name = ' ' + arg0.name.strip() + ' '
+                # Required for alignment
+                max_name_len = max(
+                    (
+                        len(a.name.strip()) for a in args[1:] if
+                        not a.positional
+                    ),
+                    default=None
+                )
                 # Whitespace, including newlines, tabs, and spaces is stripped
                 # from the beginning and end of all the parameters of
                 # parser functions. See:
                 # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
                 #    Stripping_whitespace
-                for argument in arguments[1:]:
-                    argument.value = (
-                        argument.value.strip() + '\n' + indent * level
-                    )
+                for arg in args[1:]:
+                    arg.value = ' ' + arg.value.strip() + '\n' + indent * level
+                    if not arg.positional:
+                        name = arg.name.strip()
+                        arg.name = (
+                            ' ' + name + ' ' + ' ' * (max_name_len - len(name))
+                        )
                 # Special formatting for the last argument
-                argument.value = (
-                    argument.value.rstrip() + '\n' + indent * (level - 1)
-                )
+                arg.value = arg.value.rstrip() + '\n' + indent * (level - 1)
         return parsed.string
 
     @property

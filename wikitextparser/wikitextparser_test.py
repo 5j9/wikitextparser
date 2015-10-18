@@ -173,7 +173,7 @@ class PrettyPrint(unittest.TestCase):
         s = "{{a|b=b|c=c|d=d|e=e}}"
         wt = wtp.WikiText(s)
         self.assertEqual(
-            '{{a\n    |b=b\n    |c=c\n    |d=d\n    |e=e\n}}',
+            '{{a\n    | b = b\n    | c = c\n    | d = d\n    | e = e\n}}',
             wt.pprint(),
         )
 
@@ -181,7 +181,7 @@ class PrettyPrint(unittest.TestCase):
         s = "{{a|b=b|c=c|d=d|e=e}}"
         wt = wtp.WikiText(s)
         self.assertEqual(
-            '{{a\n  |b=b\n  |c=c\n  |d=d\n  |e=e\n}}',
+            '{{a\n  | b = b\n  | c = c\n  | d = d\n  | e = e\n}}',
             wt.pprint('  '),
         )
 
@@ -189,7 +189,7 @@ class PrettyPrint(unittest.TestCase):
         s = "{{a|<!--b=b|c=c|d=d|-->e=e}}"
         wt = wtp.WikiText(s)
         self.assertEqual(
-            '{{a\n  |e=e\n}}',
+            '{{a\n  | e = e\n}}',
             wt.pprint('  ', remove_comments=True),
         )
 
@@ -208,6 +208,21 @@ class PrettyPrint(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(s, wt.pprint())
 
+    def test_on_parserfunction(self):
+        s = "{{#switch:case|abcde = f| g=h}}"
+        wt = wtp.parse(s)
+        self.assertEqual(
+            '{{#switch: case\n    | abcde = f\n    | g     = h\n}}',
+            wt.pprint(),
+        )
+
+    def test_parserfunction_with_no_pos_arg(self):
+        s = "{{#switch:case|a|b}}"
+        wt = wtp.parse(s)
+        self.assertEqual(
+            '{{#switch: case\n    | a\n    | b\n}}',
+            wt.pprint(),
+        )
         
 class Sections(unittest.TestCase):
 
