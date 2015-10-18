@@ -1,6 +1,8 @@
 ﻿"""Define a class to deal with tables."""
 
+
 import re
+from html.parser import HTMLParser
 
 
 ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
@@ -153,17 +155,17 @@ class Table:
         """Return the self-span."""
         return self._spans['tables'][self._index]
 
-    @property
-    def rows(self):
+    def getdata(self, span=False):
         """Return a tuple containing value of all rows.
 
-        Due to the lots of complications it will cause, this function
-        won't look inside templates, parserfunction, etc.
+        @param:`span` indicates if rowspans and colspans attributes should be
+            expanded or not. Todo: Don't use this param. Still in development.
+        
+        Due to the lots of complications that it will cause, this function
+        won't look inside templates, parserfunctions, etc.
 
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
-
-        Todo: Do something about rowspans and colspans.
         """
         string = self.string
         length = len(string)
@@ -189,7 +191,9 @@ class Table:
             rowspans[-1].append(m.start())
             rowspans.append([m.end()])
         rowspans[-1].append(-1)
-        grouped_spans = []
+        cell_spans = []
+        if span:
+            attr_spans = []
         for ss, se in rowspans:
             row = shadow[ss:se]
             if not row.lstrip():
@@ -197,8 +201,9 @@ class Table:
                 # there are meaningless row seprators that result in rows
                 # containing no cells.
                 continue
-            grouped_spans.append([])
-            endpos = ss - se
+            cell_spans.append([])
+            if span:
+                attr_spans.append([])
             pos = 0
             lastpos = -1
             while pos != lastpos:
@@ -208,46 +213,129 @@ class Table:
                 if m:
                     sep = m.group('sep')
                     data = m.group('data')
-                    grouped_spans[-1].append(
+                    cell_spans[-1].append(
                         (ss + m.end() - len(data), ss + m.end())
                     )
+                    if span:
+                        self._extend_attr_spans(
+                            m, attr_spans, ss
+                        )
                     pos = m.end()
                     if sep == '|':
                         m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
                         while m:
                             data = m.group('data')
-                            grouped_spans[-1].append(
+                            cell_spans[-1].append(
                                 (ss + m.end() - len(data), ss + m.end())
                             )
+                            if span:
+                                self._extend_attr_spans(
+                                    m, attr_spans, ss
+                                )
                             pos = m.end()
                             m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
                     elif sep == '!':
                         m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
                         while m:
                             data = m.group('data')
-                            grouped_spans[-1].append(
+                            cell_spans[-1].append(
                                 (ss + m.end() - len(data), ss + m.end())
                             )
+                            if span:
+                                self._extend_attr_spans(
+                                    m, attr_spans, ss
+                                )
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
+                    
+        # rows matrix
         rows = []
-        for g in grouped_spans:
+        for g in cell_spans:
             rows.append([])
             for ss, se in g:
                 # Spaces after the first newline can be meaningful
                 rows[-1].append(string[ss:se].strip(' ').rstrip())
+        if span and rows:
+            self._apply_attr_spans(attr_spans, rows, string)
         return rows
 
-    def getrow(self, i):
-        """Return the ith row of the table. Note that i starts from 0."""
-        return self.rows[i]
 
-    def getcol(self, i):
-        """Return the ith column of the table as a list.
+    def _apply_attr_spans(self, attr_spans, rows, string):
+        """Apply colspans and rowspans to rows."""
+        # span cells
+        
+        imax = len(attr_spans) - 1
+        jmax = max(len(r) for r in attr_spans)
+        i = 0
+        changed = True
+        while changed:
+            changed = False
+            while i < imax:
+                j = 0
+                ilen = len(attr_spans[i])            
+                while j < ilen:
+                    try:
+                        ss, se = attr_spans[i][j]
+                    except:
+                        from pprint import pprint as pp
+                        pp(attr_spans)
+                    if se is not None:
+                        parsed_attrs = attrs_parser(string[ss:se])
+                        if 'colspan' in parsed_attrs:
+                            colspan = parsed_attrs['colspan']
+                            if colspan.isdecimal():
+                                colspan = min(
+                                    int(colspan) - 1, # requested
+                                    jmax - ilen # available
+                                )
+                                for c in range(colspan):
+                                    rows[i].insert(j, rows[i][j])
+                                    attr_spans[i].insert(j, (None, None))
+                                    ilen += 1
+                                    j += 1
+                                changed = True
+                        if 'rowspan' in parsed_attrs:
+                            rowspan = parsed_attrs['rowspan']
+                            if rowspan.isdecimal():
+                                rowspan = min(
+                                    int(rowspan) - 1, # requested
+                                    imax - i # available
+                                )
+                                for c in range(rowspan):
+                                    rows[i + c + 1].insert(j, rows[i][j])
+                                    attr_spans[i + c + 1].insert(
+                                        j, (None, None)
+                                    )
+                                changed = True
+                    j += 1
+                i += 1        
 
-        Note that i is the index and starts from 0.
+    def _extend_attr_spans(self, m, attr_spans, ss):
+        """Extend attr_spans according to parameters.
+
+        Sub-function of self.getdata.
         """
-        return [r[i]  for r in self.rows]
+        attrs = m.group('attrs')
+        if attrs:
+            attr_spans[-1].append(
+                (ss + 1, ss + 1 + len(attrs))
+            )
+        else:
+            attr_spans[-1].append((None, None))
+
+    def getrdata(self, i):
+        """Return the data in the ith row of the table.
+
+        i is the index and starts from 0.
+        """
+        return self.getdata()[i]
+
+    def getcdata(self, i):
+        """Return the data in ith column of the table as a list.
+
+        i is the index and starts from 0.
+        """
+        return [r[i]  for r in self.getdata()]
 
     @property
     def caption(self):
@@ -318,3 +406,26 @@ class Table:
                 len(preattrs + attrs),
                 len(preattrs + attrs + oldattrs),
             )
+
+
+class AttrsParser(HTMLParser):
+
+    """A class to generate attrs_parser from."""
+        
+    def handle_starttag(self, tag, attrs):
+        """Store parsed attrs in self.parsed and then self.reset()."""
+        self.parsed = attrs
+        self.reset()
+
+    def parse(self, attrs):
+        """Return list of parsed name and value pairs.
+
+        Example:
+            >>> AttrsParser().parse('''\t colspan = " 2 " rowspan=\n6 ''')
+            [('colspan', ' 2 '), ('rowspan', '6')]
+        """
+        self.feed('<a ' + attrs + '>')
+        return dict(self.parsed)
+
+
+attrs_parser = AttrsParser().parse

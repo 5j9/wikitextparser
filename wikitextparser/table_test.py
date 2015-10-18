@@ -28,7 +28,7 @@ class Rows(unittest.TestCase):
             '\n|Butter\n|Ice cream \n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
         )
 
@@ -37,7 +37,7 @@ class Rows(unittest.TestCase):
             '{| class=wikitable | g\n |- 132131 |||\n  | a | b\n |-\n  | c\n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [['b'], ['c']],
         )
 
@@ -46,7 +46,7 @@ class Rows(unittest.TestCase):
             '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
         )
 
@@ -57,7 +57,7 @@ class Rows(unittest.TestCase):
             '|   Butter   || Ice cream ||  and more\n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [
                 ['Orange', 'Apple', 'more'],
                 ['Bread', 'Pie', 'more'],
@@ -70,7 +70,7 @@ class Rows(unittest.TestCase):
             '\n* ulli1\n* ulli2\n* ulli3\n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [
                 [
                     'multi\nline\ntext. \n\n2nd paragraph.',
@@ -84,7 +84,7 @@ class Rows(unittest.TestCase):
         table = wtp.Table(
             '{|\n|| multi\nline\n||\n 1\n|}'
         )
-        self.assertEqual(table.rows, [['multi\nline', '\n 1']])
+        self.assertEqual(table.getdata(), [['multi\nline', '\n 1']])
 
     def test_with_headers(self):
         table = wtp.Table(
@@ -93,7 +93,7 @@ class Rows(unittest.TestCase):
             '|Butter\n|1\n|5.00\n|-\n!Total\n|\n|15.00\n|}'
         )
         self.assertEqual(
-            table.rows, [
+            table.getdata(), [
                 ['Item', 'Amount', 'Cost'],
                 ['Orange', '10', '7.00'],
                 ['Bread', '4', '3.00'],
@@ -108,46 +108,46 @@ class Rows(unittest.TestCase):
             '|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
         )
         self.assertEqual(
-            table.rows,
+            table.getdata(),
             [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
         )
 
     def test_with_caption_attrs(self):
         table = wtp.Table('{|class=wikitable\n|+ sal | no\n|a \n|}')
-        self.assertEqual(table.rows, [['a']])
+        self.assertEqual(table.getdata(), [['a']])
         
 
     def test_second_caption_is_ignored(self):
         table = wtp.Table('{|\n  |+ c1\n  |+ c2\n|-\n|1\n|2\n|}')
-        self.assertEqual(table.rows, [['1', '2']])
+        self.assertEqual(table.getdata(), [['1', '2']])
 
     def test_unneeded_newline_after_table_start(self):
         table = wtp.Table('{|\n\n|-\n|c1\n|c2\n|}')
-        self.assertEqual(table.rows, [['c1', 'c2']])
+        self.assertEqual(table.getdata(), [['c1', 'c2']])
 
     def test_text_after_tablestart_is_not_actually_inside_the_table(self):
         table = wtp.Table('{|\n  text\n|-\n|c1\n|c2\n|}')
-        self.assertEqual(table.rows, [['c1', 'c2']])
+        self.assertEqual(table.getdata(), [['c1', 'c2']])
 
     def test_empty_table(self):
-        table = wtp.Table('{||}')
-        self.assertEqual(table.rows, [])
+        table = wtp.Table('{|class=wikitable\n|}')
+        self.assertEqual(table.getdata(), [])
 
     def test_empty_cell(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
-        self.assertEqual(table.rows, [['a', '', 'c']])
+        self.assertEqual(table.getdata(), [['a', '', 'c']])
 
     def test_pipe_as_text(self):
         table = wtp.Table('{|class=wikitable\n||a | || c\n|}')
-        self.assertEqual(table.rows, [['a |', 'c']])
+        self.assertEqual(table.getdata(), [['a |', 'c']])
 
     def test_meaningless_rowsep(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|-\n|}')
-        self.assertEqual(table.rows, [['a', '', 'c']])
+        self.assertEqual(table.getdata(), [['a', '', 'c']])
 
     def test_template_inside_table(self):
         table = wtp.Table('{|class=wikitable\n|-\n|{{text|a}}\n|}')
-        self.assertEqual(table.rows, [['{{text|a}}']])
+        self.assertEqual(table.getdata(), [['{{text|a}}']])
 
     def test_only_pipes_can_seprate_attributes(self):
         """According to the note at mw:Help:Tables#Table_headers."""
@@ -155,30 +155,30 @@ class Rows(unittest.TestCase):
             '{|class=wikitable\n! style="text-align:left;"! '
             'Item\n! Amount\n! Cost\n|}'
         )
-        self.assertEqual(table.rows, [
+        self.assertEqual(table.getdata(), [
             ['style="text-align:left;"! Item', 'Amount', 'Cost']
         ])
         table = wtp.Table(
             '{|class=wikitable\n! style="text-align:left;"| '
             'Item\n! Amount\n! Cost\n|}'
         )
-        self.assertEqual(table.rows, [
+        self.assertEqual(table.getdata(), [
             ['Item', 'Amount', 'Cost']
         ])
 
     def test_double_exclamation_marks_are_valid_on_header_rows(self):
         table = wtp.Table('{|class=wikitable\n!a!!b!!c\n|}')
-        self.assertEqual(table.rows, [['a', 'b', 'c']])
+        self.assertEqual(table.getdata(), [['a', 'b', 'c']])
 
     def test_double_exclamation_marks_are_valid_only_on_header_rows(self):
         # Actually I'm not sure about this in general.
         table = wtp.Table('{|class=wikitable\n|a!!b!!c\n|}')
-        self.assertEqual(table.rows, [['a!!b!!c']])
+        self.assertEqual(table.getdata(), [['a!!b!!c']])
         
 
     def test_caption_in_row_is_treated_as_pipe_and_plut(self):
         table = wtp.Table('{|class=wikitable\n|a|+b||c\n|}')
-        self.assertEqual(table.rows, [['+b', 'c']])
+        self.assertEqual(table.getdata(), [['+b', 'c']])
         
     def test_odd_case1(self):
         table = wtp.Table(
@@ -186,44 +186,54 @@ class Rows(unittest.TestCase):
             '||+ h2\n|-\n! h3 !|+ h4\n|-\n! h5 |!+ h6\n'
             '|-\n|c1\n|+hod [[that]]\n\ntext\n|c2\n|}'
         )
-        self.assertEqual(table.rows, [
+        self.assertEqual(table.getdata(), [
             ['h1', '+ h2'],
             ['+ h4'],
             ['!+ h6'],
             ['c1', 'c2']
         ])
 
-    def test_colspan_and_rowspan(self):
-        """Warning: This may change in the future."""
+    def test_colspan_and_rowspan_and_span_false(self):
         table = wtp.Table(
             '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
             '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
         )
-        self.assertEqual(table.rows, [
+        self.assertEqual(table.getdata(span=False), [
             ['11'],
             ['21', '22', '23', '24', '25'],
             ['31', '32', '33', '34'],
         ])
-        
+
+    def test_colspan_and_rowspan_and_span_true(self):
+        table = wtp.Table(
+            '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
+            '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
+            '|31\n|colspan="2"|32\n|33\n|34\n|}'
+        )
+        self.assertEqual(table.getdata(), [
+            ['11', '11', '11', '11', '11', '11'],
+            ['21', '22', '23', '24', '25', '25'],
+            ['21', '31', '32', '32', '33', '34'],
+        ])
 
 
-class GetRow(unittest.TestCase):
+class RowData(unittest.TestCase):
+
+    """Test the rowdata method of the Table class."""
+
+    def test_second_of_three(self):
+        table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
+        self.assertEqual(table.getrdata(1),['d', 'e', 'f'])
+
+
+class ColData(unittest.TestCase):
 
     """Test the getrow method of the Table class."""
 
     def test_second_of_three(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getrow(1),['d', 'e', 'f'])
-
-
-class GetCol(unittest.TestCase):
-
-    """Test the getrow method of the Table class."""
-
-    def test_second_of_three(self):
-        table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getcol(1),['b', 'e', 'h'])
+        self.assertEqual(table.getcdata(1),['b', 'e', 'h'])
 
 
 class Caption(unittest.TestCase):
