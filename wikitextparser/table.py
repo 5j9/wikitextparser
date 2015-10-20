@@ -218,7 +218,7 @@ class Table:
                     )
                     if span:
                         self._extend_attr_spans(
-                            # The leading whitespace in a newline-cell
+                            # The leading whitespace in newline-cells
                             # must be ignored
                             m, attr_spans, ss + len(m.group('whitespace'))
                         )
