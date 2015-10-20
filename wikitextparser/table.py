@@ -155,7 +155,7 @@ class Table:
         """Return the self-span."""
         return self._spans['tables'][self._index]
 
-    def getdata(self, span=False):
+    def getdata(self, span=True):
         """Return a tuple containing value of all rows.
 
         @param:`span` indicates if rowspans and colspans attributes should be

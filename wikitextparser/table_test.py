@@ -187,7 +187,7 @@ class Rows(unittest.TestCase):
             '||+ h2\n|-\n! h3 !|+ h4\n|-\n! h5 |!+ h6\n'
             '|-\n|c1\n|+hod [[that]]\n\ntext\n|c2\n|}'
         )
-        self.assertEqual(table.getdata(), [
+        self.assertEqual(table.getdata(span=False), [
             ['h1', '+ h2'],
             ['+ h4'],
             ['!+ h6'],
