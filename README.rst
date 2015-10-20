@@ -19,9 +19,11 @@ Here is a short demo of some of the functionalities:
 .. code:: python
 
     >>> import wikitextparser as wtp
-    >>> # wikitextparser can detect sections, parserfunctions, templates,
-    >>> # wikilinks, external links, arguments, and HTML comments in
-    >>> # your wikitext:
+
+WikiTextParser can detect sections, parserfunctions, templates, wikilinks, external links, arguments, tables, and HTML comments in your wikitext:
+
+.. code:: python
+
     >>> wt = wtp.parse("""
     == h2 ==
     t2
@@ -55,8 +57,11 @@ Here is a short demo of some of the functionalities:
     {{text|value3}}
 
     [[A|B]]
-    >>> # It provides easy-to-use properties so you can get or set
-    >>> # name or value of templates, arguments, wikilinks, etc.
+
+It provides easy-to-use properties so you can get or set names or values of templates, arguments, wikilinks, etc.:
+
+.. code:: python
+
     >>> wt.wikilinks
     [WikiLink("[[A|B]]")]
     >>> wt.wikilinks[0].target = 'Z'
@@ -86,7 +91,12 @@ Here is a short demo of some of the functionalities:
     {{text|value3}}
 
     [[Z|X]]
-    >>> # There is a pprint function that pretty-prints templates.
+
+
+There is a pprint function that pretty-prints templates:
+
+.. code:: python
+
     >>> p = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
     >>> t2, t1 = p.templates
     >>> print(t2.pprint())
@@ -103,9 +113,11 @@ Here is a short demo of some of the functionalities:
             |f=f
         }}
     }}
-    >>> # If you are dealing with 
-    >>> # [[Category:Pages using duplicate arguments in template calls]],
-    >>> # there are two functions that may be helpful:
+    
+If you are dealing with `[[Category:Pages using duplicate arguments in template calls]] <https://en.wikipedia.org/wiki/Category:Pages_using_duplicate_arguments_in_template_calls>`_ there are two functions that may be helpful:
+
+.. code:: python
+
     >>> t = wtp.Template('{{t|a=a|a=b|a=a}}')
     >>> t.rm_dup_args_safe()
     >>> t
@@ -114,7 +126,11 @@ Here is a short demo of some of the functionalities:
     >>> t.rm_first_of_dup_args()
     >>> t
     Template('{{t|a=a}}')
-    >>> # Extract cell values of a table
+
+Extracting cell values of a table is easy:
+
+.. code:: python
+
     >>> p = wtp.parse("""{|
     |  Orange    ||   Apple   ||   more
     |-
@@ -126,7 +142,11 @@ Here is a short demo of some of the functionalities:
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
-    >>> # Cell values are rearranged according to colspan and rowspan attributes.
+
+And values are rearranged according to colspan and rowspan attributes (by default):
+
+.. code:: python
+
     >>> t = wtp.Table("""{| class="wikitable sortable"
     |-
     ! a !! b !! c
@@ -136,8 +156,8 @@ Here is a short demo of some of the functionalities:
     |}""")
     >>> t.getdata(span=True)
     [['a', 'b', 'c'], ['d', 'd', 'e']]
-    >>> # Have a look at test modules for more details and probable pitfalls.
-    >>> 
+
+Have a look at test modules for more details and probable pitfalls.
 
 See also: 
 
