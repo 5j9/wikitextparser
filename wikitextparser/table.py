@@ -6,11 +6,11 @@ from html.parser import HTMLParser
 
 
 ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
-# https://regex101.com/r/hB4dX2/16
+# https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = re.compile(
     r"""
     # only for matching, not searching
-    \s*
+    (?P<whitespace>\s*)
     (?P<sep>[|!])
     (?:
       # catch the matching pipe (style holder).
@@ -186,15 +186,15 @@ class Table:
             shadow = shadow[:ss] + shadow[se:]
             string = string[:ss] + string[se:]
             m = SEMICAPTION_REGEX.search(shadow)
-        rowspans = [[0]]
+        dataspans = [[0]]
         for m in ROWSEP_REGEX.finditer(shadow):
-            rowspans[-1].append(m.start())
-            rowspans.append([m.end()])
-        rowspans[-1].append(-1)
+            dataspans[-1].append(m.start())
+            dataspans.append([m.end()])
+        dataspans[-1].append(-1)
         cell_spans = []
         if span:
             attr_spans = []
-        for ss, se in rowspans:
+        for ss, se in dataspans:
             row = shadow[ss:se]
             if not row.lstrip():
                 # When the optional `|-` for the first row is used or when 
@@ -218,7 +218,9 @@ class Table:
                     )
                     if span:
                         self._extend_attr_spans(
-                            m, attr_spans, ss
+                            # The leading whitespace in a newline-cell
+                            # must be ignored
+                            m, attr_spans, ss + len(m.group('whitespace'))
                         )
                     pos = m.end()
                     if sep == '|':
@@ -247,68 +249,209 @@ class Table:
                                 )
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
-                    
-        # rows matrix
-        rows = []
+        data = []
         for g in cell_spans:
-            rows.append([])
+            data.append([])
             for ss, se in g:
                 # Spaces after the first newline can be meaningful
-                rows[-1].append(string[ss:se].strip(' ').rstrip())
-        if span and rows:
-            self._apply_attr_spans(attr_spans, rows, string)
-        return rows
+                data[-1].append(string[ss:se].strip(' ').rstrip())
+        if span and data:
+            self._apply_attr_spans(attr_spans, data, string)
+        return data
 
 
-    def _apply_attr_spans(self, attr_spans, rows, string):
-        """Apply colspans and rowspans to rows."""
-        # span cells
-        
-        imax = len(attr_spans) - 1
-        jmax = max(len(r) for r in attr_spans)
-        i = 0
-        changed = True
-        while changed:
-            changed = False
-            while i < imax:
-                j = 0
-                ilen = len(attr_spans[i])            
-                while j < ilen:
-                    try:
-                        ss, se = attr_spans[i][j]
-                    except:
-                        from pprint import pprint as pp
-                        pp(attr_spans)
-                    if se is not None:
-                        parsed_attrs = attrs_parser(string[ss:se])
-                        if 'colspan' in parsed_attrs:
-                            colspan = parsed_attrs['colspan']
-                            if colspan.isdecimal():
-                                colspan = min(
-                                    int(colspan) - 1, # requested
-                                    jmax - ilen # available
-                                )
-                                for c in range(colspan):
-                                    rows[i].insert(j, rows[i][j])
-                                    attr_spans[i].insert(j, (None, None))
-                                    ilen += 1
-                                    j += 1
-                                changed = True
-                        if 'rowspan' in parsed_attrs:
-                            rowspan = parsed_attrs['rowspan']
-                            if rowspan.isdecimal():
-                                rowspan = min(
-                                    int(rowspan) - 1, # requested
-                                    imax - i # available
-                                )
-                                for c in range(rowspan):
-                                    rows[i + c + 1].insert(j, rows[i][j])
-                                    attr_spans[i + c + 1].insert(
-                                        j, (None, None)
-                                    )
-                                changed = True
-                    j += 1
-                i += 1        
+    def _apply_attr_spans(self, attr_spans, data, string):
+        """Apply colspans to data and return data."""
+        from pprint import pprint as pp
+        print('data')
+        pp(data)
+        print('attr_spans')
+        for r in attr_spans:
+            for ss, se in r:
+                if se is not None:
+                    print(string[ss:se])
+        # Todo: maybe it's better to do this parsing in self.getdata?
+        attrs = []
+        for r in attr_spans:
+            attrs.append([])
+            for ss, se in r:
+                if se is not None:
+                    attrs[-1].append(attrs_parser(string[ss:se]))
+                else:
+                    attrs[-1].append(None)
+        print('attrs')
+        pp(attrs)
+        # The following code is based on the table forming algorithm described
+        # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
+        # Some comments indicate the step in that algorithm.
+        # 1
+        xwidth = 0
+        # 2
+        yheight = 0
+        # 4
+        # The xwidth and yheight variables give the table's dimensions.
+        # The table is initially empty.
+        table = []
+        # 5
+        if not data:
+            return data
+        # 10
+        ycurrent = 0
+        # 11
+        downward_growing_cells = []
+        # 13, 18
+        # Algorithm for processing rows
+        for row in data:
+            # 13.1 ycurrent is never greater than yheight
+            if yheight == ycurrent:
+                yheight += 1
+                table.append([None])
+            # 13.2
+            xcurrent = 0
+            # 13.3
+            # The algorithm for growing downward-growing cells
+            for cell, cellx, width in downward_growing_cells:
+                r = table[ycurrent]
+                for x in range(cellx, cellx + width):
+                    r[x] = cell
+            # 13.4 will be handled by the following for-loop.
+            # 13.5, 13.16
+            for j, current_cell in enumerate(row):
+                # 13.6
+                while (
+                    xcurrent < xwidth and
+                    # Todo: Are the following needed?
+                    len(table) > ycurrent and
+                    len(table[ycurrent]) > xcurrent and
+                    table[ycurrent][xcurrent] is not None
+                ):
+                    xcurrent += 1
+                # 13.7
+                if xcurrent == xwidth:
+                    # xcurrent is never greater than xwidth
+                    xwidth += 1
+                    for r in table:
+                        if xwidth > len(r):
+                            r.extend([None] * (xwidth + 1 - len(r)))
+                # 13.8
+                try:
+                    colspan = int(attrs[i][j]['colspan'])
+                    if colspan == 0:
+                        colspan = 1
+                except Exception:
+                    colspan = 1
+                # 13.9
+                try:
+                    rowspan = int(attrs[i][j]['rowspan'])
+                except Exception:
+                    rowspan = 1
+                # 13.10
+                if rowspan == 0:
+                    cell_grows_downward = True
+                    rowspan = 1
+                else:
+                    cell_grows_downward = False
+                # 13.11
+                print('xwidth < xcurrent + colspan', xwidth, xcurrent, colspan)
+                if xwidth < xcurrent + colspan:
+                    xwidth = xcurrent + colspan
+                    for r in table:
+                        if xwidth > len(r):
+                            r.extend([None] * (xwidth + 1 - len(r)))
+                # 13.12
+                if yheight < ycurrent + rowspan:
+                    yheight = ycurrent + rowspan
+                    while len(table) < yheight:
+                        table.append([None])
+                # 13.13
+                try: # Todo: Is try needed?
+                    current_cell = data[ycurrent][xcurrent]
+                    for y in range(ycurrent, ycurrent + rowspan):
+                        r = table[y]
+                        for x in range(xcurrent, xcurrent + colspan):
+                            print(table, x, y)
+                            # If any of the slots involved already had a cell
+                            # covering them, then this is a table model error.
+                            # Those slots now have two cells overlapping.
+                            r[x] = current_cell
+                            # Skipping algorithm for assigning header cells
+                except Exception:
+                    pass
+                # 13.14
+                if cell_grows_downward:
+                    downward_growing_cells.append(
+                        (current_cell, xcurrent, colspan)
+                    )
+                # 13.15
+                xcurrent += colspan
+            # 13.16
+            ycurrent += 1     
+        # 14
+        # The algorithm for ending a row group
+        # 14.1
+        while ycurrent < yheight:
+            # 14.1.1
+            # Run the algorithm for growing downward-growing cells.
+            for cell, cellx, width in downward_growing_cells:
+                for x in range(cellx, cellx + width):
+                    table[ycurrent][x] = cell
+            # 14.2.2
+            ycurrent += 1
+        # 14.2
+        downward_growing_cells = []
+        # 20 If there exists a row or column in the table containing only
+        # slots that do not have a cell anchored to them,
+        # then this is a table model error.
+        print('table')
+        pp(table)
+                
+                
+            
+##        imax = len(attr_spans) - 1
+##        jmax = max(len(r) for r in attr_spans)
+##        i = 0
+##        changed = True
+##        while changed:
+##            changed = False
+##            while i < imax:
+##                j = 0
+##                ilen = len(attr_spans[i])            
+##                while j < ilen:
+##                    try:
+##                        ss, se = attr_spans[i][j]
+##                    except:
+##                        from pprint import pprint as pp
+##                        pp(attr_spans)
+##                    if se is not None:
+##                        parsed_attrs = attrs_parser(string[ss:se])
+##                        if 'colspan' in parsed_attrs:
+##                            colspan = parsed_attrs['colspan']
+##                            if colspan.isdecimal():
+##                                colspan = min(
+##                                    int(colspan) - 1, # requested
+##                                    jmax - ilen # available
+##                                )
+##                                for c in range(colspan):
+##                                    rows[i].insert(j, rows[i][j])
+##                                    attr_spans[i].insert(j, (None, None))
+##                                    ilen += 1
+##                                    j += 1
+##                                changed = True
+##                        if 'rowspan' in parsed_attrs:
+##                            rowspan = parsed_attrs['rowspan']
+##                            if rowspan.isdecimal():
+##                                rowspan = min(
+##                                    int(rowspan) - 1, # requested
+##                                    imax - i # available
+##                                )
+##                                for c in range(rowspan):
+##                                    rows[i + c + 1].insert(j, rows[i][j])
+##                                    attr_spans[i + c + 1].insert(
+##                                        j, (None, None)
+##                                    )
+##                                changed = True
+##                    j += 1
+##                i += 1        
 
     def _extend_attr_spans(self, m, attr_spans, ss):
         """Extend attr_spans according to parameters.
@@ -317,8 +460,9 @@ class Table:
         """
         attrs = m.group('attrs')
         if attrs:
+            attrs_start = ss + m.start() + 1
             attr_spans[-1].append(
-                (ss + 1, ss + 1 + len(attrs))
+                (attrs_start, attrs_start + len(attrs))
             )
         else:
             attr_spans[-1].append((None, None))

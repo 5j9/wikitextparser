@@ -13,6 +13,7 @@ transpose?
 
 import sys
 import unittest
+from pprint import pprint as pp
 
 sys.path.insert(0, '..')
 from wikitextparser import wikitextparser as wtp
@@ -208,10 +209,10 @@ class Rows(unittest.TestCase):
     def test_colspan_and_rowspan_and_span_true(self):
         table = wtp.Table(
             '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
-            '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
+            '|rowspan="2"|21\n|22\n|23\n|24\n  |colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
         )
-        self.assertEqual(table.getdata(), [
+        self.assertEqual(table.getdata(span=True), [
             ['11', '11', '11', '11', '11', '11'],
             ['21', '22', '23', '24', '25', '25'],
             ['21', '31', '32', '32', '33', '34'],
