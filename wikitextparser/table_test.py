@@ -218,6 +218,16 @@ class Rows(unittest.TestCase):
             ['21', '31', '32', '32', '33', '34'],
         ])
 
+    def test_inline_colspan_and_rowspan(self):
+        table = wtp.Table(
+            '{| class=wikitable\n !a !! b !!  c !! colspan = 2 | d \n '
+            '|- \n | e || colspan = "2"| f   || g || h\n |}'
+        )
+        self.assertEqual(table.getdata(span=True), [
+            ['a', 'b', 'c', 'd', 'd'],
+            ['e', 'f', 'f', 'g', 'h']
+        ])
+
 
 class RowData(unittest.TestCase):
 

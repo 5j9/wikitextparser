@@ -232,7 +232,7 @@ class Table:
                             )
                             if span:
                                 self._extend_attr_spans(
-                                    m, attr_spans, ss
+                                    m, attr_spans, ss + 1
                                 )
                             pos = m.end()
                             m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
@@ -245,7 +245,7 @@ class Table:
                             )
                             if span:
                                 self._extend_attr_spans(
-                                    m, attr_spans, ss
+                                    m, attr_spans, ss + 1
                                 )
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
