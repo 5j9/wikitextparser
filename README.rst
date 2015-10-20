@@ -122,10 +122,20 @@ Here is a short demo of some of the functionalities:
     |-
     |   Butter   || Ice cream ||  and more
     |}""")
-    >>> pprint(p.tables[0].rows)
+    >>> pprint(p.tables[0].getdata)
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
+    >>> # It can even rearrage cells according to cellspan and colspan values.
+    >>> t = wtp.Table("""{| class="wikitable sortable"
+    |-
+    ! a !! b !! c
+    |-
+    !colspan = "2" | d || e
+    |-
+    |}""")
+    >>> t.getdata(span=True)
+    [['a', 'b', 'c'], ['d', 'd', 'e']]
     >>> # Have a look at test modules for more details and probable pitfalls.
     >>> 
 
