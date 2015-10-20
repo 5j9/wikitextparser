@@ -126,7 +126,7 @@ Here is a short demo of some of the functionalities:
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
-    >>> # It can even rearrage cells according to cellspan and colspan values.
+    >>> # Cell values are rearranged according to colspan and rowspan attributes.
     >>> t = wtp.Table("""{| class="wikitable sortable"
     |-
     ! a !! b !! c
