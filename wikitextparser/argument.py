@@ -36,24 +36,36 @@ class Argument():
 
     @property
     def name(self):
-        """Return arg's name-part. Return the position for positional args."""
+        """Return argument's name.
+
+        For positional arguments return the position as a string.
+        """
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             return pipename[1:]
         # positional argument
         position = 1
         godstring = self._lststr[0]
-        for span0, span1 in self._spans[self._typeindex][:self._index]:
-            if span0 < span1 and '=' not in godstring[span0:span1]:
+        for ss, se in self._spans[self._typeindex][:self._index]:
+            if ss < se and '=' not in godstring[ss:se]:
                 position += 1
         return str(position)
 
     @name.setter
     def name(self, newname):
-        """Changes the name of the argument."""
-        name = self.name
-        self.strins(1, newname)
-        self.strdel(len('|' + newname), len('|' + name + newname))
+        """Set the name for this argument.
+
+        If this is a positional agument, convert it to keyword argument.
+        """
+        oldname = self.name
+        if self.positional:
+            self.strins(0, '|' + newname + '=')
+            self.strdel(
+                len('|' + newname + '='), len('|' + newname + '=|')
+            )
+        else:
+            self.strins(0, '|' + newname)
+            self.strdel(len('|' + newname), len('|' + newname + '|' + oldname))
 
     @property
     def positional(self):
@@ -76,7 +88,6 @@ class Argument():
     def value(self, newvalue):
         """Set a the value for the current argument."""
         pipename, equal, value = self._not_in_subspans_partition('=')
-        
         if equal:
             self.strins(len(pipename + equal), newvalue)
             self.strdel(
