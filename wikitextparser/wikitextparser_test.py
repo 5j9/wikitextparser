@@ -1,5 +1,6 @@
 import sys
 import unittest
+from pprint import pprint as pp
 
 sys.path.insert(0, '..')
 from wikitextparser import wikitextparser as wtp
@@ -222,6 +223,12 @@ class PrettyPrint(unittest.TestCase):
         self.assertEqual(
             '{{#switch: case\n    | a\n    | b\n}}',
             wt.pprint(),
+        )
+
+    def test_convert_positional_to_keyword_if_possible(self):
+        self.assertEqual(
+            '{{t\n    | 1 = a\n    | 2 = b\n    | 3 = c\n}}',
+            wtp.parse('{{t|a|b|c}}').pprint(),
         )
         
 class Sections(unittest.TestCase):
@@ -478,22 +485,17 @@ class ParserFunction(unittest.TestCase):
         self.assertEqual(1, len(pf.parameters))
         self.assertEqual(2, len(pf.arguments))
 
-    @unittest.expectedFailure
-    def test_parser_function_without_hash_sign(self):
-        """There doesn't seem to be any simple way to detect these.
-
-        Details:
-        Technically, any magic word that takes a parameter is a parser function,
-        and the name is sometimes prefixed with a hash to distinguish them from
-        templates.
-
-        Can you think of any way for the parser to know that
-        `{{formatnum:somestring|R}}`
-        is actually a parser function an not a template like
-        `{{namespace:title|R}}`
-        ?
-        """
+    def test_default_parser_function_without_hash_sign(self):
         wt = wtp.WikiText("""{{formatnum:text|R}}""")
+        self.assertEqual(1, len(wt.parser_functions))
+
+    @unittest.expectedFailure
+    def test_parser_function_alias_without_hash_sign(self):
+        """‍`آرایش‌عدد` is an alias for `formatnum` on Persian Wikipedia.
+
+        See: //translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
+        """
+        wt = wtp.WikiText("""{{آرایش‌عدد:text|R}}""")
         self.assertEqual(1, len(wt.parser_functions))
 
 
