@@ -18,9 +18,110 @@ TEMPLATE_NOT_PARAM_REGEX = re.compile(
 # Parameters
 TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{\{[^{}]*?\}\}\}')
 # Parser functions
-PARSER_FUNCTION_NAME_PATTERN = r'#[^{}\s]*?:'
+# According to https://www.mediawiki.org/wiki/Help:Magic_words
+# See also :
+# https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARSER_FUNCTION_REGEX = re.compile(
-    r'\{\{\s*' + PARSER_FUNCTION_NAME_PATTERN + r'[^{}]*?\}\}'
+    r"""
+    \{\{\s*
+    (?:
+      \#[^{}\s]*?|
+      # Variables acting like parser functions
+      # Technical metadata
+      PROTECTIONLEVEL|
+      DISPLAYTITLE|
+      DEFAULTCATEGORYSORT|
+      DEFAULTSORT|
+      DEFAULTSORTKEY|
+      # Statistics
+      # The following variables accept ":R" flag
+      NUMBEROFPAGES|
+      NUMBEROFARTICLES|
+      NUMBEROFFILES|
+      NUMBEROFEDITS|
+      NUMBEROFVIEWS|
+      NUMBEROFUSERS|
+      NUMBEROFADMINS|
+      NUMBEROFACTIVEUSERS|
+      PAGESINCATEGORY|
+      PAGESINCAT|
+      NUMBERINGROUP|
+      NUMINGROUP|
+      PAGESINNS|
+      PAGESINNAMESPACE|
+      # Page names
+      # These can all take a parameter, allowing 
+      # specification of the page to be operated on
+      FULLPAGENAME|
+      PAGENAME|
+      BASEPAGENAME|
+      SUBPAGENAME|
+      SUBJECTPAGENAME|
+      ARTICLEPAGENAME|
+      TALKPAGENAME|
+      ROOTPAGENAME|
+      # URL encoded page names
+      FULLPAGENAMEE|
+      PAGENAMEE|
+      BASEPAGENAMEE|
+      SUBPAGENAMEE|
+      SUBJECTPAGENAMEE|
+      ARTICLEPAGENAMEE|
+      TALKPAGENAMEE|
+      ROOTPAGENAMEE|
+      # Namespaces
+      # Can take a full-page-name parameter
+      NAMESPACE|
+      NAMESPACENUMBER|
+      SUBJECTSPACE|
+      ARTICLESPACE|
+      TALKSPACE|
+      #  equivalents encoded for use in MediaWiki URLs
+      NAMESPACEE|
+      SUBJECTSPACEE|
+      ARTICLESPACEE|
+      TALKSPACEE|
+      # Parser functions
+      # Technical metadata of another page
+      PAGEID|
+      PAGESIZE|
+      PROTECTIONLEVEL|
+      CASCADINGSOURCES|
+      REVISIONID|
+      REVISIONDAY|
+      REVISIONDAY2|
+      REVISIONMONTH|
+      REVISIONMONTH1|
+      REVISIONYEAR|
+      REVISIONTIMESTAMP|
+      REVISIONUSER|
+      # URL data
+      localurl|
+      fullurl|
+      canonicalurl|
+      filepath|
+      urlencode|
+      anchorencode|
+      # Namespaces
+      ns|
+      nse|
+      # Formatting
+      formatnum|
+      lc|
+      lcfirst|
+      uc|
+      ucfirst|
+      padleft|
+      padright|
+      # Localization
+      plural|
+      grammar|
+      gender|
+      int
+    )
+    :[^{}]*?\}\}
+    """,
+    re.VERBOSE
 )
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
