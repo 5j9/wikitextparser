@@ -338,7 +338,7 @@ class WikiText:
     ):
         """Return a copy of self.string with specified subspans replaced.
 
-        This function is used before finding the spans of wikitables.
+        This function is used in finding the spans of wikitables.
         """
         ss, se = self._get_span()
         shadow = self.string
