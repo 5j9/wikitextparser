@@ -78,7 +78,7 @@ class WikiText(WikiText):
             self._spans = parse_to_spans(self._lststr[0])
 
     def strins(self, start, string):
-        """Insert the given string at the specified index. Where start >= 0."""
+        """Insert the given string at the specified index. start >= 0."""
         lststr = self._lststr
         lststr0 = lststr[0]
         start += self._get_span()[0]
@@ -106,36 +106,43 @@ class WikiText(WikiText):
         # first remove all current spacings
         for template in parsed.templates:
             level = template._get_indent_level()
-            template.name = template.name.strip()
+            template_name = template.name.strip()
+            template.name = template_name
+            if ':' in template_name:
+                not_a_parser_fucntion = False
+            else:
+                # We are sure that this is not a parser function.
+                not_a_parser_fucntion = True
             args = template.arguments
             if args:
                 template.name += '\n' + indent * level
                 # Required for alignment
-                max_name_len = max(
-                    (len(a.name.strip()) for a in args if not a.positional),
-                    default=None
-                )
+                max_name_len = max(len(a.name.strip()) for a in args)
+                # Order of positional arguments changes when they are converted
+                # to keyword arguments in the for-loop below. Count them while
+                # converting.
+                positional_count = 0
                 for arg in args:
-                    # Warning:
+                    value = arg.value
+                    stripped_name = arg.name.strip()
+                    positional = arg.positional
                     # Positional arguments of tempalates are sensitive to
                     # whitespace. See:
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
-                    value = arg.value
-                    # Changing positional args to keyword args was disabled
-                    # because currently the parser can not distinguish between
-                    # some parserfunctions (e.g. {{formatnum:string|R}}) and
-                    # templates.
-                    '''if (arg.positional and
-                        value.strip() == value
-                    ):
-                        arg.name = arg.name
-                        arg.value = (
-                            value.strip() + '\n' + indent * level
-                        )'''
-                    if not arg.positional:
-                        name = arg.name.strip()
+                    if positional:
+                        positional_count += 1
+                        if not_a_parser_fucntion and value.strip() == value:
+                            arg.name = (
+                                ' ' + str(positional_count) + ' ' +
+                                ' ' * (max_name_len - len(stripped_name))
+                            )
+                            arg.value = (
+                                ' ' + value.strip() + '\n' + indent * level
+                            )
+                    else:
                         arg.name = (
-                            ' ' + name + ' ' + ' ' * (max_name_len - len(name))
+                            ' ' + stripped_name + ' ' +
+                            ' ' * (max_name_len - len(stripped_name))
                         )
                         arg.value = ' ' + value.strip() + '\n' + indent * level
                 # Special formatting for the last argument
