@@ -47,8 +47,22 @@ class Argument():
         position = 1
         godstring = self._lststr[0]
         for ss, se in self._spans[self._typeindex][:self._index]:
-            if ss < se and '=' not in godstring[ss:se]:
-                position += 1
+            if ss < se:
+                equal_index = godstring.find('=', ss, se)
+                if equal_index == -1:
+                    position += 1
+                else:
+                    in_subspans = self._in_subspans_factory(ss, se)
+                    while equal_index != -1:
+                        if not in_subspans(equal_index):
+                            # This is a keyword argument
+                            break
+                        # We don't care for this kind of equal sign.
+                        # Look for the next one.
+                        equal_index = godstring.find('=', equal_index + 1, se)
+                    else:
+                        # All the equal signs where inside a subspan.
+                        position += 1
         return str(position)
 
     @name.setter
