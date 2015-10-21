@@ -157,7 +157,7 @@ And values are rearranged according to colspan and rowspan attributes (by defaul
     >>> t.getdata(span=True)
     [['a', 'b', 'c'], ['d', 'd', 'e']]
 
-Have a look at test modules for more details and probable pitfalls.
+Have a look at the test modules for more details and probable pitfalls.
 
 See also: 
 
