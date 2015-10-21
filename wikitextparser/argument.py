@@ -81,7 +81,7 @@ class Argument():
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             return value
-        # anonymous parameters
+        # Anonymous parameter
         return pipename[1:]
 
     @value.setter
