@@ -209,9 +209,12 @@ class WikiText:
             results.append((ss + findstart, ss + index))
             findstart = index + 1
 
-    def _in_subspans_factory(self):
+    def _in_subspans_factory(self, ss=None, se=None):
         """Return a function that can tell if an index is in subspans.
 
+        `ss` and `se` indicate the spanstart and spanend that subspans will
+            be checked for. If not specified, use self._get_span().
+            
         Checked subspans types are:
         (
             'templates', 'parameters', 'functions',
@@ -219,7 +222,8 @@ class WikiText:
         ).
         """
         # Calculate subspans
-        ss, se = self._get_span()
+        if ss is None:
+            ss, se = self._get_span()
         subspans = []
         for key in (
             'templates', 'parameters', 'functions',
