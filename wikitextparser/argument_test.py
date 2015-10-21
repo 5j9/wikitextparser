@@ -66,6 +66,14 @@ class Argument(unittest.TestCase):
             [a.name for a in wtp.parse('{{t|a|b|c}}').templates[0].arguments],
         )
 
+    def test_dont_confuse_subspan_equal_with_keyword_arg_equal(self):
+        p = wtp.parse('{{text| {{text|1=first}} | b }}')
+        a0, a1 = p.templates[1].arguments
+        self.assertEqual(' {{text|1=first}} ', a0.value)
+        self.assertEqual('1', a0.name)
+        self.assertEqual(' b ', a1.value)
+        self.assertEqual('2', a1.name)
+
         
 if __name__ == '__main__':
     unittest.main()
