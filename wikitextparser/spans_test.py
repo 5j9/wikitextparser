@@ -4,6 +4,7 @@
 import sys
 import unittest
 
+import spans
 sys.path.insert(0, '..')
 from wikitextparser import wikitextparser as wtp
 
@@ -163,7 +164,102 @@ class Spans(unittest.TestCase):
         self.assertEqual('1', t1.arguments[2].name)
         self.assertEqual('a', t2.arguments[0].value)
         self.assertEqual('1', t2.arguments[0].name)
-        
+
+    def test_parser_function_regex(self):
+        regex = spans.PARSER_FUNCTION_REGEX
+        # Technical metadata variables
+        self. assertRegex('{{PROTECTIONLEVEL:action}}', regex)
+        self. assertRegex('{{DISPLAYTITLE:title}}', regex)
+        self. assertRegex('{{DEFAULTCATEGORYSORT:sortkey}}', regex)
+        self. assertRegex('{{DEFAULTSORT:sortkey}}', regex)
+        self. assertRegex('{{DEFAULTSORTKEY:sortkey}}', regex)
+        # Statistic variables
+        self. assertRegex('{{NUMBEROFPAGES:R}}', regex)
+        self. assertRegex('{{NUMBEROFARTICLES:R}}', regex)
+        self. assertRegex('{{NUMBEROFFILES:R}}', regex)
+        self. assertRegex('{{NUMBEROFEDITS:R}}', regex)
+        self. assertRegex('{{NUMBEROFVIEWS:R}}', regex)
+        self. assertRegex('{{NUMBEROFUSERS:R}}', regex)
+        self. assertRegex('{{NUMBEROFADMINS:R}}', regex)
+        self. assertRegex('{{PAGESINCATEGORY:categoryname}}', regex)
+        self. assertRegex('{{PAGESINCAT:categoryname}}', regex)
+        self. assertRegex('{{PAGESINCATEGORY:categoryname|all}}', regex)
+        self. assertRegex('{{NUMBERINGROUP:groupname}}', regex)
+        self. assertRegex('{{NUMINGROUP:groupname}}', regex)
+        self. assertRegex('{{PAGESINNS:index}}', regex)
+        self. assertRegex('{{PAGESINNAMESPACE:index}}', regex)
+        # Page name variables
+        self. assertRegex('{{FULLPAGENAME:page}}', regex)
+        self. assertRegex('{{PAGENAME:page}}', regex)
+        self. assertRegex('{{BASEPAGENAME:page}}', regex)
+        self. assertRegex('{{SUBPAGENAME:page}}', regex)
+        self. assertRegex('{{SUBJECTPAGENAME:page}}', regex)
+        self. assertRegex('{{ARTICLEPAGENAME:page}}', regex)
+        self. assertRegex('{{TALKPAGENAME:page}}', regex)
+        self. assertRegex('{{ROOTPAGENAME:page}}', regex)
+        # URL encoded page name variables
+        self. assertRegex('{{FULLPAGENAMEE:page}}', regex)
+        self. assertRegex('{{PAGENAMEE:page}}', regex)
+        self. assertRegex('{{BASEPAGENAMEE:page}}', regex)
+        self. assertRegex('{{SUBPAGENAMEE:page}}', regex)
+        self. assertRegex('{{SUBJECTPAGENAMEE:page}}', regex)
+        self. assertRegex('{{ARTICLEPAGENAMEE:page}}', regex)
+        self. assertRegex('{{TALKPAGENAMEE:page}}', regex)
+        self. assertRegex('{{ROOTPAGENAMEE:page}}', regex)
+        # Namespace variables
+        self. assertRegex('{{NAMESPACE:page}}', regex)
+        self. assertRegex('{{NAMESPACENUMBER:page}}', regex)
+        self. assertRegex('{{SUBJECTSPACE:page}}', regex)
+        self. assertRegex('{{ARTICLESPACE:page}}', regex)
+        self. assertRegex('{{TALKSPACE:page}}', regex)
+        # Encoded namespace variables
+        self. assertRegex('{{NAMESPACEE:page}}', regex)
+        self. assertRegex('{{SUBJECTSPACEE:page}}', regex)
+        self. assertRegex('{{ARTICLESPACEE:page}}', regex)
+        self. assertRegex('{{TALKSPACEE:page}}', regex)
+        # Technical metadata parser functions
+        self. assertRegex('{{PAGEID: page name }}', regex)
+        self. assertRegex('{{PAGESIZE: page name }}', regex)
+        self. assertRegex('{{PROTECTIONLEVEL:action | page name}}', regex)
+        self. assertRegex('{{CASCADINGSOURCES:page name}}', regex)
+        self. assertRegex('{{REVISIONID: page name }}', regex)
+        self. assertRegex('{{REVISIONDAY: page name }}', regex)
+        self. assertRegex('{{REVISIONDAY2: page name }}', regex)
+        self. assertRegex('{{REVISIONMONTH: page name }}', regex)
+        self. assertRegex('{{REVISIONMONTH1: page name }}', regex)
+        self. assertRegex('{{REVISIONYEAR: page name }}', regex)
+        self. assertRegex('{{REVISIONTIMESTAMP: page name }}', regex)
+        self. assertRegex('{{REVISIONUSER: page name }}', regex)
+        # URL data parser functions
+        self. assertRegex('{{localurl:page name}}', regex)
+        self. assertRegex('{{fullurl:page name}}', regex)
+        self. assertRegex('{{canonicalurl:page name}}', regex)
+        self. assertRegex('{{filepath:file name}}', regex)
+        self. assertRegex('{{urlencode:string}}', regex)
+        self. assertRegex('{{anchorencode:string}}', regex)
+        # Namespace parser functions
+        self. assertRegex('{{ns:-2}}', regex)
+        self. assertRegex('{{nse:}}', regex)
+        # Formatting parser functions
+        self. assertRegex('{{formatnum:unformatted number}}', regex)
+        self. assertRegex('{{lc:string}}', regex)
+        self. assertRegex('{{lcfirst:string}}', regex)
+        self. assertRegex('{{uc:string}}', regex)
+        self. assertRegex('{{ucfirst:string}}', regex)
+        self. assertRegex('{{padleft:xyz|stringlength}}', regex)
+        self. assertRegex('{{padright:xyz|stringlength}}', regex)
+        # Localization parser functions
+        self. assertRegex('{{plural:2|is|are}}', regex)
+        self. assertRegex('{{grammar:N|noun}}', regex)
+        self. assertRegex('{{gender:username|text for every gender}}', regex)
+        self. assertRegex('{{int:message name}}', regex)
+        # Transclusion modifiers
+        # May change in the future.
+        self.assertNotRegex('{{msg:xyz}}', regex)
+        self.assertNotRegex('{{raw:xyz}}', regex)
+        self.assertNotRegex('{{raw:xyz}}', regex)
+        # Miscellaneous
+        self. assertRegex('{{#language:language code}}', regex)
 
 if __name__ == '__main__':
     unittest.main()

@@ -28,91 +28,89 @@ PARSER_FUNCTION_REGEX = re.compile(
       \#[^{}\s]*?|
       # Variables acting like parser functions
       # Technical metadata
-      PROTECTIONLEVEL|
       DISPLAYTITLE|
-      DEFAULTCATEGORYSORT|
-      DEFAULTSORT|
-      DEFAULTSORTKEY|
+      DEFAULT
+      (?:CATEGORYSORT|SORT|SORTKEY)|
       # Statistics
       # The following variables accept ":R" flag
-      NUMBEROFPAGES|
-      NUMBEROFARTICLES|
-      NUMBEROFFILES|
-      NUMBEROFEDITS|
-      NUMBEROFVIEWS|
-      NUMBEROFUSERS|
-      NUMBEROFADMINS|
-      NUMBEROFACTIVEUSERS|
-      PAGESINCATEGORY|
-      PAGESINCAT|
-      NUMBERINGROUP|
-      NUMINGROUP|
-      PAGESINNS|
-      PAGESINNAMESPACE|
+      NUM
+      (?:
+        BER
+        (?:
+          OF
+          (?:
+            PAGES|
+            ARTICLES|
+            FILES|
+            EDITS|
+            VIEWS|
+            USERS|
+            ADMINS|
+            ACTIVEUSERS
+          )|
+          INGROUP
+        )|
+        INGROUP
+      )|
+      PAGESIN
+      (?:
+        CATEGORY|
+        CAT|
+        NS|
+        NAMESPACE
+      )|
       # Page names
-      # These can all take a parameter, allowing 
+      # These can all take a parameter, allowing
       # specification of the page to be operated on
-      FULLPAGENAME|
-      PAGENAME|
-      BASEPAGENAME|
-      SUBPAGENAME|
-      SUBJECTPAGENAME|
-      ARTICLEPAGENAME|
-      TALKPAGENAME|
-      ROOTPAGENAME|
-      # URL encoded page names
-      FULLPAGENAMEE|
-      PAGENAMEE|
-      BASEPAGENAMEE|
-      SUBPAGENAMEE|
-      SUBJECTPAGENAMEE|
-      ARTICLEPAGENAMEE|
-      TALKPAGENAMEE|
-      ROOTPAGENAMEE|
+      (?:
+        (?:FULL)?|
+        BASE|
+        SUB
+        (?:JECT)?|
+        ARTICLE|
+        TALK|
+        ROOT
+      )
+      PAGENAMEE?|
       # Namespaces
       # Can take a full-page-name parameter
-      NAMESPACE|
+      (?:
+        NAME|
+        SUBJECT|
+        ARTICLE|
+        TALK
+      )
+      SPACEE?|
       NAMESPACENUMBER|
-      SUBJECTSPACE|
-      ARTICLESPACE|
-      TALKSPACE|
-      #  equivalents encoded for use in MediaWiki URLs
-      NAMESPACEE|
-      SUBJECTSPACEE|
-      ARTICLESPACEE|
-      TALKSPACEE|
       # Parser functions
       # Technical metadata of another page
-      PAGEID|
-      PAGESIZE|
+      PAGE
+      (?:ID|SIZE)|
       PROTECTIONLEVEL|
       CASCADINGSOURCES|
-      REVISIONID|
-      REVISIONDAY|
-      REVISIONDAY2|
-      REVISIONMONTH|
-      REVISIONMONTH1|
-      REVISIONYEAR|
-      REVISIONTIMESTAMP|
-      REVISIONUSER|
+      REVISION
+      (?:
+        ID|
+        DAY2?|
+        MONTH1?|
+        YEAR|
+        TIMESTAMP|
+        USER
+      )|
       # URL data
-      localurl|
-      fullurl|
-      canonicalurl|
+      (?:local|full|canonical)
+      url|
       filepath|
-      urlencode|
-      anchorencode|
+      (?:url|anchor)
+      encode|
       # Namespaces
-      ns|
-      nse|
+      nse?|
       # Formatting
       formatnum|
-      lc|
-      lcfirst|
-      uc|
-      ucfirst|
-      padleft|
-      padright|
+      [lu]c
+      (?:first)?|
+      pad
+      (?:left|right)|
       # Localization
       plural|
       grammar|
@@ -329,7 +327,7 @@ def indexed_parse_to_spans(
         parser_function_spans,
         template_spans,
     )
-    
+
 
 def parse_to_spans_innerloop(
     string,
@@ -342,7 +340,7 @@ def parse_to_spans_innerloop(
 
     `string`: The string or part of string that we are looking up.
     `index`: Add to every returned index.
-    
+
     This function was created because the _get_spans function needs to
     call it n + 1 time. One time for the whole string and n times for
     each of the n WikiLinks.
