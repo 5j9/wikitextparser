@@ -35,8 +35,6 @@ EXTERNALLINK_REGEX = re.compile(
     BRACKET_EXTERNALLINK_PATTERN + r')',
     re.IGNORECASE,
 )
-# Arguments
-POSITIONAL_ARG_NAME = re.compile('[1-9][0-9]*')
 # Sections
 SECTION_HEADER_REGEX = re.compile(r'^=[^\n]+?= *$', re.M)
 LEAD_SECTION_REGEX = re.compile(
@@ -523,7 +521,7 @@ class Template(_Indexed_WikiText):
         """
         args = list(reversed(self.arguments))
         arg = self._get_arg(name, args)
-        # Updating an existing argument
+        # Updating an existing argument.
         if arg:
             if preserve_spacing:
                 val = arg.value
@@ -532,10 +530,9 @@ class Template(_Indexed_WikiText):
                 arg.value = value
             return
         # Adding a new argument
-        if positional is None:
-            if POSITIONAL_ARG_NAME.match(name) and value.strip() == value:
-                positional = True
-        # Calculate the whitespace needed before arg-name and after arg-value
+        if positional is None and not name:
+            positional = True
+        # Calculate the whitespace needed before arg-name and after arg-value.
         if not positional and preserve_spacing and args:
             before_names = []
             name_lengths = []
@@ -557,9 +554,9 @@ class Template(_Indexed_WikiText):
             before_value = mode(before_values)
         else:
             preserve_spacing = False
-        # Calculate the string that needs to be added to the Template
+        # Calculate the string that needs to be added to the Template.
         if positional:
-                # ignore preserve_spacing for positional args
+                # Ignore preserve_spacing for positional args.
                 addstring = '|' + value
         else:
             if preserve_spacing:
@@ -569,7 +566,7 @@ class Template(_Indexed_WikiText):
                 )
             else:
                 addstring = '|' + name + '=' + value
-        # Place the addstring in the right position
+        # Place the addstring in the right position.
         if before:
             arg = self._get_arg(before, args)
             arg.strins(0, addstring)
@@ -577,8 +574,8 @@ class Template(_Indexed_WikiText):
             arg = self._get_arg(after, args)
             arg.strins(len(arg.string), addstring)
         else:
-            if args:
-                # Insert after the last argument
+            if args and not positional:
+                # Insert after the last argument.
                 # The addstring needs to be recalculated because we don't
                 # want to change the the whitespace before the final braces.
                 arg = args[0]
@@ -590,7 +587,8 @@ class Template(_Indexed_WikiText):
                 )
                 arg.strdel(0, len(arg_string))
             else:
-                # The template has no arguments
+                # The template has no arguments or the new arg is 
+                # positional AND is to be added at the end of the template.
                 self.strins(len(self.string) - 2, addstring)
 
 

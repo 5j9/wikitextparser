@@ -231,6 +231,7 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{t|a|b|c}}').pprint(),
         )
         
+        
 class Sections(unittest.TestCase):
 
     """Test the sections method of the WikiText class."""
@@ -423,7 +424,7 @@ class TemplateSetArg(unittest.TestCase):
         # Template with no args, auto positional
         t = wtp.Template('{{t}}')
         t.set_arg('1', 'b')
-        self.assertEqual('{{t|b}}', t.string)
+        self.assertEqual('{{t|1=b}}', t.string)
         # Force keyword
         t = wtp.Template('{{t}}')
         t.set_arg('1', 'b', positional=False)
@@ -459,6 +460,18 @@ class TemplateSetArg(unittest.TestCase):
         t.set_arg('e', 'e', after='c')
         self.assertEqual('{{t|a|b|c=c|e=e|d}}', t.string)
 
+    def test_multi_set_positional_args(self):
+        t = wtp.Template('{{t}}')
+        t.set_arg('1', 'p', positional=True)
+        t.set_arg('2', 'q', positional=True)
+        self.assertEqual('{{t|p|q}}', t.string)
+
+    @unittest.expectedFailure
+    def test_invalid_name(self):
+        t = wtp.Template('{{t}}')
+        t.set_arg('2', 'a', positional=True)
+        self.assertEqual('{{t|a}}', t.string)
+        
 
 class ParserFunction(unittest.TestCase):
 
