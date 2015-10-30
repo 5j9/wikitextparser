@@ -348,7 +348,7 @@ class _Indexed_WikiText(WikiText):
             # not including self._get_span()
             if ss < s[0] and s[1] < se:
                 yield i
-                
+
 
 class Section(Section, WikiText):
 
@@ -587,7 +587,7 @@ class Template(_Indexed_WikiText):
                 )
                 arg.strdel(0, len(arg_string))
             else:
-                # The template has no arguments or the new arg is 
+                # The template has no arguments or the new arg is
                 # positional AND is to be added at the end of the template.
                 self.strins(len(self.string) - 2, addstring)
 
@@ -705,7 +705,7 @@ class ParserFunction(_Indexed_WikiText):
         self.strins(2, newname)
         self.strdel(2 + len(newname), 2 + len(newname + name))
 
-    
+
 class Parameter(Parameter, _Indexed_WikiText):
 
     """Mix the Parameter class with _Indexed_WikiText."""
