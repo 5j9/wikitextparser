@@ -24,28 +24,40 @@ class WikiLink():
     @property
     def target(self):
         """Return target of this WikiLink."""
-        return self.string[2:-2].partition('|')[0]
+        head, pipe, tail = self._not_in_subspans_partition('|')
+        if pipe:
+            return head[2:]
+        else:
+            return head[2:-2]
 
     @target.setter
     def target(self, newtarget):
         """Set a new target."""
-        target, pipe, text = self.string[2:-2].partition('|')
+        head, pipe, tail = self._not_in_subspans_partition('|')
+        if not pipe:
+            head = head[:-2]
         self.strins(2, newtarget)
-        self.strdel(len('[[' + newtarget), len('[[' + newtarget + target))
+        self.strdel(
+            len('[[' + newtarget),
+            len(newtarget + head)
+        )
 
     @property
     def text(self):
         """Return display text of this WikiLink."""
-        target, pipe, text = self.string[2:-2].partition('|')
+        head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
-            return text
+            return tail[:-2]
 
     @text.setter
     def text(self, newtext):
         """Set a new text."""
-        target, pipe, text = self.string[2:-2].partition('|')
-        self.strins(len('[[' + target + pipe), newtext)
-        self.strdel(
-            len('[[' + target + pipe + newtext),
-            len('[[' + target + pipe + newtext + text),
-        )
+        head, pipe, tail = self._not_in_subspans_partition('|')
+        if pipe:
+            self.strins(len(head + pipe), newtext)
+            self.strdel(
+                len(head + pipe + newtext),
+                len(head + pipe + newtext + tail) - 2,
+            )
+        else:
+            self.strins(len(head) - 2, '|' + newtext)

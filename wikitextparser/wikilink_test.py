@@ -28,7 +28,17 @@ class WikiLink(unittest.TestCase):
         wl = wtp.WikiLink('[[A | B]]')
         wl.text = ' C '
         self.assertEqual('[[A | C ]]', wl.string)
-        
+
+    def test_set_text_when_there_is_no_text(self):
+        wl = wtp.WikiLink('[[ A ]]')
+        wl.text = ' C '
+        self.assertEqual('[[ A | C ]]', wl.string)
+
+    def test_dont_confuse_pipe_in_target_template_with_wl_pipe(self):
+        wl = wtp.WikiLink('[[ {{text|target}} | text ]]')
+        self.assertEqual(' {{text|target}} ', wl.target)
+        self.assertEqual(' text ', wl.text)
+
 
 if __name__ == '__main__':
     unittest.main()
