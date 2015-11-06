@@ -2,7 +2,6 @@
 
 
 import re
-from difflib import SequenceMatcher
 
 from .spans import (
     parse_to_spans,
