@@ -89,6 +89,30 @@ class Argument():
         else:
             return True
 
+    @positional.setter
+    def positional(self, to_positional):
+        """Change to keyword or positional accordingly.
+
+        Raise ValueError if setting positional argument to keyword argument.
+        """
+        pipename, equal, value = self._not_in_subspans_partition('=')
+        if equal:
+            # Keyword argument
+            if to_positional:
+                self.strdel(1, len(pipename + '='))
+            else:
+                return
+        elif to_positional:
+            # Positional argument. to_positional is True.
+            return
+        else:
+            # Positional argument. to_positional is False.
+            raise ValueError(
+                'Converting positional argument to keyword argument is not '
+                'possible without knowing the new name. '
+                'You can use `self.name = somename` instead.'
+            )
+
     @property
     def value(self):
         """Return value of a keyword argument."""

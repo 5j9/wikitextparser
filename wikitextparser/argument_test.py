@@ -74,6 +74,16 @@ class Argument(unittest.TestCase):
         self.assertEqual(' b ', a1.value)
         self.assertEqual('2', a1.name)
 
+    def test_setting_positionality(self):
+        a = wtp.Argument("|1=v")
+        a.positional = False
+        self.assertEqual('|1=v', a.string)
+        a.positional = True
+        self.assertEqual('|v', a.string)
+        a.positional = True
+        self.assertEqual('|v', a.string)
+        self.assertRaises(ValueError, setattr, a, 'positional', False)
+
         
 if __name__ == '__main__':
     unittest.main()
