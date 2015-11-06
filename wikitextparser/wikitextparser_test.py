@@ -129,9 +129,9 @@ class WikiText(unittest.TestCase):
     def test_no_bare_externallink_within_wikilinks(self):
         """Based on how Mediawiki behaves.
 
-        There is a rather simple solution for this (move the detection
+        There is a rather simple solution for this (move the detection of
         external links to spans.py) but maybe the current implementation
-        is even more useful? Also faster when not looking for external links.
+        is even more useful? Also it should be faster.
         """
         p =wtp.parse('[[ https://en.wikipedia.org/]]')
         self.assertEqual(1, len(p.wikilinks))
@@ -467,10 +467,10 @@ class TemplateSetArg(unittest.TestCase):
         self.assertEqual('{{t|p|q}}', t.string)
 
     @unittest.expectedFailure
-    def test_invalid_name(self):
+    def test_invalid_position(self):
         t = wtp.Template('{{t}}')
         t.set_arg('2', 'a', positional=True)
-        self.assertEqual('{{t|a}}', t.string)
+        self.assertEqual('{{t|2=a}}', t.string)
         
 
 class ParserFunction(unittest.TestCase):
