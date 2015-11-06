@@ -62,9 +62,8 @@ class WikiText:
         # Updating spans
         oldlength = oldend - oldstart
         newlength = len(newstring)
-        if oldlength == newlength:
-            if newstring == oldstring:
-                return
+        if oldlength == newlength and newstring == oldstring:
+            return
         elif oldlength < newlength:
             if newstring.startswith(oldstring):
                 # The has been an insertion at the end of oldstring.
