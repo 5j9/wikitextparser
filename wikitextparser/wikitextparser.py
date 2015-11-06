@@ -522,6 +522,8 @@ class Template(_Indexed_WikiText):
         arg = self._get_arg(name, args)
         # Updating an existing argument.
         if arg:
+            if positional:
+                arg.positional = positional
             if preserve_spacing:
                 val = arg.value
                 arg.value = val.replace(val.strip(), value)

@@ -471,6 +471,11 @@ class TemplateSetArg(unittest.TestCase):
         t = wtp.Template('{{t}}')
         t.set_arg('2', 'a', positional=True)
         self.assertEqual('{{t|2=a}}', t.string)
+
+    def test_force_new_to_positional_when_old_is_keyword(self):
+        t = wtp.Template('{{t|1=v}}')
+        t.set_arg('1', 'v', positional=True)
+        self.assertEqual('{{t|v}}', t.string)
         
 
 class ParserFunction(unittest.TestCase):
