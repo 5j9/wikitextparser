@@ -92,6 +92,17 @@ class IndentLevel(unittest.TestCase):
         self.assertEqual(4, a._get_indent_level())
         self.assertEqual(2, a._get_indent_level(with_respect_to=b))
 
-        
+
+class StringSetter(unittest.TestCase):
+
+    """Test the string setter method."""
+
+    def test_sequencematcher(self):
+        t = wtp.Template('{{t|a|b|c}}')
+        t.string = '{{t|0|a|b|c}}'
+        self.assertEqual('0', t.get_arg('1').value)
+        self.assertEqual('c', t.get_arg('4').value)
+
+
 if __name__ == '__main__':
     unittest.main()
