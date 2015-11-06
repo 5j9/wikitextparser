@@ -2,6 +2,7 @@
 
 
 import re
+from difflib import SequenceMatcher
 
 
 class WikiText:
