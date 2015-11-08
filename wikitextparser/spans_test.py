@@ -98,6 +98,13 @@ class Spans(unittest.TestCase):
             wt._spans['templates'],
         )
 
+    def test_invalid_refs_that_should_not_produce_any_template(self):
+        wt = wtp.WikiText('f {{text|<ref \n > g}} <ref  name=n />\n</ref  >\n')
+        self.assertEqual(
+            [],
+            wt._spans['templates'],
+        )
+
     def test_unicode_parser_function(self):
         wt = wtp.WikiText('{{#اگر:|فلان}}')
         self.assertEqual(
@@ -271,6 +278,7 @@ class Spans(unittest.TestCase):
         self.assertNotRegex('{{raw:xyz}}', regex)
         # Miscellaneous
         self. assertRegex('{{#language:language code}}', regex)
+
 
 if __name__ == '__main__':
     unittest.main()

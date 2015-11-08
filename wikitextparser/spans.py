@@ -180,14 +180,31 @@ TAG_EXTENSIONS = [
     'graph',
     'indicator',
 ]
-# The following regex to detect innermost HTML tags is from
+# The idea of the following regex to detect innermost HTML tags is from
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 EXTENSION_TAGS_REGEX = re.compile(
     r'<(' + '|'.join(TAG_EXTENSIONS) +
-    r')\b[^>]*>(?:(?=([^<]+))\2|<(?!\1\b[^>]*>))*?</\1\s*>',
-    re.DOTALL|re.IGNORECASE,
+    r""")
+    \b[^>]*
+    (?<!/)
+    > # content
+    (?:
+      # no tags are nested inside
+      (?=
+        ([^<]+)
+      )
+      \2|
+      # the nested-tag is something else
+      <
+      (?!\1\b[^>]*>)|
+      # the nested tag closes itself
+      <\1\b[^>]*/>
+    )*?
+    # tag-end
+    </\1\s*>""",
+    re.IGNORECASE|re.VERBOSE,
 )
 # Contents of the some of the tags mentioned above can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
