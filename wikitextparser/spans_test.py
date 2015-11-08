@@ -87,6 +87,17 @@ class Spans(unittest.TestCase):
             wt._spans['templates'],
         )
 
+    def test_invoking_a_named_ref_is_not_a_ref_start(self):
+        """See [[mw:Extension:Cite#Multiple_uses_of_the_same_footnote]].
+
+        [[mw:Help:Extension:Cite]] may be helpful, too.
+        """
+        wt = wtp.WikiText('{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>')
+        self.assertEqual(
+            [(0, 25)],
+            wt._spans['templates'],
+        )
+
     def test_unicode_parser_function(self):
         wt = wtp.WikiText('{{#اگر:|فلان}}')
         self.assertEqual(
