@@ -47,8 +47,22 @@ SECTION_REGEX = re.compile(
 )
 # Tables
 TABLE_REGEX = re.compile(
-    r'^( *){\|.*?\n\s*(?:\|}|$)',
-    re.DOTALL|re.MULTILINE
+    r"""
+    # Table-start
+    # Always starts on a new line with optional leading spaces
+    ^ # Group the leading spaces so we can ignore them in code
+    (\ *)
+    {\| # Table contents
+    # Should not containt any other table-start
+    (?:
+      (?!^\ *\{\|)
+      .
+    )*?
+    # Table-end
+    \n\s*
+    (?:\|}|\Z)
+    """,
+    re.DOTALL|re.MULTILINE|re.VERBOSE
 )
 
 
@@ -318,19 +332,25 @@ class WikiText(WikiText):
         if 'tables' not in spans:
             spans['tables'] = []
         tspans = spans['tables']
-        for m in TABLE_REGEX.finditer(shadow):
-            mspan = m.span()
-            # Ignore leading whitespace using len(m.group(1))
-            mspan = (ss + mspan[0] + len(m.group(1)), ss + mspan[1])
-            if mspan not in tspans:
-                tspans.append(mspan)
-            tables.append(
-                Table(
-                    self._lststr,
-                    spans,
-                    tspans.index(mspan)
+        loop = True
+        while loop:
+            loop = False
+            for m in TABLE_REGEX.finditer(shadow):
+                loop = True
+                mspan = m.span()
+                # Ignore leading whitespace using len(m.group(1))
+                mspan = (ss + mspan[0] + len(m.group(1)), ss + mspan[1])
+                if mspan not in tspans:
+                    tspans.append(mspan)
+                tables.append(
+                    Table(
+                        self._lststr,
+                        spans,
+                        tspans.index(mspan)
+                    )
                 )
-            )
+                ms, me = mspan
+                shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
 class _Indexed_WikiText(WikiText):

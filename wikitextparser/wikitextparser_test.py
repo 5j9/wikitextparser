@@ -165,6 +165,16 @@ class Tables(unittest.TestCase):
         self.assertEqual('{|\n|a \n|}', p.tables[0].string)
         self.assertEqual('{|\n|b\n|}', p.tables[1].string)
 
+    def test_nested_tables(self):
+        s = (
+            'text1\n{|class=wikitable\n|a\n|\n'
+            '{|class=wikitable\n|b\n|}\n|}\ntext2'
+        )
+        p =wtp.parse(s)
+        self.assertEqual(2, len(p.tables))
+        self.assertEqual(s[6:-6], p.tables[1].string)
+        self.assertEqual('{|class=wikitable\n|b\n|}', p.tables[0].string)
+
 
 class PrettyPrint(unittest.TestCase):
 
