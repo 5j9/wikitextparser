@@ -142,7 +142,7 @@ BARE_EXTERNALLINK_PATTERN = (
 WIKILINK_REGEX = re.compile(
     r'\[\[(?!' + BARE_EXTERNALLINK_PATTERN + r')' +
     VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') +
-    r'(\]\]|\|[\S\s]*?\]\])',
+    r'(\]\]|\|(?:[\S\s](?!\[\[))*?\]\])',
     re.IGNORECASE,
 )
 # For a complete list of extension tags on your wiki, see the
@@ -277,21 +277,25 @@ def parse_to_spans(string):
     # The title in WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of `text` template shoud be the whole string
-    for match in WIKILINK_REGEX.finditer(string):
-        span = match.span()
-        wikilink_spans.append(span)
-        group = match.group()
-        parse_to_spans_innerloop(
-            group,
-            span[0],
-            parameter_spans,
-            parser_function_spans,
-            template_spans,
-        )
-        string = string.replace(
-            group,
-            group.replace('}', '_').replace('{', '_'),
-        )
+    loop = True
+    while loop:
+        loop = False
+        for match in WIKILINK_REGEX.finditer(string):
+            loop = True
+            span = match.span()
+            wikilink_spans.append(span)
+            group = match.group()
+            parse_to_spans_innerloop(
+                group,
+                span[0],
+                parameter_spans,
+                parser_function_spans,
+                template_spans,
+            )
+            string = string.replace(
+                group,
+                '__' + group[2:-2].replace('}', '_').replace('{', '_') + '__'
+            )
     parse_to_spans_innerloop(
         string,
         0,
@@ -327,21 +331,25 @@ def indexed_parse_to_spans(
     # Currently, does not work with nested <!-- comments --> or tag extensions.
     # The title in WikiLinks may contain braces that interfere with
     # detection of templates
-    for match in WIKILINK_REGEX.finditer(string):
-        ss, se = match.span()
-        wikilink_spans.append((index + ss, index + se))
-        group = match.group()
-        parse_to_spans_innerloop(
-            group,
-            index + ss,
-            parameter_spans,
-            parser_function_spans,
-            template_spans,
-        )
-        string = string.replace(
-            group,
-            group.replace('}', '_').replace('{', '_'),
-        )
+    loop = True
+    while loop:
+        loop = False
+        for match in WIKILINK_REGEX.finditer(string):
+            loop = True
+            ss, se = match.span()
+            wikilink_spans.append((index + ss, index + se))
+            group = match.group()
+            parse_to_spans_innerloop(
+                group,
+                index + ss,
+                parameter_spans,
+                parser_function_spans,
+                template_spans,
+            )
+            string = string.replace(
+                group,
+                '__' + group[2:-2].replace('}', '_').replace('{', '_') + '__'
+            )
     parse_to_spans_innerloop(
         string,
         index,

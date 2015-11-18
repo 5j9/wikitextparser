@@ -119,6 +119,15 @@ class Spans(unittest.TestCase):
             wt._spans['parameters'],
         )
 
+    def test_image_containing_wikilink(self):
+        parsed = wtp.parse(
+            "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 [[Wikilink2]].]]"
+        )
+        self.assertEqual(
+            [(30, 43), (49, 62), (0, 65)],
+            parsed._spans['wikilinks'],
+        )
+
     def test_extracting_sections(self):
         wt = wtp.WikiText('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22')
         sections = wt.sections
