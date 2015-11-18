@@ -1,3 +1,6 @@
+"""Run all tests *_test.py modules plus the test for wikitextparser."""
+
+
 import sys
 import unittest
 from pprint import pprint as pp
