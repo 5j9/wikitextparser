@@ -79,7 +79,7 @@ class WikiText(WikiText):
         self._common_init(string, spans)
 
     def _common_init(self, string, spans):
-        if type(string) is list:
+        if isinstance(string, list):
             self._lststr = string
         else:
             self._lststr = [string]
