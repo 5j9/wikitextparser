@@ -21,10 +21,9 @@ class Argument():
         if spans is None:
             self._spans[self._typeindex] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['arguments']) -1
+            self._index = len(self._spans['arguments']) - 1
         else:
             self._index = index
-
 
     def __repr__(self):
         """Return the string representation of the Argument."""
@@ -138,4 +137,3 @@ class Argument():
                 len('|' + newvalue),
                 len('|' + newvalue + pipename[1:])
             )
-            

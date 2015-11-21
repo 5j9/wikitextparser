@@ -121,7 +121,7 @@ class WikiText(unittest.TestCase):
         self.assertEqual(1, len(wt.parser_functions))
 
     def test_wikilink2externallink_fallback(self):
-        p =wtp.parse('[[http://example.com foo bar]]')
+        p = wtp.parse('[[http://example.com foo bar]]')
         self.assertEqual(
             '[http://example.com foo bar]',
             p.external_links[0].string
@@ -136,10 +136,10 @@ class WikiText(unittest.TestCase):
         external links to spans.py) but maybe the current implementation
         is even more useful? Also it should be faster.
         """
-        p =wtp.parse('[[ https://en.wikipedia.org/]]')
+        p = wtp.parse('[[ https://en.wikipedia.org/]]')
         self.assertEqual(1, len(p.wikilinks))
         self.assertEqual(0, len(p.external_links)
-        )
+                         )
 
 
 class Tables(unittest.TestCase):
@@ -148,22 +148,22 @@ class Tables(unittest.TestCase):
 
     def test_table_extraction(self):
         s = '{|class=wikitable\n|a \n|}'
-        p =wtp.parse(s)
+        p = wtp.parse(s)
         self.assertEqual(s, p.tables[0].string)
 
     def test_table_start_after_space(self):
         s = '   {|class=wikitable\n|a \n|}'
-        p =wtp.parse(s)
+        p = wtp.parse(s)
         self.assertEqual(s.strip(), p.tables[0].string)
 
     def test_ignore_comments_before_extracting_tables(self):
         s = '{|class=wikitable\n|a \n<!-- \n|} \n-->\n|b\n|}'
-        p =wtp.parse(s)
+        p = wtp.parse(s)
         self.assertEqual(s, p.tables[0].string)
 
     def test_two_tables(self):
         s = 'text1\n {|\n|a \n|}\ntext2\n{|\n|b\n|}\ntext3\n'
-        p =wtp.parse(s)
+        p = wtp.parse(s)
         self.assertEqual(2, len(p.tables))
         self.assertEqual('{|\n|a \n|}', p.tables[0].string)
         self.assertEqual('{|\n|b\n|}', p.tables[1].string)
@@ -173,7 +173,7 @@ class Tables(unittest.TestCase):
             'text1\n{|class=wikitable\n|a\n|\n'
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
         )
-        p =wtp.parse(s)
+        p = wtp.parse(s)
         self.assertEqual(2, len(p.tables))
         self.assertEqual(s[6:-6], p.tables[1].string)
         self.assertEqual('{|class=wikitable\n|b\n|}', p.tables[0].string)
@@ -243,8 +243,8 @@ class PrettyPrint(unittest.TestCase):
             '{{t\n    | 1 = a\n    | 2 = b\n    | 3 = c\n}}',
             wtp.parse('{{t|a|b|c}}').pprint(),
         )
-        
-        
+
+
 class Sections(unittest.TestCase):
 
     """Test the sections method of the WikiText class."""
@@ -258,7 +258,7 @@ class Sections(unittest.TestCase):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
-        
+
 
 class Template(unittest.TestCase):
 
@@ -489,7 +489,7 @@ class TemplateSetArg(unittest.TestCase):
         t = wtp.Template('{{t|1=v}}')
         t.set_arg('1', 'v', positional=True)
         self.assertEqual('{{t|v}}', t.string)
-        
+
 
 class ParserFunction(unittest.TestCase):
 

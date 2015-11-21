@@ -80,7 +80,6 @@ class Rows(unittest.TestCase):
             ]
         )
 
-
     def test_doublepipe_multiline(self):
         table = wtp.Table(
             '{|\n|| multi\nline\n||\n 1\n|}'
@@ -116,7 +115,6 @@ class Rows(unittest.TestCase):
     def test_with_caption_attrs(self):
         table = wtp.Table('{|class=wikitable\n|+ sal | no\n|a \n|}')
         self.assertEqual(table.getdata(), [['a']])
-        
 
     def test_second_caption_is_ignored(self):
         table = wtp.Table('{|\n  |+ c1\n  |+ c2\n|-\n|1\n|2\n|}')
@@ -175,12 +173,11 @@ class Rows(unittest.TestCase):
         # Actually I'm not sure about this in general.
         table = wtp.Table('{|class=wikitable\n|a!!b!!c\n|}')
         self.assertEqual(table.getdata(), [['a!!b!!c']])
-        
 
     def test_caption_in_row_is_treated_as_pipe_and_plut(self):
         table = wtp.Table('{|class=wikitable\n|a|+b||c\n|}')
         self.assertEqual(table.getdata(), [['+b', 'c']])
-        
+
     def test_odd_case1(self):
         table = wtp.Table(
             '{|class=wikitable\n  [[a]]\n |+ cp1\ncp1\n! h1 '
@@ -235,7 +232,7 @@ class RowData(unittest.TestCase):
 
     def test_second_of_three(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getrdata(1),['d', 'e', 'f'])
+        self.assertEqual(table.getrdata(1), ['d', 'e', 'f'])
 
 
 class ColData(unittest.TestCase):
@@ -244,7 +241,7 @@ class ColData(unittest.TestCase):
 
     def test_second_of_three(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getcdata(1),['b', 'e', 'h'])
+        self.assertEqual(table.getcdata(1), ['b', 'e', 'h'])
 
 
 class Caption(unittest.TestCase):
@@ -306,7 +303,7 @@ class TableAttrs(unittest.TestCase):
         self.assertEqual(table.table_attrs, 's')
         table.table_attrs = 'class="wikitable"'
         self.assertEqual(table.string, '{|class="wikitable"\n|a|}')
-        
-                         
+
+
 if __name__ == '__main__':
     unittest.main()

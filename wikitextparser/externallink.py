@@ -77,4 +77,3 @@ class ExternalLink():
     def in_brackets(self):
         """Return true if the ExternalLink is in brackets. False otherwise."""
         return self.string.startswith('[')
-    

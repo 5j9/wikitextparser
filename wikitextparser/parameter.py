@@ -9,7 +9,7 @@ class Parameter():
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['parameters']) -1
+            self._index = len(self._spans['parameters']) - 1
         else:
             self._index = index
 
@@ -61,6 +61,7 @@ class Parameter():
                 len('{{{' + name + '|' + newdefault),
                 len('{{{' + name + '|' + newdefault + '|' + olddefault)
             )
+
     def append_default(self, new_default_name):
         """Append a new default parameter in the appropriate place.
 

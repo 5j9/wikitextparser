@@ -84,6 +84,6 @@ class Argument(unittest.TestCase):
         self.assertEqual('|v', a.string)
         self.assertRaises(ValueError, setattr, a, 'positional', False)
 
-        
+
 if __name__ == '__main__':
     unittest.main()

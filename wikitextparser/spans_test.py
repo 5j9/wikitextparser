@@ -15,7 +15,7 @@ class Spans(unittest.TestCase):
 
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
-        template_spans =  wt._spans['templates']
+        template_spans = wt._spans['templates']
         self.assertIn((7, 13), template_spans)
         self.assertIn((14, 20), template_spans)
         self.assertIn((0, 22), template_spans)
@@ -92,7 +92,9 @@ class Spans(unittest.TestCase):
 
         [[mw:Help:Extension:Cite]] may be helpful, too.
         """
-        wt = wtp.WikiText('{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>')
+        wt = wtp.WikiText(
+            '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
+        )
         self.assertEqual(
             [(0, 25)],
             wt._spans['templates'],

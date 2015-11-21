@@ -73,7 +73,7 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
         p.append_default('p2')
         self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

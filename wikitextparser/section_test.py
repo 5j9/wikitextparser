@@ -21,7 +21,6 @@ class Section(unittest.TestCase):
         self.assertEqual(6, s.level)
         self.assertEqual('= h6 =', s.title)
 
-
     def test_unbalanced_equalsigns_in_title(self):
         s = wtp.Section('====== ==   \n')
         self.assertEqual(2, s.level)
@@ -68,7 +67,7 @@ class Section(unittest.TestCase):
     def test_template_at_the_start(self):
         ts = wtp.Section('{{t}}').templates
         self.assertEqual(ts[0].string, '{{t}}')
-        
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -9,7 +9,7 @@ class WikiLink():
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['wikilinks']) -1
+            self._index = len(self._spans['wikilinks']) - 1
         else:
             self._index = index
 

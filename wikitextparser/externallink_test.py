@@ -51,7 +51,7 @@ class ExternalLink(unittest.TestCase):
         el = wtp.ExternalLink('[ftp://mediawiki.org]')
         el.url = 'https://www.mediawiki.org/'
         self.assertEqual('[https://www.mediawiki.org/]', el.string)
-        
+
 
 if __name__ == '__main__':
     unittest.main()

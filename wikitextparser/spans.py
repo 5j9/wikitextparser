@@ -7,9 +7,9 @@ import re
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]*'
-#Templates
+# Templates
 TEMPLATE_PATTERN = (
-    r'\{\{\s*' + VALID_TITLE_CHARS_PATTERN  + r'\s*(\|[^{}]*?\}\}|\}\})'
+    r'\{\{\s*' + VALID_TITLE_CHARS_PATTERN + r'\s*(\|[^{}]*?\}\}|\}\})'
 )
 TEMPLATE_NOT_PARAM_REGEX = re.compile(
     TEMPLATE_PATTERN + r'(?!\})'
@@ -204,7 +204,7 @@ EXTENSION_TAGS_REGEX = re.compile(
     )*?
     # tag-end
     </\1\s*>""",
-    re.IGNORECASE|re.VERBOSE,
+    re.IGNORECASE | re.VERBOSE,
 )
 # Contents of the some of the tags mentioned above can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
@@ -418,7 +418,7 @@ def parse_to_spans_innerloop(
                 ss, se = match.span()
                 template_spans.append((ss + index, se + index))
                 group = match.group()
-                string = string.replace(group, '__' + group[2:-2] + '__' )
+                string = string.replace(group, '__' + group[2:-2] + '__')
         if not match:
             break
     # Calls to this function make use of mutation in the arguments.

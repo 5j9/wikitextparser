@@ -13,7 +13,6 @@ class WikiText:
         """Return self-object as a string."""
         return self.string
 
-
     def __repr__(self):
         """Return the string representation of the WikiText."""
         return 'WikiText(' + repr(self.string) + ')'
@@ -33,7 +32,7 @@ class WikiText:
         if ss <= ps and se >= pe:
             return True
         return False
-            
+
     @property
     def string(self):
         """Retrun str(self)."""
@@ -79,7 +78,7 @@ class WikiText:
                     elength=newlength - oldlength,
                 )
                 return
-        else: # oldlength > newlength
+        else:  # oldlength > newlength
             if oldstring.startswith(newstring):
                 # The ending part of oldstring has been deleted.
                 self._shrink_span_update(
@@ -141,7 +140,7 @@ class WikiText:
         """Remove the given range from self.string.
 
         0 <= start <= end
-        
+
         If an operation includes both insertion and deletion. It's safer to
         use the `strins` function first. Otherwise there is a possibility
         of insertion in the wrong spans.
@@ -191,7 +190,7 @@ class WikiText:
             index = string.find(char, index + 1)
         if index == -1:
             return (string, '', '')
-        return (string[:index], char, string[index+1:])
+        return (string[:index], char, string[index + 1:])
 
     def _not_in_subspans_split_spans(self, char):
         """Like _not_in_subspans_split but return spans."""
@@ -214,7 +213,7 @@ class WikiText:
 
         `ss` and `se` indicate the spanstart and spanend that subspans will
             be checked for. If not specified, use self._get_span().
-            
+
         Checked subspans types are:
         (
             'templates', 'parameters', 'functions',
@@ -233,6 +232,7 @@ class WikiText:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
         # The return function
+
         def in_spans(index):
             """Return True if the given index is found within a subspans."""
             for span in subspans:
@@ -248,7 +248,6 @@ class WikiText:
             # Including self._get_span()
             if ss <= s[0] and s[1] <= se:
                 yield i
-        
 
     def _shrink_span_update(self, rmstart, rmend):
         """Update self._spans according to the removed span.
@@ -298,13 +297,12 @@ class WikiText:
                     spans[i] = (spanstart + elength, spanend + elength)
                 elif spanstart < estart < spanend or (
                     # At the end of selfspan
-                    estart == spanstart and spanstart== ss and spanend == se
+                    estart == spanstart and spanstart == ss and spanend == se
                 ) or (
                     estart == spanend and spanend == se and spanstart == ss
                 ):
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
-
 
     def _get_indent_level(self, with_respect_to=None):
         """Calculate the indent level for self.pprint function.
@@ -316,7 +314,7 @@ class WikiText:
         `with_respect_to` is an instance of WikiText object.
         """
         ss, se = self._get_span()
-        level = 1 # a template is always found in itself
+        level = 1  # a template is always found in itself
         if with_respect_to is None:
             for s, e in self._spans['templates']:
                 if s < ss and se < e:
@@ -331,7 +329,7 @@ class WikiText:
                 if rs <= s < ss and se < e <= re:
                     level += 1
             for s, e in self._spans['functions']:
-                if rs <= s < ss  and se < e <= re:
+                if rs <= s < ss and se < e <= re:
                     level += 1
             return level
 

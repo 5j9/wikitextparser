@@ -17,7 +17,7 @@ class Section():
         if spans is None:
             self._spans['sections'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['sections']) -1
+            self._index = len(self._spans['sections']) - 1
         else:
             self._index = index
 
@@ -71,7 +71,7 @@ class Section():
             )
         title = self.title
         self.strins(level, newtitle)
-        self.strdel(level + len(newtitle), level + len(newtitle+ title))
+        self.strdel(level + len(newtitle), level + len(newtitle + title))
 
     @property
     def contents(self):

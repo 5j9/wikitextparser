@@ -101,7 +101,7 @@ SEMICAPTION_REGEX = re.compile(
     (?:\|\+[\s\S]*?)+
     (?=^\s*[|!])
     """,
-    re.MULTILINE|re.VERBOSE
+    re.MULTILINE | re.VERBOSE
 )
 # https://regex101.com/r/tH3pU3/6
 CAPTION_REGEX = re.compile(
@@ -160,7 +160,7 @@ class Table:
 
         @param:`span` indicates if rowspans and colspans attributes should be
             expanded or not. Todo: Don't use this param. Still in development.
-        
+
         Due to the lots of complications that it will cause, this function
         won't look inside templates, parserfunctions, etc.
 
@@ -197,7 +197,7 @@ class Table:
         for ss, se in dataspans:
             row = shadow[ss:se]
             if not row.lstrip():
-                # When the optional `|-` for the first row is used or when 
+                # When the optional `|-` for the first row is used or when
                 # there are meaningless row seprators that result in rows
                 # containing no cells.
                 continue
@@ -258,7 +258,6 @@ class Table:
         if span and data:
             data = self._apply_attr_spans(attr_spans, data, string)
         return data
-
 
     def _apply_attr_spans(self, attr_spans, data, string):
         """Apply colspans to data and return data."""
@@ -349,7 +348,7 @@ class Table:
                     yheight = ycurrent + rowspan
                     while len(table) < yheight:
                         table.append([None] * xwidth)
-                # 13.13                 
+                # 13.13
                 for y in range(ycurrent, ycurrent + rowspan):
                     r = table[y]
                     for x in range(xcurrent, xcurrent + colspan):
@@ -366,7 +365,7 @@ class Table:
                 # 13.15
                 xcurrent += colspan
             # 13.16
-            ycurrent += 1     
+            ycurrent += 1
         # 14
         # The algorithm for ending a row group
         # 14.1
@@ -411,7 +410,7 @@ class Table:
 
         i is the index and starts from 0.
         """
-        return [r[i]  for r in self.getdata()]
+        return [r[i] for r in self.getdata()]
 
     @property
     def caption(self):
@@ -456,7 +455,7 @@ class Table:
         h = self.string.partition('\n')[0]
         self.strins(2, attrs)
         self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:]))
-        
+
     @property
     def caption_attrs(self):
         """Return caption attributes."""
@@ -487,7 +486,7 @@ class Table:
 class AttrsParser(HTMLParser):
 
     """A class to generate attrs_parser from."""
-        
+
     def handle_starttag(self, tag, attrs):
         """Store parsed attrs in self.parsed and then self.reset()."""
         self.parsed = attrs
