@@ -22,7 +22,7 @@ from .table import Table
 # HTML
 HTML_TAG_REGEX = re.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
-    re.DOTALL|re.IGNORECASE,
+    re.DOTALL | re.IGNORECASE,
 )
 # External links
 BRACKET_EXTERNALLINK_PATTERN = (
@@ -38,12 +38,12 @@ EXTERNALLINK_REGEX = re.compile(
 SECTION_HEADER_REGEX = re.compile(r'^=[^\n]+?= *$', re.M)
 LEAD_SECTION_REGEX = re.compile(
     r'.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|\Z)',
-    re.DOTALL|re.MULTILINE,
+    re.DOTALL | re.MULTILINE,
 )
 SECTION_REGEX = re.compile(
     SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
     SECTION_HEADER_REGEX.pattern + '|\Z)',
-    re.DOTALL|re.MULTILINE,
+    re.DOTALL | re.MULTILINE,
 )
 # Tables
 TABLE_REGEX = re.compile(
@@ -62,7 +62,7 @@ TABLE_REGEX = re.compile(
     \n\s*
     (?:\|}|\Z)
     """,
-    re.DOTALL|re.MULTILINE|re.VERBOSE
+    re.DOTALL | re.MULTILINE | re.VERBOSE
 )
 
 
@@ -353,6 +353,7 @@ class WikiText(WikiText):
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
+
 class _Indexed_WikiText(WikiText):
 
     """This is a middle-class to be used by some other subclasses.
@@ -392,7 +393,7 @@ class Template(_Indexed_WikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['templates']) -1
+            self._index = len(self._spans['templates']) - 1
         else:
             self._index = index
 
@@ -445,10 +446,9 @@ class Template(_Indexed_WikiText):
     @name.setter
     def name(self, newname):
         """Set the new name for the template."""
-        name  = self.name
+        name = self.name
         self.strins(2, newname)
         self.strdel(2 + len(newname), 2 + len(newname + name))
-
 
     def rm_first_of_dup_args(self):
         """Eliminate duplicate arguments by removing the first occurrences.
@@ -577,8 +577,8 @@ class Template(_Indexed_WikiText):
             preserve_spacing = False
         # Calculate the string that needs to be added to the Template.
         if positional:
-                # Ignore preserve_spacing for positional args.
-                addstring = '|' + value
+            # Ignore preserve_spacing for positional args.
+            addstring = '|' + value
         else:
             if preserve_spacing:
                 addstring = (
@@ -611,7 +611,6 @@ class Template(_Indexed_WikiText):
                 # The template has no arguments or the new arg is
                 # positional AND is to be added at the end of the template.
                 self.strins(len(self.string) - 2, addstring)
-
 
     def _get_arg(self, name, args):
         """Return the first argument in the args that has the given name.
@@ -668,7 +667,7 @@ class ParserFunction(_Indexed_WikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['functions']) -1
+            self._index = len(self._spans['functions']) - 1
         else:
             self._index = index
 
@@ -706,7 +705,7 @@ class ParserFunction(_Indexed_WikiText):
         if barsplits:
             for aspan in barsplits:
                 # include the the starting '|'
-                aspan = (aspan[0] -1, aspan[1])
+                aspan = (aspan[0] - 1, aspan[1])
                 if aspan not in aspans:
                     aspans.append(aspan)
                 arguments.append(
