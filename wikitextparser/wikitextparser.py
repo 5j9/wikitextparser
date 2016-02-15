@@ -187,29 +187,18 @@ class WikiText(WikiText):
                 continue
             args = parser_function.arguments
             if len(args) > 1:
-                arg0 = args[0]
-                arg0.value = ' ' + arg0.value.strip() + '\n' + indent * level
-                if not arg0.positional:
-                    arg0.name = ' ' + arg0.name.strip() + ' '
-                # Required for alignment
-                max_name_len = max(
-                    (
-                        len(a.name.strip()) for a in args[1:] if
-                        not a.positional
-                    ),
-                    default=None
-                )
                 # Whitespace, including newlines, tabs, and spaces is stripped
                 # from the beginning and end of all the parameters of
                 # parser functions. See:
                 # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
                 #    Stripping_whitespace
-                for arg in args[1:]:
-                    arg.value = ' ' + arg.value.strip() + '\n' + indent * level
+                for arg in args:
                     if not arg.positional:
-                        name = arg.name.strip()
-                        arg.name = (
-                            ' ' + name + ' ' + ' ' * (max_name_len - len(name))
+                        arg.name = ' ' + arg.name.lstrip()
+                        arg.value = arg.value.rstrip() + '\n' + indent * level
+                    else:
+                        arg.value = (
+                            ' ' + arg.value.rstrip() + '\n' + indent * level
                         )
                 # Special formatting for the last argument
                 arg.value = arg.value.rstrip() + '\n' + indent * (level - 1)

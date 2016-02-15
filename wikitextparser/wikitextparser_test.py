@@ -226,7 +226,7 @@ class PrettyPrint(unittest.TestCase):
         s = "{{#switch:case|abcde = f| g=h}}"
         wt = wtp.parse(s)
         self.assertEqual(
-            '{{#switch: case\n    | abcde = f\n    | g     = h\n}}',
+            '{{#switch: case\n    | abcde = f\n    | g=h\n}}',
             wt.pprint(),
         )
 
@@ -255,6 +255,17 @@ class PrettyPrint(unittest.TestCase):
             '    | 2 = <nowiki></nowiki> a <nowiki></nowiki>\n'
             '}}',
             wtp.parse('{{t|a| a }}').pprint(),
+        )
+
+    def test_dont_treat_parser_function_arguments_as_kwargs(self):
+        """The `=` is usually just a part of parameter value.
+
+        Another example: {{fullurl:Category:Top level|action=edit}}."""
+        self.assertEqual(
+            '{{#if: true\n    | <span style="color:Blue;">text</span>\n}}',
+            wtp.parse(
+                '{{#if:true|<span style="color:Blue;">text</span>}}'
+            ).pprint(),
         )
 
 
