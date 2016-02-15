@@ -202,6 +202,7 @@ class Spans(unittest.TestCase):
         self. assertRegex('{{DEFAULTCATEGORYSORT:sortkey}}', regex)
         self. assertRegex('{{DEFAULTSORT:sortkey}}', regex)
         self. assertRegex('{{DEFAULTSORTKEY:sortkey}}', regex)
+        self. assertRegex('{{PROTECTIONEXPIRY:action}}', regex)
         # Statistic variables
         self. assertRegex('{{NUMBEROFPAGES:R}}', regex)
         self. assertRegex('{{NUMBEROFARTICLES:R}}', regex)

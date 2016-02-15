@@ -86,7 +86,7 @@ PARSER_FUNCTION_REGEX = re.compile(
       # Technical metadata of another page
       PAGE
       (?:ID|SIZE)|
-      PROTECTIONLEVEL|
+      PROTECTION(?:LEVEL|EXPIRY)|
       CASCADINGSOURCES|
       REVISION
       (?:
