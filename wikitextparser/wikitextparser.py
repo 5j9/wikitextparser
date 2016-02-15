@@ -114,7 +114,7 @@ class WikiText(WikiText):
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
-        # first remove all current spacings
+        # First remove all current spacings.
         for template in parsed.templates:
             level = template._get_indent_level()
             template_name = template.name.strip()
@@ -122,7 +122,6 @@ class WikiText(WikiText):
             if ':' in template_name:
                 not_a_parser_fucntion = False
             else:
-                # We are sure that this is not a parser function.
                 not_a_parser_fucntion = True
             args = template.arguments
             if args:
@@ -142,21 +141,34 @@ class WikiText(WikiText):
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
                     if positional:
                         positional_count += 1
-                        if not_a_parser_fucntion and value.strip() == value:
-                            arg.name = (
-                                ' ' + str(positional_count) + ' ' +
-                                ' ' * (max_name_len - len(stripped_name))
-                            )
-                            arg.value = (
-                                ' ' + value.strip() + '\n' + indent * level
-                            )
+                        if not_a_parser_fucntion:
+                            if value.strip() == value:
+                                arg.name = (
+                                    ' ' + str(positional_count) + ' ' +
+                                    ' ' * (max_name_len - len(stripped_name))
+                                )
+                                arg.value = (
+                                    ' ' + value.strip() + '\n' + indent * level
+                                )
+                            else:
+                                # The argument should be forced to be a named
+                                # one otherwise the process may introduce
+                                # duplicate arguments.
+                                arg.name = (
+                                    ' ' + str(positional_count) + ' ' +
+                                    ' ' * (max_name_len - len(stripped_name))
+                                )
+                                arg.value = (
+                                    ' <nowiki></nowiki>' + value +
+                                    '<nowiki></nowiki>\n' + indent * level
+                                )
                     else:
                         arg.name = (
                             ' ' + stripped_name + ' ' +
                             ' ' * (max_name_len - len(stripped_name))
                         )
                         arg.value = ' ' + value.strip() + '\n' + indent * level
-                # Special formatting for the last argument
+                # Special formatting for the last argument.
                 if not arg.positional:
                     arg.value = (
                         arg.value.rstrip() + '\n' + indent * (level - 1)

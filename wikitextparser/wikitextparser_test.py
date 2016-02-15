@@ -244,6 +244,19 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{t|a|b|c}}').pprint(),
         )
 
+    def test_if_first_arg_is_coverted_then_all_should_be(self):
+        """Otherwise the second positional arg will also be passed as 1.
+
+        The result of not doing this will be duplicate arguments.
+        """
+        self.assertEqual(
+            '{{t\n'
+            '    | 1 = a\n'
+            '    | 2 = <nowiki></nowiki> a <nowiki></nowiki>\n'
+            '}}',
+            wtp.parse('{{t|a| a }}').pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
