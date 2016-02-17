@@ -130,7 +130,9 @@ class WikiText(WikiText):
                 newline_indent = '\n' + indent * level
                 template.name += newline_indent
                 # Required for alignment
-                arg_names_len = [wcswidth(a.name.strip()) for a in args]
+                arg_names_len = [
+                    wcswidth(a.name.strip().replace('لا', 'ل')) for a in args
+                ]
                 max_name_len = max(arg_names_len)
                 # Order of positional arguments changes when they are converted
                 # to keyword arguments in the for-loop below. Count them while
@@ -205,7 +207,9 @@ class WikiText(WikiText):
                             ' ' + arg.value.rstrip() + newline_indent
                         )
                 # Special formatting for the last argument
-                arg.value = arg.value.rstrip() + '\n' + indent * (level - 1)
+                arg.value = (
+                    arg.value.rstrip() + newline_indent.replace(indent, '')
+                )
         return parsed.string
 
     @property
@@ -343,7 +347,7 @@ class WikiText(WikiText):
             for m in TABLE_REGEX.finditer(shadow):
                 loop = True
                 mspan = m.span()
-                # Ignore leading whitespace using len(m.group(1))
+                # Ignore leading whitespace using len(m.group(1)).
                 mspan = (ss + mspan[0] + len(m.group(1)), ss + mspan[1])
                 if mspan not in tspans:
                     tspans.append(mspan)
@@ -370,7 +374,7 @@ class _Indexed_WikiText(WikiText):
         """Return all the subspan indices excluding self._get_span()"""
         ss, se = self._get_span()
         for i, s in enumerate(self._spans[type_]):
-            # not including self._get_span()
+            # Do not yield self._get_span().
             if ss < s[0] and s[1] < se:
                 yield i
 

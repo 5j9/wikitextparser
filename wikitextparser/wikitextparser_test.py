@@ -260,7 +260,8 @@ class PrettyPrint(unittest.TestCase):
     def test_dont_treat_parser_function_arguments_as_kwargs(self):
         """The `=` is usually just a part of parameter value.
 
-        Another example: {{fullurl:Category:Top level|action=edit}}."""
+        Another example: {{fullurl:Category:Top level|action=edit}}.
+        """
         self.assertEqual(
             '{{#if: true\n    | <span style="color:Blue;">text</span>\n}}',
             wtp.parse(
@@ -268,10 +269,22 @@ class PrettyPrint(unittest.TestCase):
             ).pprint(),
         )
 
-    def test_ignore_zwnj_in_alignment(self):
+    def test_ignore_zwnj_for_alignment(self):
         self.assertEqual(
             '{{ا\n    | نیم\u200cفاصله       = ۱\n    | بدون نیم فاصله = ۲\n}}',
             wtp.parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pprint(),
+        )
+
+    def test_arabic_ligature_lam_with_alef(self):
+        """'ل' + 'ا' creates a ligature with one character width.
+
+        Some terminal emulators do not support this but it's defined in
+        Courier New font which is the main (almost only) font used for
+        monospaced Persian texts on Windows. Also tested on Arabic Wikipedia.
+        """
+        self.assertEqual(
+            '{{ا\n    | الف = ۱\n    | لا   = ۲\n}}',
+            wtp.parse('{{ا|الف=۱|لا=۲}}').pprint(),
         )
 
 
@@ -547,7 +560,7 @@ class ParserFunction(unittest.TestCase):
         self.assertEqual(2, len(pf.arguments))
 
     def test_default_parser_function_without_hash_sign(self):
-        wt = wtp.WikiText("""{{formatnum:text|R}}""")
+        wt = wtp.WikiText("{{formatnum:text|R}}")
         self.assertEqual(1, len(wt.parser_functions))
 
     @unittest.expectedFailure
