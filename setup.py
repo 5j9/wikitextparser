@@ -2,13 +2,14 @@ from distutils.core import setup
 
 setup(
     name='wikitextparser',
-    version='0.7.0',
+    version='0.7.1dev',
     description='A simple, purely python, WikiText parsing tool.',
     long_description=open('README.rst').read(),
     author='Dalba',
     author_email='dalba.wiki@gmail.com',
     url='https://github.com/irdb/wikitextparser',
     packages=['wikitextparser'],
+    install_requires=['wcwidth'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
