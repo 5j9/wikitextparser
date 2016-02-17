@@ -3,6 +3,8 @@
 
 import re
 
+from wcwidth import wcswidth
+
 from .spans import (
     parse_to_spans,
     VALID_EXTLINK_CHARS_PATTERN,
@@ -116,7 +118,6 @@ class WikiText(WikiText):
                 c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
-            level = template._get_indent_level()
             template_name = template.name.strip()
             template.name = template_name
             if ':' in template_name:
@@ -125,16 +126,18 @@ class WikiText(WikiText):
                 not_a_parser_fucntion = True
             args = template.arguments
             if args:
-                template.name += '\n' + indent * level
+                level = template._get_indent_level()
+                newline_indent = '\n' + indent * level
+                template.name += newline_indent
                 # Required for alignment
-                max_name_len = max(len(a.name.strip()) for a in args)
+                arg_names_len = [wcswidth(a.name.strip()) for a in args]
+                max_name_len = max(arg_names_len)
                 # Order of positional arguments changes when they are converted
                 # to keyword arguments in the for-loop below. Count them while
                 # converting.
                 positional_count = 0
-                for arg in args:
+                for i, arg in enumerate(args):
                     value = arg.value
-                    stripped_name = arg.name.strip()
                     positional = arg.positional
                     # Positional arguments of tempalates are sensitive to
                     # whitespace. See:
@@ -145,10 +148,10 @@ class WikiText(WikiText):
                             if value.strip() == value:
                                 arg.name = (
                                     ' ' + str(positional_count) + ' ' +
-                                    ' ' * (max_name_len - len(stripped_name))
+                                    ' ' * (max_name_len - arg_names_len[i])
                                 )
                                 arg.value = (
-                                    ' ' + value.strip() + '\n' + indent * level
+                                    ' ' + value.strip() + newline_indent
                                 )
                             else:
                                 # The argument should be forced to be a named
@@ -156,25 +159,24 @@ class WikiText(WikiText):
                                 # duplicate arguments.
                                 arg.name = (
                                     ' ' + str(positional_count) + ' ' +
-                                    ' ' * (max_name_len - len(stripped_name))
+                                    ' ' * (max_name_len - arg_names_len[i])
                                 )
                                 arg.value = (
                                     ' <nowiki></nowiki>' + value +
-                                    '<nowiki></nowiki>\n' + indent * level
+                                    '<nowiki></nowiki>' + newline_indent
                                 )
                     else:
                         arg.name = (
-                            ' ' + stripped_name + ' ' +
-                            ' ' * (max_name_len - len(stripped_name))
+                            ' ' + arg.name.strip() + ' ' +
+                            ' ' * (max_name_len - arg_names_len[i])
                         )
-                        arg.value = ' ' + value.strip() + '\n' + indent * level
+                        arg.value = ' ' + value.strip() + newline_indent
                 # Special formatting for the last argument.
                 if not arg.positional:
                     arg.value = (
                         arg.value.rstrip() + '\n' + indent * (level - 1)
                     )
         for parser_function in parsed.parser_functions:
-            level = parser_function._get_indent_level()
             name = parser_function.name.strip()
             parser_function.name = name
             if name == '#tag':
@@ -192,13 +194,15 @@ class WikiText(WikiText):
                 # parser functions. See:
                 # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
                 #    Stripping_whitespace
+                level = parser_function._get_indent_level()
+                newline_indent = '\n' + indent * level
                 for arg in args:
                     if not arg.positional:
                         arg.name = ' ' + arg.name.lstrip()
-                        arg.value = arg.value.rstrip() + '\n' + indent * level
+                        arg.value = arg.value.rstrip() + newline_indent
                     else:
                         arg.value = (
-                            ' ' + arg.value.rstrip() + '\n' + indent * level
+                            ' ' + arg.value.rstrip() + newline_indent
                         )
                 # Special formatting for the last argument
                 arg.value = arg.value.rstrip() + '\n' + indent * (level - 1)

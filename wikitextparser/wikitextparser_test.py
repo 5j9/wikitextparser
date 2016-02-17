@@ -268,6 +268,12 @@ class PrettyPrint(unittest.TestCase):
             ).pprint(),
         )
 
+    def test_ignore_zwnj_in_alignment(self):
+        self.assertEqual(
+            '{{ا\n    | نیم\u200cفاصله       = ۱\n    | بدون نیم فاصله = ۲\n}}',
+            wtp.parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
