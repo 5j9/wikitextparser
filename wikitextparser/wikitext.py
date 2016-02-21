@@ -22,6 +22,7 @@ class WikiText:
 
         Also self and parsed_wikitext should belong to the same parsed
         wikitext object for this function to return True.
+
         """
         # Is it usefull (and a good practice) to also accepts str inputs
         # and check if self.string contains it?
@@ -51,6 +52,7 @@ class WikiText:
         newnewstring is a simple concatination at the start or end of the
         oldstring. For long strings, it's highly recommended to use this
         feature and avoid inserting in the middle of the string.
+
         """
         lststr = self._lststr
         lststr0 = lststr[0]
@@ -144,15 +146,16 @@ class WikiText:
         If an operation includes both insertion and deletion. It's safer to
         use the `strins` function first. Otherwise there is a possibility
         of insertion in the wrong spans.
+
         """
         lststr = self._lststr
         lststr0 = lststr[0]
         ss = self._get_span()[0]
         end += ss
         start += ss
-        # Updating lststr
+        # Update lststr
         lststr[0] = lststr0[:start] + lststr0[end:]
-        # Updating spans
+        # Update spans
         self._shrink_span_update(
             rmstart=start,
             rmend=end,
@@ -219,24 +222,26 @@ class WikiText:
             'templates', 'parameters', 'functions',
             'wikilinks', 'comments', 'exttags'
         ).
+
         """
         # Calculate subspans
         if ss is None:
             ss, se = self._get_span()
         subspans = []
+        spans = self._spans
         for key in (
             'templates', 'parameters', 'functions',
             'wikilinks', 'comments', 'exttags'
         ):
-            for span in self._spans[key]:
+            for span in spans[key]:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
         # The return function
 
         def in_spans(index):
             """Return True if the given index is found within a subspans."""
-            for span in subspans:
-                if span[0] <= index < span[1]:
+            for ss, se in subspans:
+                if ss <= index < se:
                     return True
             return False
         return in_spans
@@ -256,6 +261,7 @@ class WikiText:
         _extend_span_update, you might wanna consider doing the
         _extend_span_update before the _shrink_span_update as this function
         can cause data loss in self._spans.
+
         """
         # Note: No span should be removed from _spans.
         rmlength = rmend - rmstart
@@ -312,6 +318,7 @@ class WikiText:
         by one.
 
         `with_respect_to` is an instance of WikiText object.
+
         """
         ss, se = self._get_span()
         level = 1  # a template is always found in itself
@@ -341,6 +348,7 @@ class WikiText:
         """Return a copy of self.string with specified subspans replaced.
 
         This function is used in finding the spans of wikitables.
+
         """
         ss, se = self._get_span()
         shadow = self.string

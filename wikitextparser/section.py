@@ -40,16 +40,14 @@ class Section():
 
     @level.setter
     def level(self, newlevel):
-        """Change leader level of this sectoin."""
-        level = self.level
+        """Change level of this section."""
+        old_level = self.level
         title = self.title
-        equals = '=' * newlevel
-        self.strins(0, equals)
-        self.strdel(newlevel, newlevel + level)
-        self.strins(len(equals + title), equals)
-        self.strdel(
-            len(equals + title + equals),
-            len(equals + title + equals) + level,
+        new_equals = '=' * newlevel
+        self.replace_slice(
+            0,
+            old_level + len(title) + old_level,
+            new_equals + title + new_equals,
         )
 
     @property
@@ -70,8 +68,7 @@ class Section():
                 "Try adding it to the contents."
             )
         title = self.title
-        self.strins(level, newtitle)
-        self.strdel(level + len(newtitle), level + len(newtitle + title))
+        self.replace_slice(level, level + len(title), newtitle)
 
     @property
     def contents(self):
@@ -86,12 +83,8 @@ class Section():
         level = self.level
         contents = self.contents
         if level == 0:
-            self.strins(0, newcontents)
-            self.strdel(len(newcontents), len(newcontents + contents))
+            self.replace_slice(0, len(contents), newcontents)
         else:
             title = self.title
-            self.strins(level + len(title) + level + 1, newcontents)
-            self.strdel(
-                level + len(title) + level + len('\n' + newcontents),
-                level + len(title) + level + len('\n' + newcontents + contents)
-            )
+            start = level + len(title) + level + 1
+            self.replace_slice(start, start + len(contents), newcontents)

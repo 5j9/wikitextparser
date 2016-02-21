@@ -35,12 +35,10 @@ class ExternalLink():
         """Set a new url for the current ExternalLink."""
         if self.in_brackets:
             url = self.url
-            self.strins(1, newurl)
-            self.strdel(len('[' + newurl), len('[' + newurl + url))
+            self.replace_slice(1, len('[' + url), newurl)
         else:
             url = self.url
-            self.strins(0, newurl)
-            self.strdel(len(newurl), len(newurl + url))
+            self.replace_slice(0, len(url), newurl)
 
     @property
     def text(self):
@@ -67,10 +65,10 @@ class ExternalLink():
         else:
             url = self.url
             text = self.text
-        self.strins(len('[' + url + ' '), newtext)
-        self.strdel(
-            len('[' + url + ' ' + newtext),
-            len('[' + url + ' ' + newtext + text),
+        self.replace_slice(
+            len('[' + url + ' '),
+            len('[' + url + ' ' + text),
+            newtext,
         )
 
     @property

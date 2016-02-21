@@ -36,11 +36,7 @@ class WikiLink():
         head, pipe, tail = self._not_in_subspans_partition('|')
         if not pipe:
             head = head[:-2]
-        self.strins(2, newtarget)
-        self.strdel(
-            len('[[' + newtarget),
-            len(newtarget + head)
-        )
+        self.replace_slice(2, len(head), newtarget)
 
     @property
     def text(self):
@@ -54,10 +50,10 @@ class WikiLink():
         """Set a new text."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
-            self.strins(len(head + pipe), newtext)
-            self.strdel(
-                len(head + pipe + newtext),
-                len(head + pipe + newtext + tail) - 2,
+            self.replace_slice(
+                len(head + pipe),
+                len(head + pipe + tail) - 2,
+                newtext
             )
         else:
             self.strins(len(head) - 2, '|' + newtext)

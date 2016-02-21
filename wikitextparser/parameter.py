@@ -30,8 +30,7 @@ class Parameter():
     def name(self, newname):
         """Set the new name."""
         name, pipe, default = self.string[3:-3].partition('|')
-        self.strins(3, newname)
-        self.strdel(3 + len(newname), 3 + len(newname + name))
+        self.replace_slice(3, 3 + len(name), newname)
 
     @property
     def pipe(self):
@@ -56,10 +55,10 @@ class Parameter():
             self.strins(len('{{{' + self.name), '|' + newdefault)
         else:
             name = self.name
-            self.strins(len('{{{' + name), '|' + newdefault)
-            self.strdel(
-                len('{{{' + name + '|' + newdefault),
-                len('{{{' + name + '|' + newdefault + '|' + olddefault)
+            self.replace_slice(
+                len('{{{' + name),
+                len('{{{' + name + '|' + olddefault),
+                '|' + newdefault,
             )
 
     def append_default(self, new_default_name):
@@ -96,17 +95,8 @@ class Parameter():
             )
         else:
             name = innermost_param.name
-            innermost_param.strins(
+            innermost_param.replace_slice(
                 len('{{{' + name + '|'),
-                '{{{' + new_default_name + '|' + innermost_default + '}}}'
-            )
-            innermost_param.strdel(
-                len(
-                    '{{{' + name + '|{{{' + new_default_name +
-                    '|' + innermost_default + '}}}'
-                ),
-                len(
-                    '{{{' + name + '|{{{' + new_default_name +
-                    '|' + innermost_default + '}}}' + innermost_default
-                ),
+                len('{{{' + name + '|' + innermost_default),
+                '{{{' + new_default_name + '|' + innermost_default + '}}}',
             )

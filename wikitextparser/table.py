@@ -427,10 +427,10 @@ class Table:
             preattrs = m.group('preattrs')
             attrs = m.group('attrs') or ''
             oldcaption = m.group('caption')
-            self.strins(len(preattrs + attrs), newcaption)
-            self.strdel(
-                len(preattrs + attrs + newcaption),
-                len(preattrs + attrs + newcaption + oldcaption),
+            self.replace_slice(
+                len(preattrs + attrs),
+                len(preattrs + attrs + oldcaption),
+                newcaption,
             )
         else:
             # There is no caption. Create one.
@@ -453,8 +453,7 @@ class Table:
     def table_attrs(self, attrs):
         """Set new attributes for this table."""
         h = self.string.partition('\n')[0]
-        self.strins(2, attrs)
-        self.strdel(2 + len(attrs), 2 + len(attrs) + len(h[2:]))
+        self.replace_slice(2, 2 + len(h[2:]), attrs)
 
     @property
     def caption_attrs(self):
@@ -476,11 +475,7 @@ class Table:
             preattrs = m.group('preattrs')
             oldattrs = m.group('attrs') or ''
             # Caption and attrs or Caption but no attrs
-            self.strins(len(preattrs), attrs)
-            self.strdel(
-                len(preattrs + attrs),
-                len(preattrs + attrs + oldattrs),
-            )
+            self.replace_slice(len(preattrs), len(preattrs + oldattrs), attrs)
 
 
 class AttrsParser(HTMLParser):

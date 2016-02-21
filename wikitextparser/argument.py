@@ -72,13 +72,9 @@ class Argument():
         """
         oldname = self.name
         if self.positional:
-            self.strins(0, '|' + newname + '=')
-            self.strdel(
-                len('|' + newname + '='), len('|' + newname + '=|')
-            )
+            self.replace_slice(0, 1, '|' + newname + '=')
         else:
-            self.strins(0, '|' + newname)
-            self.strdel(len('|' + newname), len('|' + newname + '|' + oldname))
+            self.replace_slice(0, len('|' + oldname), '|' + newname)
 
     @property
     def positional(self):
@@ -126,14 +122,7 @@ class Argument():
         """Set a the value for the current argument."""
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
-            self.strins(len(pipename + equal), newvalue)
-            self.strdel(
-                len(pipename + equal + newvalue),
-                len(pipename + equal + newvalue + value)
-            )
+            pnel = len(pipename + equal)
+            self.replace_slice(pnel, pnel + len(value), newvalue)
         else:
-            self.strins(1, newvalue)
-            self.strdel(
-                len('|' + newvalue),
-                len('|' + newvalue + pipename[1:])
-            )
+            self.replace_slice(1, len(pipename), newvalue)

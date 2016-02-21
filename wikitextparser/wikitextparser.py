@@ -95,22 +95,62 @@ class WikiText(WikiText):
         lststr = self._lststr
         lststr0 = lststr[0]
         start += self._get_span()[0]
-        # Updating lststr
+        # Update lststr
         lststr[0] = lststr0[:start] + string + lststr0[start:]
-        # Updating spans
+        # Update spans
         self._extend_span_update(
             estart=start,
             elength=len(string),
         )
+        # Remember newly added spans by the string.
+        spans_dict = self._spans
         for k, v in parse_to_spans(string).items():
+            spans = spans_dict[k]
             for ss, se in v:
-                self._spans[k].append((ss + start, se + start))
+                spans.append((ss + start, se + start))
+
+    def replace_slice(self, start, end, string):
+        """Replace self.string[start:end] with string.
+
+        Use this method instead of calling `strins` and `strdel` consecutively.
+        By doing so only one of the `_extend_span_update` and
+        `_shrink_span_update` functions will be called and the perfomance will
+        improve.
+
+        """
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        ss = self._get_span()[0]
+        start += ss
+        end += ss
+        # Update lststr
+        lststr[0] = lststr0[:start] + string + lststr0[end:]
+        # Update spans
+        del_len = end - start
+        ins_len = len(string)
+        if ins_len > del_len:
+            self._extend_span_update(
+                estart=start,
+                elength=ins_len - del_len,
+            )
+        elif ins_len < del_len:
+            self._shrink_span_update(
+                rmstart=end + ins_len - del_len, # new end
+                rmend=end, # old end
+            )
+        # Remember newly added spans by the string.
+        spans_dict = self._spans
+        for k, v in parse_to_spans(string).items():
+            spans = spans_dict[k]
+            for ss, se in v:
+                spans.append((ss + start, se + start))
 
     def pprint(self, indent='    ', remove_comments=False):
         """Return a pretty print form of self.string.
 
         May be useful in some templates. Indents parser function and template
         arguments.
+
         """
         parsed = WikiText(self.string)
         if remove_comments:
@@ -297,6 +337,7 @@ class WikiText(WikiText):
 
         The first section will always be the lead section, even if it is an
         empty string.
+
         """
         sections = []
         spans = self._spans
@@ -368,6 +409,7 @@ class _Indexed_WikiText(WikiText):
     """This is a middle-class to be used by some other subclasses.
 
     Not intended for the final user.
+
     """
 
     def _gen_subspan_indices(self, type_):
@@ -391,6 +433,7 @@ class Template(_Indexed_WikiText):
     """Convert strings to Template objects.
 
     The string should start with {{ and end with }}.
+
     """
 
     def __init__(
@@ -456,8 +499,7 @@ class Template(_Indexed_WikiText):
     def name(self, newname):
         """Set the new name for the template."""
         name = self.name
-        self.strins(2, newname)
-        self.strdel(2 + len(newname), 2 + len(newname + name))
+        self.replace_slice(2, 2 + len(name), newname)
 
     def rm_first_of_dup_args(self):
         """Eliminate duplicate arguments by removing the first occurrences.
@@ -467,6 +509,7 @@ class Template(_Indexed_WikiText):
         Warning: Some meaningful data may be removed from wikitext.
 
         Also see `rm_dup_args_safe` function.
+
         """
         names = []
         for a in reversed(self.arguments):
@@ -493,6 +536,7 @@ class Template(_Indexed_WikiText):
         arguments by appending the provided tag to their value.
 
         Also see `rm_first_of_dup_args` function.
+
         """
         template_stripped_name = self.name.strip()
         name_args_vals = {}
@@ -546,6 +590,7 @@ class Template(_Indexed_WikiText):
         If `positional` is passed and it's True, try to add the given value
             as a positional argument. If it's None, do as appropriate.
             Ignore `preserve_spacing` if positional is True.
+
         """
         args = list(reversed(self.arguments))
         arg = self._get_arg(name, args)
@@ -610,12 +655,12 @@ class Template(_Indexed_WikiText):
                 # want to change the the whitespace before the final braces.
                 arg = args[0]
                 arg_string = arg.string
-                arg.strins(
+                arg.replace_slice(
+                    0,
                     len(arg_string),
                     arg.string.rstrip() + after_value + addstring.rstrip() +
-                    after_values[0]
+                    after_values[0],
                 )
-                arg.strdel(0, len(arg_string))
             else:
                 # The template has no arguments or the new arg is
                 # positional AND is to be added at the end of the template.
@@ -629,6 +674,7 @@ class Template(_Indexed_WikiText):
         As the computation of self.arguments is a little costly, this
         function was created so that other methods that have already computed
         the arguments use it instead of calling get_arg directly.
+
         """
         for arg in args:
             if arg.name.strip() == name.strip():
@@ -649,6 +695,7 @@ class Template(_Indexed_WikiText):
         Note: If you just need to get an argument and you want to LBYL, it's
             better to get_arg directly and then check if the returned value
             is None.
+
         """
         for arg in reversed(self.arguments):
             if arg.name.strip() == name.strip():
@@ -731,8 +778,7 @@ class ParserFunction(_Indexed_WikiText):
     def name(self, newname):
         """Set a new name."""
         name = self.name
-        self.strins(2, newname)
-        self.strdel(2 + len(newname), 2 + len(newname + name))
+        self.replace_slice(2, 2 + len(name), newname)
 
 
 class Parameter(Parameter, _Indexed_WikiText):
