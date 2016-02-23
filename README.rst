@@ -101,16 +101,16 @@ There is a pprint function that pretty-prints templates:
     >>> t2, t1 = p.templates
     >>> print(t2.pprint())
     {{t2
-        |e=e
-        |f=f
+        | e = e
+        | f = f
     }}
     >>> print(t1.pprint())
     {{t1
-        |b=b
-        |c=c
-        |d={{t2
-            |e=e
-            |f=f
+        | b = b
+        | c = c
+        | d = {{t2
+            | e = e
+            | f = f
         }}
     }}
     
