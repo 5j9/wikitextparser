@@ -138,7 +138,7 @@ Extracting cell values of a table is easy:
     |-
     |   Butter   || Ice cream ||  and more
     |}""")
-    >>> pprint(p.tables[0].getdata)
+    >>> pprint(p.tables[0].getdata())
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
