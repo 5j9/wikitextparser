@@ -125,7 +125,10 @@ class WikiText(WikiText):
         end += ss
         # Update lststr
         lststr[0] = lststr0[:start] + string + lststr0[end:]
-        # Update spans
+        # Set the length of all subspans to zero because
+        # they are all being replaced.
+        self._close_subspans(start, end)
+        # Update the other spans according to the new length.
         del_len = end - start
         ins_len = len(string)
         if ins_len > del_len:
@@ -138,7 +141,7 @@ class WikiText(WikiText):
                 rmstart=end + ins_len - del_len, # new end
                 rmend=end, # old end
             )
-        # Remember newly added spans by the string.
+        # Add the newly added spans contained in the string.
         spans_dict = self._spans
         for k, v in parse_to_spans(string).items():
             spans = spans_dict[k]
@@ -146,13 +149,14 @@ class WikiText(WikiText):
                 spans.append((ss + start, se + start))
 
     def pprint(self, indent='    ', remove_comments=False):
-        """Return a pretty print form of self.string.
+        """Return a pretty-print of self.string as string.
 
-        May be useful in some templates. Indents parser function and template
-        arguments.
+        Try to organize templates and parser functions by indenting, aligning
+        at the equal signs, and adding space where appropriate.
 
         """
-        parsed = WikiText(self.string)
+        # Do not try to do inplace pprint. It will overwrite on some spans.
+        parsed = WikiText(self.string) # Todo: Use deep copy instead.
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
@@ -161,9 +165,9 @@ class WikiText(WikiText):
             template_name = template.name.strip()
             template.name = template_name
             if ':' in template_name:
-                not_a_parser_fucntion = False
+                surely_not_a_parser_fucntion = False
             else:
-                not_a_parser_fucntion = True
+                surely_not_a_parser_fucntion = True
             args = template.arguments
             if args:
                 level = template._get_indent_level()
@@ -186,7 +190,7 @@ class WikiText(WikiText):
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
                     if positional:
                         positional_count += 1
-                        if not_a_parser_fucntion:
+                        if surely_not_a_parser_fucntion:
                             if value.strip() == value:
                                 arg.name = (
                                     ' ' + str(positional_count) + ' ' +
@@ -212,7 +216,7 @@ class WikiText(WikiText):
                             ' ' + arg.name.strip() + ' ' +
                             ' ' * (max_name_len - arg_names_len[i])
                         )
-                        arg.value = ' ' + value.strip() + newline_indent
+                        arg.value = ' ' + value.strip() + newline_indent # bug
                 # Special formatting for the last argument.
                 if not arg.positional:
                     arg.value = (
@@ -248,10 +252,11 @@ class WikiText(WikiText):
                         )
                 # Special formatting for the last argument
                 arg.value = (
-                    arg.value.rstrip() + newline_indent.replace(indent, '')
+                    arg.value.rstrip() + newline_indent.replace(indent, '', 1)
                 )
         return parsed.string
 
+    # Todo: Isn't it better to use generators for the following properties?
     @property
     def parameters(self):
         """Return a list of parameter objects."""
@@ -412,12 +417,12 @@ class _Indexed_WikiText(WikiText):
 
     """
 
-    def _gen_subspan_indices(self, type_):
-        """Return all the subspan indices excluding self._get_span()"""
-        ss, se = self._get_span()
-        for i, s in enumerate(self._spans[type_]):
+    def _gen_subspan_indices(self, type_=None):
+        """Yield all the subspan indices excluding self._get_span()"""
+        s, e = self._get_span()
+        for i, (ss, ee) in enumerate(self._spans[type_]):
             # Do not yield self._get_span().
-            if ss < s[0] and s[1] < se:
+            if s < ss and ee < e:
                 yield i
 
 

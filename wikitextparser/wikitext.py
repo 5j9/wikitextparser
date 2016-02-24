@@ -236,23 +236,30 @@ class WikiText:
             for span in spans[key]:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
-        # The return function
-
-        def in_spans(index):
+        # Define the function to be returned.
+        def index_in_spans(index):
             """Return True if the given index is found within a subspans."""
             for ss, se in subspans:
                 if ss <= index < se:
                     return True
             return False
-        return in_spans
+        return index_in_spans
 
     def _gen_subspan_indices(self, type_):
         """Return all the subspan indices including self._get_span()"""
-        ss, se = self._get_span()
-        for i, s in enumerate(self._spans[type_]):
-            # Including self._get_span()
-            if ss <= s[0] and s[1] <= se:
+        s, e = self._get_span()
+        for i, (ss, ee) in enumerate(self._spans[type_]):
+            # Include self._get_span()
+            if s <= ss and ee <= e:
                 yield i
+
+    def _close_subspans(self, start, end):
+        """Close all subspans of (start, end)."""
+        for type_spans in self._spans.values():
+            for i, (s, e) in enumerate(type_spans):
+                # Include self._get_span()
+                if start < s and e < end:
+                    type_spans[i] = (start, start)
 
     def _shrink_span_update(self, rmstart, rmend):
         """Update self._spans according to the removed span.

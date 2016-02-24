@@ -287,6 +287,13 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{ا|الف=۱|لا=۲}}').pprint(),
         )
 
+    def test_pf_inside_t(self):
+        wt = wtp.parse('{{t|a= {{#invoke:I|I}} }}')
+        self.assertEqual(
+            '{{t\n    | a = {{#invoke: I\n        | I\n    }}\n}}',
+            wt.pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
