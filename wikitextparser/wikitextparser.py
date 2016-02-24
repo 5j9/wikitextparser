@@ -249,7 +249,7 @@ class WikiText(WikiText):
                         arg.value = arg.value.rstrip() + newline_indent
                     else:
                         arg.value = (
-                            ' ' + arg.value.rstrip() + newline_indent
+                            ' ' + arg.value.strip() + newline_indent
                         )
                 # Special formatting for the last argument
                 arg.value = (
