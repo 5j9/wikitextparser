@@ -2,6 +2,7 @@
 
 
 import re
+from copy import deepcopy
 
 from wcwidth import wcswidth
 
@@ -156,7 +157,7 @@ class WikiText(WikiText):
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = WikiText(self.string) # Todo: Use deep copy instead.
+        parsed = deepcopy(self)
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
