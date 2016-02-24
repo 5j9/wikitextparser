@@ -119,7 +119,7 @@ class Argument():
 
     @value.setter
     def value(self, newvalue):
-        """Set a the value for the current argument."""
+        """Assign the newvalue to self."""
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
             pnel = len(pipename + equal)
