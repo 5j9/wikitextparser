@@ -226,13 +226,13 @@ class WikiText(WikiText):
         for parser_function in parsed.parser_functions:
             name = parser_function.name.strip()
             parser_function.name = name
-            if name == '#tag':
+            if name.lower() in ('#tag', '#invoke'):
                 # The 2nd argument of `tag` parser function is an exception
                 # and cannot be stripped.
                 # So in `{{#tag:tagname|arg1|...}}`, no whitespace should be
                 # added/removed to/from arg1.
                 # See: [[mw:Help:Extension:ParserFunctions#Miscellaneous]]
-                # This makes things complicated. Continue.
+                # All args of #invoke are also whitespace-sensitive.
                 continue
             args = parser_function.arguments
             if len(args) > 1:

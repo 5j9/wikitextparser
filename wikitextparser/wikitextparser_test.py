@@ -222,6 +222,12 @@ class PrettyPrint(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(s, wt.pprint())
 
+    def test_invoke(self):
+        """#invoke args are also whitespace-sensitive."""
+        s = '{{#invoke:module|func|arg}}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+
     def test_on_parserfunction(self):
         s = "{{#switch:case|abcde = f| g=h}}"
         wt = wtp.parse(s)
@@ -288,9 +294,9 @@ class PrettyPrint(unittest.TestCase):
         )
 
     def test_pf_inside_t(self):
-        wt = wtp.parse('{{t|a= {{#invoke:I|I}} }}')
+        wt = wtp.parse('{{t|a= {{#if:I|I}} }}')
         self.assertEqual(
-            '{{t\n    | a = {{#invoke: I\n        | I\n    }}\n}}',
+            '{{t\n    | a = {{#if: I\n        | I\n    }}\n}}',
             wt.pprint(),
         )
 
