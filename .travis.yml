@@ -1,0 +1,10 @@
+git:
+  depth: 1
+language: python
+script: python wikitextparser\wikitextparser_test.py
+python:
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
