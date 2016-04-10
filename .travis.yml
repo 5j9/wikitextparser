@@ -1,12 +1,14 @@
 git:
-  depth: 1
+    depth: 1
 language: python
 install:
-  - pip install .
-script: python wikitextparser/wikitextparser_test.py
+    - pip install .
+script:
+    - cd wikitextparser
+    - python wikitextparser_test.py
 python:
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
-  - "pypy"
+    - "3.2"
+    - "3.3"
+    - "3.4"
+    - "3.5"
+    - "pypy"
