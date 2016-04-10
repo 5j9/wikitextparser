@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/5j9/wikitextparser.svg?branch=master
+    :target: https://travis-ci.org/5j9/wikitextparser
+
 ==============
 wikitextparser
 ==============
