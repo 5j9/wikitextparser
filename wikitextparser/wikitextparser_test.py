@@ -300,6 +300,13 @@ class PrettyPrint(unittest.TestCase):
             wt.pprint(),
         )
 
+    def test_nested_pf_inside_tl(self):
+        wt = wtp.parse('{{t1|{{t2}}{{#pf:a}}}}')
+        self.assertEqual(
+            '{{t1\n    | 1 = {{t2}}{{#pf:a}}\n}}',
+            wt.pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
