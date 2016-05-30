@@ -47,3 +47,4 @@ docs/_build/
 # PyBuilder
 target/
 upload_to_pypi.cmd
+.idea
