@@ -317,10 +317,16 @@ class Sections(unittest.TestCase):
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
 
-    def test_only_lead_section(self):
+    def test_blank_lead(self):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+
+    @unittest.expectedFailure
+    def test_multiline_with_carriage_return(self):
+        s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
+        p = wtp.parse(s)
+        self.assertEqual('text\r\n', p.sections[0].string)
 
 
 class Template(unittest.TestCase):
