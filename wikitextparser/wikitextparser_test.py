@@ -178,6 +178,11 @@ class Tables(unittest.TestCase):
         self.assertEqual(s[6:-6], p.tables[1].string)
         self.assertEqual('{|class=wikitable\n|b\n|}', p.tables[0].string)
 
+    def test_tables_in_different_sections(self):
+        s = '{|\n| a\n|}\n\n= s =\n{|\n| b\n|}\n'
+        s = wtp.parse(s).sections[1]
+        self.assertEqual('{|\n| b\n|}', p.tables[0])
+
 
 class PrettyPrint(unittest.TestCase):
 
