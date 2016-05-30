@@ -393,9 +393,9 @@ class WikiText(WikiText):
             loop = False
             for m in TABLE_REGEX.finditer(shadow):
                 loop = True
-                mspan = m.span()
+                ms, me = m.span()
                 # Ignore leading whitespace using len(m.group(1)).
-                mspan = (ss + mspan[0] + len(m.group(1)), ss + mspan[1])
+                mspan = (ss + ms + len(m.group(1)), ss + me)
                 if mspan not in tspans:
                     tspans.append(mspan)
                 tables.append(
@@ -405,7 +405,6 @@ class WikiText(WikiText):
                         tspans.index(mspan)
                     )
                 )
-                ms, me = mspan
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
