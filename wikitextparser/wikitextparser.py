@@ -56,7 +56,7 @@ TABLE_REGEX = re.compile(
     ^ # Group the leading spaces so we can ignore them in code
     (\ *)
     {\| # Table contents
-    # Should not containt any other table-start
+    # Should not contain any other table-start
     (?:
       (?!^\ *\{\|)
       .
@@ -186,7 +186,7 @@ class WikiText(WikiText):
                 for i, arg in enumerate(args):
                     value = arg.value
                     positional = arg.positional
-                    # Positional arguments of tempalates are sensitive to
+                    # Positional arguments of templates are sensitive to
                     # whitespace. See:
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
                     if positional:
