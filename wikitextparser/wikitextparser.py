@@ -387,11 +387,10 @@ class WikiText(WikiText):
         if 'tables' not in spans:
             spans['tables'] = []
         tspans = spans['tables']
-        loop = True
-        while loop:
-            loop = False
+        m = True
+        while m:
+            m = False
             for m in TABLE_REGEX.finditer(shadow):
-                loop = True
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m.group(1)).
                 mspan = (ss + ms + len(m.group(1)), ss + me)
