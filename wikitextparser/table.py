@@ -25,7 +25,7 @@ NEWLINE_CELL_REGEX = re.compile(
       )
       (?:\|)
       (?!\|)
-      # not cell seperator: ||
+      # not cell separator: ||
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
@@ -50,20 +50,20 @@ INLINE_HAEDER_CELL_REGEX = re.compile(
       (?P<attrs>
         (?:
           [^|\n] # attrs can't contain |
-          (?!\!\!)
+          (?!!!)
           # also not !! if sep is !
         )*?
       )
       (?:\|)
       (?!\|)
-      # not cell seperator: ||
+      # not cell separator: ||
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
     (?=
       # start of the next cell
       \|\||
-      \!\!|
+      !!|
       $|
       \n\s*[!|]
     )
@@ -81,7 +81,7 @@ INLINE_NONHAEDER_CELL_REGEX = re.compile(
         [^|\n]*? # attrs can't contain |
       )
       (?:\|)
-      # not cell seperator: ||
+      # not cell separator: ||
       (?!\|)
     )
     # optional := the 1st sep is a single ! or |.
@@ -119,7 +119,7 @@ CAPTION_REGEX = re.compile(
       # Start of caption line
       \n\s*\|\+
     )
-    # Optional capation attrs
+    # Optional caption attrs
     (?:
       (?P<attrs>[^\n|]*)
       (?:\|)
@@ -198,7 +198,7 @@ class Table:
             row = shadow[ss:se]
             if not row.lstrip():
                 # When the optional `|-` for the first row is used or when
-                # there are meaningless row seprators that result in rows
+                # there are meaningless row separators that result in rows
                 # containing no cells.
                 continue
             cell_spans.append([])
