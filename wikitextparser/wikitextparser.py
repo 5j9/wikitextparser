@@ -139,8 +139,8 @@ class WikiText(WikiText):
             )
         elif ins_len < del_len:
             self._shrink_span_update(
-                rmstart=end + ins_len - del_len, # new end
-                rmend=end, # old end
+                rmstart=end + ins_len - del_len,  # new end
+                rmend=end,  # old end
             )
         # Add the newly added spans contained in the string.
         spans_dict = self._spans
@@ -217,7 +217,7 @@ class WikiText(WikiText):
                             ' ' + arg.name.strip() + ' ' +
                             ' ' * (max_name_len - arg_names_len[i])
                         )
-                        arg.value = ' ' + value.strip() + newline_indent # bug
+                        arg.value = ' ' + value.strip() + newline_indent  # bug
                 # Special formatting for the last argument.
                 if not arg.positional:
                     arg.value = (
@@ -305,7 +305,6 @@ class WikiText(WikiText):
     @property
     def comments(self):
         """Return a list of comment objects."""
-
         return [
             Comment(
                 self._lststr,
@@ -339,7 +338,7 @@ class WikiText(WikiText):
 
     @property
     def sections(self):
-        """Returns a list of section in current wikitext.
+        """Return a list of section in current wikitext.
 
         The first section will always be the lead section, even if it is an
         empty string.
@@ -418,7 +417,7 @@ class _Indexed_WikiText(WikiText):
     """
 
     def _gen_subspan_indices(self, type_=None):
-        """Yield all the subspan indices excluding self._get_span()"""
+        """Yield all the subspan indices excluding self._get_span()."""
         s, e = self._get_span()
         for i, (ss, ee) in enumerate(self._spans[type_]):
             # Do not yield self._get_span().
@@ -493,7 +492,7 @@ class Template(_Indexed_WikiText):
 
     @property
     def name(self):
-        """Return template's name part. (includes whitespace)"""
+        """Return template's name part. (includes whitespace)."""
         p0 = self._not_in_subspans_partition('|')[0]
         if len(p0) == len(self.string):
             return p0[2:-2]
@@ -527,7 +526,7 @@ class Template(_Indexed_WikiText):
     def rm_dup_args_safe(self, tag=None):
         """Remove duplicate arguments in a safe manner.
 
-    `   Remove the duplicate arguments only if:
+        Remove the duplicate arguments only if:
         1. Both arguments have the same name AND value.
         2. Arguments have the same name and one of them is empty. (Remove the
             empty one.)
@@ -543,7 +542,6 @@ class Template(_Indexed_WikiText):
         Also see `rm_first_of_dup_args` function.
 
         """
-        template_stripped_name = self.name.strip()
         name_args_vals = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
