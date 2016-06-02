@@ -401,7 +401,7 @@ def parse_to_spans_innerloop(
         # Templates
         loop = True
         while loop:
-            # Parser fucntions
+            # Parser functions
             while loop:
                 loop = False
                 for match in PARSER_FUNCTION_REGEX.finditer(string):
