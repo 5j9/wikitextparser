@@ -10,7 +10,6 @@ from wikitextparser import wikitextparser as wtp
 
 
 class Spans(unittest.TestCase):
-
     """Test the spans."""
 
     def test_template_in_template(self):
