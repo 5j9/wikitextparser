@@ -38,6 +38,7 @@ class Argument():
         """Return argument's name.
 
         For positional arguments return the position as a string.
+
         """
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:
@@ -68,17 +69,18 @@ class Argument():
     def name(self, newname):
         """Set the name for this argument.
 
-        If this is a positional agument, convert it to keyword argument.
+        If this is a positional argument, convert it to keyword argument.
+
         """
         oldname = self.name
         if self.positional:
             self.replace_slice(0, 1, '|' + newname + '=')
         else:
-            self.replace_slice(0, len('|' + oldname), '|' + newname)
+            self.replace_slice(1, 1 + len(oldname), newname)
 
     @property
     def positional(self):
-        """Return True if there is an equal sign in the argument. Else False."""
+        """Return True if there is an equal sign in the argument else False."""
         if self._not_in_subspans_partition('=')[1]:
             return False
         else:
@@ -89,6 +91,7 @@ class Argument():
         """Change to keyword or positional accordingly.
 
         Raise ValueError if setting positional argument to keyword argument.
+
         """
         pipename, equal, value = self._not_in_subspans_partition('=')
         if equal:

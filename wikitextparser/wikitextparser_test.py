@@ -312,6 +312,13 @@ class PrettyPrint(unittest.TestCase):
             wt.pprint(),
         )
 
+    def test_html_tag_equal(self):
+        wt = wtp.parse('{{#iferror:<t a="">|yes|no}}')
+        self.assertEqual(
+            '{{#iferror: <t a="">\n    | yes\n    | no\n}}',
+            wt.pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
