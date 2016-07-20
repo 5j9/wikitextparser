@@ -2,12 +2,15 @@
     :target: https://travis-ci.org/5j9/wikitextparser
 
 ==============
-wikitextparser
+WikiTextParser
 ==============
 
-A simple, purely python, WikiText parsing tool.
+A simple, purely python, WikiText parsing tool for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_
+.
 
-The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, etc. in wikitexts.
+The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, etc. found in wikitexts.
+
+WikiTextParser currently only supports Python 3.3+
 
 Installation
 ============
@@ -162,6 +165,18 @@ And values are rearranged according to colspan and rowspan attributes (by defaul
 
 Have a look at the test modules for more details and probable pitfalls.
 
-See also: 
+Compared with mwparserfromhel
+=============================
+`mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as `wikitextparser`. The main reason leading me to create `wikitextparser` was that `mwparserfromhell` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation `wikitextparser` may be able to give you more acceptable results.
 
-* `mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_
+But if you need to
+
+* use Python 2
+* parse style tags like `'''bold'''` and ''italics'' (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
+* extract `HTML tags <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.tag>`_ or `entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
+
+then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under development and the API may change drastically in the future versions.
+
+Of-course `wikitextparser` has its own unique features, too. Extracting wikitables data as Python lists, pretty-printing templates, and a few other advanced functions. Adding some of the above features are planned for the future...
+
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C . I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete parse tree, instead tries to figure things out as the user requests for them. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
