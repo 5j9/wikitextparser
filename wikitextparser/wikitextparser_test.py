@@ -3,7 +3,6 @@
 
 import sys
 import unittest
-from pprint import pprint as pp
 
 sys.path.insert(0, '..')
 from wikitextparser import wikitextparser as wtp
@@ -317,6 +316,24 @@ class PrettyPrint(unittest.TestCase):
         self.assertEqual(
             '{{#iferror: <t a="">\n    | yes\n    | no\n}}',
             wt.pprint(),
+        )
+
+    @unittest.expectedFailure
+    def test_pprint_pf_directly(self):
+        """Templates and parser functions are not pprinted directly."""
+        # Todo: Add support for prettyprinting templates directly.
+        pf = wtp.ParserFunction('{{#iferror:<t a="">|yes|no}}')
+        self.assertEqual(
+            '{{#iferror: <t a="">\n    | yes\n    | no\n}}',
+            pf.pprint(),
+        )
+
+    def test_function_inside_template(self):
+        p = wtp.parse('{{t|{{#ifeq:||yes}}|a2}}')
+        self.assertEqual(
+            '{{t\n    | 1 = {{#ifeq: \n'
+            '        | \n        | yes\n    }}\n    | 2 = a2\n}}',
+            p.pprint(),
         )
 
 

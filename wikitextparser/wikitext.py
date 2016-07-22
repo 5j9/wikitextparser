@@ -255,9 +255,14 @@ class WikiText:
 
     def _close_subspans(self, start, end):
         """Close all subspans of (start, end)."""
+        ss, se = self._get_span()
         for type_spans in self._spans.values():
             for i, (s, e) in enumerate(type_spans):
-                if (start <= s and e < end) or (start < s and e <= end):
+                if (
+                    (start <= s and e < end) or
+                    (start < s and e <= end) or
+                    (start == s and e == end and (ss != s or se != e))
+                ):
                     type_spans[i] = (start, start)
 
     def _shrink_span_update(self, rmstart, rmend):

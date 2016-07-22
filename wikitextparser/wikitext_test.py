@@ -67,9 +67,10 @@ class ExpandSpanUpdate(unittest.TestCase):
         wt = wtp.WikiText('{{ t|a={{#if:c|a}}|b=}}\n')
         a = wt.templates[0].arguments[0]
         pf = wt.parser_functions[0]
-        a.value = a.value + '    \n'
+        a.value += '    \n'
         self.assertEqual('|a={{#if:c|a}}    \n', a.string)
-        self.assertEqual('{{#if:c|a}}', pf.string)
+        # Note that the parser function is overwritten
+        self.assertEqual('', pf.string)
 
 
 class IndentLevel(unittest.TestCase):
