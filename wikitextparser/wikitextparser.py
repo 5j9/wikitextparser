@@ -217,14 +217,20 @@ class WikiText(WikiText):
                             ' ' + arg.name.strip() + ' ' +
                             ' ' * (max_name_len - arg_names_len[i])
                         )
-                        arg.value = ' ' + value.strip() + newline_indent  # bug
+                        arg.value = ' ' + value.strip() + newline_indent
                 # Special formatting for the last argument.
                 if not arg.positional:
                     arg.value = (
                         arg.value.rstrip() + '\n' + indent * (level - 1)
                     )
-        for parser_function in parsed.parser_functions:
+        i = 0
+        functions = parsed.parser_functions
+        while i < len(functions):
+            parser_function = functions[i]
+            i += 1
             name = parser_function.name.strip()
+            if not name:
+                continue
             parser_function.name = name
             if name.lower() in ('#tag', '#invoke'):
                 # The 2nd argument of `tag` parser function is an exception
@@ -255,6 +261,7 @@ class WikiText(WikiText):
                 arg.value = (
                     arg.value.rstrip() + newline_indent.replace(indent, '', 1)
                 )
+            functions = parsed.parser_functions
         return parsed.string
 
     # Todo: Isn't it better to use generators for the following properties?
