@@ -137,8 +137,7 @@ class WikiText(unittest.TestCase):
         """
         p = wtp.parse('[[ https://en.wikipedia.org/]]')
         self.assertEqual(1, len(p.wikilinks))
-        self.assertEqual(0, len(p.external_links)
-                         )
+        self.assertEqual(0, len(p.external_links))
 
 
 class Tables(unittest.TestCase):
@@ -518,16 +517,14 @@ class Template(unittest.TestCase):
         t.name += 's'
         self.assertEqual('t {{{p1|d1}}} s', t.name)
 
-    @unittest.expectedFailure
     def test_overwriting_on_a_string_causes_loss_of_spans(self):
         t = wtp.Template('{{t {{{p1|d1}}} | {{{p2|d2}}} }}')
         p = t.parameters[0]
         t.name += 's'
-        self.assertEqual('{{{p1|d1}}}', p.string)
+        self.assertEqual('', p.string)
 
     def test_no_param_template_name(self):
         t = wtp.Template("{{صعود}}")
-        name = t.name
         self.assertEqual('صعود', t.name)
 
 
@@ -631,6 +628,7 @@ class ParserFunction(unittest.TestCase):
         """‍`آرایش‌عدد` is an alias for `formatnum` on Persian Wikipedia.
 
         See: //translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
+
         """
         wt = wtp.WikiText("""{{آرایش‌عدد:text|R}}""")
         self.assertEqual(1, len(wt.parser_functions))
