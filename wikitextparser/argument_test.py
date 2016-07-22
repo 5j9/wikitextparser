@@ -84,6 +84,11 @@ class Argument(unittest.TestCase):
         self.assertEqual('|v', a.string)
         self.assertRaises(ValueError, setattr, a, 'positional', False)
 
+    def test_parser_functions_at_the_end(self):
+        a = wtp.Argument('| 1 ={{#ifeq:||yes}}')
+        pfs = a.parser_functions
+        self.assertEqual(1, len(pfs))
+
 
 if __name__ == '__main__':
     unittest.main()

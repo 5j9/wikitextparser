@@ -420,7 +420,7 @@ class _Indexed_WikiText(WikiText):
         s, e = self._get_span()
         for i, (ss, ee) in enumerate(self._spans[type_]):
             # Do not yield self._get_span().
-            if s < ss and ee < e:
+            if s < ss and ee <= e:
                 yield i
 
 
