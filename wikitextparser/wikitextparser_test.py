@@ -372,14 +372,22 @@ class PrettyPrint(unittest.TestCase):
             wt.pprint(),
         )
 
-    @unittest.expectedFailure
-    def test_pprint_pf_directly(self):
-        """Templates and parser functions are not pretty-printed directly."""
-        # Todo: Add support for pretty-printing templates directly.
-        pf = wtp.ParserFunction('{{#iferror:<t a="">|yes|no}}')
+    def test_pprint_tl_directly(self):
         self.assertEqual(
-            '{{#iferror: <t a="">\n    | yes\n    | no\n}}',
-            pf.pprint(),
+            '{{t\n'
+            '    | 1 = a\n'
+            '}}',
+            wtp.Template('{{t|a}}').pprint(),
+        )
+
+    def test_pprint_pf_directly(self):
+        self.assertEqual(
+            '{{#iferror:\n'
+            '    <t a="">\n'
+            '    | yes\n'
+            '    | no\n'
+            '}}',
+            wtp.ParserFunction('{{#iferror:<t a="">|yes|no}}').pprint(),
         )
 
     def test_function_inside_template(self):
