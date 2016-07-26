@@ -232,10 +232,14 @@ class PrettyPrint(unittest.TestCase):
         self.assertEqual(s, wt.pprint())
 
     def test_on_parserfunction(self):
-        s = "{{#switch:case|abcde = f| g=h}}"
+        s = "{{#if:c|abcde = f| g=h}}"
         wt = wtp.parse(s)
         self.assertEqual(
-            '{{#switch: case\n    | abcde = f\n    | g=h\n}}',
+            '{{#if:\n'
+            '    c\n'
+            '    | abcde = f\n'
+            '    | g=h\n'
+            '}}',
             wt.pprint(),
         )
 
@@ -243,7 +247,11 @@ class PrettyPrint(unittest.TestCase):
         s = "{{#switch:case|a|b}}"
         wt = wtp.parse(s)
         self.assertEqual(
-            '{{#switch: case\n    | a\n    | b\n}}',
+            '{{#switch:\n'
+            '    case\n'
+            '    | a\n'
+            '    | b\n'
+            '}}',
             wt.pprint(),
         )
 
@@ -294,7 +302,10 @@ class PrettyPrint(unittest.TestCase):
         Another example: {{fullurl:Category:Top level|action=edit}}.
         """
         self.assertEqual(
-            '{{#if: true\n    | <span style="color:Blue;">text</span>\n}}',
+            '{{#if:\n'
+            '    true\n'
+            '    | <span style="color:Blue;">text</span>\n'
+            '}}',
             wtp.parse(
                 '{{#if:true|<span style="color:Blue;">text</span>}}'
             ).pprint(),
@@ -330,21 +341,34 @@ class PrettyPrint(unittest.TestCase):
     def test_pf_inside_t(self):
         wt = wtp.parse('{{t|a= {{#if:I|I}} }}')
         self.assertEqual(
-            '{{t\n    | a = {{#if: I\n        | I\n    }}\n}}',
+            '{{t\n'
+            '    | a = {{#if:\n'
+            '        I\n'
+            '        | I\n'
+            '    }}\n'
+            '}}',
             wt.pprint(),
         )
 
     def test_nested_pf_inside_tl(self):
         wt = wtp.parse('{{t1|{{t2}}{{#pf:a}}}}')
         self.assertEqual(
-            '{{t1\n    | 1 = {{t2}}{{#pf:a}}\n}}',
+            '{{t1\n'
+            '    | 1 = {{t2}}{{#pf:\n'
+            '        a\n'
+            '    }}\n'
+            '}}',
             wt.pprint(),
         )
 
     def test_html_tag_equal(self):
         wt = wtp.parse('{{#iferror:<t a="">|yes|no}}')
         self.assertEqual(
-            '{{#iferror: <t a="">\n    | yes\n    | no\n}}',
+            '{{#iferror:\n'
+            '    <t a="">\n'
+            '    | yes\n'
+            '    | no\n'
+            '}}',
             wt.pprint(),
         )
 
@@ -361,17 +385,43 @@ class PrettyPrint(unittest.TestCase):
     def test_function_inside_template(self):
         p = wtp.parse('{{t|{{#ifeq:||yes}}|a2}}')
         self.assertEqual(
-            '{{t\n    | 1 = {{#ifeq: \n'
-            '        | \n        | yes\n    }}\n    | 2 = a2\n}}',
+            '{{t\n'
+            '    | 1 = {{#ifeq:\n'
+            '        \n'
+            '        | \n'
+            '        | yes\n'
+            '    }}\n'
+            '    | 2 = a2\n'
+            '}}',
             p.pprint(),
         )
 
     def test_parser_template_parser(self):
         p = wtp.parse('{{#f:c|e|{{t|a={{#g:b|c}}}}}}')
         self.assertEqual(
-            '{{#f: c\n    | e\n    | {{t\n        | a = {{#g: b\n'
-            '            | c\n        }}\n    }}\n}}',
+            '{{#f:\n'
+            '    c\n'
+            '    | e\n'
+            '    | {{t\n'
+            '        | a = {{#g:\n'
+            '            b\n'
+            '            | c\n'
+            '        }}\n'
+            '    }}\n'
+            '}}',
             p.pprint(),
+        )
+
+    def test_pprint_first_arg_of_functions(self):
+        self.assertEqual(
+            '{{#time:\n'
+            '    {{#if:\n'
+            '        1\n'
+            '        | y\n'
+            '        | \n'
+            '    }}\n'
+            '}}',
+            wtp.parse('{{#time:{{#if:1|y|}}}}').pprint(),
         )
 
 
@@ -398,7 +448,7 @@ class Sections(unittest.TestCase):
 
 class Template(unittest.TestCase):
 
-    """Test Tempate class."""
+    """Test Template class."""
 
     def test_named_parameters(self):
         s = '{{یادکرد کتاب|عنوان = ش{{--}}ش|سال=۱۳۴۵}}'
