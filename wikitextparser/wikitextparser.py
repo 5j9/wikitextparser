@@ -166,9 +166,10 @@ class WikiText(WikiText):
             template_name = template.name.strip()
             template.name = template_name
             if ':' in template_name:
-                surely_not_a_parser_fucntion = False
+                # Don't use False because we don't know for sure.
+                not_a_parser_function = None
             else:
-                surely_not_a_parser_fucntion = True
+                not_a_parser_function = True
             args = template.arguments
             if args:
                 level = template._get_indent_level()
@@ -191,7 +192,7 @@ class WikiText(WikiText):
                     # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
                     if positional:
                         positional_count += 1
-                        if surely_not_a_parser_fucntion:
+                        if not_a_parser_function:
                             if value.strip() == value:
                                 arg.name = (
                                     ' ' + str(positional_count) + ' ' +
