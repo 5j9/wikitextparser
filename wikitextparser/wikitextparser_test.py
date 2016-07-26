@@ -253,18 +253,40 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{t|a|b|c}}').pprint(),
         )
 
-    def test_if_first_arg_is_coverted_then_all_should_be(self):
+    def test_inconvertible_positionals(self):
         """Otherwise the second positional arg will also be passed as 1.
 
-        The result of not doing this will be duplicate arguments.
+        Because of T24555 we can't use "<nowiki/>" to preserve the
+        whitespace of positional arguments. On the other hand we can't just
+        convert the initial arguments to keyword and keep the rest as
+        positional, because that would produce duplicate args as stated above.
+
+        What we *can* do is to either convert all the arguments to keyword
+        args if possible, or we should only convert the longest part of
+        the tail of arguments that is convertible.
+
+        Use <!--comments--> to align positional arguments where necessary.
+
         """
         self.assertEqual(
             '{{t\n'
-            '    | 1 = a\n'
-            '    | 2 = <nowiki></nowiki> a <nowiki></nowiki>\n'
-            '}}',
-            wtp.parse('{{t|a| a }}').pprint(),
+            '    |a<!--\n'
+            ' -->| b <!--\n'
+            '-->}}',
+            wtp.parse('{{t|a| b }}').pprint(),
         )
+        self.assertEqual(
+            '{{t\n'
+            '    | a <!--\n'
+            ' -->| 2 = b\n'
+            '    | 3 = c\n'
+            '}}',
+            wtp.parse('{{t| a |b|c}}').pprint(),
+        )
+
+    def test_commented_repprint(self):
+        s = '{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}'
+        self.assertEqual(s, wtp.parse(s).pprint())
 
     def test_dont_treat_parser_function_arguments_as_kwargs(self):
         """The `=` is usually just a part of parameter value.
@@ -282,6 +304,15 @@ class PrettyPrint(unittest.TestCase):
         self.assertEqual(
             '{{ا\n    | نیم\u200cفاصله       = ۱\n    | بدون نیم فاصله = ۲\n}}',
             wtp.parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pprint(),
+        )
+
+    def test_equal_sign_alignment(self):
+        self.assertEqual(
+            '{{t\n'
+            '    | long_argument_name = 1\n'
+            '    | 2                  = 2\n'
+            '}}',
+            wtp.parse('{{t|long_argument_name=1|2=2}}').pprint(),
         )
 
     def test_arabic_ligature_lam_with_alef(self):

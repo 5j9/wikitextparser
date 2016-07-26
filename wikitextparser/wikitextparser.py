@@ -161,6 +161,11 @@ class WikiText(WikiText):
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
+        else:
+            # Only remove comments that contain whitespace.
+            for c in parsed.comments:  # type: Comment
+                if not c.contents.strip():
+                    c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
             template_name = template.name.strip()
@@ -171,59 +176,77 @@ class WikiText(WikiText):
             else:
                 not_a_parser_function = True
             args = template.arguments
-            if args:
-                level = template._get_indent_level()
-                newline_indent = '\n' + indent * level
-                template.name += newline_indent
-                # Required for alignment
-                arg_names_len = [
-                    wcswidth(a.name.strip().replace('لا', 'ل')) for a in args
-                ]
-                max_name_len = max(arg_names_len)
-                # Order of positional arguments changes when they are converted
-                # to keyword arguments in the for-loop below. Count them while
-                # converting.
-                positional_count = 0
-                for i, arg in enumerate(args):
-                    value = arg.value
-                    positional = arg.positional
-                    # Positional arguments of templates are sensitive to
-                    # whitespace. See:
-                    # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
-                    if positional:
-                        positional_count += 1
-                        if not_a_parser_function:
-                            if value.strip() == value:
-                                arg.name = (
-                                    ' ' + str(positional_count) + ' ' +
-                                    ' ' * (max_name_len - arg_names_len[i])
-                                )
-                                arg.value = (
-                                    ' ' + value.strip() + newline_indent
-                                )
-                            else:
-                                # The argument should be forced to be a named
-                                # one otherwise the process may introduce
-                                # duplicate arguments.
-                                arg.name = (
-                                    ' ' + str(positional_count) + ' ' +
-                                    ' ' * (max_name_len - arg_names_len[i])
-                                )
-                                arg.value = (
-                                    ' <nowiki></nowiki>' + value +
-                                    '<nowiki></nowiki>' + newline_indent
-                                )
-                    else:
-                        arg.name = (
-                            ' ' + arg.name.strip() + ' ' +
-                            ' ' * (max_name_len - arg_names_len[i])
-                        )
-                        arg.value = ' ' + value.strip() + newline_indent
-                # Special formatting for the last argument.
-                if not arg.positional:
-                    arg.value = (
-                        arg.value.rstrip() + '\n' + indent * (level - 1)
+            if not args:
+                continue
+            # Required for alignment
+            arg_stripped_names = [a.name.strip() for a in args]
+            arg_positionalities = [a.positional for a in args]
+            arg_name_lengths = [
+                wcswidth(n.replace('لا', 'ل')) if
+                not arg_positionalities[i] else 0 for
+                i, n in enumerate(arg_stripped_names)
+            ]
+            max_name_len = max(arg_name_lengths)
+            # Format template.name.
+            level = template._get_indent_level()
+            newline_indent = '\n' + indent * level
+            if level == 1:
+                last_comment_indent = '<!--\n' + indent * (level - 1) + '-->'
+            else:
+                last_comment_indent = '<!--\n' + indent * (level - 2) + ' -->'
+            template.name += newline_indent
+            # Special formatting for the last argument.
+            last_arg = args.pop()
+            last_is_positional = arg_positionalities.pop()
+            last_arg_stripped_name = arg_stripped_names.pop()
+            last_arg_value = last_arg.value
+            last_arg_stripped_value = last_arg_value.strip()
+            if (
+                not last_is_positional or
+                last_arg_value == last_arg_stripped_value
+            ):
+                if not_a_parser_function:
+                    stop_conversion = False
+                    last_arg.name = (
+                        ' ' + last_arg_stripped_name + ' ' +
+                        ' ' * (max_name_len - arg_name_lengths.pop())
                     )
+                    last_arg.value = (
+                        ' ' + last_arg_stripped_value + '\n' +
+                        indent * (level - 1)
+                    )
+                else:
+                    stop_conversion = True
+            else:
+                stop_conversion = True
+                last_arg.value += last_comment_indent
+            if not args:
+                continue
+            comment_indent = '<!--\n' + indent * (level - 1) + ' -->'
+            for i, arg in enumerate(reversed(args)):
+                i = -i - 1
+                stripped_name = arg_stripped_names[i]
+                positional = arg_positionalities[i]
+                value = arg.value
+                stripped_value = value.strip()
+                # Positional arguments of templates are sensitive to
+                # whitespace. See:
+                # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
+                if not stop_conversion:
+                    if not positional or value == stripped_value:
+                        if not_a_parser_function:
+                            arg.name = (
+                                ' ' + stripped_name + ' ' +
+                                ' ' * (max_name_len - arg_name_lengths[i])
+                            )
+                            arg.value = (
+                                ' ' + stripped_value + newline_indent
+                            )
+                    else:
+                        stop_conversion = True
+                        arg.value += comment_indent
+                else:
+                    arg.value += comment_indent
         i = 0
         functions = parsed.parser_functions
         while i < len(functions):
