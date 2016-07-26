@@ -153,7 +153,7 @@ WIKILINK_REGEX = re.compile(
 # Create the {{text}} template in your wiki (You can copy the source code from
 # English Wikipedia). Then save the following in a test page:
 # {{text|0<tagname>1}}2</tagname>3}}4
-# If the ending braces in the redered result appear between 3 and 4, then
+# If the ending braces in the rendered result appear between 3 and 4, then
 # `tagname` is not an extension tag (e.g. <small>). Otherwise, i.e. if those
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
@@ -276,7 +276,7 @@ def parse_to_spans(string):
             )
     # The title in WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
-    # the span of `text` template shoud be the whole string
+    # the span of `text` template should be the whole string
     loop = True
     while loop:
         loop = False
@@ -294,7 +294,7 @@ def parse_to_spans(string):
             )
             string = string.replace(
                 group,
-                '__' + group[2:-2].replace('}', '_').replace('{', '_') + '__'
+                '_[' + group[2:-2].replace('}', '_').replace('{', '_') + ']_'
             )
     parse_to_spans_innerloop(
         string,
@@ -348,7 +348,7 @@ def indexed_parse_to_spans(
             )
             string = string.replace(
                 group,
-                '__' + group[2:-2].replace('}', '_').replace('{', '_') + '__'
+                '_[' + group[2:-2].replace('}', '_').replace('{', '_') + ']_'
             )
     parse_to_spans_innerloop(
         string,

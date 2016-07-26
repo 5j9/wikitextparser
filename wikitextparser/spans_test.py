@@ -50,6 +50,13 @@ class Spans(unittest.TestCase):
             wt._spans['templates'],
         )
 
+    def test_no_template_for_braces_around_wikilink(self):
+        wt = wtp.WikiText("{{[[a]]}}")
+        self.assertEqual(
+            [],
+            wt._spans['templates'],
+        )
+
     def test_template_inside_parameter(self):
         wt = wtp.WikiText("""{{{1|{{colorbox|yellow|text1}}}}}""")
         self.assertEqual(
@@ -90,6 +97,7 @@ class Spans(unittest.TestCase):
         """See [[mw:Extension:Cite#Multiple_uses_of_the_same_footnote]].
 
         [[mw:Help:Extension:Cite]] may be helpful, too.
+
         """
         wt = wtp.WikiText(
             '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
