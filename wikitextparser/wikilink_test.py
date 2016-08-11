@@ -24,6 +24,16 @@ class WikiLink(unittest.TestCase):
         wl.target = ' C '
         self.assertEqual('[[ C ]]', wl.string)
 
+    def test_set_target_to_none(self):
+        # If the link is piped:
+        wl = wtp.WikiLink('[[a|b]]')
+        wl.text = None
+        self.assertEqual('[[a]]', wl.string)
+        # Without a pipe:
+        wl = wtp.WikiLink('[[a]]')
+        wl.text = None
+        self.assertEqual('[[a]]', wl.string)
+
     def test_set_text(self):
         wl = wtp.WikiLink('[[A | B]]')
         wl.text = ' C '

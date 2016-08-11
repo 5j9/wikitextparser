@@ -47,13 +47,19 @@ class WikiLink():
 
     @text.setter
     def text(self, newtext):
-        """Set a new text."""
+        """Set self.text to newtext. Remove the text if newtext is None."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
-            self.replace_slice(
-                len(head + pipe),
-                len(head + pipe + tail) - 2,
-                newtext
-            )
-        else:
+            if newtext is None:
+                self.strdel(
+                    len(head + pipe) - 1,
+                    len(head + pipe + tail) - 2,
+                )
+            else:
+                self.replace_slice(
+                    len(head + pipe),
+                    len(head + pipe + tail) - 2,
+                    newtext
+                )
+        elif newtext is not None:
             self.strins(len(head) - 2, '|' + newtext)
