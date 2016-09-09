@@ -165,8 +165,8 @@ And values are rearranged according to colspan and rowspan attributes (by defaul
 
 Have a look at the test modules for more details and probable pitfalls.
 
-Compared with mwparserfromhel
-=============================
+Compared with mwparserfromhell
+==============================
 `mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as `wikitextparser`. The main reason leading me to create `wikitextparser` was that `mwparserfromhell` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation `wikitextparser` may be able to give you more acceptable results.
 
 But if you need to
