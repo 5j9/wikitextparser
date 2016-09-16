@@ -1,4 +1,4 @@
-﻿"""The main functions used in parsing wikitext to spans."""
+﻿"""Define the functions required for parsing wikitext into spans."""
 
 
 import re

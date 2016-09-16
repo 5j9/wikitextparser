@@ -1,10 +1,31 @@
-﻿"""Define the ExternalLink class."""
+﻿"""Define the Tag class."""
 
 
-from .wikitext import _Indexed_WikiText
+# HTML elements all have names that only use alphanumeric ASCII characters
+# https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
+TAGNAME = r'(?P<tagname>[A-Za-z0-9]+)'
+# https://www.w3.org/TR/html5/infrastructure.html#space-character
+SPACE_CHARACTERS = r' \t\n\u000C\r'
+# http://stackoverflow.com/a/93029/2705757
+# chrs = (chr(i) for i in range(sys.maxunicode))
+# control_chars = ''.join(c for c in chrs if unicodedata.category(c) == 'Cc')
+CONTROL_CHARACTERS = r'\x00-\x1f\x7f-\x9f'
+# https://www.w3.org/TR/html5/syntax.html#syntax-attributes
+ATTRNAME = (
+    r'(?P<attrname>[^' + SPACE_CHARACTERS + CONTROL_CHARACTERS +
+    r'\u0000"\'>/=])'
+)
+# Ignore ambiguous ampersand for the sake of simplicity.
+UNQUOTED_ATTRIBUTE_VALUE = r'([' + SPACE_CHARACTERS + ']*)'
+ATTR = r'(?P<attr> +)'
+STARTTAG = r'(?P<start><' + TAGNAME + r')'
 
+ATTRIBUTE_VALUES =
 
-class ExternalLink(_Indexed_WikiText):
+import re
+re.sub()
+
+class ExternalLink():
 
     """Create a new ExternalLink object."""
 

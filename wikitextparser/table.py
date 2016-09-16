@@ -1,8 +1,10 @@
-﻿"""Define a class to deal with tables."""
+﻿"""Define the Table class."""
 
 
 import re
 from html.parser import HTMLParser
+
+from .wikitext import _Indexed_WikiText
 
 
 ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
@@ -133,7 +135,7 @@ CAPTION_REGEX = re.compile(
 )
 
 
-class Table:
+class Table(_Indexed_WikiText):
 
     """Create a new Table object."""
 

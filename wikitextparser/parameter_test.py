@@ -1,11 +1,9 @@
-﻿"""Test the functionalities of parameters.py module."""
+﻿"""Test the parameters.py module."""
 
 
-import sys
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
+import wikitextparser as wtp
 
 
 class Parameter(unittest.TestCase):

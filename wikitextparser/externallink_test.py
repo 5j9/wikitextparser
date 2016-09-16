@@ -1,10 +1,9 @@
-﻿import sys
+﻿"""Test the ExternalLink class."""
+
+
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
-
-"""The ExternalLink class."""
+import wikitextparser as wtp
 
 
 class ExternalLink(unittest.TestCase):

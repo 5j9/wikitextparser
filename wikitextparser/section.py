@@ -1,13 +1,15 @@
-﻿"""The Section class."""
+﻿"""Define the Section class."""
 
 
 import re
+
+from .wikitext import WikiText
 
 
 SECTION_LEVEL_TITLE = re.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
 
 
-class Section():
+class Section(WikiText):
 
     """Create a new Section object."""
 

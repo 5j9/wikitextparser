@@ -1,10 +1,9 @@
-﻿"""Test the functionalities of table.py module."""
+﻿"""Test the wikilink.py module."""
 
-import sys
+
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
+import wikitextparser as wtp
 
 
 class WikiLink(unittest.TestCase):

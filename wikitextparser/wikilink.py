@@ -1,7 +1,10 @@
 ﻿"""The WikiLink class."""
 
 
-class WikiLink():
+from .wikitext import _Indexed_WikiText
+
+
+class WikiLink(_Indexed_WikiText):
 
     """Create a new WikiLink object."""
 

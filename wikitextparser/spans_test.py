@@ -1,12 +1,10 @@
 ﻿"""Test the functionalities of spans.py."""
 
 
-import sys
 import unittest
 
 import spans
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
+import wikitextparser as wtp
 
 
 class Spans(unittest.TestCase):

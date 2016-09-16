@@ -1,10 +1,9 @@
-﻿import sys
+﻿"""Test the section.py module."""
+
+
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
-
-"""The ExternalLink class."""
+import wikitextparser as wtp
 
 
 class Section(unittest.TestCase):

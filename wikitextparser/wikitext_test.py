@@ -1,10 +1,9 @@
 ﻿"""Test the functionalities of wikitext.py module."""
 
-import sys
+
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
+import wikitextparser as wtp
 
 
 class Contains(unittest.TestCase):
@@ -103,6 +102,451 @@ class StringSetter(unittest.TestCase):
         t.string = '{{t|0|a|b|c}}'
         self.assertEqual('0', t.get_arg('1').value)
         self.assertEqual('c', t.get_arg('4').value)
+
+
+class WikiText(unittest.TestCase):
+
+    """Test the WikiText class."""
+
+    def test_bare_link(self):
+        s = 'text1 HTTP://mediawiki.org text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            'HTTP://mediawiki.org',
+            str(wt.external_links[0]),
+        )
+
+    def test_with_lable(self):
+        s = 'text1 [http://mediawiki.org MediaWiki] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            'http://mediawiki.org',
+            wt.external_links[0].url
+        )
+        self.assertEqual(
+            'MediaWiki',
+            wt.external_links[0].text
+        )
+
+    def test_numbered_link(self):
+        s = 'text1 [http://mediawiki.org] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '[http://mediawiki.org]',
+            str(wt.external_links[0]),
+        )
+
+    def test_protocol_relative(self):
+        s = 'text1 [//en.wikipedia.org wikipedia] text2'
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '[//en.wikipedia.org wikipedia]',
+            str(wt.external_links[0]),
+        )
+
+    def test_destroy(self):
+        s = 'text1 [//en.wikipedia.org wikipedia] text2'
+        wt = wtp.WikiText(s)
+        wt.external_links[0].string = ''
+        self.assertEqual(
+            'text1  text2',
+            str(wt),
+        )
+
+    def test_wikilink_inside_parser_function(self):
+        wt = wtp.WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
+        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", wt.wikilinks[0].string)
+
+    def test_template_inside_wikilink(self):
+        wt = wtp.WikiText("{{text |  [[ A | {{text|b}} ]] }}")
+        self.assertEqual(2, len(wt.templates))
+
+    def test_wikilink_in_template(self):
+        s1 = "{{text |[[A|}}]]}}"
+        wt = wtp.WikiText(s1)
+        self.assertEqual(s1, str(wt.templates[0]))
+
+    def test_wikilink_containing_closing_braces_in_template(self):
+        s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, str(wt.templates[0]))
+
+    def test_ignore_comments(self):
+        s1 = "{{text |<!-- }} -->}}"
+        wt = wtp.WikiText(s1)
+        self.assertEqual(s1, str(wt.templates[0]))
+
+    def test_ignore_nowiki(self):
+        wt = wtp.WikiText("{{text |<nowiki>}} A </nowiki> }} B")
+        self.assertEqual(
+            "{{text |<nowiki>}} A </nowiki> }}",
+            str(wt.templates[0])
+        )
+
+    def test_getting_comment(self):
+        wt = wtp.WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
+        self.assertEqual(
+            "\n\ncomment\n{{A}}\n",
+            wt.comments[0].contents
+        )
+
+    def test_template_in_wikilink(self):
+        s = '[[A|{{text|text}}]]'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, str(wt.wikilinks[0]))
+
+    def test_wikilink_target_may_contain_newline(self):
+        s = '[[A | faf a\n\nfads]]'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, str(wt.wikilinks[0]))
+
+    def test_template_inside_extension_tags(self):
+        s = "<includeonly>{{t}}</includeonly>"
+        wt = wtp.WikiText(s)
+        self.assertEqual('{{t}}', str(wt.templates[0]))
+
+    def test_dont_parse_source_tag(self):
+        s = "<source>{{t}}</source>"
+        wt = wtp.WikiText(s)
+        self.assertEqual(0, len(wt.templates))
+
+    def test_comment_in_parserfanction_name(self):
+        s = "{{<!--c\n}}-->#if:|a}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(1, len(wt.parser_functions))
+
+    def test_wikilink2externallink_fallback(self):
+        p = wtp.parse('[[http://example.com foo bar]]')
+        self.assertEqual(
+            '[http://example.com foo bar]',
+            p.external_links[0].string
+        )
+        self.assertEqual(0, len(p.wikilinks))
+
+    @unittest.expectedFailure
+    def test_no_bare_externallink_within_wikilinks(self):
+        """Based on how Mediawiki behaves.
+
+        There is a rather simple solution for this (move the detection of
+        external links to spans.py) but maybe the current implementation
+        is even more useful? Also it should be faster.
+        """
+        p = wtp.parse('[[ https://en.wikipedia.org/]]')
+        self.assertEqual(1, len(p.wikilinks))
+        self.assertEqual(0, len(p.external_links))
+
+
+class Tables(unittest.TestCase):
+
+    """Test the tables property."""
+
+    def test_table_extraction(self):
+        s = '{|class=wikitable\n|a \n|}'
+        p = wtp.parse(s)
+        self.assertEqual(s, p.tables[0].string)
+
+    def test_table_start_after_space(self):
+        s = '   {|class=wikitable\n|a \n|}'
+        p = wtp.parse(s)
+        self.assertEqual(s.strip(), p.tables[0].string)
+
+    def test_ignore_comments_before_extracting_tables(self):
+        s = '{|class=wikitable\n|a \n<!-- \n|} \n-->\n|b\n|}'
+        p = wtp.parse(s)
+        self.assertEqual(s, p.tables[0].string)
+
+    def test_two_tables(self):
+        s = 'text1\n {|\n|a \n|}\ntext2\n{|\n|b\n|}\ntext3\n'
+        p = wtp.parse(s)
+        self.assertEqual(2, len(p.tables))
+        self.assertEqual('{|\n|a \n|}', p.tables[0].string)
+        self.assertEqual('{|\n|b\n|}', p.tables[1].string)
+
+    def test_nested_tables(self):
+        s = (
+            'text1\n{|class=wikitable\n|a\n|\n'
+            '{|class=wikitable\n|b\n|}\n|}\ntext2'
+        )
+        p = wtp.parse(s)
+        self.assertEqual(2, len(p.tables))
+        self.assertEqual(s[6:-6], p.tables[1].string)
+        self.assertEqual('{|class=wikitable\n|b\n|}', p.tables[0].string)
+
+    def test_tables_in_different_sections(self):
+        s = '{|\n| a\n|}\n\n= s =\n{|\n| b\n|}\n'
+        p = wtp.parse(s).sections[1]
+        self.assertEqual('{|\n| b\n|}', p.tables[0].string)
+
+
+class PrettyPrint(unittest.TestCase):
+
+    """Test the pprint method of the WikiText class."""
+
+    def test_template_with_multi_args(self):
+        s = "{{a|b=b|c=c|d=d|e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n    | b = b\n    | c = c\n    | d = d\n    | e = e\n}}',
+            wt.pprint(),
+        )
+
+    def test_double_space_indent(self):
+        s = "{{a|b=b|c=c|d=d|e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n  | b = b\n  | c = c\n  | d = d\n  | e = e\n}}',
+            wt.pprint('  '),
+        )
+
+    def test_remove_comments(self):
+        s = "{{a|<!--b=b|c=c|d=d|-->e=e}}"
+        wt = wtp.WikiText(s)
+        self.assertEqual(
+            '{{a\n  | e = e\n}}',
+            wt.pprint('  ', remove_comments=True),
+        )
+
+    def test_first_arg_of_tag_is_whitespace_sensitive(self):
+        """The second argument of #tag is an exception.
+
+        See the last warning on [[mw:Help:Magic_words#Miscellaneous]]:
+        You must write {{#tag:tagname||attribute1=value1|attribute2=value2}}
+        to pass an empty content. No space is permitted in the area reserved
+        for content between the pipe characters || before attribute1.
+        """
+        s = '{{#tag:ref||name="n1"}}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+        s = '{{#tag:foo| }}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+
+    def test_invoke(self):
+        """#invoke args are also whitespace-sensitive."""
+        s = '{{#invoke:module|func|arg}}'
+        wt = wtp.WikiText(s)
+        self.assertEqual(s, wt.pprint())
+
+    def test_on_parserfunction(self):
+        s = "{{#if:c|abcde = f| g=h}}"
+        wt = wtp.parse(s)
+        self.assertEqual(
+            '{{#if:\n'
+            '    c\n'
+            '    | abcde = f\n'
+            '    | g=h\n'
+            '}}',
+            wt.pprint(),
+        )
+
+    def test_parserfunction_with_no_pos_arg(self):
+        s = "{{#switch:case|a|b}}"
+        wt = wtp.parse(s)
+        self.assertEqual(
+            '{{#switch:\n'
+            '    case\n'
+            '    | a\n'
+            '    | b\n'
+            '}}',
+            wt.pprint(),
+        )
+
+    def test_convert_positional_to_keyword_if_possible(self):
+        self.assertEqual(
+            '{{t\n    | 1 = a\n    | 2 = b\n    | 3 = c\n}}',
+            wtp.parse('{{t|a|b|c}}').pprint(),
+        )
+
+    def test_inconvertible_positionals(self):
+        """Otherwise the second positional arg will also be passed as 1.
+
+        Because of T24555 we can't use "<nowiki/>" to preserve the
+        whitespace of positional arguments. On the other hand we can't just
+        convert the initial arguments to keyword and keep the rest as
+        positional, because that would produce duplicate args as stated above.
+
+        What we *can* do is to either convert all the arguments to keyword
+        args if possible, or we should only convert the longest part of
+        the tail of arguments that is convertible.
+
+        Use <!--comments--> to align positional arguments where necessary.
+
+        """
+        self.assertEqual(
+            '{{t\n'
+            '    |a<!--\n'
+            ' -->| b <!--\n'
+            '-->}}',
+            wtp.parse('{{t|a| b }}').pprint(),
+        )
+        self.assertEqual(
+            '{{t\n'
+            '    | a <!--\n'
+            ' -->| 2 = b\n'
+            '    | 3 = c\n'
+            '}}',
+            wtp.parse('{{t| a |b|c}}').pprint(),
+        )
+
+    def test_commented_repprint(self):
+        s = '{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}'
+        self.assertEqual(s, wtp.parse(s).pprint())
+
+    def test_dont_treat_parser_function_arguments_as_kwargs(self):
+        """The `=` is usually just a part of parameter value.
+
+        Another example: {{fullurl:Category:Top level|action=edit}}.
+        """
+        self.assertEqual(
+            '{{#if:\n'
+            '    true\n'
+            '    | <span style="color:Blue;">text</span>\n'
+            '}}',
+            wtp.parse(
+                '{{#if:true|<span style="color:Blue;">text</span>}}'
+            ).pprint(),
+        )
+
+    def test_ignore_zwnj_for_alignment(self):
+        self.assertEqual(
+            '{{ا\n    | نیم\u200cفاصله       = ۱\n    |'
+            ' بدون نیم فاصله = ۲\n}}',
+            wtp.parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pprint(),
+        )
+
+    def test_equal_sign_alignment(self):
+        self.assertEqual(
+            '{{t\n'
+            '    | long_argument_name = 1\n'
+            '    | 2                  = 2\n'
+            '}}',
+            wtp.parse('{{t|long_argument_name=1|2=2}}').pprint(),
+        )
+
+    def test_arabic_ligature_lam_with_alef(self):
+        """'ل' + 'ا' creates a ligature with one character width.
+
+        Some terminal emulators do not support this but it's defined in
+        Courier New font which is the main (almost only) font used for
+        monospaced Persian texts on Windows. Also tested on Arabic Wikipedia.
+        """
+        self.assertEqual(
+            '{{ا\n    | الف = ۱\n    | لا   = ۲\n}}',
+            wtp.parse('{{ا|الف=۱|لا=۲}}').pprint(),
+        )
+
+    def test_pf_inside_t(self):
+        wt = wtp.parse('{{t|a= {{#if:I|I}} }}')
+        self.assertEqual(
+            '{{t\n'
+            '    | a = {{#if:\n'
+            '        I\n'
+            '        | I\n'
+            '    }}\n'
+            '}}',
+            wt.pprint(),
+        )
+
+    def test_nested_pf_inside_tl(self):
+        wt = wtp.parse('{{t1|{{t2}}{{#pf:a}}}}')
+        self.assertEqual(
+            '{{t1\n'
+            '    | 1 = {{t2}}{{#pf:\n'
+            '        a\n'
+            '    }}\n'
+            '}}',
+            wt.pprint(),
+        )
+
+    def test_html_tag_equal(self):
+        wt = wtp.parse('{{#iferror:<t a="">|yes|no}}')
+        self.assertEqual(
+            '{{#iferror:\n'
+            '    <t a="">\n'
+            '    | yes\n'
+            '    | no\n'
+            '}}',
+            wt.pprint(),
+        )
+
+    def test_pprint_tl_directly(self):
+        self.assertEqual(
+            '{{t\n'
+            '    | 1 = a\n'
+            '}}',
+            wtp.Template('{{t|a}}').pprint(),
+        )
+
+    def test_pprint_pf_directly(self):
+        self.assertEqual(
+            '{{#iferror:\n'
+            '    <t a="">\n'
+            '    | yes\n'
+            '    | no\n'
+            '}}',
+            wtp.ParserFunction('{{#iferror:<t a="">|yes|no}}').pprint(),
+        )
+
+    def test_function_inside_template(self):
+        p = wtp.parse('{{t|{{#ifeq:||yes}}|a2}}')
+        self.assertEqual(
+            '{{t\n'
+            '    | 1 = {{#ifeq:\n'
+            '        \n'
+            '        | \n'
+            '        | yes\n'
+            '    }}\n'
+            '    | 2 = a2\n'
+            '}}',
+            p.pprint(),
+        )
+
+    def test_parser_template_parser(self):
+        p = wtp.parse('{{#f:c|e|{{t|a={{#g:b|c}}}}}}')
+        self.assertEqual(
+            '{{#f:\n'
+            '    c\n'
+            '    | e\n'
+            '    | {{t\n'
+            '        | a = {{#g:\n'
+            '            b\n'
+            '            | c\n'
+            '        }}\n'
+            '    }}\n'
+            '}}',
+            p.pprint(),
+        )
+
+    def test_pprint_first_arg_of_functions(self):
+        self.assertEqual(
+            '{{#time:\n'
+            '    {{#if:\n'
+            '        1\n'
+            '        | y\n'
+            '        | \n'
+            '    }}\n'
+            '}}',
+            wtp.parse('{{#time:{{#if:1|y|}}}}').pprint(),
+        )
+
+
+class Sections(unittest.TestCase):
+
+    """Test the sections method of the WikiText class."""
+
+    def test_grab_the_final_newline_for_the_last_section(self):
+        wt = wtp.WikiText('== s ==\nc\n')
+        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+
+    def test_blank_lead(self):
+        wt = wtp.WikiText('== s ==\nc\n')
+        self.assertEqual('== s ==\nc\n', wt.sections[1].string)
+
+    @unittest.expectedFailure
+    def test_multiline_with_carriage_return(self):
+        s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
+        p = wtp.parse(s)
+        self.assertEqual('text\r\n', p.sections[0].string)
 
 
 if __name__ == '__main__':

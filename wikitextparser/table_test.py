@@ -1,22 +1,18 @@
 ﻿"""Test the functionalities of table.py module."""
-'''Todo:
-addrow([], -1)
-addcol([], -1)
+# Todo:
+# addrow([], -1)
+# addcol([], -1)
+#
+# shiftrow(n,m)
+# shiftcol(n,m)
+#
+# sort?
+# transpose?
 
-shiftrow(n,m)
-shiftcol(n,m)
 
-sort?
-transpose?
-'''
-
-
-import sys
 import unittest
-from pprint import pprint as pp
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
+import wikitextparser as wtp
 
 
 class Rows(unittest.TestCase):

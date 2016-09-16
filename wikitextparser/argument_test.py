@@ -1,10 +1,9 @@
-﻿import sys
+﻿"""Test the Argument class."""
+
+
 import unittest
 
-sys.path.insert(0, '..')
-from wikitextparser import wikitextparser as wtp
-
-"""Test the Argument class."""
+import wikitextparser as wtp
 
 
 class Argument(unittest.TestCase):
