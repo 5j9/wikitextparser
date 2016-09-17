@@ -1,11 +1,14 @@
 """"Define the Template class."""
 
+
 import re
 
-from .wikitext import _Indexed_WikiText
+from .wikitext import IndexedWikiText
 from .argument import Argument
+from .spans import COMMENT_REGEX
 
-class Template(_Indexed_WikiText):
+
+class Template(IndexedWikiText):
 
     """Convert strings to Template objects.
 
@@ -26,7 +29,7 @@ class Template(_Indexed_WikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Template."""
         return 'Template(' + repr(self.string) + ')'
 
@@ -64,8 +67,8 @@ class Template(_Indexed_WikiText):
         return arguments
 
     @property
-    def name(self):
-        """Return template's name part. (includes whitespace)."""
+    def name(self) -> str:
+        """Return template's name (includes whitespace)."""
         p0 = self._not_in_subspans_partition('|')[0]
         if len(p0) == len(self.string):
             return p0[2:-2]
@@ -73,15 +76,68 @@ class Template(_Indexed_WikiText):
             return p0[2:]
 
     @name.setter
-    def name(self, newname):
+    def name(self, newname) -> None:
         """Set the new name for the template."""
         name = self.name
         self.replace_slice(2, 2 + len(name), newname)
 
-    def rm_first_of_dup_args(self):
+    def normal_name(self, rm_namespaces=('Template',), code=None) -> str:
+        """Return normal form of the name.
+
+        # Remove comments.
+        # Remove language code.
+        # Remove namespace ("template:" or any of `localized_namespaces`.
+        # Use space instead of underscore.
+        # Use uppercase for the first letter.
+        # Remove #anchor.
+
+        `rm_namespaces` is used to provide additional localized namespaces
+            for the template namespace. They will be removed from the result.
+            Default is ('Template',).
+        `code` is language code.
+
+        Example:
+            >>> Template(
+            ...     '{{ eN : tEmPlAtE : <!-- c --> t_1 # b | a }}'
+            ... ).normal_name(code='en')
+            'T 1'
+
+        """
+        # Remove comments
+        name = COMMENT_REGEX.sub('', self.name).strip()
+        # Remove code
+        if code:
+            head, sep, tail = name.partition(':')
+            if not head and sep:
+                name = tail.strip(' ')
+                head, sep, tail = name.partition(':')
+            if code.lower() == head.strip(' ').lower():
+                name = tail.strip(' ')
+        # Remove namespace
+        head, sep, tail = name.partition(':')
+        if not head and sep:
+            name = tail.strip(' ')
+            head, sep, tail = name.partition(':')
+        if head:
+            ns = head.strip(' ').lower()
+            for namespace in rm_namespaces:
+                if namespace.lower() == ns:
+                    name = tail.strip(' ')
+                    break
+        # Use space instead of underscore
+        name = name.replace('_', ' ')
+        # Use uppercase for the first letter
+        n0 = name[0]
+        if n0.islower():
+            name = n0.upper() + name[1:]
+        # Remove #anchor
+        name, sep, tail = name.partition('#')
+        return name.strip(' ')
+
+    def rm_first_of_dup_args(self) -> None:
         """Eliminate duplicate arguments by removing the first occurrences.
 
-        Remove first occurances of duplicate arguments-- no matter what their
+        Remove first occurrences of duplicate arguments-- no matter what their
         value is. Result of the rendered wikitext should remain the same.
         Warning: Some meaningful data may be removed from wikitext.
 
@@ -96,7 +152,7 @@ class Template(_Indexed_WikiText):
             else:
                 names.append(name)
 
-    def rm_dup_args_safe(self, tag=None):
+    def rm_dup_args_safe(self, tag=None) -> None:
         """Remove duplicate arguments in a safe manner.
 
         Remove the duplicate arguments only if:
@@ -129,7 +185,7 @@ class Template(_Indexed_WikiText):
             if name in name_args_vals:
                 # This is a duplicate argument.
                 if not val:
-                    # This duplacate argument is empty. It's safe to remove it.
+                    # This duplicate argument is empty. It's safe to remove it.
                     arg.strdel(0, len(arg.string))
                 else:
                     # Try to remove any of the detected duplicates of this
@@ -155,7 +211,7 @@ class Template(_Indexed_WikiText):
     def set_arg(
         self, name, value, positional=None, before=None, after=None,
         preserve_spacing=True
-    ):
+    ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
         Use `positional`, `before` and `after` keyword arguments only when
@@ -169,7 +225,7 @@ class Template(_Indexed_WikiText):
 
         """
         args = list(reversed(self.arguments))
-        arg = self._get_arg(name, args)
+        arg = get_arg(name, args)
         # Updating an existing argument.
         if arg:
             if positional:
@@ -219,10 +275,10 @@ class Template(_Indexed_WikiText):
                 addstring = '|' + name + '=' + value
         # Place the addstring in the right position.
         if before:
-            arg = self._get_arg(before, args)
+            arg = get_arg(before, args)
             arg.strins(0, addstring)
         elif after:
-            arg = self._get_arg(after, args)
+            arg = get_arg(after, args)
             arg.strins(len(arg.string), addstring)
         else:
             if args and not positional:
@@ -242,28 +298,14 @@ class Template(_Indexed_WikiText):
                 # positional AND is to be added at the end of the template.
                 self.strins(len(self.string) - 2, addstring)
 
-    def _get_arg(self, name, args):
-        """Return the first argument in the args that has the given name.
-
-        Return None if no such argument is found.
-
-        As the computation of self.arguments is a little costly, this
-        function was created so that other methods that have already computed
-        the arguments use it instead of calling get_arg directly.
-
-        """
-        for arg in args:
-            if arg.name.strip() == name.strip():
-                return arg
-
-    def get_arg(self, name):
+    def get_arg(self, name) -> Argument or None:
         """Return the last argument with the given name.
 
         Return None if no such argument is found.
         """
-        return self._get_arg(name, reversed(self.arguments))
+        return get_arg(name, reversed(self.arguments))
 
-    def has_arg(self, name, value=None):
+    def has_arg(self, name, value=None) -> bool:
         """Return true if the is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -308,3 +350,18 @@ def mode(list_):
 
     """
     return max(set(list_), key=list_.count)
+
+
+def get_arg(name, args) -> Argument or None:
+    """Return the first argument in the args that has the given name.
+
+    Return None if no such argument is found.
+
+    As the computation of self.arguments is a little costly, this
+    function was created so that other methods that have already computed
+    the arguments use it instead of calling self.get_arg directly.
+
+    """
+    for arg in args:
+        if arg.name.strip() == name.strip():
+            return arg

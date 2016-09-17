@@ -4,7 +4,7 @@
 import re
 from html.parser import HTMLParser
 
-from .wikitext import _Indexed_WikiText
+from .wikitext import IndexedWikiText
 
 
 ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
@@ -135,7 +135,7 @@ CAPTION_REGEX = re.compile(
 )
 
 
-class Table(_Indexed_WikiText):
+class Table(IndexedWikiText):
 
     """Create a new Table object."""
 

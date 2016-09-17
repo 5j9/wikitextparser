@@ -843,7 +843,7 @@ class WikiText:
         return tables
 
 
-class _Indexed_WikiText(WikiText):
+class IndexedWikiText(WikiText):
 
     """This is a middle-class to be used by some other subclasses.
 

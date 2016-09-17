@@ -1,10 +1,10 @@
 ﻿"""Define the Comment class."""
 
 
-from .wikitext import _Indexed_WikiText
+from .wikitext import IndexedWikiText
 
 
-class Comment(_Indexed_WikiText):
+class Comment(IndexedWikiText):
 
     """Create a new <!-- comment --> object."""
 

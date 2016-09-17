@@ -1,10 +1,10 @@
 ﻿"""Define the Argument class."""
 
 
-from .wikitext import _Indexed_WikiText
+from .wikitext import IndexedWikiText
 
 
-class Argument(_Indexed_WikiText):
+class Argument(IndexedWikiText):
 
     """Create a new Argument Object.
 

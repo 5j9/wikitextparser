@@ -49,6 +49,22 @@ class Template(unittest.TestCase):
         t.name = ' u '
         self.assertEqual("{{ u |a|a}}", t.string)
 
+    def test_normal_name(self):
+        t = wtp.Template('{{ u |a}}')
+        self.assertEqual('U', t.normal_name())
+        t = wtp.Template('{{ template: u |a}}')
+        self.assertEqual('U', t.normal_name())
+        t = wtp.Template('{{ الگو:u |a}}')
+        self.assertEqual('U', t.normal_name(['الگو']))
+        t = wtp.Template('{{a_b}}')
+        self.assertEqual('A b', t.normal_name())
+        t = wtp.Template('{{t#a|a}}')
+        self.assertEqual('T', t.normal_name())
+        t = wtp.Template('{{ : fa : Template : t  # A }}')
+        self.assertEqual('T', t.normal_name(code='fa'))
+        t = wtp.Template('{{ : t |a}}')
+        self.assertEqual('T', t.normal_name())
+
     def test_keyword_and_positional_args(self):
         t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
         self.assertEqual('1', t.arguments[2].name)
