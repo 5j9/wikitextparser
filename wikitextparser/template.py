@@ -88,6 +88,7 @@ class Template(IndexedWikiText):
         # Remove language code.
         # Remove namespace ("template:" or any of `localized_namespaces`.
         # Use space instead of underscore.
+        # Remove consecutive spaces.
         # Use uppercase for the first letter.
         # Remove #anchor.
 
@@ -132,7 +133,7 @@ class Template(IndexedWikiText):
             name = n0.upper() + name[1:]
         # Remove #anchor
         name, sep, tail = name.partition('#')
-        return name.strip(' ')
+        return ' '.join(name.split())
 
     def rm_first_of_dup_args(self) -> None:
         """Eliminate duplicate arguments by removing the first occurrences.

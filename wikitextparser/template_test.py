@@ -64,6 +64,8 @@ class Template(unittest.TestCase):
         self.assertEqual('T', t.normal_name(code='fa'))
         t = wtp.Template('{{ : t |a}}')
         self.assertEqual('T', t.normal_name())
+        t = wtp.Template('{{A______________B}}')
+        self.assertEqual('A B', t.normal_name())
 
     def test_keyword_and_positional_args(self):
         t = wtp.Template("{{t|kw=a|1=|pa|kw2=a|pa2}}")
