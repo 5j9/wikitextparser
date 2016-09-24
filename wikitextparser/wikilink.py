@@ -25,7 +25,7 @@ class WikiLink(IndexedWikiText):
         return self._spans['wikilinks'][self._index]
 
     @property
-    def target(self):
+    def target(self) -> str:
         """Return target of this WikiLink."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
@@ -34,7 +34,7 @@ class WikiLink(IndexedWikiText):
             return head[2:-2]
 
     @target.setter
-    def target(self, newtarget):
+    def target(self, newtarget) -> None:
         """Set a new target."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if not pipe:
@@ -42,14 +42,14 @@ class WikiLink(IndexedWikiText):
         self.replace_slice(2, len(head), newtarget)
 
     @property
-    def text(self):
+    def text(self) -> str:
         """Return display text of this WikiLink."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
             return tail[:-2]
 
     @text.setter
-    def text(self, newtext):
+    def text(self, newtext) -> None:
         """Set self.text to newtext. Remove the text if newtext is None."""
         head, pipe, tail = self._not_in_subspans_partition('|')
         if pipe:
