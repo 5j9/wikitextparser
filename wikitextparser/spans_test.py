@@ -10,6 +10,16 @@ import wikitextparser as wtp
 class Spans(unittest.TestCase):
     """Test the spans."""
 
+    def test_template_name_cannot_be_empty(self):
+        wt = wtp.WikiText('{{_}}')
+        self.assertEqual(wt._spans['templates'], [])
+        wt = wtp.WikiText('{{_|text}}')
+        self.assertEqual(wt._spans['templates'], [])
+        wt = wtp.WikiText('{{text| {{_}} }}')
+        self.assertEqual(len(wt._spans['templates']), 1)
+        wt = wtp.WikiText('{{ {{_|text}} | a }}')
+        self.assertEqual(len(wt._spans['templates']), 0)
+
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
         template_spans = wt._spans['templates']

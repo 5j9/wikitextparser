@@ -6,10 +6,17 @@ import re
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]*'
+INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 # Templates
 TEMPLATE_PATTERN = (
-    r'\{\{\s*' + VALID_TITLE_CHARS_PATTERN + r'\s*(\|[^{}]*?\}\}|\}\})'
+    r'\{\{\s*'
+    r'[^' + INVALID_TITLE_CHARS_PATTERN + r']*'
+    r'\s*(\|[^{}]*?\}\}|\}\})'
+)
+INVALID_NAME_TEMPLATE_REGEX = re.compile(
+    r'\{\{\s*'
+    r'[_\s]*'
+    r'\s*(\|[^{}]*?\}\}|\}\})'
 )
 TEMPLATE_NOT_PARAM_REGEX = re.compile(
     TEMPLATE_PATTERN + r'(?!\})'
@@ -141,7 +148,7 @@ BARE_EXTERNALLINK_PATTERN = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_REGEX = re.compile(
     r'\[\[(?!' + BARE_EXTERNALLINK_PATTERN + r')' +
-    VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') +
+    '[^' + INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') + ']*'
     r'(\]\]|\|(?:[\S\s](?!\[\[))*?\]\])',
     re.IGNORECASE,
 )
@@ -229,6 +236,7 @@ COMMENT_REGEX = re.compile(
     r'<!--.*?-->',
     re.DOTALL,
 )
+SINGLE_BRACES_REGEX = re.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
 def parse_to_spans(string):
@@ -359,6 +367,11 @@ def indexed_parse_to_spans(
     )
 
 
+def same_length_repl(match):
+    """Return '_' * len(m.group())."""
+    return '_' * len(m.group())
+
+
 def parse_to_spans_innerloop(
     string,
     index,
@@ -378,8 +391,15 @@ def parse_to_spans_innerloop(
     while True:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
-        string = re.sub(r'(?<!{){(?=[^{])', '_', string)
-        string = re.sub(r'(?<!})}(?=[^}])', '_', string)
+        string = SINGLE_BRACES_REGEX.sub('_', string)
+        # Also remove empty double braces
+        loop = True
+        while loop:
+            loop = False
+            for match in INVALID_NAME_TEMPLATE_REGEX.finditer(string):
+                loop = True
+                group = match.group()
+                string = string.replace(group, len(group) * '_')
         # The following was much more faster than
         # string = re.sub(r'{(?=[^}]*$)', '_', string)
         head, sep, tail = string.rpartition('}')
