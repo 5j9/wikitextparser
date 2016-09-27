@@ -4,6 +4,7 @@
 from .wikitext import IndexedWikiText
 from .argument import Argument
 
+
 class ParserFunction(IndexedWikiText):
 
     """Create a new ParserFunction object."""
