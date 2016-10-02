@@ -239,10 +239,10 @@ COMMENT_REGEX = re.compile(
 SINGLE_BRACES_REGEX = re.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
-def parse_to_spans(string):
+def parse_to_spans(string: str) -> dict:
     """Calculate and set self._spans.
 
-    The result a dictionary containing lists of spans:
+    The result is a dictionary containing lists of spans:
     {
         'parameters': parameter_spans,
         'functions': parser_function_spans,
@@ -251,6 +251,7 @@ def parse_to_spans(string):
         'comments': comment_spans,
         'exttags': extension_tag_spans,
     }
+
     """
     comment_spans = []
     extension_tag_spans = []
@@ -272,19 +273,18 @@ def parse_to_spans(string):
         if any(
             (group.startswith('<' + pte) for pte in PARSABLE_TAG_EXTENSIONS)
         ):
-            indexed_parse_to_spans(
+            parse_substring_to_spans(
                 group[3:-3],
                 span[0] + 3,
-                comment_spans,
-                extension_tag_spans,
                 wikilink_spans,
                 parameter_spans,
                 parser_function_spans,
                 template_spans,
             )
-    # The title in WikiLinks may contain braces that interfere with
+    # Remove the braces inside WikiLinks.
+    # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
-    # the span of `text` template should be the whole string
+    # the span of the template should be the whole string.
     loop = True
     while loop:
         loop = False
@@ -321,28 +321,30 @@ def parse_to_spans(string):
     }
 
 
-def indexed_parse_to_spans(
-    string,
-    index,
-    comment_spans,
-    extension_tag_spans,
-    wikilink_spans,
-    parameter_spans,
-    parser_function_spans,
-    template_spans,
-):
-    """Basically the same as `parse_to_spans`, but with some arguments.
+def parse_substring_to_spans(
+    substring: str,
+    index: int,
+    wikilink_spans: list,
+    parameter_spans: list,
+    parser_function_spans: list,
+    template_spans: list,
+) -> None:
+    """Parse the substring to spans.
 
-    Accept an index and list of spans as argument.
-    The goal is to deal with wikitexts within extension tags.
+    This function is basically the same as `parse_to_spans`, but accepts an
+    index that indicates the start of the substring. `substrings` are the
+    contents of PARSABLE_TAG_EXTENSIONS.
+
     """
-    # Currently, does not work with nested <!-- comments --> or tag extensions.
-    # The title in WikiLinks may contain braces that interfere with
-    # detection of templates
+    # Todo: Do we need to parse for nested tag extensions?
+    # Remove the braces inside WikiLinks.
+    # WikiLinks may contain braces that interfere with
+    # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
+    # the span of the template should be the whole string.
     loop = True
     while loop:
         loop = False
-        for match in WIKILINK_REGEX.finditer(string):
+        for match in WIKILINK_REGEX.finditer(substring):
             loop = True
             ss, se = match.span()
             wikilink_spans.append((index + ss, index + se))
@@ -354,12 +356,12 @@ def indexed_parse_to_spans(
                 parser_function_spans,
                 template_spans,
             )
-            string = string.replace(
+            substring = substring.replace(
                 group,
                 '_[' + group[2:-2].replace('}', '_').replace('{', '_') + ']_'
             )
     parse_to_spans_innerloop(
-        string,
+        substring,
         index,
         parameter_spans,
         parser_function_spans,
@@ -367,26 +369,22 @@ def indexed_parse_to_spans(
     )
 
 
-def same_length_repl(match):
-    """Return '_' * len(m.group())."""
-    return '_' * len(m.group())
-
-
 def parse_to_spans_innerloop(
-    string,
-    index,
-    parameter_spans,
-    parser_function_spans,
-    template_spans
-):
+    string: str,
+    index: int,
+    parameter_spans: list,
+    parser_function_spans: list,
+    template_spans: list,
+) -> None:
     """Run the main loop for _get_spans.
 
-    `string`: The string or part of string that we are looking up.
-    `index`: Add to every returned index.
+    :string: The string or part of string that is being parsed.
+    :index: Add to every returned index.
 
     This function was created because the _get_spans function needs to
     call it n + 1 time. One time for the whole string and n times for
     each of the n WikiLinks.
+
     """
     while True:
         # Single braces will interfere with detection of other elements and
@@ -441,5 +439,3 @@ def parse_to_spans_innerloop(
                 string = string.replace(group, '__' + group[2:-2] + '__')
         if not match:
             break
-    # Calls to this function make use of mutation in the arguments.
-    # There is no return value.
