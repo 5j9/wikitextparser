@@ -453,11 +453,19 @@ class WikiText:
                 )
         return shadow
 
-    def _common_init(self, string: str or list, spans: list) -> None:
-        if isinstance(string, list):
-            self._lststr = string
+    def _common_init(self, lststr: str or list, spans: list) -> None:
+        """Do the common initializations required for subclasses of WikiText.
+
+        :lststr: The raw string of the object to be parsed or a list pointing
+            to the mother string of the parent object.
+        :spans: If the lststr is already parsed, pass its _spans property as
+            spans to avoid parsing it again.
+
+        """
+        if isinstance(lststr, list):
+            self._lststr = lststr
         else:
-            self._lststr = [string]
+            self._lststr = [lststr]
         if spans:
             self._spans = spans
         else:
