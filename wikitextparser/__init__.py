@@ -11,6 +11,7 @@ from . import wikitext as _wikitext
 from .table import Table
 from .template import Template
 from .parser_function import ParserFunction
+from .tag import Tag
 
 
 _wikitext.ExternalLink = ExternalLink
