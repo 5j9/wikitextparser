@@ -34,12 +34,20 @@ class Tag(unittest.TestCase):
              'empty_attr': None, 'self_closing': None, 'uq_attr_val': None,
              'q_attr_val': 'checkbox'}
         )
+        # This is not standard HTML5, but could be useful to have.
+        # self.assertEqual(
+        #     START_TAG_REGEX.match('<s style=>').groupdict(),
+        #     {'name': 's', 'attr': 'style=', 'quote': None,
+        #      'start': '<s style=>', 'attr_name': 'style',
+        #      'empty_attr': None, 'self_closing': None, 'uq_attr_val': '',
+        #      'q_attr_val': None}
+        # )
+
         self.assertEqual(
-            START_TAG_REGEX.match('<s style=>').groupdict(),
-            {'name': 's', 'attr': 'style=', 'quote': None,
-             'start': '<s style=>', 'attr_name': 'style',
-             'empty_attr': None, 'self_closing': None, 'uq_attr_val': '',
-             'q_attr_val': None}
+            START_TAG_REGEX.match("<t a1=v1 a2=v2>").capturesdict(),
+            {'empty_attr': [], 'attr_name': ['a1', 'a2'], 'q_attr_val': [],
+             'start': ['<t a1=v1 a2=v2>'], 'attr': ['a1=v1', 'a2=v2'], 'quote': [],
+             'uq_attr_val': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
         )
 
     def test_end_tag_regex(self):
