@@ -5,7 +5,7 @@
 WikiTextParser
 ==============
 
-A simple, purely python, WikiText parsing tool for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_
+A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_
 .
 
 The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, etc. found in wikitexts.
