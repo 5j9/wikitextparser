@@ -61,9 +61,12 @@ START_TAG = (
     '''
 ).format(**locals())
 START_TAG_REGEX = regex.compile(START_TAG, regex.VERBOSE)
-END_OF_START_TAG = r'(?P<end></(?P=name)[{SPACE_CHARS}]*>)'.format(**locals())
+END_OF_START_TAG = (
+    r'(?P<end></(?P<end_name>(?P=name))[{SPACE_CHARS}]*>)'.format(**locals())
+)
 END_TAG = r'(?P<end></{TAG_NAME}[{SPACE_CHARS}]*>)'.format(**locals())
 END_TAG_REGEX = regex.compile(END_TAG)
+# Note that the following regex won't check for nested tags
 TAG_REGEX = regex.compile(
     r'''
     (?P<start>
@@ -87,7 +90,7 @@ class Tag(IndexedWikiText):
 
     """Create a new Tag object."""
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(self, string, spans=None, index=None, match=None):
         """Initialize the Tag object.
 
         Run self._common_init. Set self._spans['extlinks'] if spans is None.
@@ -100,6 +103,8 @@ class Tag(IndexedWikiText):
             self._index = len(self._spans['tags']) - 1
         else:
             self._index = index
+        self._cache = string
+        self._match = match
 
     def __repr__(self):
         """Return the string representation of self."""
@@ -109,24 +114,56 @@ class Tag(IndexedWikiText):
         """Return the span of this object."""
         return self._spans['tags'][self._index]
 
-    @property
-    def url(self):
-        """Return the url part of the ExternalLink."""
-        if self.in_brackets:
-            return self.string[1:-1].partition(' ')[0]
-        return self.string
+    def _get_match(self):
+        """Return the match object for the current tag. Cache the result."""
+        string = self.string
+        if not self._match or not self._cache == string:
+            # Compute the match
+            self._match = TAG_REGEX.fullmatch(string)
+            self._cache = string
+        return self._match
 
-    @url.setter
-    def url(self, newurl):
-        """Set a new url for the current ExternalLink."""
-        if self.in_brackets:
-            url = self.url
-            self.replace_slice(1, len('[' + url), newurl)
+    @property
+    def name(self) -> str:
+        """Return tag name."""
+        return self._get_match()['name']
+
+    @name.setter
+    def name(self, name) -> None:
+        """Set a new tag name."""
+        # The name in the end tag should be replaced first because the spans
+        # of the match object change after each replacement.
+        match = self._get_match()
+        start, end = match.span('end_name')
+        if start != -1:
+            self.replace_slice(start, end, name)
+        start, end = match.span('name')
+        self.replace_slice(start, end, name)
+
+    @property
+    def contents(self) -> str:
+        """Return tag contents."""
+        return self._get_match()['contents']
+
+    @contents.setter
+    def contents(self, contents) -> None:
+        """Set new contents.
+
+        Note that if the tag is self-closing, then it will be expanded to
+        have a start tag and an end tag. For example:
+        >>> t = Tag('<t/>')
+        >>> t.contents = 'n'
+        >>> t.string
+        '<t>n</t>'
+
+        """
+        match = self._get_match()
+        start, end = match.span('contents')
+        if start != -1:
+            self.replace_slice(start, end, contents)
         else:
-            url = self.url
-            self.replace_slice(0, len(url), newurl)
-
-    @property
-    def in_brackets(self):
-        """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self.string.startswith('[')
+            # This is a self-closing tag.
+            start, end = match.span('self_closing')
+            self.replace_slice(
+                start, end, '>{0}</{1}>'.format(contents, match['name'])
+            )

@@ -1,6 +1,10 @@
+"""Test the tag module."""
+
+
 import unittest
 
-from wikitextparser.tag import START_TAG_REGEX, END_TAG_REGEX
+import wikitextparser as wtp
+from wikitextparser.tag import START_TAG_REGEX, END_TAG_REGEX, TAG_REGEX
 
 
 class Tag(unittest.TestCase):
@@ -42,7 +46,6 @@ class Tag(unittest.TestCase):
         #      'empty_attr': None, 'self_closing': None, 'uq_attr_val': '',
         #      'q_attr_val': None}
         # )
-
         self.assertEqual(
             START_TAG_REGEX.match("<t a1=v1 a2=v2>").capturesdict(),
             {'empty_attr': [], 'attr_name': ['a1', 'a2'], 'q_attr_val': [],
@@ -57,6 +60,33 @@ class Tag(unittest.TestCase):
         )
 
     @unittest.expectedFailure
-    def test_basic(self):
-        t = wtp.Tag('<ref>text</ref>')
-        self.assertEqual(t.name, 'ref')
+    def test_tag_content_cannot_contain_another_start(self):
+        """Checking for such situations is not currently required."""
+        self.assertEqual(
+            TAG_REGEX.search('<a><a>c</a></a>').group(),
+            '<a>c</a>'
+        )
+
+    def test_tag_name(self):
+        t = wtp.Tag('<t>c</t>')
+        self.assertEqual(t.name, 't')
+        t.name = 'a'
+        self.assertEqual(t.string, '<a>c</a>')
+        t = wtp.Tag('<t/>')
+        self.assertEqual(t.name, 't')
+        t.name = 'n'
+        self.assertEqual(t.string, '<n/>')
+
+    def test_tag_contents(self):
+        t = wtp.Tag('<t>\nc\n</t>')
+        self.assertEqual(t.contents, '\nc\n')
+        t.contents = 'n'
+        self.assertEqual(t.string, '<t>n</t>')
+        t = wtp.Tag('<t></t>')
+        self.assertEqual(t.contents, '')
+        t.contents = 'n'
+        self.assertEqual(t.string, '<t>n</t>')
+        t = wtp.Tag('<t/>')
+        self.assertEqual(t.contents, None)
+        t.contents = 'n'
+        self.assertEqual(t.string, '<t>n</t>')
