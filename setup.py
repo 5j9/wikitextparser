@@ -9,7 +9,7 @@ setup(
     author_email='dalba.wiki@gmail.com',
     url='https://github.com/irdb/wikitextparser',
     packages=['wikitextparser'],
-    install_requires=['wcwidth'],
+    install_requires=['wcwidth', 'regex'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
