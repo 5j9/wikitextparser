@@ -20,19 +20,19 @@ class Tag(unittest.TestCase):
         )
         self.assertEqual(
             START_TAG_REGEX.match('<a t>').groupdict(),
-            {'name': 'a', 'attr': 't', 'quote': None,
+            {'name': 'a', 'attr': ' t', 'quote': None,
              'start': '<a t>', 'attr_name': 't', 'attr_value': '',
              'self_closing': None}
         )
         self.assertEqual(
             START_TAG_REGEX.match('<input value=yes>').groupdict(),
-            {'name': 'input', 'attr': 'value=yes', 'quote': None,
+            {'name': 'input', 'attr': ' value=yes', 'quote': None,
              'start': '<input value=yes>', 'attr_name': 'value',
              'attr_value': 'yes', 'self_closing': None}
         )
         self.assertEqual(
             START_TAG_REGEX.match("<input type='checkbox'>").groupdict(),
-            {'name': 'input', 'attr': "type='checkbox'", 'quote': "'",
+            {'name': 'input', 'attr': " type='checkbox'", 'quote': "'",
              'start': "<input type='checkbox'>", 'attr_name': 'type',
              'attr_value': 'checkbox', 'self_closing': None}
         )
@@ -46,7 +46,7 @@ class Tag(unittest.TestCase):
         self.assertEqual(
             START_TAG_REGEX.match("<t a1=v1 a2=v2>").capturesdict(),
             {'attr_name': ['a1', 'a2'], 'start': ['<t a1=v1 a2=v2>'],
-             'attr': ['a1=v1', 'a2=v2'], 'quote': [],
+             'attr': [' a1=v1', ' a2=v2'], 'quote': [],
              'attr_value': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
         )
 
@@ -100,3 +100,8 @@ class Tag(unittest.TestCase):
         self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=v4>c</t>')
         t['id'] = '1'
         self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=v4 id="1">c</t>')
+
+    def test_attr_deletion(self):
+        t = wtp.Tag('<t n1=v1 n2=v2 n1=v3>c</t>')
+        del t['n1']
+        self.assertEqual(t.string, '<t n2=v2>c</t>')

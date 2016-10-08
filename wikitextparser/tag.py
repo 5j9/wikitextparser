@@ -40,7 +40,7 @@ ATTR_VAL = (
     '''
 ).format(**locals())
 # Ignore ambiguous ampersand for the sake of simplicity.
-ATTR = r'(?P<attr>{ATTR_NAME}{ATTR_VAL})'.format(**locals())
+ATTR = r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
 #     'link', 'meta', 'param', 'source', 'track', 'wbr'
@@ -54,7 +54,7 @@ ATTR = r'(?P<attr>{ATTR_NAME}{ATTR_VAL})'.format(**locals())
 START_TAG = (
     r'''
     (?P<start>
-        <{TAG_NAME}(?:[{SPACE_CHARS}]+{ATTR})*
+        <{TAG_NAME}(?:{ATTR})*
         [{SPACE_CHARS}]*
         (?:(?P<self_closing>/>)|>)
     )
@@ -70,7 +70,7 @@ END_TAG_REGEX = regex.compile(END_TAG)
 TAG_REGEX = regex.compile(
     r'''
     (?P<start>
-        <{TAG_NAME}(?:[{SPACE_CHARS}]+{ATTR})*
+        <{TAG_NAME}{ATTR}*
     )
     # After the attributes, or after the tag name if there are no attributes,
     # there may be one or more space characters. This is sometimes required but
@@ -143,6 +143,13 @@ class Tag(IndexedWikiText):
             end_of_last_attr,
             ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
         )
+
+    def __delitem__(self, attr_name) -> None:
+        match = self._get_match()
+        for i, captured_name in enumerate(match.captures('attr_name')):
+            if captured_name == attr_name:
+                start, end = match.spans('attr')[-i - 1]
+                self.strdel(start, end)
 
     @property
     def name(self) -> str:
