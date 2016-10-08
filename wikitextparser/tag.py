@@ -22,9 +22,9 @@ ATTR_NAME = (
 ).format(**locals())
 WS_EQ_WS = r'[{SPACE_CHARS}]*=[{SPACE_CHARS}]*'.format(**locals())
 UNQUOTED_ATTR_VAL = (
-    r'(?P<uq_attr_val>[^{SPACE_CHARS}"\'=<>`]+)'
+    r'(?P<attr_value>[^{SPACE_CHARS}"\'=<>`]+)'
 ).format(**locals())
-QUOTED_ATTR_VAL = r'(?P<quote>[\'"])(?P<q_attr_val>.+?)(?P=quote)'
+QUOTED_ATTR_VAL = r'(?P<quote>[\'"])(?P<attr_value>.+?)(?P=quote)'
 # May include character references, but for now, ignore the fact that they
 # cannot contain an ambiguous ampersand.
 ATTR_VAL = (
@@ -33,9 +33,9 @@ ATTR_VAL = (
         # If an empty attribute is to be followed by the optional
         # "/" character, then there must be a space character separating
         # the two. This rule is ignored here.
-        (?P<empty_attr>)[{SPACE_CHARS}]*|
         {WS_EQ_WS}{UNQUOTED_ATTR_VAL}[{SPACE_CHARS}]*|
-        {WS_EQ_WS}{QUOTED_ATTR_VAL}[{SPACE_CHARS}]*
+        {WS_EQ_WS}{QUOTED_ATTR_VAL}[{SPACE_CHARS}]*|
+        [{SPACE_CHARS}]*(?P<attr_value>) # empty attribute
     )
     '''
 ).format(**locals())
@@ -122,6 +122,27 @@ class Tag(IndexedWikiText):
             self._match = TAG_REGEX.fullmatch(string)
             self._cache = string
         return self._match
+
+    def __getitem__(self, attr_name) -> str:
+        """Return the last value for the attribute with the given name."""
+        match = self._get_match()
+        for i, captured_name in enumerate(match.captures('attr_name')):
+            if captured_name == attr_name:
+                return match.captures('attr_value')[-i - 1]
+
+    def __setitem__(self, attr_name, attr_value) -> None:
+        match = self._get_match()
+        for i, captured_name in enumerate(match.captures('attr_name')):
+            if captured_name == attr_name:
+                start, end = match.spans('attr_value')[-i - 1]
+                self.replace_slice(start, end, attr_value)
+                return
+        # The attr_name is new, add as a new attribute.
+        end_of_last_attr = match.spans('attr_value')[-1][1]
+        self.strins(
+            end_of_last_attr,
+            ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
+        )
 
     @property
     def name(self) -> str:

@@ -15,42 +15,39 @@ class Tag(unittest.TestCase):
         self.assertEqual(
             START_TAG_REGEX.match('<a>').groupdict(),
             {'name': 'a', 'attr': None, 'quote': None,
-             'start': '<a>', 'attr_name': None, 'empty_attr': None,
-             'self_closing': None, 'uq_attr_val': None, 'q_attr_val': None}
+             'start': '<a>', 'attr_name': None,
+             'self_closing': None, 'attr_value': None,}
         )
         self.assertEqual(
             START_TAG_REGEX.match('<a t>').groupdict(),
             {'name': 'a', 'attr': 't', 'quote': None,
-             'start': '<a t>', 'attr_name': 't', 'empty_attr': '',
-             'self_closing': None, 'uq_attr_val': None, 'q_attr_val': None}
+             'start': '<a t>', 'attr_name': 't', 'attr_value': '',
+             'self_closing': None}
         )
         self.assertEqual(
             START_TAG_REGEX.match('<input value=yes>').groupdict(),
             {'name': 'input', 'attr': 'value=yes', 'quote': None,
              'start': '<input value=yes>', 'attr_name': 'value',
-             'empty_attr': None, 'self_closing': None, 'uq_attr_val': 'yes',
-             'q_attr_val': None}
+             'attr_value': 'yes', 'self_closing': None}
         )
         self.assertEqual(
             START_TAG_REGEX.match("<input type='checkbox'>").groupdict(),
             {'name': 'input', 'attr': "type='checkbox'", 'quote': "'",
              'start': "<input type='checkbox'>", 'attr_name': 'type',
-             'empty_attr': None, 'self_closing': None, 'uq_attr_val': None,
-             'q_attr_val': 'checkbox'}
+             'attr_value': 'checkbox', 'self_closing': None}
         )
         # This is not standard HTML5, but could be useful to have.
         # self.assertEqual(
         #     START_TAG_REGEX.match('<s style=>').groupdict(),
         #     {'name': 's', 'attr': 'style=', 'quote': None,
-        #      'start': '<s style=>', 'attr_name': 'style',
-        #      'empty_attr': None, 'self_closing': None, 'uq_attr_val': '',
-        #      'q_attr_val': None}
+        #      'start': '<s style=>', 'attr_name': 'style', 'attr_value': ''
+        #      'self_closing': None}
         # )
         self.assertEqual(
             START_TAG_REGEX.match("<t a1=v1 a2=v2>").capturesdict(),
-            {'empty_attr': [], 'attr_name': ['a1', 'a2'], 'q_attr_val': [],
-             'start': ['<t a1=v1 a2=v2>'], 'attr': ['a1=v1', 'a2=v2'], 'quote': [],
-             'uq_attr_val': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
+            {'attr_name': ['a1', 'a2'], 'start': ['<t a1=v1 a2=v2>'],
+             'attr': ['a1=v1', 'a2=v2'], 'quote': [],
+             'attr_value': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
         )
 
     def test_end_tag_regex(self):
@@ -90,3 +87,16 @@ class Tag(unittest.TestCase):
         self.assertEqual(t.contents, None)
         t.contents = 'n'
         self.assertEqual(t.string, '<t>n</t>')
+
+    def test_get_attr_value(self):
+        t = wtp.Tag('<t n1=v1 n2=v2 n1=v3>c</t>')
+        self.assertEqual(t['n1'], 'v3')
+        self.assertEqual(t['n2'], 'v2')
+
+    def test_set_attr_value(self):
+        t = wtp.Tag('<t n1=v1 n2=v2 n1=v3>c</t>')
+        t['n1'] = 'v4'
+        t['n2'] = 'v5'
+        self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=v4>c</t>')
+        t['id'] = '1'
+        self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=v4 id="1">c</t>')
