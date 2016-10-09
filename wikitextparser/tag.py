@@ -3,7 +3,7 @@
 
 import regex
 
-from .wikitext import IndexedWikiText
+from .wikitext import SubWikiText
 
 
 regex.DEFAULT_VERSION = regex.VERSION1
@@ -86,7 +86,7 @@ TAG_REGEX = regex.compile(
 )
 
 
-class Tag(IndexedWikiText):
+class Tag(SubWikiText):
 
     """Create a new Tag object."""
 
@@ -221,3 +221,8 @@ class Tag(IndexedWikiText):
             self.replace_slice(
                 start, end, '>{0}</{1}>'.format(contents, match['name'])
             )
+
+    @property
+    def wcontents(self):
+        """Return the contents as a WikiText object."""
+        return

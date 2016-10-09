@@ -1,10 +1,10 @@
 ﻿"""Define the Parameter class."""
 
 
-from .wikitext import IndexedWikiText
+from .wikitext import SubWikiText
 
 
-class Parameter(IndexedWikiText):
+class Parameter(SubWikiText):
 
     """Create a new {{{parameters}}} object."""
 

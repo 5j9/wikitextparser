@@ -3,12 +3,12 @@
 
 import re
 
-from .wikitext import IndexedWikiText
+from .wikitext import SubWikiText
 from .argument import Argument
 from .spans import COMMENT_REGEX
 
 
-class Template(IndexedWikiText):
+class Template(SubWikiText):
 
     """Convert strings to Template objects.
 

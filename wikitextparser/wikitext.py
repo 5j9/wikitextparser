@@ -854,11 +854,11 @@ class WikiText:
         return tables
 
 
-class IndexedWikiText(WikiText):
+class SubWikiText(WikiText):
 
-    """This is a middle-class to be used by some other subclasses.
+    """Define a middle-class to be used by some other subclasses.
 
-    Not intended for the final user.
+    Allow the user to focus on a particular part of WikiText.
 
     """
 

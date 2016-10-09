@@ -1,11 +1,11 @@
 """"Define the ParserFunction class."""
 
 
-from .wikitext import IndexedWikiText
+from .wikitext import SubWikiText
 from .argument import Argument
 
 
-class ParserFunction(IndexedWikiText):
+class ParserFunction(SubWikiText):
 
     """Create a new ParserFunction object."""
 

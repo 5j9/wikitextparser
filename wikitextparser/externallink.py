@@ -1,10 +1,10 @@
 ﻿"""Define the ExternalLink class."""
 
 
-from .wikitext import IndexedWikiText
+from .wikitext import SubWikiText
 
 
-class ExternalLink(IndexedWikiText):
+class ExternalLink(SubWikiText):
 
     """Create a new ExternalLink object."""
 
