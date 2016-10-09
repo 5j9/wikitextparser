@@ -123,33 +123,59 @@ class Tag(IndexedWikiText):
             self._cache = string
         return self._match
 
-    def __getitem__(self, attr_name) -> str:
-        """Return the last value for the attribute with the given name."""
+    def __getitem__(self, attr_name: str) -> str or None:
+        """Return the last value for the attribute with the given name.
+
+        Return None if the attr_name does not exist in self.
+        If there are already multiple attributes with the given name, only
+            return the value of the last one.
+        Return an empty string if the mentioned name is an empty attribute.
+
+        """
         match = self._get_match()
-        for i, captured_name in enumerate(match.captures('attr_name')):
-            if captured_name == attr_name:
+        for i, capture in enumerate(reversed(match.captures('attr_name'))):
+            if capture == attr_name:
                 return match.captures('attr_value')[-i - 1]
 
-    def __setitem__(self, attr_name, attr_value) -> None:
+    def __setitem__(self, attr_name: str, attr_value: str) -> None:
+        """Set the value for the given attribute name.
+
+        If there are already multiple attributes with the given name, only
+        set the value for the last one.
+        If attr_value == '', use the empty attribute syntax. According to the
+        standard the value for such attributes is implicitly the empty string.
+
+        """
         match = self._get_match()
-        for i, captured_name in enumerate(match.captures('attr_name')):
-            if captured_name == attr_name:
+        for i, capture in enumerate(reversed(match.captures('attr_name'))):
+            if capture == attr_name:
                 start, end = match.spans('attr_value')[-i - 1]
                 self.replace_slice(start, end, attr_value)
                 return
         # The attr_name is new, add as a new attribute.
-        end_of_last_attr = match.spans('attr_value')[-1][1]
+        start = match.span('start')[1]
         self.strins(
-            end_of_last_attr,
+            start,
             ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
         )
 
-    def __delitem__(self, attr_name) -> None:
+    def __delitem__(self, attr_name: str) -> None:
+        """Remove the attribute with the given name.
+
+        Pass if the attr_name is not found in self.
+
+        """
         match = self._get_match()
-        for i, captured_name in enumerate(match.captures('attr_name')):
-            if captured_name == attr_name:
+        # Must be done in reversed order because the spans
+        # change after each deletion.
+        for i, capture in enumerate(reversed(match.captures('attr_name'))):
+            if capture == attr_name:
                 start, end = match.spans('attr')[-i - 1]
                 self.strdel(start, end)
+
+    def __contains__(self, attr_name: str) -> bool:
+        """Return True if self contains an attribute with the given name."""
+        return attr_name in self._get_match().captures('attr_name')
 
     @property
     def name(self) -> str:
@@ -157,7 +183,7 @@ class Tag(IndexedWikiText):
         return self._get_match()['name']
 
     @name.setter
-    def name(self, name) -> None:
+    def name(self, name: str) -> None:
         """Set a new tag name."""
         # The name in the end tag should be replaced first because the spans
         # of the match object change after each replacement.
@@ -174,7 +200,7 @@ class Tag(IndexedWikiText):
         return self._get_match()['contents']
 
     @contents.setter
-    def contents(self, contents) -> None:
+    def contents(self, contents: str) -> None:
         """Set new contents.
 
         Note that if the tag is self-closing, then it will be expanded to
