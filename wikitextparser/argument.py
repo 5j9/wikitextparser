@@ -55,7 +55,7 @@ class Argument(SubWikiText):
                 if equal_index == -1:
                     position += 1
                 else:
-                    in_subspans = self._in_subspans_factory(ss, se)
+                    in_subspans = self._in_atomic_subspans_factory(ss, se)
                     while equal_index != -1:
                         if not in_subspans(equal_index):
                             # This is a keyword argument

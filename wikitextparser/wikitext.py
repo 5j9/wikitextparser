@@ -248,7 +248,7 @@ class WikiText:
         string = self._lststr[0][ss:se]
         splits = []
         findstart = 0
-        in_spans = self._in_subspans_factory()
+        in_spans = self._in_atomic_subspans_factory()
         while True:
             index = string.find(char, findstart)
             while in_spans(ss + index):
@@ -263,7 +263,7 @@ class WikiText:
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
         findstart = 0
-        in_spans = self._in_subspans_factory()
+        in_spans = self._in_atomic_subspans_factory()
         index = string.find(char, findstart)
         while in_spans(ss + index):
             index = string.find(char, index + 1)
@@ -277,7 +277,7 @@ class WikiText:
         string = self._lststr[0][ss:se]
         results = []
         findstart = 0
-        in_spans = self._in_subspans_factory()
+        in_spans = self._in_atomic_subspans_factory()
         while True:
             index = string.find(char, findstart)
             while in_spans(ss + index):
@@ -288,7 +288,7 @@ class WikiText:
             findstart = index + 1
 
     # Todo: Rename this and the related functions to in_atomic_subspans_...
-    def _in_subspans_factory(
+    def _in_atomic_subspans_factory(
         self, ss: int or None=None, se: int or None=None
     ):
         """Return a function that can tell if an index is in atomic subspans.
