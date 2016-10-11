@@ -103,7 +103,8 @@ class Tag(SubWikiText):
             self._index = len(self._spans['tags']) - 1
         else:
             self._index = index
-        self._cache = string
+        # The following attributes are used for caching.
+        self._string = string
         self._match = match
 
     def __repr__(self):
@@ -117,10 +118,10 @@ class Tag(SubWikiText):
     def _get_match(self):
         """Return the match object for the current tag. Cache the result."""
         string = self.string
-        if not self._match or not self._cache == string:
+        if not self._match or not self._string == string:
             # Compute the match
             self._match = TAG_REGEX.fullmatch(string)
-            self._cache = string
+            self._string = string
         return self._match
 
     def __getitem__(self, attr_name: str) -> str or None:
@@ -224,5 +225,10 @@ class Tag(SubWikiText):
 
     @property
     def wcontents(self):
-        """Return the contents as a WikiText object."""
-        return
+        """Return the contents as a SubWikiText object."""
+        match = self._get_match()
+        span = match.span('contents')
+        spans = self._spans
+        swt_spans = spans.setdefault('subwikitext', [span])
+        index = next((i for i, s in enumerate(swt_spans) if s == span))
+        return SubWikiText(self._lststr, spans, index)

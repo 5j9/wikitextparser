@@ -16,7 +16,7 @@ class Tag(unittest.TestCase):
             START_TAG_REGEX.match('<a>').groupdict(),
             {'name': 'a', 'attr': None, 'quote': None,
              'start': '<a>', 'attr_name': None,
-             'self_closing': None, 'attr_value': None,}
+             'self_closing': None, 'attr_value': None}
         )
         self.assertEqual(
             START_TAG_REGEX.match('<a t>').groupdict(),
@@ -57,14 +57,14 @@ class Tag(unittest.TestCase):
         )
 
     @unittest.expectedFailure
-    def test_tag_content_cannot_contain_another_start(self):
+    def test_content_cannot_contain_another_start(self):
         """Checking for such situations is not currently required."""
         self.assertEqual(
             TAG_REGEX.search('<a><a>c</a></a>').group(),
             '<a>c</a>'
         )
 
-    def test_tag_name(self):
+    def test_name(self):
         t = wtp.Tag('<t>c</t>')
         self.assertEqual(t.name, 't')
         t.name = 'a'
@@ -74,7 +74,7 @@ class Tag(unittest.TestCase):
         t.name = 'n'
         self.assertEqual(t.string, '<n/>')
 
-    def test_tag_contents(self):
+    def test_contents(self):
         t = wtp.Tag('<t>\nc\n</t>')
         self.assertEqual(t.contents, '\nc\n')
         t.contents = 'n'
@@ -114,3 +114,11 @@ class Tag(unittest.TestCase):
         t = wtp.Tag('<t n1=v1>c</t>')
         self.assertTrue('n1' in t)
         self.assertFalse('n2' in t)
+
+    def test_wcontents(self):
+        t = wtp.Tag('<t>c [[w]]</t>')
+        c1 = t.wcontents
+        self.assertEqual(c1.wikilinks[0].target, 'w')
+        # The new contents object won't create a new span
+        c2 = t.wcontents
+        self.assertEqual(len(c2._spans['wikilinks']), 1)
