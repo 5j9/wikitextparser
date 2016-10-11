@@ -287,36 +287,46 @@ class WikiText:
             results.append((ss + findstart, ss + index))
             findstart = index + 1
 
+    # Todo: Rename this and the related functions to in_atomic_subspans_...
     def _in_subspans_factory(
         self, ss: int or None=None, se: int or None=None
     ):
-        """Return a function that can tell if an index is in subspans.
+        """Return a function that can tell if an index is in atomic subspans.
 
-        `ss` and `se` indicate the spanstart and spanend that subspans will
-            be checked for. If not specified, use self._get_span().
+        Atomic subspans are those which are parsed seperately. They currently
+        include the following:
+            (
+                'templates', 'parameters', 'functions',
+                'wikilinks', 'comments', 'exttags'
+            )
 
-        Checked subspans types are:
-        (
-            'templates', 'parameters', 'functions',
-            'wikilinks', 'comments', 'exttags'
-        ).
+        `ss` and `se` indicate the spanstart and spanend of the current span.
+            If not specified, use self._get_span().
+
+        The resultant function will mostly be used for splitting template
+        arguments with "|" or "=" as a separator.
+
+        The following functions depend on this function:
+            * _not_in_subspans_partition
+            * _not_in_subspans_split
+            * _not_in_subspans_split_spans
 
         """
         # Calculate subspans
         if ss is None:
             ss, se = self._get_span()
         subspans = []
-        spans = self._spans
+        types_to_spans = self._spans
         for key in (
             'templates', 'parameters', 'functions',
             'wikilinks', 'comments', 'exttags'
         ):
-            for span in spans[key]:
+            for span in types_to_spans[key]:
                 if ss < span[0] and span[1] <= se:
                     subspans.append(span)
 
         # Define the function to be returned.
-        def index_in_spans(index):
+        def index_in_spans(index: int):
             """Return True if the given index is found within a subspans."""
             for ss, se in subspans:
                 if ss <= index < se:
@@ -456,6 +466,9 @@ class WikiText:
     def _common_init(self, lststr: str or list, spans: list) -> None:
         """Do the common initializations required for subclasses of WikiText.
 
+        Set the initial values and self._lststr, self._spans.
+
+        Parameters:
         :lststr: The raw string of the object to be parsed or a list pointing
             to the mother string of the parent object.
         :spans: If the lststr is already parsed, pass its _spans property as
@@ -832,6 +845,9 @@ class WikiText:
         spans = self._spans
         ss, se = self._get_span()
         if 'tables' not in spans:
+            # Todo: this means that every table that will be found later
+            # is unique, so there is no need to check for
+            # `mspan not in tspans`.
             spans['tables'] = []
         tspans = spans['tables']
         m = True
@@ -862,6 +878,23 @@ class SubWikiText(WikiText):
 
     """
 
+    def __init__(self, string, spans=None, index=None):
+        """Initialize the object.
+
+        Run self._common_init.
+        Set self._index
+
+        """
+        self._common_init(string, spans)
+        if index is None:
+            self._index = len(self._spans['subwikitext']) - 1
+        else:
+            self._index = index
+
+    def __repr__(self):
+        """Return the string representation of the Comment."""
+        return 'SubWikiText(' + repr(self.string) + ')'
+
     def _gen_subspan_indices(self, type_: str or None=None):
         """Yield all the subspan indices excluding self._get_span()."""
         s, e = self._get_span()
@@ -869,6 +902,10 @@ class SubWikiText(WikiText):
             # Do not yield self._get_span().
             if s < ss and ee <= e:
                 yield i
+
+    def _get_span(self):
+        """Return the span of self."""
+        return self._spans['subwikitext'][self._index]
 
 
 ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
