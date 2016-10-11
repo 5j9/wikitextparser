@@ -224,7 +224,7 @@ class Tag(SubWikiText):
             )
 
     @property
-    def wcontents(self):
+    def parsed_contents(self):
         """Return the contents as a SubWikiText object."""
         match = self._get_match()
         span = match.span('contents')
