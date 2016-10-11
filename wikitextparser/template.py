@@ -69,7 +69,7 @@ class Template(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        p0 = self._not_in_subspans_partition('|')[0]
+        p0 = self._not_in_atomic_subspans_partition('|')[0]
         if len(p0) == len(self.string):
             return p0[2:-2]
         else:

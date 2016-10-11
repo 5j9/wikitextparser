@@ -258,7 +258,7 @@ class WikiText:
             splits.append(string[findstart:index])
             findstart = index + 1
 
-    def _not_in_subspans_partition(self, char: str) -> tuple:
+    def _not_in_atomic_subspans_partition(self, char: str) -> tuple:
         """Partition self.string using `char` unless char is in self._spans."""
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
@@ -307,7 +307,7 @@ class WikiText:
         arguments with "|" or "=" as a separator.
 
         The following functions depend on this function:
-            * _not_in_subspans_partition
+            * _not_in_atomic_subspans_partition
             * _not_in_atomic_subspans_split
             * _not_in_subspans_split_spans
 
