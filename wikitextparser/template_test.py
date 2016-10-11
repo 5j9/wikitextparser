@@ -252,6 +252,11 @@ class TemplateSetArg(unittest.TestCase):
         t.set_arg('1', 'v', positional=True)
         self.assertEqual('{{t|v}}', t.string)
 
+    def test_nowiki_makes_equal_ineffective(self):
+        t = Template('{{text|1<nowiki>=</nowiki>g}}')
+        a = t.arguments[0]
+        self.assertEqual(a.value, '1<nowiki>=</nowiki>g')
+        self.assertEqual(a.name, '1')
 
 if __name__ == '__main__':
     unittest.main()
