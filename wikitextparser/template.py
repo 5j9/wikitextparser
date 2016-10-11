@@ -40,7 +40,7 @@ class Template(SubWikiText):
     @property
     def arguments(self):
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_subspans_split_spans('|')[1:]
+        barsplits = self._not_in_atomic_subspans_split_spans('|')[1:]
         arguments = []
         spans = self._spans
         lststr = self._lststr

@@ -271,7 +271,7 @@ class WikiText:
             return string, '', ''
         return string[:index], char, string[index + 1:]
 
-    def _not_in_subspans_split_spans(self, char: str) -> list:
+    def _not_in_atomic_subspans_split_spans(self, char: str) -> list:
         """Like _not_in_atomic_subspans_split but return spans."""
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
@@ -287,7 +287,6 @@ class WikiText:
             results.append((ss + findstart, ss + index))
             findstart = index + 1
 
-    # Todo: Rename this and the related functions to in_atomic_subspans_...
     def _in_atomic_subspans_factory(
         self, ss: int or None=None, se: int or None=None
     ):
@@ -309,7 +308,7 @@ class WikiText:
         The following functions depend on this function:
             * _not_in_atomic_subspans_partition
             * _not_in_atomic_subspans_split
-            * _not_in_subspans_split_spans
+            * _not_in_atomic_subspans_split_spans
 
         """
         # Calculate subspans
