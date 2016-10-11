@@ -22,9 +22,9 @@ class Argument(SubWikiText):
         else:
             self._typeindex = typeindex
         if spans is None:
-            self._spans[self._typeindex] = [(0, len(string))]
+            self._type_to_spans[self._typeindex] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['arguments']) - 1
+            self._index = len(self._type_to_spans['arguments']) - 1
         else:
             self._index = index
 
@@ -34,7 +34,7 @@ class Argument(SubWikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans[self._typeindex][self._index]
+        return self._type_to_spans[self._typeindex][self._index]
 
     @property
     def name(self):
@@ -49,7 +49,7 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         godstring = self._lststr[0]
-        for ss, se in self._spans[self._typeindex][:self._index]:
+        for ss, se in self._type_to_spans[self._typeindex][:self._index]:
             if ss < se:
                 equal_index = godstring.find('=', ss, se)
                 if equal_index == -1:

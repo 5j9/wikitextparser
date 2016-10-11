@@ -13,7 +13,7 @@ class ParserFunction(SubWikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['functions']) - 1
+            self._index = len(self._type_to_spans['functions']) - 1
         else:
             self._index = index
 
@@ -23,14 +23,14 @@ class ParserFunction(SubWikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['functions'][self._index]
+        return self._type_to_spans['functions'][self._index]
 
     @property
     def arguments(self):
         """Parse template content. Create self.name and self.arguments."""
         barsplits = self._not_in_atomic_subspans_split_spans('|')
         arguments = []
-        spans = self._spans
+        spans = self._type_to_spans
         lststr = self._lststr
         typeindex = 'pfa' + str(self._index)
         if typeindex not in spans:

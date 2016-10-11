@@ -12,7 +12,7 @@ class Parameter(SubWikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['parameters']) - 1
+            self._index = len(self._type_to_spans['parameters']) - 1
         else:
             self._index = index
 
@@ -22,7 +22,7 @@ class Parameter(SubWikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['parameters'][self._index]
+        return self._type_to_spans['parameters'][self._index]
 
     @property
     def name(self):

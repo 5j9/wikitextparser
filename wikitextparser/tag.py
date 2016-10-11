@@ -93,14 +93,14 @@ class Tag(SubWikiText):
     def __init__(self, string, spans=None, index=None, match=None):
         """Initialize the Tag object.
 
-        Run self._common_init. Set self._spans['extlinks'] if spans is None.
+        Run _common_init. Set _type_to_spans['extlinks'] if spans is None.
 
         """
         self._common_init(string, spans)
         if spans is None:
-            self._spans['tags'] = [(0, len(string))]
+            self._type_to_spans['tags'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['tags']) - 1
+            self._index = len(self._type_to_spans['tags']) - 1
         else:
             self._index = index
         # The following attributes are used for caching.
@@ -113,7 +113,7 @@ class Tag(SubWikiText):
 
     def _get_span(self):
         """Return the span of this object."""
-        return self._spans['tags'][self._index]
+        return self._type_to_spans['tags'][self._index]
 
     def _get_match(self):
         """Return the match object for the current tag. Cache the result."""
@@ -228,7 +228,7 @@ class Tag(SubWikiText):
         """Return the contents as a SubWikiText object."""
         match = self._get_match()
         span = match.span('contents')
-        spans = self._spans
+        spans = self._type_to_spans
         swt_spans = spans.setdefault('subwikitext', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
         return SubWikiText(self._lststr, spans, index)

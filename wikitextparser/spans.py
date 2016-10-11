@@ -240,7 +240,7 @@ SINGLE_BRACES_REGEX = re.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
 def parse_to_spans(string: str) -> dict:
-    """Calculate and set self._spans.
+    """Calculate and set self._type_to_spans.
 
     The result is a dictionary containing lists of spans:
     {

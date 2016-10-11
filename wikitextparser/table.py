@@ -140,12 +140,12 @@ class Table(SubWikiText):
     """Create a new Table object."""
 
     def __init__(self, string, spans=None, index=None):
-        """Run _common_init. Set self._spans['tables'] if spans is None."""
+        """Run _common_init. Set _type_to_spans['tables'] if spans is None."""
         self._common_init(string, spans)
         if spans is None:
-            self._spans['tables'] = [(0, len(string))]
+            self._type_to_spans['tables'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['tables']) - 1
+            self._index = len(self._type_to_spans['tables']) - 1
         else:
             self._index = index
 
@@ -155,7 +155,7 @@ class Table(SubWikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['tables'][self._index]
+        return self._type_to_spans['tables'][self._index]
 
     def getdata(self, span=True):
         """Return a tuple containing value of all rows.

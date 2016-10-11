@@ -17,9 +17,9 @@ class Section(WikiText):
         """Initialize the object."""
         self._common_init(string, spans)
         if spans is None:
-            self._spans['sections'] = [(0, len(string))]
+            self._type_to_spans['sections'] = [(0, len(string))]
         if index is None:
-            self._index = len(self._spans['sections']) - 1
+            self._index = len(self._type_to_spans['sections']) - 1
         else:
             self._index = index
 
@@ -29,7 +29,7 @@ class Section(WikiText):
 
     def _get_span(self):
         """Return selfspan (span of self.string in self._lststr[0])."""
-        return self._spans['sections'][self._index]
+        return self._type_to_spans['sections'][self._index]
 
     @property
     def level(self):

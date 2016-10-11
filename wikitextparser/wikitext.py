@@ -179,7 +179,7 @@ class WikiText:
             for o in opcodes
             for i in o[1::4] for j in o[2::4]
         ]
-        self._spans['opcodes'] = opcodes_spans
+        self._type_to_spans['opcodes'] = opcodes_spans
         for tag, i1, i2, j1, j2 in opcodes:
             i1, i2 = opcodes_spans.pop(0)
             i1 -= oldstart
@@ -212,7 +212,7 @@ class WikiText:
                     estart=oldstart + i2,
                     elength=j2 - j1,
                 )
-        del self._spans['opcodes']
+        del self._type_to_spans['opcodes']
 
     def strdel(self, start: int, end: int) -> None:
         """Remove the given range from self.string.
@@ -242,7 +242,7 @@ class WikiText:
         return 0, len(self._lststr[0])
 
     def _not_in_atomic_subspans_split(self, char: str) -> list:
-        """Split self.string using `char` unless char is in self._spans."""
+        """Split self.string where `char`'s not in atomic subspans."""
         # not used
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
@@ -259,7 +259,7 @@ class WikiText:
             findstart = index + 1
 
     def _not_in_atomic_subspans_partition(self, char: str) -> tuple:
-        """Partition self.string using `char` unless char is in self._spans."""
+        """Partition self.string where `char`'s not in atomic subspans."""
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
         findstart = 0
@@ -315,7 +315,7 @@ class WikiText:
         if ss is None:
             ss, se = self._get_span()
         subspans = []
-        types_to_spans = self._spans
+        types_to_spans = self._type_to_spans
         for key in (
             'templates', 'parameters', 'functions',
             'wikilinks', 'comments', 'exttags'
@@ -337,7 +337,7 @@ class WikiText:
     def _gen_subspan_indices(self, type_: str):
         """Yield all the subspan indices including self._get_span()"""
         s, e = self._get_span()
-        for i, (ss, ee) in enumerate(self._spans[type_]):
+        for i, (ss, ee) in enumerate(self._type_to_spans[type_]):
             # Include self._get_span()
             if s <= ss and ee <= e:
                 yield i
@@ -345,7 +345,7 @@ class WikiText:
     def _close_subspans(self, start: int, end: int) -> None:
         """Close all subspans of (start, end)."""
         ss, se = self._get_span()
-        for type_spans in self._spans.values():
+        for type_spans in self._type_to_spans.values():
             for i, (s, e) in enumerate(type_spans):
                 if (
                     (start <= s and e < end) or
@@ -355,17 +355,17 @@ class WikiText:
                     type_spans[i] = (start, start)
 
     def _shrink_span_update(self, rmstart: int, rmend: int) -> None:
-        """Update self._spans according to the removed span.
+        """Update self._type_to_spans according to the removed span.
 
         Warning: If an operation involves both _shrink_span_update and
         _extend_span_update, you might wanna consider doing the
         _extend_span_update before the _shrink_span_update as this function
-        can cause data loss in self._spans.
+        can cause data loss in self._type_to_spans.
 
         """
-        # Note: No span should be removed from _spans.
+        # Note: No span should be removed from _type_to_spans.
         rmlength = rmend - rmstart
-        for t, spans in self._spans.items():
+        for t, spans in self._type_to_spans.items():
             for i, (spanstart, spanend) in enumerate(spans):
                 if spanend <= rmstart:
                     continue
@@ -390,10 +390,10 @@ class WikiText:
                         spans[i] = (spanstart, rmstart)
 
     def _extend_span_update(self, estart: int, elength: int) -> None:
-        """Update self._spans according to the added span."""
-        # Note: No span should be removed from _spans.
+        """Update self._type_to_spans according to the added span."""
+        # Note: No span should be removed from _type_to_spans.
         ss, se = self._get_span()
-        for spans in self._spans.values():
+        for spans in self._type_to_spans.values():
             for i, (spanstart, spanend) in enumerate(spans):
                 if estart < spanstart or (
                     # Not at the beginning of selfspan
@@ -414,8 +414,8 @@ class WikiText:
         """Calculate the indent level for self.pprint function.
 
         Minimum returned value is 1.
-        Being part of any Template or Parserfunction increases the indent level
-        by one.
+        Being part of any Template or Parserfunction increases the indent
+        level by one.
 
         `with_respect_to` is an instance of WikiText object.
 
@@ -423,19 +423,19 @@ class WikiText:
         ss, se = self._get_span()
         level = 1  # a template is always found in itself
         if with_respect_to is None:
-            for s, e in self._spans['templates']:
+            for s, e in self._type_to_spans['templates']:
                 if s < ss and se < e:
                     level += 1
-            for s, e in self._spans['functions']:
+            for s, e in self._type_to_spans['functions']:
                 if s < ss and se < e:
                     level += 1
             return level
         else:
             rs, re = with_respect_to._get_span()
-            for s, e in self._spans['templates']:
+            for s, e in self._type_to_spans['templates']:
                 if rs <= s < ss and se < e <= re:
                     level += 1
-            for s, e in self._spans['functions']:
+            for s, e in self._type_to_spans['functions']:
                 if rs <= s < ss and se < e <= re:
                     level += 1
             return level
@@ -452,7 +452,7 @@ class WikiText:
         ss, se = self._get_span()
         shadow = self.string
         for type_ in types:
-            for sss, sse in self._spans[type_]:
+            for sss, sse in self._type_to_spans[type_]:
                 if sss < ss or sse > se:
                     continue
                 shadow = (
@@ -465,13 +465,13 @@ class WikiText:
     def _common_init(self, lststr: str or list, spans: list) -> None:
         """Do the common initializations required for subclasses of WikiText.
 
-        Set the initial values and self._lststr, self._spans.
+        Set the initial values and self._lststr, self._type_to_spans.
 
         Parameters:
         :lststr: The raw string of the object to be parsed or a list pointing
             to the mother string of the parent object.
-        :spans: If the lststr is already parsed, pass its _spans property as
-            spans to avoid parsing it again.
+        :spans: If the lststr is already parsed, pass its _type_to_spans
+            property as spans to avoid parsing it again.
 
         """
         if isinstance(lststr, list):
@@ -479,9 +479,9 @@ class WikiText:
         else:
             self._lststr = [lststr]
         if spans:
-            self._spans = spans
+            self._type_to_spans = spans
         else:
-            self._spans = parse_to_spans(self._lststr[0])
+            self._type_to_spans = parse_to_spans(self._lststr[0])
 
     def strins(self, start: int, string: str) -> None:
         """Insert the given string at the specified index. start >= 0."""
@@ -496,7 +496,7 @@ class WikiText:
             elength=len(string),
         )
         # Remember newly added spans by the string.
-        spans_dict = self._spans
+        spans_dict = self._type_to_spans
         for k, v in parse_to_spans(string).items():
             spans = spans_dict[k]
             for ss, se in v:
@@ -535,7 +535,7 @@ class WikiText:
                 rmend=end,  # old end
             )
         # Add the newly added spans contained in the string.
-        spans_dict = self._spans
+        spans_dict = self._type_to_spans
         for k, v in parse_to_spans(string).items():
             spans = spans_dict[k]
             for ss, se in v:
@@ -549,7 +549,7 @@ class WikiText:
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = parse(self.string, self._spans)
+        parsed = parse(self.string, self._type_to_spans)
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
@@ -723,7 +723,7 @@ class WikiText:
         return [
             Parameter(
                 self._lststr,
-                self._spans,
+                self._type_to_spans,
                 index,
             ) for index in self._gen_subspan_indices('parameters')
         ]
@@ -734,7 +734,7 @@ class WikiText:
         return [
             ParserFunction(
                 self._lststr,
-                self._spans,
+                self._type_to_spans,
                 index,
             ) for index in self._gen_subspan_indices('functions')
         ]
@@ -745,7 +745,7 @@ class WikiText:
         return [
             Template(
                 self._lststr,
-                self._spans,
+                self._type_to_spans,
                 index,
             ) for index in self._gen_subspan_indices('templates')
         ]
@@ -756,7 +756,7 @@ class WikiText:
         return [
             WikiLink(
                 self._lststr,
-                self._spans,
+                self._type_to_spans,
                 index,
             ) for index in self._gen_subspan_indices('wikilinks')
         ]
@@ -767,7 +767,7 @@ class WikiText:
         return [
             Comment(
                 self._lststr,
-                self._spans,
+                self._type_to_spans,
                 index,
             ) for index in self._gen_subspan_indices('comments')
         ]
@@ -776,7 +776,7 @@ class WikiText:
     def external_links(self):
         """Return a list of found external link objects."""
         external_links = []
-        spans = self._spans
+        spans = self._type_to_spans
         ss, se = self._get_span()
         if 'extlinks' not in spans:
             spans['extlinks'] = []
@@ -804,7 +804,7 @@ class WikiText:
 
         """
         sections = []
-        spans = self._spans
+        spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._get_span()
         selfstring = self.string
@@ -841,7 +841,7 @@ class WikiText:
         """Return a list of found table objects."""
         shadow = self._shadow()
         tables = []
-        spans = self._spans
+        spans = self._type_to_spans
         ss, se = self._get_span()
         if 'tables' not in spans:
             # Todo: this means that every table that will be found later
@@ -886,7 +886,7 @@ class SubWikiText(WikiText):
         """
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['subwikitext']) - 1
+            self._index = len(self._type_to_spans['subwikitext']) - 1
         else:
             self._index = index
 
@@ -897,14 +897,14 @@ class SubWikiText(WikiText):
     def _gen_subspan_indices(self, type_: str or None=None):
         """Yield all the subspan indices excluding self._get_span()."""
         s, e = self._get_span()
-        for i, (ss, ee) in enumerate(self._spans[type_]):
+        for i, (ss, ee) in enumerate(self._type_to_spans[type_]):
             # Do not yield self._get_span().
             if s < ss and ee <= e:
                 yield i
 
     def _get_span(self):
         """Return the span of self."""
-        return self._spans['subwikitext'][self._index]
+        return self._type_to_spans['subwikitext'][self._index]
 
 
 ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \

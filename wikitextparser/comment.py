@@ -12,7 +12,7 @@ class Comment(SubWikiText):
         """Run self._common_init."""
         self._common_init(string, spans)
         if index is None:
-            self._index = len(self._spans['comments']) - 1
+            self._index = len(self._type_to_spans['comments']) - 1
         else:
             self._index = index
 
@@ -22,7 +22,7 @@ class Comment(SubWikiText):
 
     def _get_span(self):
         """Return the self-span."""
-        return self._spans['comments'][self._index]
+        return self._type_to_spans['comments'][self._index]
 
     @property
     def contents(self):
