@@ -241,7 +241,7 @@ class WikiText:
         """Return the self-span."""
         return 0, len(self._lststr[0])
 
-    def _not_in_subspans_split(self, char: str) -> list:
+    def _not_in_atomic_subspans_split(self, char: str) -> list:
         """Split self.string using `char` unless char is in self._spans."""
         # not used
         ss, se = self._get_span()
@@ -272,7 +272,7 @@ class WikiText:
         return string[:index], char, string[index + 1:]
 
     def _not_in_subspans_split_spans(self, char: str) -> list:
-        """Like _not_in_subspans_split but return spans."""
+        """Like _not_in_atomic_subspans_split but return spans."""
         ss, se = self._get_span()
         string = self._lststr[0][ss:se]
         results = []
@@ -308,7 +308,7 @@ class WikiText:
 
         The following functions depend on this function:
             * _not_in_subspans_partition
-            * _not_in_subspans_split
+            * _not_in_atomic_subspans_split
             * _not_in_subspans_split_spans
 
         """
