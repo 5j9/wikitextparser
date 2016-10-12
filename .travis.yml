@@ -11,3 +11,5 @@ python:
     - "3.4"
     - "3.5"
     - "nightly"
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
