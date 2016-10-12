@@ -8,7 +8,12 @@ class Parameter(SubWikiText):
 
     """Create a new {{{parameters}}} object."""
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None = None,
+        index: int or None = None,
+    ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
@@ -16,27 +21,27 @@ class Parameter(SubWikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Parameter."""
         return 'Parameter(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['parameters'][self._index]
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return current parameter's name."""
         return self.string[3:-3].partition('|')[0]
 
     @name.setter
-    def name(self, newname):
+    def name(self, newname) -> None:
         """Set the new name."""
         name, pipe, default = self.string[3:-3].partition('|')
         self.replace_slice(3, 3 + len(name), newname)
 
     @property
-    def pipe(self):
+    def pipe(self) -> str:
         """Return `|` if there is a pipe (default value) in the Parameter.
 
          Return '' otherwise.
@@ -44,14 +49,15 @@ class Parameter(SubWikiText):
         return self.string[3:-3].partition('|')[1]
 
     @property
-    def default(self):
-        """Return value of a keyword argument."""
+    def default(self) -> str or None:
+        """Return the default value."""
+        # Todo: Ignore the pipes inside comments.
         string = self.string[3:-3]
         if '|' in string:
             return string.partition('|')[2]
 
     @default.setter
-    def default(self, newdefault):
+    def default(self, newdefault: str) -> None:
         """Set the new value. If a default exist, change it. Add ow."""
         olddefault = self.default
         if olddefault is None:
@@ -64,7 +70,7 @@ class Parameter(SubWikiText):
                 '|' + newdefault,
             )
 
-    def append_default(self, new_default_name):
+    def append_default(self, new_default_name: str) -> None:
         """Append a new default parameter in the appropriate place.
 
         Add the new default to the innter-most parameter.

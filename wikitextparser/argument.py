@@ -14,7 +14,10 @@ class Argument(SubWikiText):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
-    def __init__(self, string, spans=None, index=None, typeindex=None):
+    def __init__(
+        self, string: str or list, spans: list or None=None,
+        index: int or None=None, typeindex: str or None=None
+    ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
         if typeindex is None:
@@ -28,16 +31,16 @@ class Argument(SubWikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Argument."""
         return 'Argument(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans[self._typeindex][self._index]
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return argument's name.
 
         For positional arguments return the position as a string.
@@ -69,7 +72,7 @@ class Argument(SubWikiText):
         return str(position)
 
     @name.setter
-    def name(self, newname):
+    def name(self, newname: str) -> None:
         """Set the name for this argument.
 
         If this is a positional argument, convert it to keyword argument.
@@ -82,7 +85,7 @@ class Argument(SubWikiText):
             self.replace_slice(1, 1 + len(oldname), newname)
 
     @property
-    def positional(self):
+    def positional(self) -> bool:
         """Return True if there is an equal sign in the argument else False."""
         if self._not_in_atomic_subspans_partition('=')[1]:
             return False
@@ -90,7 +93,7 @@ class Argument(SubWikiText):
             return True
 
     @positional.setter
-    def positional(self, to_positional):
+    def positional(self, to_positional: bool) -> None:
         """Change to keyword or positional accordingly.
 
         Raise ValueError if setting positional argument to keyword argument.
@@ -115,7 +118,7 @@ class Argument(SubWikiText):
             )
 
     @property
-    def value(self):
+    def value(self) -> str:
         """Return value of a keyword argument."""
         pipename, equal, value = self._not_in_atomic_subspans_partition('=')
         if equal:
@@ -124,7 +127,7 @@ class Argument(SubWikiText):
         return pipename[1:]
 
     @value.setter
-    def value(self, newvalue):
+    def value(self, newvalue: str) -> None:
         """Assign the newvalue to self."""
         pipename, equal, value = self._not_in_atomic_subspans_partition('=')
         if equal:

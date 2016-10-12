@@ -90,7 +90,13 @@ class Tag(SubWikiText):
 
     """Create a new Tag object."""
 
-    def __init__(self, string, spans=None, index=None, match=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+        match=None,
+    ) -> None:
         """Initialize the Tag object.
 
         Run _common_init. Set _type_to_spans['extlinks'] if spans is None.
@@ -107,11 +113,11 @@ class Tag(SubWikiText):
         self._string = string
         self._match = match
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of self."""
         return 'Tag(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the span of this object."""
         return self._type_to_spans['tags'][self._index]
 
@@ -224,7 +230,7 @@ class Tag(SubWikiText):
             )
 
     @property
-    def parsed_contents(self):
+    def parsed_contents(self) -> SubWikiText:
         """Return the contents as a SubWikiText object."""
         match = self._get_match()
         span = match.span('contents')

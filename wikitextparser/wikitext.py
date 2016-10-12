@@ -68,7 +68,7 @@ class Temporary:
     """A temporary class to avoid circular dependent imports.
 
     All variables defined using this class will be over-written inside
-     wikitextparser.py.
+    wikitextparser.py.
 
     """
 
@@ -102,7 +102,7 @@ class WikiText:
         wikitext object for this function to return True.
 
         """
-        # Is it usefull (and a good practice) to also accepts str inputs
+        # Is it useful (and a good practice) to also accepts str inputs
         # and check if self.string contains it?
         if self._lststr is not parsed_wikitext._lststr:
             return False
@@ -127,7 +127,7 @@ class WikiText:
         newstring.
 
         It tries to avoid the SequenceMatcher by checking to see if the
-        newnewstring is a simple concatination at the start or end of the
+        newstring is a simple concatenation at the start or end of the
         oldstring. For long strings, it's highly recommended to use this
         feature and avoid inserting in the middle of the string.
 
@@ -330,7 +330,7 @@ class WikiText:
                     subspans.append(span)
 
         # Define the function to be returned.
-        def index_in_spans(index: int):
+        def index_in_spans(index: int) -> bool:
             """Return True if the given index is found within a subspans."""
             for ss, se in subspans:
                 if ss <= index < se:
@@ -949,7 +949,12 @@ class SubWikiText(WikiText):
 
     """
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
         """Initialize the object.
 
         Run self._common_init.
@@ -962,7 +967,7 @@ class SubWikiText(WikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Comment."""
         return 'SubWikiText(' + repr(self.string) + ')'
 
@@ -974,7 +979,7 @@ class SubWikiText(WikiText):
             if s < ss and ee <= e:
                 yield i
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the span of self."""
         return self._type_to_spans['subwikitext'][self._index]
 

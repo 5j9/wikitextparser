@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 from .wikitext import SubWikiText
 
 
-ROWSEP_REGEX = re.compile(r'^\s*[\|!]-.*?\n', re.M)
+ROWSEP_REGEX = re.compile(r'^\s*[|!]-.*?\n', re.M)
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = re.compile(
     r"""
@@ -139,7 +139,12 @@ class Table(SubWikiText):
 
     """Create a new Table object."""
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
         """Run _common_init. Set _type_to_spans['tables'] if spans is None."""
         self._common_init(string, spans)
         if spans is None:
@@ -149,25 +154,26 @@ class Table(SubWikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Table."""
         return 'Table(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
-    def getdata(self, span=True):
-        """Return a tuple containing value of all rows.
+    def getdata(self, span: bool=True) -> list:
+        """Return a list containing list of values of all rows.
 
-        @param:`span` indicates if rowspans and colspans attributes should be
-            expanded or not. Todo: Don't use this param. Still in development.
+        :span: indicates if rowspans and colspans attributes should be
+            expanded or not.
 
         Due to the lots of complications that it will cause, this function
         won't look inside templates, parserfunctions, etc.
 
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
+
         """
         string = self.string
         length = len(string)
@@ -181,7 +187,6 @@ class Table(SubWikiText):
                 break
         string = string[length - len(shadow) - 2:-2]
         # Remove all semi-captions.
-        ss, se = self._get_span()
         m = SEMICAPTION_REGEX.search(shadow)
         while m:
             ss, se = m.span()
@@ -210,7 +215,6 @@ class Table(SubWikiText):
             lastpos = -1
             while pos != lastpos:
                 lastpos = pos
-                sep = None
                 m = NEWLINE_CELL_REGEX.match(row, pos)
                 if m:
                     sep = m.group('sep')
@@ -219,7 +223,7 @@ class Table(SubWikiText):
                         (ss + m.end() - len(data), ss + m.end())
                     )
                     if span:
-                        self._extend_attr_spans(
+                        _extend_attr_spans(
                             # The leading whitespace in newline-cells
                             # must be ignored
                             m, attr_spans, ss + len(m.group('whitespace'))
@@ -233,7 +237,7 @@ class Table(SubWikiText):
                                 (ss + m.end() - len(data), ss + m.end())
                             )
                             if span:
-                                self._extend_attr_spans(
+                                _extend_attr_spans(
                                     m, attr_spans, ss + 1
                                 )
                             pos = m.end()
@@ -246,7 +250,7 @@ class Table(SubWikiText):
                                 (ss + m.end() - len(data), ss + m.end())
                             )
                             if span:
-                                self._extend_attr_spans(
+                                _extend_attr_spans(
                                     m, attr_spans, ss + 1
                                 )
                             pos = m.end()
@@ -258,156 +262,19 @@ class Table(SubWikiText):
                 # Spaces after the first newline can be meaningful
                 data[-1].append(string[ss:se].strip(' ').rstrip())
         if span and data:
-            data = self._apply_attr_spans(attr_spans, data, string)
+            data = _apply_attr_spans(attr_spans, data, string)
         return data
 
-    def _apply_attr_spans(self, attr_spans, data, string):
-        """Apply colspans to data and return data."""
-        # Todo: maybe it's better to do this parsing in self.getdata?
-        attrs = []
-        for r in attr_spans:
-            attrs.append([])
-            for ss, se in r:
-                if se is not None:
-                    attrs[-1].append(attrs_parser(string[ss:se]))
-                else:
-                    attrs[-1].append(None)
-        # The following code is based on the table forming algorithm described
-        # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
-        # Some comments indicate the step in that algorithm.
-        # 1
-        xwidth = 0
-        # 2
-        yheight = 0
-        # 4
-        # The xwidth and yheight variables give the table's dimensions.
-        # The table is initially empty.
-        table = []
-        # 5
-        if not data:
-            return data
-        # 10
-        ycurrent = 0
-        # 11
-        downward_growing_cells = []
-        # 13, 18
-        # Algorithm for processing rows
-        for i, row in enumerate(data):
-            # 13.1 ycurrent is never greater than yheight
-            if yheight == ycurrent:
-                yheight += 1
-                table.append([None] * xwidth)
-            # 13.2
-            xcurrent = 0
-            # 13.3
-            # The algorithm for growing downward-growing cells
-            for cell, cellx, width in downward_growing_cells:
-                r = table[ycurrent]
-                for x in range(cellx, cellx + width):
-                    r[x] = cell
-            # 13.4 will be handled by the following for-loop.
-            # 13.5, 13.16
-            for j, current_cell in enumerate(row):
-                # 13.6
-                while (
-                    xcurrent < xwidth and
-                    table[ycurrent][xcurrent] is not None
-                ):
-                    xcurrent += 1
-                # 13.7
-                if xcurrent == xwidth:
-                    # xcurrent is never greater than xwidth
-                    xwidth += 1
-                    for r in table:
-                        if xwidth > len(r):
-                            r.extend([None] * (xwidth - len(r)))
-                # 13.8
-                try:
-                    colspan = int(attrs[i][j]['colspan'])
-                    if colspan == 0:
-                        colspan = 1
-                except Exception:
-                    colspan = 1
-                # 13.9
-                try:
-                    rowspan = int(attrs[i][j]['rowspan'])
-                except Exception:
-                    rowspan = 1
-                # 13.10
-                if rowspan == 0:
-                    cell_grows_downward = True
-                    rowspan = 1
-                else:
-                    cell_grows_downward = False
-                # 13.11
-                if xwidth < xcurrent + colspan:
-                    xwidth = xcurrent + colspan
-                    for r in table:
-                        if xwidth > len(r):
-                            r.extend([None] * (xwidth - len(r)))
-                # 13.12
-                if yheight < ycurrent + rowspan:
-                    yheight = ycurrent + rowspan
-                    while len(table) < yheight:
-                        table.append([None] * xwidth)
-                # 13.13
-                for y in range(ycurrent, ycurrent + rowspan):
-                    r = table[y]
-                    for x in range(xcurrent, xcurrent + colspan):
-                        # If any of the slots involved already had a cell
-                        # covering them, then this is a table model error.
-                        # Those slots now have two cells overlapping.
-                        r[x] = current_cell
-                        # Skipping algorithm for assigning header cells
-                # 13.14
-                if cell_grows_downward:
-                    downward_growing_cells.append(
-                        (current_cell, xcurrent, colspan)
-                    )
-                # 13.15
-                xcurrent += colspan
-            # 13.16
-            ycurrent += 1
-        # 14
-        # The algorithm for ending a row group
-        # 14.1
-        while ycurrent < yheight:
-            # 14.1.1
-            # Run the algorithm for growing downward-growing cells.
-            for cell, cellx, width in downward_growing_cells:
-                for x in range(cellx, cellx + width):
-                    table[ycurrent][x] = cell
-            # 14.2.2
-            ycurrent += 1
-        # 14.2
-        downward_growing_cells = []
-        # 20 If there exists a row or column in the table containing only
-        # slots that do not have a cell anchored to them,
-        # then this is a table model error.
-        return table
-
-    def _extend_attr_spans(self, m, attr_spans, ss):
-        """Extend attr_spans according to parameters.
-
-        Sub-function of self.getdata.
-        """
-        attrs = m.group('attrs')
-        if attrs:
-            attrs_start = ss + m.start() + 1
-            attr_spans[-1].append(
-                (attrs_start, attrs_start + len(attrs))
-            )
-        else:
-            attr_spans[-1].append((None, None))
-
-    def getrdata(self, i):
+    def getrdata(self, i: int) -> list:
         """Return the data in the ith row of the table.
 
         i is the index and starts from 0.
+
         """
+        # Todo: Cache self.getdata?
         return self.getdata()[i]
 
-    def getcdata(self, i):
+    def getcdata(self, i: int) -> list:
         """Return the data in ith column of the table as a list.
 
         i is the index and starts from 0.
@@ -415,14 +282,14 @@ class Table(SubWikiText):
         return [r[i] for r in self.getdata()]
 
     @property
-    def caption(self):
+    def caption(self) -> str or None:
         """Return caption of the table."""
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m.group('caption')
 
     @caption.setter
-    def caption(self, newcaption):
+    def caption(self, newcaption: str) -> None:
         """Set a new caption."""
         m = CAPTION_REGEX.match(self.string)
         if m:
@@ -442,30 +309,31 @@ class Table(SubWikiText):
             self.strins(len(h + s), '|+' + newcaption + '\n')
 
     @property
-    def table_attrs(self):
+    def table_attrs(self) -> str:
         """Return table attributes.
 
         Placing attributes after the table start tag ({|) applies
         attributes to the entire table.
         See [[mw:Help:Tables#Attributes on tables]] for more info.
+
         """
         return self.string.partition('\n')[0][2:]
 
     @table_attrs.setter
-    def table_attrs(self, attrs):
+    def table_attrs(self, attrs: str) -> None:
         """Set new attributes for this table."""
         h = self.string.partition('\n')[0]
         self.replace_slice(2, 2 + len(h[2:]), attrs)
 
     @property
-    def caption_attrs(self):
+    def caption_attrs(self) -> str or None:
         """Return caption attributes."""
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m.group('attrs')
 
     @caption_attrs.setter
-    def caption_attrs(self, attrs):
+    def caption_attrs(self, attrs: str):
         """Set new caption attributes."""
         string = self.string
         h, s, t = string.partition('\n')
@@ -482,15 +350,21 @@ class Table(SubWikiText):
 
 class AttrsParser(HTMLParser):
 
-    """A class to generate attrs_parser from."""
+    """Define the class to construct the attrs_parser instance from it."""
 
-    def handle_starttag(self, tag, attrs):
-        """Store parsed attrs in self.parsed and then self.reset()."""
+    def handle_starttag(self, tag: str, attrs: list) -> None:
+        """Store parsed attrs in self.parsed and then self.reset().
+
+        The `tag` argument is the name of the tag converted to lower case.
+        The `attrs` argument is a list of (name, value) pairs containing the
+            attributes found inside the tag’s <> brackets.
+
+        """
         self.parsed = attrs
         self.reset()
 
-    def parse(self, attrs):
-        """Return list of parsed name and value pairs.
+    def parse(self, attrs: str) -> dict:
+        """Return a dict of parsed name and value pairs.
 
         Example:
             >>> AttrsParser().parse('''\t colspan = " 2 " rowspan=\n6 ''')
@@ -498,6 +372,149 @@ class AttrsParser(HTMLParser):
         """
         self.feed('<a ' + attrs + '>')
         return dict(self.parsed)
+
+
+def _apply_attr_spans(
+    attr_spans: list, data: list, string: str
+) -> list:
+    """Apply colspans to data and return data."""
+    # Todo: maybe it's better to do this parsing in self.getdata?
+    attrs = []
+    for r in attr_spans:
+        attrs.append([])
+        for ss, se in r:
+            if se is not None:
+                attrs[-1].append(attrs_parser(string[ss:se]))
+            else:
+                attrs[-1].append(None)
+    # The following code is based on the table forming algorithm described
+    # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
+    # Some comments indicate the step in that algorithm.
+    # 1
+    xwidth = 0
+    # 2
+    yheight = 0
+    # 4
+    # The xwidth and yheight variables give the table's dimensions.
+    # The table is initially empty.
+    table = []
+    # 5
+    if not data:
+        return data
+    # 10
+    ycurrent = 0
+    # 11
+    downward_growing_cells = []
+    # 13, 18
+    # Algorithm for processing rows
+    for i, row in enumerate(data):
+        # 13.1 ycurrent is never greater than yheight
+        if yheight == ycurrent:
+            yheight += 1
+            table.append([None] * xwidth)
+        # 13.2
+        xcurrent = 0
+        # 13.3
+        # The algorithm for growing downward-growing cells
+        for cell, cellx, width in downward_growing_cells:
+            r = table[ycurrent]
+            for x in range(cellx, cellx + width):
+                r[x] = cell
+        # 13.4 will be handled by the following for-loop.
+        # 13.5, 13.16
+        for j, current_cell in enumerate(row):
+            # 13.6
+            while (
+                        xcurrent < xwidth and
+                        table[ycurrent][xcurrent] is not None
+            ):
+                xcurrent += 1
+            # 13.7
+            if xcurrent == xwidth:
+                # xcurrent is never greater than xwidth
+                xwidth += 1
+                for r in table:
+                    if xwidth > len(r):
+                        r.extend([None] * (xwidth - len(r)))
+            # 13.8
+            try:
+                colspan = int(attrs[i][j]['colspan'])
+                if colspan == 0:
+                    colspan = 1
+            except Exception:
+                colspan = 1
+            # 13.9
+            try:
+                rowspan = int(attrs[i][j]['rowspan'])
+            except Exception:
+                rowspan = 1
+            # 13.10
+            if rowspan == 0:
+                cell_grows_downward = True
+                rowspan = 1
+            else:
+                cell_grows_downward = False
+            # 13.11
+            if xwidth < xcurrent + colspan:
+                xwidth = xcurrent + colspan
+                for r in table:
+                    if xwidth > len(r):
+                        r.extend([None] * (xwidth - len(r)))
+            # 13.12
+            if yheight < ycurrent + rowspan:
+                yheight = ycurrent + rowspan
+                while len(table) < yheight:
+                    table.append([None] * xwidth)
+            # 13.13
+            for y in range(ycurrent, ycurrent + rowspan):
+                r = table[y]
+                for x in range(xcurrent, xcurrent + colspan):
+                    # If any of the slots involved already had a cell
+                    # covering them, then this is a table model error.
+                    # Those slots now have two cells overlapping.
+                    r[x] = current_cell
+                    # Skipping algorithm for assigning header cells
+            # 13.14
+            if cell_grows_downward:
+                downward_growing_cells.append(
+                    (current_cell, xcurrent, colspan)
+                )
+            # 13.15
+            xcurrent += colspan
+        # 13.16
+        ycurrent += 1
+    # 14
+    # The algorithm for ending a row group
+    # 14.1
+    while ycurrent < yheight:
+        # 14.1.1
+        # Run the algorithm for growing downward-growing cells.
+        for cell, cellx, width in downward_growing_cells:
+            for x in range(cellx, cellx + width):
+                table[ycurrent][x] = cell
+        # 14.2.2
+        ycurrent += 1
+    # 14.2
+    # downward_growing_cells = []
+    # 20 If there exists a row or column in the table containing only
+    # slots that do not have a cell anchored to them,
+    # then this is a table model error.
+    return table
+
+
+def _extend_attr_spans(match, attr_spans: list, ss: int) -> None:
+    """Extend attr_spans according to parameters.
+
+    Sub-function of self.getdata.
+    """
+    attrs = match.group('attrs')
+    if attrs:
+        attrs_start = ss + match.start() + 1
+        attr_spans[-1].append(
+            (attrs_start, attrs_start + len(attrs))
+        )
+    else:
+        attr_spans[-1].append((None, None))
 
 
 attrs_parser = AttrsParser().parse

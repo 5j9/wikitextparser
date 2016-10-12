@@ -18,10 +18,10 @@ class Template(SubWikiText):
 
     def __init__(
         self,
-        string,
-        spans=None,
-        index=None,
-    ):
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
@@ -33,12 +33,12 @@ class Template(SubWikiText):
         """Return the string representation of the Template."""
         return 'Template(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['templates'][self._index]
 
     @property
-    def arguments(self):
+    def arguments(self) -> list:
         """Parse template content. Create self.name and self.arguments."""
         barsplits = self._not_in_atomic_subspans_split_spans('|')[1:]
         arguments = []
@@ -76,12 +76,16 @@ class Template(SubWikiText):
             return p0[2:]
 
     @name.setter
-    def name(self, newname) -> None:
+    def name(self, newname: str) -> None:
         """Set the new name for the template."""
         name = self.name
         self.replace_slice(2, 2 + len(name), newname)
 
-    def normal_name(self, rm_namespaces=('Template',), code=None) -> str:
+    def normal_name(
+        self,
+        rm_namespaces=('Template',),
+        code: str or None=None,
+    ) -> str:
         """Return normal form of the name.
 
         # Remove comments.
@@ -92,10 +96,10 @@ class Template(SubWikiText):
         # Use uppercase for the first letter.
         # Remove #anchor.
 
-        `rm_namespaces` is used to provide additional localized namespaces
+        :rm_namespaces: is used to provide additional localized namespaces
             for the template namespace. They will be removed from the result.
             Default is ('Template',).
-        `code` is language code.
+        :code: is the language code.
 
         Example:
             >>> Template(
@@ -153,7 +157,7 @@ class Template(SubWikiText):
             else:
                 names.append(name)
 
-    def rm_dup_args_safe(self, tag=None) -> None:
+    def rm_dup_args_safe(self, tag: str or None=None) -> None:
         """Remove duplicate arguments in a safe manner.
 
         Remove the duplicate arguments only if:
@@ -210,8 +214,12 @@ class Template(SubWikiText):
                 name_args_vals[name] = ([arg], [val])
 
     def set_arg(
-        self, name, value, positional=None, before=None, after=None,
-        preserve_spacing=True
+        self, name: str,
+        value: str,
+        positional: bool or None=None,
+        before: str or None=None,
+        after: str or None=None,
+        preserve_spacing: bool=True
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
@@ -299,14 +307,15 @@ class Template(SubWikiText):
                 # positional AND is to be added at the end of the template.
                 self.strins(len(self.string) - 2, addstring)
 
-    def get_arg(self, name) -> Argument or None:
+    def get_arg(self, name: str) -> Argument or None:
         """Return the last argument with the given name.
 
         Return None if no such argument is found.
+
         """
         return get_arg(name, reversed(self.arguments))
 
-    def has_arg(self, name, value=None) -> bool:
+    def has_arg(self, name: str, value: str or None=None) -> bool:
         """Return true if the is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -334,7 +343,7 @@ class Template(SubWikiText):
         return False
 
 
-def mode(list_):
+def mode(list_: list):
     """Return the most common item in the list.
 
     Return the first one if there are more than one most common items.
@@ -353,7 +362,7 @@ def mode(list_):
     return max(set(list_), key=list_.count)
 
 
-def get_arg(name, args) -> Argument or None:
+def get_arg(name: str, args) -> Argument or None:
     """Return the first argument in the args that has the given name.
 
     Return None if no such argument is found.

@@ -9,7 +9,12 @@ class ParserFunction(SubWikiText):
 
     """Create a new ParserFunction object."""
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
         if index is None:
@@ -17,16 +22,16 @@ class ParserFunction(SubWikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the ParserFunction."""
         return 'ParserFunction(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['functions'][self._index]
 
     @property
-    def arguments(self):
+    def arguments(self) -> list:
         """Parse template content. Create self.name and self.arguments."""
         barsplits = self._not_in_atomic_subspans_split_spans('|')
         arguments = []
@@ -60,12 +65,12 @@ class ParserFunction(SubWikiText):
         return arguments
 
     @property
-    def name(self):
+    def name(self) -> str:
         """Return name part of the current ParserFunction."""
         return self.string[2:].partition(':')[0]
 
     @name.setter
-    def name(self, newname):
+    def name(self, newname: str) -> None:
         """Set a new name."""
         name = self.name
         self.replace_slice(2, 2 + len(name), newname)

@@ -13,7 +13,12 @@ class Section(WikiText):
 
     """Create a new Section object."""
 
-    def __init__(self, string, spans=None, index=None):
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
         if spans is None:
@@ -23,16 +28,16 @@ class Section(WikiText):
         else:
             self._index = index
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return the string representation of the Argument."""
         return 'Section(' + repr(self.string) + ')'
 
-    def _get_span(self):
+    def _get_span(self) -> tuple:
         """Return selfspan (span of self.string in self._lststr[0])."""
         return self._type_to_spans['sections'][self._index]
 
     @property
-    def level(self):
+    def level(self) -> int:
         """Return level of this section. Level is in range(1,7)."""
         selfstring = self.string
         m = SECTION_LEVEL_TITLE.match(selfstring)
@@ -41,7 +46,7 @@ class Section(WikiText):
         return len(m.group(1))
 
     @level.setter
-    def level(self, newlevel):
+    def level(self, newlevel: int) -> None:
         """Change level of this section."""
         old_level = self.level
         title = self.title
@@ -53,7 +58,7 @@ class Section(WikiText):
         )
 
     @property
-    def title(self):
+    def title(self) -> str:
         """Return title of this section. Return '' for lead sections."""
         level = self.level
         if level == 0:
@@ -61,7 +66,7 @@ class Section(WikiText):
         return self.string.partition('\n')[0].rstrip()[level:-level]
 
     @title.setter
-    def title(self, newtitle):
+    def title(self, newtitle: str) -> None:
         """Set the new title for this section and update self.lststr."""
         level = self.level
         if level == 0:
@@ -73,14 +78,14 @@ class Section(WikiText):
         self.replace_slice(level, level + len(title), newtitle)
 
     @property
-    def contents(self):
+    def contents(self) -> str:
         """Return contents of this section."""
         if self.level == 0:
             return self.string
         return self.string.partition('\n')[2]
 
     @contents.setter
-    def contents(self, newcontents):
+    def contents(self, newcontents: str) -> None:
         """Set newcontents as the contents of this section."""
         level = self.level
         contents = self.contents

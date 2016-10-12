@@ -295,10 +295,10 @@ class TableAttrs(unittest.TestCase):
     """Test the table_attrs method of the Table class."""
 
     def test_multiline_table(self):
-        table = wtp.Table('{|s\n|a|}')
+        table = wtp.Table('{|s\n|a\n|}')
         self.assertEqual(table.table_attrs, 's')
         table.table_attrs = 'class="wikitable"'
-        self.assertEqual(table.string, '{|class="wikitable"\n|a|}')
+        self.assertEqual(table.string, '{|class="wikitable"\n|a\n|}')
 
 
 if __name__ == '__main__':
