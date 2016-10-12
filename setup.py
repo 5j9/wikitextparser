@@ -7,7 +7,7 @@ setup(
     long_description=open('README.rst').read(),
     author='Dalba',
     author_email='dalba.wiki@gmail.com',
-    url='https://github.com/irdb/wikitextparser',
+    url='https://github.com/5j9/wikitextparser',
     packages=['wikitextparser'],
     install_requires=['wcwidth', 'regex'],
     classifiers=[
