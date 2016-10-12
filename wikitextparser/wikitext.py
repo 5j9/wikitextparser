@@ -75,10 +75,6 @@ class Temporary:
     pass
 
 
-ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
-    Table = Section = Temporary
-
-
 class WikiText:
 
     """The WikiText class."""
@@ -727,7 +723,7 @@ class WikiText:
 
     # Todo: Isn't it better to use generators for the following properties?
     @property
-    def parameters(self) -> Parameter:
+    def parameters(self) -> list:
         """Return a list of parameter objects."""
         return [
             Parameter(
@@ -738,7 +734,7 @@ class WikiText:
         ]
 
     @property
-    def parser_functions(self) -> ParserFunction:
+    def parser_functions(self) -> list:
         """Return a list of parser function objects."""
         return [
             ParserFunction(
@@ -749,7 +745,7 @@ class WikiText:
         ]
 
     @property
-    def templates(self) -> Template:
+    def templates(self) -> list:
         """Return a list of templates as template objects."""
         return [
             Template(
@@ -760,7 +756,7 @@ class WikiText:
         ]
 
     @property
-    def wikilinks(self) -> WikiLink:
+    def wikilinks(self) -> list:
         """Return a list of wikilink objects."""
         return [
             WikiLink(
@@ -771,7 +767,7 @@ class WikiText:
         ]
 
     @property
-    def comments(self) -> Comment:
+    def comments(self) -> list:
         """Return a list of comment objects."""
         return [
             Comment(
@@ -782,7 +778,7 @@ class WikiText:
         ]
 
     @property
-    def external_links(self) -> ExternalLink:
+    def external_links(self) -> list:
         """Return a list of found external link objects."""
         external_links = []
         type_to_spans = self._type_to_spans
@@ -820,7 +816,7 @@ class WikiText:
         return external_links
 
     @property
-    def sections(self) -> Section:
+    def sections(self) -> list:
         """Return a list of section in current wikitext.
 
         The first section will always be the lead section, even if it is an
@@ -900,18 +896,34 @@ class WikiText:
         return sections
 
     @property
-    def tables(self) -> Table:
+    def tables(self) -> list:
         """Return a list of found table objects."""
-        shadow = self._shadow()
         tables = []
         type_to_spans = self._type_to_spans
+        lststr = self._lststr
+        shadow = self._shadow()
         ss, se = self._get_span()
         if 'tables' not in type_to_spans:
-            # Todo: this means that every table that will be found later
-            # is unique, so there is no need to check for
-            # `mspan not in spans`.
-            type_to_spans['tables'] = []
+            # All the added spans will be new.
+            spans = type_to_spans['tables'] = []
+            index = 0
+            m = True
+            while m:
+                m = False
+                for m in TABLE_REGEX.finditer(shadow):
+                    ms, me = m.span()
+                    # Ignore leading whitespace using len(m.group(1)).
+                    mspan = (ss + ms + len(m.group(1)), ss + me)
+                    spans.append(mspan)
+                    tables.append(Table(lststr, type_to_spans, index))
+                    index += 1
+                    shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
+            return tables
+        # There are already exists some spans. Try to use the already existing
+        # before appending new spans.
         spans = type_to_spans['tables']
+        index = len(spans) - 1
+        existing_span_to_index = {s: i for i, s in enumerate(spans)}
         m = True
         while m:
             m = False
@@ -919,15 +931,12 @@ class WikiText:
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m.group(1)).
                 mspan = (ss + ms + len(m.group(1)), ss + me)
-                if mspan not in spans:
+                mindex = existing_span_to_index.get(mspan)
+                if mindex is None:
                     spans.append(mspan)
-                tables.append(
-                    Table(
-                        self._lststr,
-                        type_to_spans,
-                        spans.index(mspan)
-                    )
-                )
+                    index += 1
+                    mindex = index
+                tables.append(Table(lststr, type_to_spans, mindex))
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
@@ -968,6 +977,10 @@ class SubWikiText(WikiText):
     def _get_span(self):
         """Return the span of self."""
         return self._type_to_spans['subwikitext'][self._index]
+
+
+ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
+    Table = Section = Temporary
 
 
 parse = WikiText

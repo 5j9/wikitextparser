@@ -286,6 +286,14 @@ class Tables(unittest.TestCase):
         p = wtp.parse(s).sections[1]
         self.assertEqual('{|\n| b\n|}', p.tables[0].string)
 
+    def test_match_index_is_none(self):
+        s = '{|\n| b\n|}\n'
+        wt = wtp.parse(s)
+        t = wt.tables[0]
+        t.strins(0, '{|\n| a\n|}\n')
+        tables = wt.tables
+        self.assertEqual(tables[0].string, '{|\n| a\n|}')
+        self.assertEqual(tables[1].string, '{|\n| b\n|}')
 
 class PrettyPrint(unittest.TestCase):
 
