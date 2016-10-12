@@ -29,6 +29,8 @@ EXTERNALLINK_REGEX = re.compile(
     BRACKET_EXTERNALLINK_PATTERN + r')',
     re.IGNORECASE,
 )
+# Todo: Perhaps the following regular expressions could be improved by using
+# the features of the regex module.
 # Sections
 SECTION_HEADER_REGEX = re.compile(r'^=[^\n]+?= *$', re.M)
 LEAD_SECTION_REGEX = re.compile(
@@ -71,6 +73,10 @@ class Temporary:
     """
 
     pass
+
+
+ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
+    Table = Section = Temporary
 
 
 class WikiText:
@@ -721,7 +727,7 @@ class WikiText:
 
     # Todo: Isn't it better to use generators for the following properties?
     @property
-    def parameters(self):
+    def parameters(self) -> Parameter:
         """Return a list of parameter objects."""
         return [
             Parameter(
@@ -732,7 +738,7 @@ class WikiText:
         ]
 
     @property
-    def parser_functions(self):
+    def parser_functions(self) -> ParserFunction:
         """Return a list of parser function objects."""
         return [
             ParserFunction(
@@ -743,7 +749,7 @@ class WikiText:
         ]
 
     @property
-    def templates(self):
+    def templates(self) -> Template:
         """Return a list of templates as template objects."""
         return [
             Template(
@@ -754,7 +760,7 @@ class WikiText:
         ]
 
     @property
-    def wikilinks(self):
+    def wikilinks(self) -> WikiLink:
         """Return a list of wikilink objects."""
         return [
             WikiLink(
@@ -765,7 +771,7 @@ class WikiText:
         ]
 
     @property
-    def comments(self):
+    def comments(self) -> Comment:
         """Return a list of comment objects."""
         return [
             Comment(
@@ -776,44 +782,45 @@ class WikiText:
         ]
 
     @property
-    def external_links(self):
+    def external_links(self) -> ExternalLink:
         """Return a list of found external link objects."""
         external_links = []
         type_to_spans = self._type_to_spans
+        lststr = self._lststr
         ss, se = self._get_span()
         if 'extlinks' not in type_to_spans:
             # All the added spans will be new.
-            elspans = type_to_spans['extlinks'] = []
+            spans = type_to_spans['extlinks'] = []
             index = 0
             for m in EXTERNALLINK_REGEX.finditer(self.string):
                 mspan = m.span()
                 mspan = (mspan[0] + ss, mspan[1] + ss)
-                elspans.append(mspan)
+                spans.append(mspan)
                 external_links.append(
-                    ExternalLink(self._lststr, type_to_spans, index)
+                    ExternalLink(lststr, type_to_spans, index)
                 )
                 index += 1
             return external_links
         # There are already some extlink spans. Use the already existing ones
         # when the detected span is one of those.
-        elspans = type_to_spans['extlinks']
-        index = len(elspans) - 1
-        existing_span_to_index = {s: i for i, s in enumerate(elspans)}
+        spans = type_to_spans['extlinks']
+        index = len(spans) - 1
+        existing_span_to_index = {s: i for i, s in enumerate(spans)}
         for m in EXTERNALLINK_REGEX.finditer(self.string):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
             mindex = existing_span_to_index.get(mspan)
             if mindex is None:
-                elspans.append(mspan)
+                spans.append(mspan)
                 index += 1
                 mindex = index
             external_links.append(
-                ExternalLink(self._lststr, type_to_spans, mindex)
+                ExternalLink(lststr, type_to_spans, mindex)
             )
         return external_links
 
     @property
-    def sections(self):
+    def sections(self) -> Section:
         """Return a list of section in current wikitext.
 
         The first section will always be the lead section, even if it is an
@@ -821,40 +828,79 @@ class WikiText:
 
         """
         sections = []
-        spans = self._type_to_spans
+        type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._get_span()
         selfstring = self.string
-        if 'sections' not in spans:
-            spans['sections'] = []
-        sspans = spans['sections']
+        if 'sections' not in type_to_spans:
+            # All the added spans will be new.
+            spans = type_to_spans['sections'] = []
+            # Lead section
+            mspan = LEAD_SECTION_REGEX.match(selfstring).span()
+            mspan = (mspan[0] + ss, mspan[1] + ss)
+            spans.append(mspan)
+            sections.append(Section(lststr, type_to_spans, 0))
+            index = 1
+            # Other sections
+            for m in SECTION_REGEX.finditer(selfstring):
+                mspan = m.span()
+                mspan = (mspan[0] + ss, mspan[1] + ss)
+                spans.append(mspan)
+                current_section = Section(
+                    lststr, type_to_spans, index
+                )
+                # Add text of the current_section to any parent section.
+                # Note that section 0 is not a parent for any subsection.
+                current_level = current_section.level
+                for section in reversed(sections[1:]):
+                    section_level = section.level
+                    if section_level < current_level:
+                        si = section._index
+                        spans[si] = (spans[si][0], mspan[1])
+                        current_level = section_level
+                sections.append(current_section)
+                index += 1
+            return sections
+        # There are already some spans. Instead of appending new spans
+        # use them when the detected span already exists.
+        spans = type_to_spans['sections']
+        index = len(spans) - 1
+        existing_span_to_index = {s: i for i, s in enumerate(spans)}
         # Lead section
         mspan = LEAD_SECTION_REGEX.match(selfstring).span()
         mspan = (mspan[0] + ss, mspan[1] + ss)
-        if mspan not in sspans:
-            sspans.append(mspan)
-        sections.append(Section(lststr, spans, sspans.index(mspan)))
-        # Other sections
+        mindex = existing_span_to_index.get(mspan)
+        if mindex is None:
+            spans.append(mspan)
+            index += 1
+            mindex = index
+        sections.append(
+            Section(lststr, type_to_spans, mindex)
+        )
+        # Adjust other sections
         for m in SECTION_REGEX.finditer(selfstring):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
-            if mspan not in sspans:
-                sspans.append(mspan)
-            latest_section = Section(lststr, spans, sspans.index(mspan))
-            # Add text of the latest_section to any parent section.
+            mindex = existing_span_to_index.get(mspan)
+            if mindex is None:
+                spans.append(mspan)
+                index += 1
+                mindex = index
+            current_section = Section(lststr, type_to_spans, mindex)
+            # Add text of the current_section to any parent section.
             # Note that section 0 is not a parent for any subsection.
-            min_level_added = latest_section.level
+            current_level = current_section.level
             for section in reversed(sections[1:]):
                 section_level = section.level
-                if section_level < min_level_added:
-                    index = section._index
-                    sspans[index] = (sspans[index][0], mspan[1])
-                    min_level_added = section_level
-            sections.append(latest_section)
+                if section_level < current_level:
+                    si = section._index
+                    spans[si] = (spans[si][0], mspan[1])
+                    current_level = section_level
+            sections.append(current_section)
         return sections
 
     @property
-    def tables(self):
+    def tables(self) -> Table:
         """Return a list of found table objects."""
         shadow = self._shadow()
         tables = []
@@ -863,9 +909,9 @@ class WikiText:
         if 'tables' not in type_to_spans:
             # Todo: this means that every table that will be found later
             # is unique, so there is no need to check for
-            # `mspan not in table_spans`.
+            # `mspan not in spans`.
             type_to_spans['tables'] = []
-        table_spans = type_to_spans['tables']
+        spans = type_to_spans['tables']
         m = True
         while m:
             m = False
@@ -873,13 +919,13 @@ class WikiText:
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m.group(1)).
                 mspan = (ss + ms + len(m.group(1)), ss + me)
-                if mspan not in table_spans:
-                    table_spans.append(mspan)
+                if mspan not in spans:
+                    spans.append(mspan)
                 tables.append(
                     Table(
                         self._lststr,
                         type_to_spans,
-                        table_spans.index(mspan)
+                        spans.index(mspan)
                     )
                 )
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
@@ -924,6 +970,4 @@ class SubWikiText(WikiText):
         return self._type_to_spans['subwikitext'][self._index]
 
 
-ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
-    Table = Section = Temporary
 parse = WikiText

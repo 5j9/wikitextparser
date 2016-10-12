@@ -104,7 +104,7 @@ class StringSetter(unittest.TestCase):
         self.assertEqual('c', t.get_arg('4').value)
 
 
-class WikiText(unittest.TestCase):
+class ExternalLinks(unittest.TestCase):
 
     """Test the WikiText class."""
 
@@ -551,11 +551,35 @@ class Sections(unittest.TestCase):
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
 
+    # Todo: Fix this.
     @unittest.expectedFailure
     def test_multiline_with_carriage_return(self):
         s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
         p = wtp.parse(s)
         self.assertEqual('text\r\n', p.sections[0].string)
+
+    def test_other_branches_of_the_code(self):
+        wt = wtp.WikiText('== s1 ==\nc\n')
+        s1 = wt.sections[1]
+        s1.strins(0, 'c\n== s0 ==\nc\n')
+        s0 = wt.sections[1]
+        self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
+        self.assertEqual('== s0 ==\nc\n', s0.string)
+        self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
+        s1.strins(len(wt.string), '=== s2 ===\nc\n')
+        self.assertEqual(
+            'c\n'
+            '== s0 ==\n'
+            'c\n'
+            '== s1 ==\n'
+            'c\n'
+            '=== s2 ===\n'
+            'c\n',
+            wt.string
+        )
+        s3 = wt.sections[3]
+        self.assertEqual('=== s2 ===\nc\n', s3.string)
+
 
 
 if __name__ == '__main__':
