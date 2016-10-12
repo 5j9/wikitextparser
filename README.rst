@@ -1,12 +1,13 @@
 .. image:: https://travis-ci.org/5j9/wikitextparser.svg?branch=master
     :target: https://travis-ci.org/5j9/wikitextparser
+.. image:: https://codecov.io/github/5j9/wikitextparser/coverage.svg?branch=master
+    :target: https://codecov.io/github/5j9/wikitextparser
 
 ==============
 WikiTextParser
 ==============
 
-A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_
-.
+A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_.
 
 The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, etc. found in wikitexts.
 
