@@ -128,6 +128,15 @@ class WikiText(unittest.TestCase):
             wt.external_links[0].text
         )
 
+    def test_external_link_match_is_not_in_spans(self):
+        wt = wtp.WikiText('t [http://b.b b] t [http://c.c c] t')
+        # calculate the links
+        links1 = wt.external_links
+        wt.strins(0, 't [http://a.a a]')
+        links2 = wt.external_links
+        self.assertEqual(links1[1].string, '[http://c.c c]')
+        self.assertEqual(links2[0].string, '[http://a.a a]')
+
     def test_numbered_link(self):
         s = 'text1 [http://mediawiki.org] text2'
         wt = wtp.WikiText(s)

@@ -121,7 +121,7 @@ class WikiText:
         """Set a new string for this object. Update spans accordingly.
 
         This method can be slow because it uses SequenceMatcher to
-        find-out the exact position of each change occured in the
+        find-out the exact position of each change that haas occurred in the
         newstring.
 
         It tries to avoid the SequenceMatcher by checking to see if the
@@ -130,6 +130,9 @@ class WikiText:
         feature and avoid inserting in the middle of the string.
 
         """
+        # Todo: it may better to just overwrite everything. This is too slow
+        # and also it will be more consistent with the behavior of other
+        # setter methods.
         lststr = self._lststr
         lststr0 = lststr[0]
         oldstart, oldend = self._get_span()
@@ -776,22 +779,36 @@ class WikiText:
     def external_links(self):
         """Return a list of found external link objects."""
         external_links = []
-        spans = self._type_to_spans
+        type_to_spans = self._type_to_spans
         ss, se = self._get_span()
-        if 'extlinks' not in spans:
-            spans['extlinks'] = []
-        elspans = spans['extlinks']
+        if 'extlinks' not in type_to_spans:
+            # All the added spans will be new.
+            elspans = type_to_spans['extlinks'] = []
+            index = 0
+            for m in EXTERNALLINK_REGEX.finditer(self.string):
+                mspan = m.span()
+                mspan = (mspan[0] + ss, mspan[1] + ss)
+                elspans.append(mspan)
+                external_links.append(
+                    ExternalLink(self._lststr, type_to_spans, index)
+                )
+                index += 1
+            return external_links
+        # There are already some extlink spans. Use the already existing ones
+        # when the detected span is one of those.
+        elspans = type_to_spans['extlinks']
+        index = len(elspans) - 1
+        existing_span_to_index = {s: i for i, s in enumerate(elspans)}
         for m in EXTERNALLINK_REGEX.finditer(self.string):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
-            if mspan not in elspans:
+            mindex = existing_span_to_index.get(mspan)
+            if mindex is None:
                 elspans.append(mspan)
+                index += 1
+                mindex = index
             external_links.append(
-                ExternalLink(
-                    self._lststr,
-                    spans,
-                    elspans.index(mspan)
-                )
+                ExternalLink(self._lststr, type_to_spans, mindex)
             )
         return external_links
 
@@ -841,14 +858,14 @@ class WikiText:
         """Return a list of found table objects."""
         shadow = self._shadow()
         tables = []
-        spans = self._type_to_spans
+        type_to_spans = self._type_to_spans
         ss, se = self._get_span()
-        if 'tables' not in spans:
+        if 'tables' not in type_to_spans:
             # Todo: this means that every table that will be found later
             # is unique, so there is no need to check for
-            # `mspan not in tspans`.
-            spans['tables'] = []
-        tspans = spans['tables']
+            # `mspan not in table_spans`.
+            type_to_spans['tables'] = []
+        table_spans = type_to_spans['tables']
         m = True
         while m:
             m = False
@@ -856,13 +873,13 @@ class WikiText:
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m.group(1)).
                 mspan = (ss + ms + len(m.group(1)), ss + me)
-                if mspan not in tspans:
-                    tspans.append(mspan)
+                if mspan not in table_spans:
+                    table_spans.append(mspan)
                 tables.append(
                     Table(
                         self._lststr,
-                        spans,
-                        tspans.index(mspan)
+                        type_to_spans,
+                        table_spans.index(mspan)
                     )
                 )
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
