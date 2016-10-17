@@ -10,6 +10,10 @@ class ParserFunction(unittest.TestCase):
 
     """Test the ParserFunction class."""
 
+    def test_repr(self):
+        pf = wtp.ParserFunction('{{#if:a|b}}')
+        self.assertEqual(repr(pf), "ParserFunction('{{#if:a|b}}')")
+
     def test_name_and_args(self):
         pf = wtp.ParserFunction('{{ #if: test | true | false }}')
         self.assertEqual(' #if', pf.name)

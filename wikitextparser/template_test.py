@@ -28,7 +28,7 @@ class TemplateTest(unittest.TestCase):
     def test_no_parameters(self):
         s = '{{template}}'
         t = Template(s)
-        self.assertEqual(s, str(t))
+        self.assertEqual("Template('{{template}}')", repr(t))
 
     def test_contains_newlines(self):
         s = '{{template\n|s=2}}'

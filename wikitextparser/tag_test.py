@@ -68,7 +68,7 @@ class Tag(unittest.TestCase):
         t = wtp.Tag('<t>c</t>')
         self.assertEqual(t.name, 't')
         t.name = 'a'
-        self.assertEqual(t.string, '<a>c</a>')
+        self.assertEqual(repr(t), "Tag('<a>c</a>')")
         t = wtp.Tag('<t/>')
         self.assertEqual(t.name, 't')
         t.name = 'n'

@@ -6,6 +6,14 @@ import unittest
 import wikitextparser as wtp
 
 
+class WikiText(unittest.TestCase):
+
+    """Test basic functionalities of the WikiText class."""
+
+    def test_repr(self):
+        self.assertEqual(repr(wtp.parse('')), "WikiText('')")
+
+
 class Contains(unittest.TestCase):
 
     """Test the __contains__ method of the WikiText class."""
@@ -219,7 +227,7 @@ class ExternalLinks(unittest.TestCase):
         wt = wtp.WikiText(s)
         self.assertEqual(0, len(wt.templates))
 
-    def test_comment_in_parserfanction_name(self):
+    def test_comment_in_parserfunction_name(self):
         s = "{{<!--c\n}}-->#if:|a}}"
         wt = wtp.WikiText(s)
         self.assertEqual(1, len(wt.parser_functions))

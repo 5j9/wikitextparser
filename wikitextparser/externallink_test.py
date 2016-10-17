@@ -9,6 +9,10 @@ import wikitextparser as wtp
 class ExternalLink(unittest.TestCase):
     """Test capturing of external links."""
 
+    def test_repr(self):
+        el = wtp.ExternalLink('HTTP://mediawiki.org')
+        self.assertEqual(repr(el), "ExternalLink('HTTP://mediawiki.org')")
+
     def test_numberedmailto(self):
         s = (
             '[mailto:'

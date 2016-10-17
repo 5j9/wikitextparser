@@ -10,6 +10,10 @@ class WikiLink(unittest.TestCase):
 
     """Test WikiLink functionalities."""
 
+    def test_basic(self):
+        wl = wtp.WikiLink('[[a]]')
+        self.assertEqual("WikiLink('[[a]]')", repr(wl))
+
     def test_wikilink_target_text(self):
         wl = wtp.WikiLink('[[A | faf a\n\nfads]]')
         self.assertEqual('A ', wl.target)

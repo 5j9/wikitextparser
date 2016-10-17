@@ -26,7 +26,7 @@ class Parameter(unittest.TestCase):
         p.name = ' Q '
         self.assertEqual('{{{ Q |D}}}', p.string)
         p.default = ' V '
-        self.assertEqual('{{{ Q | V }}}', p.string)
+        self.assertEqual("Parameter('{{{ Q | V }}}')", repr(p))
 
     def test_default_setter(self):
         # The default is not None

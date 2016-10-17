@@ -298,7 +298,9 @@ class TableAttrs(unittest.TestCase):
         table = wtp.Table('{|s\n|a\n|}')
         self.assertEqual(table.table_attrs, 's')
         table.table_attrs = 'class="wikitable"'
-        self.assertEqual(table.string, '{|class="wikitable"\n|a\n|}')
+        self.assertEqual(
+            repr(table), "Table('{|class=\"wikitable\"\\n|a\\n|}')"
+        )
 
 
 if __name__ == '__main__':

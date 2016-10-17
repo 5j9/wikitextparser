@@ -15,6 +15,7 @@ class Argument(unittest.TestCase):
         self.assertEqual(' a ', a.name)
         self.assertEqual(' b ', a.value)
         self.assertEqual(False, a.positional)
+        self.assertEqual(repr(a), "Argument('| a = b ')")
 
     def test_anonymous_parameter(self):
         a = wtp.Argument('| a ')
