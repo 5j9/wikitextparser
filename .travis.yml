@@ -6,13 +6,11 @@ install:
     - pip install codecov
 script:
     - cd wikitextparser
-    - python wikitextparser_test.py
     - coverage run wikitextparser_test.py
 python:
     - "3.3"
     - "3.4"
     - "3.5"
     - "nightly"
-    - "pypy3"
 after_success:
     - codecov
