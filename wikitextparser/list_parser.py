@@ -156,7 +156,7 @@ class ListParser:
                     output += self.open_list(char)
 
                     if char == ';':
-                        # FIXME: This is dupe of code above
+                        # Fix Me: This is dupe of code above
                         found_colon, term, t2 = self.find_colon_no_links(t)
                         if found_colon is not False:
                             t = t2
@@ -177,7 +177,7 @@ class ListParser:
                 closematch = self.CLOSE_MATCH_REGEX.search(t)
                 if openmatch or closematch:
                     paragraph_stack = False
-                    # @todo bug 5718: paragraph closed
+                    # To do: bug 5718: paragraph closed
                     output += self.close_paragraph()
                     if pre_open_match and not pre_close_match:
                         self.m_in_pre = True
