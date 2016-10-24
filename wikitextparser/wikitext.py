@@ -2,7 +2,6 @@
 
 
 import re
-from difflib import SequenceMatcher
 
 from wcwidth import wcswidth
 
@@ -121,104 +120,8 @@ class WikiText:
 
     @string.setter
     def string(self, newstring: str) -> None:
-        """Set a new string for this object. Update spans accordingly.
-
-        This method can be slow because it uses SequenceMatcher to
-        find-out the exact position of each change that haas occurred in the
-        newstring.
-
-        It tries to avoid the SequenceMatcher by checking to see if the
-        newstring is a simple concatenation at the start or end of the
-        oldstring. For long strings, it's highly recommended to use this
-        feature and avoid inserting in the middle of the string.
-
-        """
-        # Todo: it may better to just overwrite everything. This is too slow
-        # and also it will be more consistent with the behavior of other
-        # setter methods.
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        oldstart, oldend = self._get_span()
-        oldstring = lststr0[oldstart:oldend]
-        # Updating lststr
-        lststr[0] = lststr0[:oldstart] + newstring + lststr0[oldend:]
-        # Updating spans
-        oldlength = oldend - oldstart
-        newlength = len(newstring)
-        if oldlength == newlength and newstring == oldstring:
-            return
-        elif oldlength < newlength:
-            if newstring.startswith(oldstring):
-                # The has been an insertion at the end of oldstring.
-                self._extend_span_update(
-                    estart=oldstart + oldlength,
-                    elength=newlength - oldlength,
-                )
-                return
-            if newstring.endswith(oldstring):
-                # The has been an insertion at the beggining of oldstring.
-                self._extend_span_update(
-                    estart=oldstart,
-                    elength=newlength - oldlength,
-                )
-                return
-        else:  # oldlength > newlength
-            if oldstring.startswith(newstring):
-                # The ending part of oldstring has been deleted.
-                self._shrink_span_update(
-                    rmstart=oldstart + newlength,
-                    rmend=oldstart + oldlength,
-                )
-                return
-            if oldstring.endswith(newstring):
-                # The starting part of oldstring has been deleted.
-                self._shrink_span_update(
-                    rmstart=oldstart,
-                    rmend=oldstart + oldlength - newlength,
-                )
-                return
-        sm = SequenceMatcher(None, oldstring, newstring, autojunk=False)
-        opcodes = [oc for oc in sm.get_opcodes() if oc[0] != 'equal']
-        # Opcodes also need adjustment as the spans change.
-        opcodes_spans = [
-            (oldstart + i, oldstart + j)
-            for o in opcodes
-            for i in o[1::4] for j in o[2::4]
-        ]
-        self._type_to_spans['opcodes'] = opcodes_spans
-        for tag, i1, i2, j1, j2 in opcodes:
-            i1, i2 = opcodes_spans.pop(0)
-            i1 -= oldstart
-            i2 -= oldstart
-            if tag == 'replace':
-                # a[i1:i2] should be replaced by b[j1:j2].
-                len1 = i2 - i1
-                len2 = j2 - j1
-                if len2 < len1:
-                    self._shrink_span_update(
-                        rmstart=oldstart + i1 + len2,
-                        rmend=oldstart + i2,
-                    )
-                elif len2 > len1:
-                    self._extend_span_update(
-                        estart=oldstart + i2,
-                        elength=len2 - len1,
-                    )
-            elif tag == 'delete':
-                # a[i1:i2] should be deleted.
-                # Note that j1 == j2 in this case.
-                self._shrink_span_update(
-                    rmstart=oldstart + i1,
-                    rmend=oldstart + i2,
-                )
-            elif tag == 'insert':
-                # b[j1:j2] should be inserted at a[i1:i1].
-                # Note that i1 == i2 in this case.
-                self._extend_span_update(
-                    estart=oldstart + i2,
-                    elength=j2 - j1,
-                )
-        del self._type_to_spans['opcodes']
+        """Set a new string for this object. Note the old data will be lost."""
+        self.replace_slice(0, len(self.string), newstring)
 
     def strdel(self, start: int, end: int) -> None:
         """Remove the given range from self.string.
