@@ -130,7 +130,7 @@ class Tag(SubWikiText):
             self._string = string
         return self._match
 
-    def __getitem__(self, attr_name: str) -> str or None:
+    def get(self, attr_name: str) -> str or None:
         """Return the last value for the attribute with the given name.
 
         Return None if the attr_name does not exist in self.
@@ -144,11 +144,11 @@ class Tag(SubWikiText):
             if capture == attr_name:
                 return match.captures('attr_value')[-i - 1]
 
-    def __setitem__(self, attr_name: str, attr_value: str) -> None:
+    def set(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
 
         If there are already multiple attributes with the given name, only
-        set the value for the last one.
+        get the value for the last one.
         If attr_value == '', use the empty attribute syntax. According to the
         standard the value for such attributes is implicitly the empty string.
 
@@ -166,8 +166,8 @@ class Tag(SubWikiText):
             ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
         )
 
-    def __delitem__(self, attr_name: str) -> None:
-        """Remove the attribute with the given name.
+    def delete(self, attr_name: str) -> None:
+        """Remove all the attributes with the given name.
 
         Pass if the attr_name is not found in self.
 
