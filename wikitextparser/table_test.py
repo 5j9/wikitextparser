@@ -1,5 +1,5 @@
 ﻿"""Test the functionalities of table.py module."""
-# Todo:
+# Todo: addrow, addcol, shiftrow, shiftcol, ...
 # addrow([], -1)
 # addcol([], -1)
 #
