@@ -330,6 +330,10 @@ class Tables(unittest.TestCase):
         Fixing it requires a lot of unnecessary coding. Also false positive
         for tables are pretty much harmless.
 
+        The same thing may happen for tables which start right after a
+        templates, parser functions, wiki links, comments, or
+        other extension tags.
+
         """
         s = '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}'
         wt = wtp.parse(s)
