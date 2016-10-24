@@ -12,5 +12,6 @@ python:
     - "3.4"
     - "3.5"
     - "nightly"
+    - "pypy3"
 after_success:
     - codecov
