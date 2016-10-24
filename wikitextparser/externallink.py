@@ -43,10 +43,10 @@ class ExternalLink(SubWikiText):
         """Set a new url for the current ExternalLink."""
         if self.in_brackets:
             url = self.url
-            self.replace_slice(1, len('[' + url), newurl)
+            self[1:len('[' + url)] = newurl
         else:
             url = self.url
-            self.replace_slice(0, len(url), newurl)
+            self[0:len(url)] = newurl
 
     @property
     def text(self) -> str:
@@ -73,11 +73,7 @@ class ExternalLink(SubWikiText):
         else:
             url = self.url
             text = self.text
-        self.replace_slice(
-            len('[' + url + ' '),
-            len('[' + url + ' ' + text),
-            newtext,
-        )
+        self[len('[' + url + ' '):len('[' + url + ' ' + text)] = newtext
 
     @property
     def in_brackets(self) -> bool:

@@ -13,6 +13,28 @@ class WikiText(unittest.TestCase):
     def test_repr(self):
         self.assertEqual(repr(wtp.parse('')), "WikiText('')")
 
+    def test_getitem(self):
+        s = '{{t1|{{t2}}}}'
+        t2, t1 = wtp.WikiText(s).templates
+        self.assertEqual(t2[2], 't')
+        self.assertEqual(t2[2:4], 't2')
+        self.assertEqual(t2[-4:-2], 't2')
+        self.assertEqual(t2[-3], '2')
+
+    def test_setitem(self):
+        s = '{{t1|{{t2}}}}'
+        wt = wtp.WikiText(s)
+        t2, t1 = wt.templates
+        t2[2] = 'a'
+        self.assertEqual(wt.string, '{{t1|{{a2}}}}')
+        t2[2] = 'bb'
+        self.assertEqual(wt.string, '{{t1|{{bb2}}}}')
+        t2[2:5] = 'ccc'
+        self.assertEqual(wt.string, '{{t1|{{ccc}}}}')
+        t2[-5:-2] = 'd'
+        self.assertEqual(wt.string, '{{t1|{{d}}}}')
+        t2[-3] = 'e'
+        self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
 class Contains(unittest.TestCase):
 

@@ -112,6 +112,65 @@ class WikiText:
             return True
         return False
 
+    def __getitem__(self, key: slice or int) -> str:
+        """Return self.string[item]."""
+        return self.string[key]
+
+    def __setitem__(self, key: slice or int, value: str) -> None:
+        """Set a new string for the given slice or character index.
+
+        Use this method instead of calling `strins` and `strdel` consecutively.
+        By doing so only one of the `_extend_span_update` and
+        `_shrink_span_update` functions will be called and the performance
+        will improve.
+
+        """
+        ss, se = self._get_span()
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        selflen = se - ss + 1
+        if isinstance(key, int):
+            if key < 0:
+                key %= selflen
+            start = ss + key
+            lststr[0] = lststr0[:start] + value + lststr0[start + 1:]
+            return
+        # isinstance(item, slice)
+        start, end = key.start, key.stop
+        if start < 0:
+            start %= selflen
+        if end < 0:
+            end %= selflen
+        start += ss
+        end += ss
+        # Update lststr
+        lststr[0] = lststr0[:start] + value + lststr0[end:]
+        # Set the length of all subspans to zero because
+        # they are all being replaced.
+        self._close_subspans(start, end)
+        # Update the other spans according to the new length.
+        del_len = end - start
+        ins_len = len(value)
+        if ins_len > del_len:
+            self._extend_span_update(
+                estart=start,
+                elength=ins_len - del_len,
+            )
+        elif ins_len < del_len:
+            self._shrink_span_update(
+                rmstart=end + ins_len - del_len,  # new end
+                rmend=end,  # old end
+            )
+        # Add the newly added spans contained in the value.
+        spans_dict = self._type_to_spans
+        for k, v in parse_to_spans(value).items():
+            spans = spans_dict[k]
+            for ss, se in v:
+                spans.append((ss + start, se + start))
+    # Todo: Isn't it better to use generators for the following properties?
+
+
+
     @property
     def string(self) -> str:
         """Return str(self)."""
@@ -121,7 +180,7 @@ class WikiText:
     @string.setter
     def string(self, newstring: str) -> None:
         """Set a new string for this object. Note the old data will be lost."""
-        self.replace_slice(0, len(self.string), newstring)
+        self[0:-1] = newstring
 
     def strdel(self, start: int, end: int) -> None:
         """Remove the given range from self.string.
@@ -414,45 +473,6 @@ class WikiText:
             for ss, se in v:
                 spans.append((ss + start, se + start))
 
-    def replace_slice(self, start: int, end: int, string: str) -> None:
-        """Replace self.string[start:end] with string.
-
-        Use this method instead of calling `strins` and `strdel` consecutively.
-        By doing so only one of the `_extend_span_update` and
-        `_shrink_span_update` functions will be called and the perfomance will
-        improve.
-
-        """
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        ss = self._get_span()[0]
-        start += ss
-        end += ss
-        # Update lststr
-        lststr[0] = lststr0[:start] + string + lststr0[end:]
-        # Set the length of all subspans to zero because
-        # they are all being replaced.
-        self._close_subspans(start, end)
-        # Update the other spans according to the new length.
-        del_len = end - start
-        ins_len = len(string)
-        if ins_len > del_len:
-            self._extend_span_update(
-                estart=start,
-                elength=ins_len - del_len,
-            )
-        elif ins_len < del_len:
-            self._shrink_span_update(
-                rmstart=end + ins_len - del_len,  # new end
-                rmend=end,  # old end
-            )
-        # Add the newly added spans contained in the string.
-        spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(string).items():
-            spans = spans_dict[k]
-            for ss, se in v:
-                spans.append((ss + start, se + start))
-
     def pprint(self, indent: str='    ', remove_comments=False) -> None:
         """Return a pretty-print of self.string as string.
 
@@ -628,7 +648,6 @@ class WikiText:
             functions = parsed.parser_functions
         return parsed.string
 
-    # Todo: Isn't it better to use generators for the following properties?
     @property
     def parameters(self) -> list:
         """Return a list of parameter objects."""

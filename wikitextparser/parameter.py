@@ -38,7 +38,7 @@ class Parameter(SubWikiText):
     def name(self, newname) -> None:
         """Set the new name."""
         name, pipe, default = self.string[3:-3].partition('|')
-        self.replace_slice(3, 3 + len(name), newname)
+        self[3:3 + len(name)] = newname
 
     @property
     def pipe(self) -> str:
@@ -64,11 +64,8 @@ class Parameter(SubWikiText):
             self.strins(len('{{{' + self.name), '|' + newdefault)
         else:
             name = self.name
-            self.replace_slice(
-                len('{{{' + name),
-                len('{{{' + name + '|' + olddefault),
-                '|' + newdefault,
-            )
+            self[len('{{{' + name):len('{{{' + name + '|' + olddefault)] =\
+                '|' + newdefault
 
     def append_default(self, new_default_name: str) -> None:
         """Append a new default parameter in the appropriate place.
@@ -104,8 +101,7 @@ class Parameter(SubWikiText):
             )
         else:
             name = innermost_param.name
-            innermost_param.replace_slice(
-                len('{{{' + name + '|'),
-                len('{{{' + name + '|' + innermost_default),
-                '{{{' + new_default_name + '|' + innermost_default + '}}}',
-            )
+            innermost_param[
+                len('{{{' + name + '|'):
+                len('{{{' + name + '|' + innermost_default)
+            ] = '{{{' + new_default_name + '|' + innermost_default + '}}}'

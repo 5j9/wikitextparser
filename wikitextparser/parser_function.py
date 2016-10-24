@@ -73,4 +73,4 @@ class ParserFunction(SubWikiText):
     def name(self, newname: str) -> None:
         """Set a new name."""
         name = self.name
-        self.replace_slice(2, 2 + len(name), newname)
+        self[2:2 + len(name)] = newname

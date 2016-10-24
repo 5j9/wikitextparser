@@ -79,7 +79,7 @@ class Template(SubWikiText):
     def name(self, newname: str) -> None:
         """Set the new name for the template."""
         name = self.name
-        self.replace_slice(2, 2 + len(name), newname)
+        self[2:2 + len(name)] = newname
 
     def normal_name(
         self,
@@ -296,11 +296,9 @@ class Template(SubWikiText):
                 # want to change the the whitespace before the final braces.
                 arg = args[0]
                 arg_string = arg.string
-                arg.replace_slice(
-                    0,
-                    len(arg_string),
+                arg[0:len(arg_string)] = (
                     arg.string.rstrip() + after_value + addstring.rstrip() +
-                    after_values[0],
+                    after_values[0]
                 )
             else:
                 # The template has no arguments or the new arg is

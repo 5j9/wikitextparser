@@ -296,11 +296,8 @@ class Table(SubWikiText):
             preattrs = m.group('preattrs')
             attrs = m.group('attrs') or ''
             oldcaption = m.group('caption')
-            self.replace_slice(
-                len(preattrs + attrs),
-                len(preattrs + attrs + oldcaption),
-                newcaption,
-            )
+            self[len(preattrs + attrs):len(preattrs + attrs + oldcaption)] =\
+                newcaption
         else:
             # There is no caption. Create one.
             string = self.string
@@ -323,7 +320,7 @@ class Table(SubWikiText):
     def table_attrs(self, attrs: str) -> None:
         """Set new attributes for this table."""
         h = self.string.partition('\n')[0]
-        self.replace_slice(2, 2 + len(h[2:]), attrs)
+        self[2:2 + len(h[2:])] = attrs
 
     @property
     def caption_attrs(self) -> str or None:
@@ -345,7 +342,7 @@ class Table(SubWikiText):
             preattrs = m.group('preattrs')
             oldattrs = m.group('attrs') or ''
             # Caption and attrs or Caption but no attrs
-            self.replace_slice(len(preattrs), len(preattrs + oldattrs), attrs)
+            self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
 
 class AttrsParser(HTMLParser):

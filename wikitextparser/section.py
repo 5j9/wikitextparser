@@ -51,11 +51,8 @@ class Section(WikiText):
         old_level = self.level
         title = self.title
         new_equals = '=' * newlevel
-        self.replace_slice(
-            0,
-            old_level + len(title) + old_level,
-            new_equals + title + new_equals,
-        )
+        self[0:old_level + len(title) + old_level] =\
+            new_equals + title + new_equals
 
     @property
     def title(self) -> str:
@@ -75,7 +72,7 @@ class Section(WikiText):
                 "Try adding it to the contents."
             )
         title = self.title
-        self.replace_slice(level, level + len(title), newtitle)
+        self[level:level + len(title)] = newtitle
 
     @property
     def contents(self) -> str:
@@ -90,8 +87,8 @@ class Section(WikiText):
         level = self.level
         contents = self.contents
         if level == 0:
-            self.replace_slice(0, len(contents), newcontents)
+            self[0:len(contents)] = newcontents
         else:
             title = self.title
             start = level + len(title) + level + 1
-            self.replace_slice(start, start + len(contents), newcontents)
+            self[start:start + len(contents)] = newcontents

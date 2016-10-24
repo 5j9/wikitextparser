@@ -44,7 +44,7 @@ class WikiLink(SubWikiText):
         head, pipe, tail = self._not_in_atomic_subspans_partition('|')
         if not pipe:
             head = head[:-2]
-        self.replace_slice(2, len(head), newtarget)
+        self[2:len(head)] = newtarget
 
     @property
     def text(self) -> str:
@@ -64,10 +64,6 @@ class WikiLink(SubWikiText):
                     len(head + pipe + tail) - 2,
                 )
             else:
-                self.replace_slice(
-                    len(head + pipe),
-                    len(head + pipe + tail) - 2,
-                    newtext
-                )
+                self[len(head + pipe):len(head + pipe + tail) - 2] = newtext
         elif newtext is not None:
             self.strins(len(head) - 2, '|' + newtext)

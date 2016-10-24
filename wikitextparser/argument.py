@@ -80,9 +80,9 @@ class Argument(SubWikiText):
         """
         oldname = self.name
         if self.positional:
-            self.replace_slice(0, 1, '|' + newname + '=')
+            self[0:1] = '|' + newname + '='
         else:
-            self.replace_slice(1, 1 + len(oldname), newname)
+            self[1:1 + len(oldname)] = newname
 
     @property
     def positional(self) -> bool:
@@ -132,6 +132,6 @@ class Argument(SubWikiText):
         pipename, equal, value = self._not_in_atomic_subspans_partition('=')
         if equal:
             pnel = len(pipename + equal)
-            self.replace_slice(pnel, pnel + len(value), newvalue)
+            self[pnel:pnel + len(value)] = newvalue
         else:
-            self.replace_slice(1, len(pipename), newvalue)
+            self[1:len(pipename)] = newvalue

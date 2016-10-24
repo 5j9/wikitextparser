@@ -157,7 +157,7 @@ class Tag(SubWikiText):
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
                 start, end = match.spans('attr_value')[-i - 1]
-                self.replace_slice(start, end, attr_value)
+                self[start:end] = attr_value
                 return
         # The attr_name is new, add as a new attribute.
         start = match.span('start')[1]
@@ -197,9 +197,9 @@ class Tag(SubWikiText):
         match = self._get_match()
         start, end = match.span('end_name')
         if start != -1:
-            self.replace_slice(start, end, name)
+            self[start:end] = name
         start, end = match.span('name')
-        self.replace_slice(start, end, name)
+        self[start:end] = name
 
     @property
     def contents(self) -> str:
@@ -221,13 +221,11 @@ class Tag(SubWikiText):
         match = self._get_match()
         start, end = match.span('contents')
         if start != -1:
-            self.replace_slice(start, end, contents)
+            self[start:end] = contents
         else:
             # This is a self-closing tag.
             start, end = match.span('self_closing')
-            self.replace_slice(
-                start, end, '>{0}</{1}>'.format(contents, match['name'])
-            )
+            self[start:end] = '>{0}</{1}>'.format(contents, match['name'])
 
     @property
     def parsed_contents(self) -> SubWikiText:
