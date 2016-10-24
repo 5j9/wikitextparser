@@ -46,9 +46,10 @@ SECTION_REGEX = re.compile(
 TABLE_REGEX = re.compile(
     r"""
     # Table-start
-    # Always starts on a new line with optional leading spaces
-    ^ # Group the leading spaces so we can ignore them in code
-    (\ *)
+    # Always starts on a new line with optional leading spaces or indentation.
+    ^
+    # Group the leading spaces or colons so that we can ignore them later.
+    ([ :]*)
     {\| # Table contents
     # Should not contain any other table-start
     (?:
@@ -445,24 +446,27 @@ class WikiText:
                     level += 1
             return level
 
-    def _shadow(
-        self,
-        types=('templates', 'wikilinks', 'functions', 'exttags', 'comments')
-    ) -> str:
+    def _shadow(self) -> str:
         """Return a copy of self.string with specified subspans replaced.
 
-        This function is used in finding the spans of wikitables.
+        Subspans are replaced by a block of colons of the same size.
+        This function is used to find the spans of wikitables.
+
+        The replaced subspans are:
+            ('templates', 'wikilinks', 'functions', 'exttags', 'comments',)
 
         """
         ss, se = self._get_span()
         shadow = self.string
-        for type_ in types:
+        for type_ in (
+            'templates', 'wikilinks', 'functions', 'exttags', 'comments',
+        ):
             for sss, sse in self._type_to_spans[type_]:
                 if sss < ss or sse > se:
                     continue
                 shadow = (
                     shadow[:sss - ss] +
-                    (sse - sss) * '_' +
+                    (sse - sss) * ':' +
                     shadow[sse - ss:]
                 )
         return shadow

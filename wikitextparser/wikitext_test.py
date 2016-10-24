@@ -303,6 +303,39 @@ class Tables(unittest.TestCase):
         self.assertEqual(tables[0].string, '{|\n| a\n|}')
         self.assertEqual(tables[1].string, '{|\n| b\n|}')
 
+    def test_tables_may_be_indented(self):
+        s = ' ::{|class=wikitable\n|a\n|}'
+        wt = wtp.parse(s)
+        self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
+
+    def test_comments_before_table_start(self):
+        s = ' <!-- c -->::{|class=wikitable\n|a\n|}'
+        wt = wtp.parse(s)
+        self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
+
+    def test_comments_between_indentation(self):
+        s = ':<!-- c -->:{|class=wikitable\n|a\n|}'
+        wt = wtp.parse(s)
+        self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
+
+    def test_comments_between_indentation_after_them(self):
+        s = ':<!-- c -->: <!-- c -->{|class=wikitable\n|a\n|}'
+        wt = wtp.parse(s)
+        self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
+
+    @unittest.expectedFailure
+    def test_indentation_cannot_be_inside_nowiki(self):
+        """A very unusual case. It seems OK to have false positives here.
+
+        Fixing it requires a lot of unnecessary coding. Also false positive
+        for tables are pretty much harmless.
+
+        """
+        s = '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}'
+        wt = wtp.parse(s)
+        self.assertEqual(len(wt.tables), 0)
+
+
 class PrettyPrint(unittest.TestCase):
 
     """Test the pprint method of the WikiText class."""
