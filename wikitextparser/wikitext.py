@@ -137,20 +137,20 @@ class WikiText:
             lststr[0] = lststr0[:start] + value + lststr0[start + 1:]
             return
         # isinstance(item, slice)
-        start, end = key.start, key.stop
+        start, stop = key.start, key.stop
         if start < 0:
             start %= selflen
-        if end < 0:
-            end %= selflen
+        if stop < 0:
+            stop %= selflen
         start += ss
-        end += ss
+        stop += ss
         # Update lststr
-        lststr[0] = lststr0[:start] + value + lststr0[end:]
+        lststr[0] = lststr0[:start] + value + lststr0[stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
-        self._close_subspans(start, end)
+        self._close_subspans(start, stop)
         # Update the other spans according to the new length.
-        del_len = end - start
+        del_len = stop - start
         ins_len = len(value)
         if ins_len > del_len:
             self._extend_span_update(
@@ -159,8 +159,8 @@ class WikiText:
             )
         elif ins_len < del_len:
             self._shrink_span_update(
-                rmstart=end + ins_len - del_len,  # new end
-                rmend=end,  # old end
+                rmstart=stop + ins_len - del_len,  # new stop
+                rmstop=stop,  # old stop
             )
         # Add the newly added spans contained in the value.
         spans_dict = self._type_to_spans
@@ -189,20 +189,25 @@ class WikiText:
                 spans.append((ss + start, se + start))
 
     def __delitem__(self, key: slice or int) -> None:
-        """Remove the given range from self.string.
+        """Remove the specified range or character from self.string.
 
         If an operation includes both insertion and deletion. It's safer to
         use the `strins` function first. Otherwise there is a possibility
         of insertion in the wrong spans.
 
         """
+        ss, se = self._get_span()
+        selflen = se - ss + 1
         if isinstance(key, slice):
             start, stop = key.start, key.stop
         else:  # isinstance(key, int)
             start, stop = key, key + 1
+        if start < 0:
+            start %= selflen
+        if stop < 0:
+            stop %= selflen
         lststr = self._lststr
         lststr0 = lststr[0]
-        ss = self._get_span()[0]
         stop += ss
         start += ss
         # Update lststr
@@ -210,7 +215,7 @@ class WikiText:
         # Update spans
         self._shrink_span_update(
             rmstart=start,
-            rmend=stop,
+            rmstop=stop,
         )
 
     @property
@@ -329,19 +334,19 @@ class WikiText:
             if s <= ss and ee <= e:
                 yield i
 
-    def _close_subspans(self, start: int, end: int) -> None:
-        """Close all subspans of (start, end)."""
+    def _close_subspans(self, start: int, stop: int) -> None:
+        """Close all subspans of (start, stop)."""
         ss, se = self._get_span()
         for type_spans in self._type_to_spans.values():
             for i, (s, e) in enumerate(type_spans):
                 if (
-                    (start <= s and e < end) or
-                    (start < s and e <= end) or
-                    (start == s and e == end and (ss != s or se != e))
+                    (start <= s and e < stop) or
+                    (start < s and e <= stop) or
+                    (start == s and e == stop and (ss != s or se != e))
                 ):
                     type_spans[i] = (start, start)
 
-    def _shrink_span_update(self, rmstart: int, rmend: int) -> None:
+    def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
 
         Warning: If an operation involves both _shrink_span_update and
@@ -351,19 +356,19 @@ class WikiText:
 
         """
         # Note: No span should be removed from _type_to_spans.
-        rmlength = rmend - rmstart
+        rmlength = rmstop - rmstart
         for t, spans in self._type_to_spans.items():
             for i, (spanstart, spanend) in enumerate(spans):
                 if spanend <= rmstart:
                     continue
-                elif rmend <= spanstart:
+                elif rmstop <= spanstart:
                     # removed part is before the span
                     spans[i] = (spanstart - rmlength, spanend - rmlength)
                 elif rmstart < spanstart:
                     # spanstart needs to be changed
-                    # we already know that rmend is after the spanstart
+                    # we already know that rmstop is after the spanstart
                     # so the new spanstart should be located at rmstart
-                    if rmend <= spanend:
+                    if rmstop <= spanend:
                         spans[i] = (rmstart, spanend - rmlength)
                     else:
                         # Shrink to an empty string.
@@ -371,7 +376,7 @@ class WikiText:
                 else:
                     # we already know that spanstart is before the rmstart
                     # so the spanstart needs no change.
-                    if rmend <= spanend:
+                    if rmstop <= spanend:
                         spans[i] = (spanstart, spanend - rmlength)
                     else:
                         spans[i] = (spanstart, rmstart)
