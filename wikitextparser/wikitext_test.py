@@ -27,14 +27,26 @@ class WikiText(unittest.TestCase):
         t2, t1 = wt.templates
         t2[2] = 'a'
         self.assertEqual(t2.string, '{{a2}}')
+        self.assertEqual(t1.string, '{{t1|{{a2}}}}')
         t2[2] = 'bb'
         self.assertEqual(t2.string, '{{bb2}}')
+        self.assertEqual(t1.string, '{{t1|{{bb2}}}}')
         t2[2:5] = 'ccc'
         self.assertEqual(t2.string, '{{ccc}}')
+        self.assertEqual(t1.string, '{{t1|{{ccc}}}}')
         t2[-5:-2] = 'd'
         self.assertEqual(wt.string, '{{t1|{{d}}}}')
         t2[-3] = 'e'
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
+
+    def test_overwriting_template_args(self):
+        t = wtp.Template('{{t|a|b|c}}')
+        a = t.arguments[-1]
+        self.assertEqual('|c', a.string)
+        t.string = '{{t|0|a|b|c}}'
+        self.assertEqual('', a.string)
+        self.assertEqual('0', t.get_arg('1').value)
+        self.assertEqual('c', t.get_arg('4').value)
 
     def test_delitem(self):
         s = '{{t1|{{t2}}}}'
@@ -45,6 +57,16 @@ class WikiText(unittest.TestCase):
         del wt[5:10]
         self.assertEqual(t1.string, '{{t1|}}')
         self.assertEqual(t2.string, '')
+
+
+class SubWikiText(unittest.TestCase):
+
+    """Test the SubWikiText class."""
+
+    def test_basic(self):
+
+        wtp.WikiText
+
 
 
 class Contains(unittest.TestCase):
@@ -132,17 +154,6 @@ class IndentLevel(unittest.TestCase):
         a, b, c = wtp.WikiText(s).templates
         self.assertEqual(4, a._get_indent_level())
         self.assertEqual(2, a._get_indent_level(with_respect_to=b))
-
-
-class StringSetter(unittest.TestCase):
-
-    """Test the string setter method."""
-
-    def test_sequencematcher(self):
-        t = wtp.Template('{{t|a|b|c}}')
-        t.string = '{{t|0|a|b|c}}'
-        self.assertEqual('0', t.get_arg('1').value)
-        self.assertEqual('c', t.get_arg('4').value)
 
 
 class ExternalLinks(unittest.TestCase):

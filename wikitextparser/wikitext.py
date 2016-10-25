@@ -132,14 +132,24 @@ class WikiText:
         if isinstance(key, int):
             if key < 0:
                 key += selflen
+                if key < 0:
+                    raise IndexError('WikiText index out of range')
+            elif key > selflen:
+                raise IndexError('WikiText index out of range')
             start = ss + key
             stop = start + 1
-        else:  # isinstance(item, slice)
-            start, stop = key.start, key.stop
+        else:  # isinstance(key, slice)
+            start, stop = key.start or 0, key.stop
             if start < 0:
                 start += selflen
-            if stop < 0:
+                if start < 0:
+                    start = 0
+            if stop is None:
+                stop = selflen
+            elif stop < 0:
                 stop += selflen
+                if stop < 0:
+                    stop = 0
             start += ss
             stop += ss
             # Update lststr
@@ -198,10 +208,13 @@ class WikiText:
         )
 
     def strins(self, start: int, string: str) -> None:
-        """Insert the given string at the specified index. start >= 0."""
+        """Insert the given string at the specified index."""
         lststr = self._lststr
         lststr0 = lststr[0]
-        start += self._get_span()[0]
+        ss, se = self._get_span()
+        if start < 0:
+            start += se - ss + 1
+        start += ss
         # Update lststr
         lststr[0] = lststr0[:start] + string + lststr0[start:]
         # Update spans
@@ -225,7 +238,7 @@ class WikiText:
     @string.setter
     def string(self, newstring: str) -> None:
         """Set a new string for this object. Note the old data will be lost."""
-        self[0:-1] = newstring
+        self[0:] = newstring
 
     def _get_span(self) -> tuple:
         """Return the self-span."""
@@ -882,8 +895,8 @@ class SubWikiText(WikiText):
     def __init__(
         self,
         string: str or list,
-        spans: list or None=None,
-        index: int or None=None,
+        spans: list,
+        index: int,
     ) -> None:
         """Initialize the object.
 
@@ -892,10 +905,10 @@ class SubWikiText(WikiText):
 
         """
         self._common_init(string, spans)
-        if index is None:
-            self._index = len(self._type_to_spans['subwikitext']) - 1
-        else:
-            self._index = index
+        # SubWikiText is not used directly so we don't need the following:
+        # if index is None:
+        #     self._index = len(self._type_to_spans['subwikitext']) - 1
+        self._index = index
 
     def __repr__(self) -> str:
         """Return the string representation of the Comment."""
