@@ -58,17 +58,6 @@ class WikiText(unittest.TestCase):
         self.assertEqual(t1.string, '{{t1|}}')
         self.assertEqual(t2.string, '')
 
-
-class SubWikiText(unittest.TestCase):
-
-    """Test the SubWikiText class."""
-
-    def test_basic(self):
-
-        wtp.WikiText
-
-
-
 class Contains(unittest.TestCase):
 
     """Test the __contains__ method of the WikiText class."""
@@ -633,6 +622,20 @@ class PrettyPrint(unittest.TestCase):
             '    }}\n'
             '}}',
             wtp.parse('{{#time:{{#if:1|y|}}}}').pprint(),
+        )
+
+    def test_colon_in_tl_name(self):
+        self.assertEqual(
+            '{{en:text\n'
+            '    |text<!--\n'
+            '-->}}',
+            wtp.parse('{{en:text|text}}').pprint(),
+        )
+        self.assertEqual(
+            '{{en:text\n'
+            '    | n=v <!--\n'
+            '-->}}',
+            wtp.parse('{{en:text|n=v}}').pprint(),
         )
 
 

@@ -525,7 +525,7 @@ class WikiText:
                 wcswidth(n.replace('لا', 'ل')) if
                 not arg_positionalities[i] else 0 for
                 i, n in enumerate(arg_stripped_names)
-                ]
+            ]
             max_name_len = max(arg_name_lengths)
             # Format template.name.
             level = template._get_indent_level()
@@ -542,8 +542,8 @@ class WikiText:
             last_arg_value = last_arg.value
             last_arg_stripped_value = last_arg_value.strip()
             if (
-                        not last_is_positional or
-                            last_arg_value == last_arg_stripped_value
+                not last_is_positional or
+                last_arg_value == last_arg_stripped_value
             ):
                 if not_a_parser_function:
                     stop_conversion = False
@@ -557,6 +557,21 @@ class WikiText:
                     )
                 else:
                     stop_conversion = True
+                    if last_is_positional:
+                        # Can't strip or adjust the position of the value
+                        # because this could be a positional argument in a
+                        # template.
+                        last_arg.value = (
+                            last_arg_value + last_comment_indent
+                        )
+                    else:
+                        # This is either a parser function or a keyword
+                        # argument in a template. In both cases the name
+                        # can be lstripped and the value can be rstripped.
+                        last_arg.name = ' ' + last_arg.name.lstrip()
+                        last_arg.value = (
+                            last_arg_value.rstrip() + ' ' + last_comment_indent
+                        )
             else:
                 stop_conversion = True
                 last_arg.value += last_comment_indent
