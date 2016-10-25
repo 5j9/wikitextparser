@@ -118,6 +118,7 @@ class Tag(unittest.TestCase):
     def test_parsed_contents(self):
         t = wtp.Tag('<t>c [[w]]</t>')
         c1 = t.parsed_contents
+        self.assertEqual(repr(c1), "SubWikiText('c [[w]]')")
         self.assertEqual(c1.wikilinks[0].target, 'w')
         # The new contents object won't create a new span
         c2 = t.parsed_contents
