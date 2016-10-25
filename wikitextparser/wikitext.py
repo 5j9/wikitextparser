@@ -491,6 +491,26 @@ class WikiText:
         else:
             self._type_to_spans = parse_to_spans(self._lststr[0])
 
+    def _pp_type_to_spans(self) -> (str):
+        """Create the arguments for the parse function used in pprint method.
+
+
+        Only pass the spans of subspans and change the spans to fit the new
+        scope, i.e self.string.
+
+        """
+        ss, se = self._get_span()
+        if ss == 0 and se == len(self._lststr[0]):
+            return deepcopy(self._type_to_spans)
+        type_to_spans = {}
+        for type_, spans in self._type_to_spans.items():
+            newspans = type_to_spans[type_] = []
+            for s, e in spans:
+                if s < ss or e > se:
+                    continue
+                newspans.append((s - ss, e - ss))
+        return type_to_spans
+
     def pprint(self, indent: str='    ', remove_comments=False) -> None:
         """Return a pretty-print of self.string as string.
 
@@ -501,7 +521,7 @@ class WikiText:
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = parse(self.string, deepcopy(self._type_to_spans))
+        parsed = parse(self.string, self._pp_type_to_spans())
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''

@@ -674,6 +674,15 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{#expr: 2  =   3}}').pprint(),
         )
 
+    def test_pprint_inner_template(self):
+        c, b, a = wtp.WikiText('{{a|{{b|{{c}}}}}}').templates
+        self.assertEqual(
+            '{{b\n'
+            '    | 1 = {{c}}\n'
+            '}}',
+            b.pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 
