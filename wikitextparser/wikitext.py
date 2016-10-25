@@ -167,31 +167,12 @@ class WikiText:
             for ss, se in v:
                 spans.append((ss + start, se + start))
 
-    def strins(self, start: int, string: str) -> None:
-        """Insert the given string at the specified index. start >= 0."""
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        start += self._get_span()[0]
-        # Update lststr
-        lststr[0] = lststr0[:start] + string + lststr0[start:]
-        # Update spans
-        self._extend_span_update(
-            estart=start,
-            elength=len(string),
-        )
-        # Remember newly added spans by the string.
-        spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(string).items():
-            spans = spans_dict[k]
-            for ss, se in v:
-                spans.append((ss + start, se + start))
-
     def __delitem__(self, key: slice or int) -> None:
         """Remove the specified range or character from self.string.
 
-        If an operation includes both insertion and deletion. It's safer to
-        use the `strins` function first. Otherwise there is a possibility
-        of insertion in the wrong spans.
+        Note: If an operation involves both insertion and deletion, It'll be
+        safer to use the `strins` function first. Otherwise there is a
+        possibility of insertion into the wrong spans.
 
         """
         ss, se = self._get_span()
@@ -215,6 +196,25 @@ class WikiText:
             rmstart=start,
             rmstop=stop,
         )
+
+    def strins(self, start: int, string: str) -> None:
+        """Insert the given string at the specified index. start >= 0."""
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        start += self._get_span()[0]
+        # Update lststr
+        lststr[0] = lststr0[:start] + string + lststr0[start:]
+        # Update spans
+        self._extend_span_update(
+            estart=start,
+            elength=len(string),
+        )
+        # Remember newly added spans by the string.
+        spans_dict = self._type_to_spans
+        for k, v in parse_to_spans(string).items():
+            spans = spans_dict[k]
+            for ss, se in v:
+                spans.append((ss + start, se + start))
 
     @property
     def string(self) -> str:
