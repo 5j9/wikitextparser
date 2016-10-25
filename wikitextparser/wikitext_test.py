@@ -638,6 +638,27 @@ class PrettyPrint(unittest.TestCase):
             wtp.parse('{{en:text|n=v}}').pprint(),
         )
 
+    def test_parser_function_with_an_empty_argument(self):
+        """The result might seem a little odd, but this is a very rare case.
+
+        The code could benefit from a little improvement.
+
+        """
+        self.assertEqual(
+            '{{ #rel2abs:\n'
+            '    \n'
+            '}}',
+            wtp.parse('{{ #rel2abs: }}').pprint(),
+        )
+
+    def test_pf_one_kw_arg(self):
+        self.assertEqual(
+            '{{#expr:\n'
+            '    2  =   3\n'
+            '}}',
+            wtp.parse('{{#expr: 2  =   3}}').pprint(),
+        )
+
 
 class Sections(unittest.TestCase):
 

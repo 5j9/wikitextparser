@@ -618,64 +618,61 @@ class WikiText:
                 # Todo: Instead use comments to indent.
                 continue
             args = function.arguments
-            if not args:
-                function.name = name
-            else:
-                # Whitespace, including newlines, tabs, and spaces is stripped
-                # from the beginning and end of all the parameters of
-                # parser functions. See:
-                # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
-                #    Stripping_whitespace
-                level = function._get_indent_level()
-                newline_indent = '\n' + indent * level
-                if len(args) == 1:
-                    arg = args[0]
-                    # The first arg is both the first and last argument.
-                    if arg.positional:
-                        arg.value = (
-                            newline_indent + arg.value.strip() +
-                            newline_indent.replace(indent, '', 1)
-                        )
-                    else:
-                        # Note that we don't add spaces before and after the
-                        # '=' in parser functions because it could be part of
-                        # an ordinary string.
-                        arg.name = newline_indent + arg.name.lstrip()
-                        arg.value = (
-                            arg.value.rstrip() +
-                            newline_indent.replace(indent, '', 1)
-                        )
+            # Whitespace, including newlines, tabs, and spaces is stripped
+            # from the beginning and end of all the parameters of
+            # parser functions. See:
+            # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
+            #    Stripping_whitespace
+            level = function._get_indent_level()
+            newline_indent = '\n' + indent * level
+            if len(args) == 1:
+                arg = args[0]
+                # The first arg is both the first and last argument.
+                if arg.positional:
+                    arg.value = (
+                        newline_indent + arg.value.strip() +
+                        newline_indent.replace(indent, '', 1)
+                    )
                 else:
-                    # Special formatting for the first argument
-                    arg = args[0]
-                    if arg.positional:
-                        arg.value = (
-                            newline_indent + arg.value.strip() + newline_indent
-                        )
-                    else:
-                        arg.name = newline_indent + arg.name.lstrip()
-                        arg.value = arg.value.rstrip() + newline_indent
-                    # Formatting the middle arguments
-                    for arg in args[1:-1]:
-                        if arg.positional:
-                            arg.value = (
-                                ' ' + arg.value.strip() + newline_indent
-                            )
-                        else:
-                            arg.name = ' ' + arg.name.lstrip()
-                            arg.value = (
-                                arg.value.rstrip() + newline_indent
-                            )
-                    # Special formatting for the last argument
-                    arg = args[-1]
-                    newline_indent = newline_indent.replace(indent, '', 1)
+                    # Note that we don't add spaces before and after the
+                    # '=' in parser functions because it could be part of
+                    # an ordinary string.
+                    arg.name = newline_indent + arg.name.lstrip()
+                    arg.value = (
+                        arg.value.rstrip() +
+                        newline_indent.replace(indent, '', 1)
+                    )
+            else:
+                # Special formatting for the first argument
+                arg = args[0]
+                if arg.positional:
+                    arg.value = (
+                        newline_indent + arg.value.strip() + newline_indent
+                    )
+                else:
+                    arg.name = newline_indent + arg.name.lstrip()
+                    arg.value = arg.value.rstrip() + newline_indent
+                # Formatting the middle arguments
+                for arg in args[1:-1]:
                     if arg.positional:
                         arg.value = (
                             ' ' + arg.value.strip() + newline_indent
                         )
                     else:
                         arg.name = ' ' + arg.name.lstrip()
-                        arg.value = arg.value.rstrip() + newline_indent
+                        arg.value = (
+                            arg.value.rstrip() + newline_indent
+                        )
+                # Special formatting for the last argument
+                arg = args[-1]
+                newline_indent = newline_indent.replace(indent, '', 1)
+                if arg.positional:
+                    arg.value = (
+                        ' ' + arg.value.strip() + newline_indent
+                    )
+                else:
+                    arg.name = ' ' + arg.name.lstrip()
+                    arg.value = arg.value.rstrip() + newline_indent
             functions = parsed.parser_functions
         return parsed.string
 
