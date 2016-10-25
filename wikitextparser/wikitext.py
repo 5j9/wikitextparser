@@ -447,7 +447,8 @@ class WikiText:
         """Return a copy of self.string with specified subspans replaced.
 
         Subspans are replaced by a block of colons of the same size.
-        This function is used to find the spans of wikitables.
+        This function is called upon extracting tables or extracting the data
+        inside them.
 
         The replaced subspans are:
             ('templates', 'wikilinks', 'functions', 'exttags', 'comments',)
@@ -458,13 +459,13 @@ class WikiText:
         for type_ in (
             'templates', 'wikilinks', 'functions', 'exttags', 'comments',
         ):
-            for sss, sse in self._type_to_spans[type_]:
-                if sss < ss or sse > se:
+            for s, e in self._type_to_spans[type_]:
+                if s < ss or e > se:
                     continue
                 shadow = (
-                    shadow[:sss - ss] +
-                    (sse - sss) * ':' +
-                    shadow[sse - ss:]
+                    shadow[:s - ss] +
+                    (e - s) * ':' +
+                    shadow[e - ss:]
                 )
         return shadow
 

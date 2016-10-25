@@ -15,9 +15,9 @@ import unittest
 import wikitextparser as wtp
 
 
-class Rows(unittest.TestCase):
+class GetData(unittest.TestCase):
 
-    """Test the rows method of the table class."""
+    """Test the GetData method of the table class."""
 
     def test_each_row_on_a_newline(self):
         table = wtp.Table(
@@ -221,19 +221,25 @@ class Rows(unittest.TestCase):
             ['e', 'f', 'f', 'g', 'h']
         ])
 
+    def test_template_inside_table(self):
+        # This tests self._shadow function.
+        s = '{{t|1}}\n{|class=wikitable\n|a\n|}\n{{t|1}}'
+        p = wtp.parse(s)
+        self.assertEqual([['a']], p.tables[0].getdata())
 
-class RowData(unittest.TestCase):
 
-    """Test the rowdata method of the Table class."""
+class GetRowData(unittest.TestCase):
+
+    """Test the getrdata method of the Table class."""
 
     def test_second_of_three(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
         self.assertEqual(table.getrdata(1), ['d', 'e', 'f'])
 
 
-class ColData(unittest.TestCase):
+class GetColData(unittest.TestCase):
 
-    """Test the getrow method of the Table class."""
+    """Test the getcdata method of the Table class."""
 
     def test_second_of_three(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')

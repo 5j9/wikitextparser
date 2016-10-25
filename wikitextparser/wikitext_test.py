@@ -58,6 +58,7 @@ class WikiText(unittest.TestCase):
         self.assertEqual(t1.string, '{{t1|}}')
         self.assertEqual(t2.string, '')
 
+
 class Contains(unittest.TestCase):
 
     """Test the __contains__ method of the WikiText class."""
@@ -286,7 +287,7 @@ class ExternalLinks(unittest.TestCase):
         self.assertEqual(0, len(p.external_links))
 
 
-class Tables(unittest.TestCase):
+class Table(unittest.TestCase):
 
     """Test the tables property."""
 
