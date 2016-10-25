@@ -145,6 +145,20 @@ class IndentLevel(unittest.TestCase):
         self.assertEqual(4, a._get_indent_level())
         self.assertEqual(2, a._get_indent_level(with_respect_to=b))
 
+    def test_repprint(self):
+        """Make sure that pprint won't mutate self."""
+        s = '{{a|{{b|{{c}}}}}}'
+        c, b, a = wtp.WikiText(s).templates
+        self.assertEqual(
+            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
+            a.pprint(),
+        )
+        # Again:
+        self.assertEqual(
+            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
+            a.pprint(),
+        )
+
 
 class ExternalLinks(unittest.TestCase):
 

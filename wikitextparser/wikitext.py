@@ -2,6 +2,7 @@
 
 
 import re
+from copy import deepcopy
 
 from wcwidth import wcswidth
 
@@ -496,9 +497,11 @@ class WikiText:
         Try to organize templates and parser functions by indenting, aligning
         at the equal signs, and adding space where appropriate.
 
+        Note that this function will not mutate self.
+
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = parse(self.string, self._type_to_spans)
+        parsed = parse(self.string, deepcopy(self._type_to_spans))
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
