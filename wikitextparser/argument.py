@@ -103,7 +103,7 @@ class Argument(SubWikiText):
         if equal:
             # Keyword argument
             if to_positional:
-                self.strdel(1, len(pipename + '='))
+                del self[1:len(pipename + '=')]
             else:
                 return
         elif to_positional:

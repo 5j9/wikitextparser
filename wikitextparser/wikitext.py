@@ -133,6 +133,7 @@ class WikiText:
             if key < 0:
                 key %= selflen
             start = ss + key
+            # Todo: Parse value to make it work as strins method
             lststr[0] = lststr0[:start] + value + lststr0[start + 1:]
             return
         # isinstance(item, slice)
@@ -167,9 +168,50 @@ class WikiText:
             spans = spans_dict[k]
             for ss, se in v:
                 spans.append((ss + start, se + start))
-    # Todo: Isn't it better to use generators for the following properties?
 
+    def strins(self, start: int, string: str) -> None:
+        """Insert the given string at the specified index. start >= 0."""
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        start += self._get_span()[0]
+        # Update lststr
+        lststr[0] = lststr0[:start] + string + lststr0[start:]
+        # Update spans
+        self._extend_span_update(
+            estart=start,
+            elength=len(string),
+        )
+        # Remember newly added spans by the string.
+        spans_dict = self._type_to_spans
+        for k, v in parse_to_spans(string).items():
+            spans = spans_dict[k]
+            for ss, se in v:
+                spans.append((ss + start, se + start))
 
+    def __delitem__(self, key: slice or int) -> None:
+        """Remove the given range from self.string.
+
+        If an operation includes both insertion and deletion. It's safer to
+        use the `strins` function first. Otherwise there is a possibility
+        of insertion in the wrong spans.
+
+        """
+        if isinstance(key, slice):
+            start, stop = key.start, key.stop
+        else:  # isinstance(key, int)
+            start, stop = key, key + 1
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        ss = self._get_span()[0]
+        stop += ss
+        start += ss
+        # Update lststr
+        lststr[0] = lststr0[:start] + lststr0[stop:]
+        # Update spans
+        self._shrink_span_update(
+            rmstart=start,
+            rmend=stop,
+        )
 
     @property
     def string(self) -> str:
@@ -181,29 +223,6 @@ class WikiText:
     def string(self, newstring: str) -> None:
         """Set a new string for this object. Note the old data will be lost."""
         self[0:-1] = newstring
-
-    def strdel(self, start: int, end: int) -> None:
-        """Remove the given range from self.string.
-
-        0 <= start <= end
-
-        If an operation includes both insertion and deletion. It's safer to
-        use the `strins` function first. Otherwise there is a possibility
-        of insertion in the wrong spans.
-
-        """
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        ss = self._get_span()[0]
-        end += ss
-        start += ss
-        # Update lststr
-        lststr[0] = lststr0[:start] + lststr0[end:]
-        # Update spans
-        self._shrink_span_update(
-            rmstart=start,
-            rmend=end,
-        )
 
     def _get_span(self) -> tuple:
         """Return the self-span."""
@@ -454,25 +473,6 @@ class WikiText:
         else:
             self._type_to_spans = parse_to_spans(self._lststr[0])
 
-    def strins(self, start: int, string: str) -> None:
-        """Insert the given string at the specified index. start >= 0."""
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        start += self._get_span()[0]
-        # Update lststr
-        lststr[0] = lststr0[:start] + string + lststr0[start:]
-        # Update spans
-        self._extend_span_update(
-            estart=start,
-            elength=len(string),
-        )
-        # Remember newly added spans by the string.
-        spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(string).items():
-            spans = spans_dict[k]
-            for ss, se in v:
-                spans.append((ss + start, se + start))
-
     def pprint(self, indent: str='    ', remove_comments=False) -> None:
         """Return a pretty-print of self.string as string.
 
@@ -648,6 +648,7 @@ class WikiText:
             functions = parsed.parser_functions
         return parsed.string
 
+    # Todo: Isn't it better to use generators for the following properties?
     @property
     def parameters(self) -> list:
         """Return a list of parameter objects."""

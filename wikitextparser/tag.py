@@ -177,8 +177,8 @@ class Tag(SubWikiText):
         # change after each deletion.
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
-                start, end = match.spans('attr')[-i - 1]
-                self.strdel(start, end)
+                start, stop = match.spans('attr')[-i - 1]
+                del self[start:stop]
 
     def __contains__(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""

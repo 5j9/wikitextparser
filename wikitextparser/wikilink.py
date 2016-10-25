@@ -59,10 +59,7 @@ class WikiLink(SubWikiText):
         head, pipe, tail = self._not_in_atomic_subspans_partition('|')
         if pipe:
             if newtext is None:
-                self.strdel(
-                    len(head + pipe) - 1,
-                    len(head + pipe + tail) - 2,
-                )
+                del self[len(head + pipe) - 1:len(head + pipe + tail) - 2]
             else:
                 self[len(head + pipe):len(head + pipe + tail) - 2] = newtext
         elif newtext is not None:

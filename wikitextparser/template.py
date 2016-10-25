@@ -153,7 +153,7 @@ class Template(SubWikiText):
         for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
-                a.strdel(0, len(a.string))
+                del a[0:len(a.string)]
             else:
                 names.append(name)
 
@@ -191,18 +191,18 @@ class Template(SubWikiText):
                 # This is a duplicate argument.
                 if not val:
                     # This duplicate argument is empty. It's safe to remove it.
-                    arg.strdel(0, len(arg.string))
+                    del arg[0:len(arg.string)]
                 else:
                     # Try to remove any of the detected duplicates of this
                     # that are empty or their value equals to this one.
                     name_args = name_args_vals[name][0]
                     name_vals = name_args_vals[name][1]
                     if val in name_vals:
-                        arg.strdel(0, len(arg.string))
+                        del arg[0:len(arg.string)]
                     elif '' in name_vals:
                         i = name_vals.index('')
                         a = name_args.pop(i)
-                        a.strdel(0, len(a.string))
+                        del a[0:len(a.string)]
                         name_vals.pop(i)
                     else:
                         # It was not possible to remove any of the duplicates.

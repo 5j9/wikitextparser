@@ -36,6 +36,17 @@ class WikiText(unittest.TestCase):
         t2[-3] = 'e'
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
+    def test_delitem(self):
+        s = '{{t1|{{t2}}}}'
+        wt = wtp.WikiText(s)
+        t2, t1 = wt.templates
+        del t2[3]
+        self.assertEqual(wt.string, '{{t1|{{t}}}}')
+        del wt[5:10]
+        self.assertEqual(t1.string, '{{t1|}}')
+        self.assertEqual(t2.string, '')
+
+
 class Contains(unittest.TestCase):
 
     """Test the __contains__ method of the WikiText class."""
