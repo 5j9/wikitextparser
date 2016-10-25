@@ -85,6 +85,8 @@ class Contains(unittest.TestCase):
         self.assertTrue(a2 in b2)
         self.assertFalse(a2 in b1)
         self.assertFalse(a1 in b2)
+        self.assertTrue('{{a}}' in b1)
+        self.assertFalse('{{c}}' in b2)
 
 
 class ShrinkSpanUpdate(unittest.TestCase):
@@ -714,7 +716,6 @@ class Sections(unittest.TestCase):
         )
         s3 = wt.sections[3]
         self.assertEqual('=== s2 ===\nc\n', s3.string)
-
 
 
 if __name__ == '__main__':

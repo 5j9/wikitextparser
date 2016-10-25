@@ -180,7 +180,7 @@ class Tag(SubWikiText):
                 start, stop = match.spans('attr')[-i - 1]
                 del self[start:stop]
 
-    def __contains__(self, attr_name: str) -> bool:
+    def has(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
         return attr_name in self._get_match().captures('attr_name')
 

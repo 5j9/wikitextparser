@@ -64,18 +64,6 @@ TABLE_REGEX = re.compile(
 )
 
 
-class Temporary:
-
-    """A temporary class to avoid circular dependent imports.
-
-    All variables defined using this class will be over-written inside
-    wikitextparser.py.
-
-    """
-
-    pass
-
-
 class WikiText:
 
     """The WikiText class."""
@@ -96,7 +84,7 @@ class WikiText:
         """Return the string representation of the WikiText."""
         return 'WikiText(' + repr(self.string) + ')'
 
-    def __contains__(self, parsed_wikitext) -> bool:
+    def __contains__(self, value: str or WikiText) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
 
         Also self and parsed_wikitext should belong to the same parsed
@@ -105,9 +93,12 @@ class WikiText:
         """
         # Is it useful (and a good practice) to also accepts str inputs
         # and check if self.string contains it?
-        if self._lststr is not parsed_wikitext._lststr:
+        if isinstance(value, str):
+            return value in self.string
+        # isinstance(value, WikiText)
+        if self._lststr is not value._lststr:
             return False
-        ps, pe = parsed_wikitext._get_span()
+        ps, pe = value._get_span()
         ss, se = self._get_span()
         if ss <= ps and se >= pe:
             return True
@@ -495,6 +486,9 @@ class WikiText:
             newspans = type_to_spans[type_] = []
             for s, e in spans:
                 if s < ss or e > se:
+                    # This line is actually covered in tests, but
+                    # peephole optimization prevents it from being detected.
+                    # See: http://bugs.python.org/issue2506
                     continue
                 newspans.append((s - ss, e - ss))
         return type_to_spans
@@ -509,7 +503,7 @@ class WikiText:
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = parse(self.string, self._pp_type_to_spans())
+        parsed = WikiText(self.string, self._pp_type_to_spans())
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
@@ -949,10 +943,6 @@ class SubWikiText(WikiText):
     def _get_span(self) -> tuple:
         """Return the span of self."""
         return self._type_to_spans['subwikitext'][self._index]
-
-
-ExternalLink = WikiLink = Template = Comment = ParserFunction = Parameter = \
-    Table = Section = Temporary
 
 
 parse = WikiText

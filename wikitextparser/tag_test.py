@@ -110,10 +110,10 @@ class Tag(unittest.TestCase):
         t.delete('n1')
         self.assertEqual(t.string, '<t n2=v22>c</t>')
 
-    def test_contains(self):
+    def test_has_attr(self):
         t = wtp.Tag('<t n1=v1>c</t>')
-        self.assertTrue('n1' in t)
-        self.assertFalse('n2' in t)
+        self.assertTrue(t.has('n1'))
+        self.assertFalse(t.has('n2'))
 
     def test_parsed_contents(self):
         t = wtp.Tag('<t>c [[w]]</t>')
