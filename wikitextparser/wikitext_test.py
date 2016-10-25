@@ -26,11 +26,11 @@ class WikiText(unittest.TestCase):
         wt = wtp.WikiText(s)
         t2, t1 = wt.templates
         t2[2] = 'a'
-        self.assertEqual(wt.string, '{{t1|{{a2}}}}')
+        self.assertEqual(t2.string, '{{a2}}')
         t2[2] = 'bb'
-        self.assertEqual(wt.string, '{{t1|{{bb2}}}}')
+        self.assertEqual(t2.string, '{{bb2}}')
         t2[2:5] = 'ccc'
-        self.assertEqual(wt.string, '{{t1|{{ccc}}}}')
+        self.assertEqual(t2.string, '{{ccc}}')
         t2[-5:-2] = 'd'
         self.assertEqual(wt.string, '{{t1|{{d}}}}')
         t2[-3] = 'e'

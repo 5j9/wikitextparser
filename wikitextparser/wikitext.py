@@ -128,23 +128,21 @@ class WikiText:
         ss, se = self._get_span()
         lststr = self._lststr
         lststr0 = lststr[0]
-        selflen = se - ss + 1
+        selflen = se - ss
         if isinstance(key, int):
             if key < 0:
-                key %= selflen
+                key += selflen
             start = ss + key
-            # Todo: Parse value to make it work as strins method
-            lststr[0] = lststr0[:start] + value + lststr0[start + 1:]
-            return
-        # isinstance(item, slice)
-        start, stop = key.start, key.stop
-        if start < 0:
-            start %= selflen
-        if stop < 0:
-            stop %= selflen
-        start += ss
-        stop += ss
-        # Update lststr
+            stop = start + 1
+        else:  # isinstance(item, slice)
+            start, stop = key.start, key.stop
+            if start < 0:
+                start += selflen
+            if stop < 0:
+                stop += selflen
+            start += ss
+            stop += ss
+            # Update lststr
         lststr[0] = lststr0[:start] + value + lststr0[stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
@@ -197,15 +195,15 @@ class WikiText:
 
         """
         ss, se = self._get_span()
-        selflen = se - ss + 1
+        selflen = se - ss
         if isinstance(key, slice):
             start, stop = key.start, key.stop
         else:  # isinstance(key, int)
             start, stop = key, key + 1
         if start < 0:
-            start %= selflen
+            start += selflen
         if stop < 0:
-            stop %= selflen
+            stop += selflen
         lststr = self._lststr
         lststr0 = lststr[0]
         stop += ss
