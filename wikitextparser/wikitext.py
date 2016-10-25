@@ -414,35 +414,23 @@ class WikiText:
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
-    def _get_indent_level(self, with_respect_to=None) -> int:
+    def _get_indent_level(self) -> int:
         """Calculate the indent level for self.pprint function.
 
-        Minimum returned value is 1.
-        Being part of any Template or Parserfunction increases the indent
+        Minimum returned value for templates and parser functions is 1.
+        Being part of any Template or ParserFunction increases the indent
         level by one.
-
-        `with_respect_to` is an instance of WikiText object.
 
         """
         ss, se = self._get_span()
         level = 1  # a template is always found in itself
-        if with_respect_to is None:
-            for s, e in self._type_to_spans['templates']:
-                if s < ss and se < e:
-                    level += 1
-            for s, e in self._type_to_spans['functions']:
-                if s < ss and se < e:
-                    level += 1
-            return level
-        else:
-            rs, re = with_respect_to._get_span()
-            for s, e in self._type_to_spans['templates']:
-                if rs <= s < ss and se < e <= re:
-                    level += 1
-            for s, e in self._type_to_spans['functions']:
-                if rs <= s < ss and se < e <= re:
-                    level += 1
-            return level
+        for s, e in self._type_to_spans['templates']:
+            if s < ss and se < e:
+                level += 1
+        for s, e in self._type_to_spans['functions']:
+            if s < ss and se < e:
+                level += 1
+        return level
 
     def _shadow(self) -> str:
         """Return a copy of self.string with specified subspans replaced.
