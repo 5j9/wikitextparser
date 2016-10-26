@@ -147,7 +147,7 @@ class WikiText:
     def __setitem__(self, key: slice or int, value: str) -> None:
         """Set a new string for the given slice or character index.
 
-        Use this method instead of calling `strins` and `strdel` consecutively.
+        Use this method instead of calling `insert` and `del` consecutively.
         By doing so only one of the `_extend_span_update` and
         `_shrink_span_update` functions will be called and the performance
         will improve.
@@ -184,8 +184,8 @@ class WikiText:
     def __delitem__(self, key: slice or int) -> None:
         """Remove the specified range or character from self.string.
 
-        Note: If an operation involves both insertion and deletion, It'll be
-        safer to use the `strins` function first. Otherwise there is a
+        Note: If an operation involves both insertion and deletion, it'll be
+        safer to use the `insert` function first. Otherwise there is a
         possibility of insertion into the wrong spans.
 
         """
@@ -203,17 +203,22 @@ class WikiText:
     # Todo: def __add__(self, other) and __radd__(self, other)
 
     def insert(self, index: int, string: str) -> None:
-        """Insert the given string before the specified index."""
-        # Todo: inserts x into s at the index given by i (same as s[i:i] = [x])
+        """Insert the given string before the specified index.
+
+        This method has the same effect as ``self[index:index] = string``;
+        it only avoids some condition checks as it rules out the possibility
+        of the key being an slice, or the need to shrink any of the sub-spans.
+
+        """
         ss, se = self._get_span()
         lststr = self._lststr
         lststr0 = lststr[0]
         if index < 0:
             index += se - ss
             if index < 0:
-                raise IndexError('index out of range')
-        elif index > se - ss + 1:  # Note that it is not >=. Index can be new.
-            raise IndexError('index out of range')
+                index = 0
+        elif index > se - ss:  # Note that it is not >=. Index can be new.
+            index = se - ss
         index += ss
         # Update lststr
         lststr[0] = lststr0[:index] + string + lststr0[index:]

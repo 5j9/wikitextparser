@@ -57,13 +57,21 @@ class WikiText(unittest.TestCase):
         # stop and start in range but stop is before start
         self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
 
-    def test_strins(self):
-        w = wtp.Tag('c')
+    def test_insert(self):
+        w = wtp.WikiText('c')
         w.insert(0, 'a')
         self.assertEqual(w.string, 'ac')
+        # Just to show that ``w.insert(i, s)`` is the same as ``w[i:i] = s``:
+        v = wtp.WikiText('c')
+        v[0:0] = 'a'
+        self.assertEqual(w.string, v.string)
         w.insert(-1, 'b')
         self.assertEqual(w.string, 'abc')
-        self.assertRaises(IndexError, w.insert, 5, 'd')
+        # Like list.insert, w.insert accepts out of range indexes.
+        w.insert(5, 'd')
+        self.assertEqual(w.string, 'abcd')
+        w.insert(-5, 'z')
+        self.assertEqual(w.string, 'zabcd')
 
     def test_overwriting_template_args(self):
         t = wtp.Template('{{t|a|b|c}}')
@@ -714,7 +722,7 @@ class Sections(unittest.TestCase):
         wt = wtp.WikiText('== s ==\nc\n')
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
 
-    # Todo: Fix this.
+    # Todo: Parser should also work with windows line endings.
     @unittest.expectedFailure
     def test_multiline_with_carriage_return(self):
         s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
