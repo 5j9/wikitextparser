@@ -125,23 +125,29 @@ class WikiText:
             if key < 0:
                 key += selflen
                 if key < 0:
-                    raise IndexError('WikiText index out of range')
-            elif key > selflen:
-                raise IndexError('WikiText index out of range')
+                    raise IndexError('index out of range')
+            elif key >= selflen:
+                raise IndexError('index out of range')
             start = ss + key
             stop = start + 1
         else:  # isinstance(key, slice)
+            if key.step is not None:
+                raise NotImplementedError(
+                    'step is not implemented for string setter.'
+                )
             start, stop = key.start or 0, key.stop
             if start < 0:
                 start += selflen
                 if start < 0:
-                    start = 0
+                    raise IndexError('start index out of range')
             if stop is None:
                 stop = selflen
             elif stop < 0:
                 stop += selflen
-                if stop < 0:
-                    stop = 0
+            if start > stop:
+                raise IndexError(
+                    'stop index out of range or start is after the stop'
+                )
             start += ss
             stop += ss
             # Update lststr
@@ -198,6 +204,8 @@ class WikiText:
             rmstart=start,
             rmstop=stop,
         )
+
+    # Todo: def __add__(self, other) and __radd__(self, other)
 
     def strins(self, start: int, string: str) -> None:
         """Insert the given string at the specified index."""

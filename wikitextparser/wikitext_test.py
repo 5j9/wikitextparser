@@ -39,6 +39,24 @@ class WikiText(unittest.TestCase):
         t2[-3] = 'e'
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
+    def test_setitem_errors(self):
+        t = wtp.Tag('a')
+        self.assertRaises(IndexError, t.__setitem__, -2, 'b')
+        self.assertEqual('a', t[-9:9])
+        self.assertRaises(IndexError, t.__setitem__, 1, 'c')
+        self.assertRaises(
+            NotImplementedError, t.__setitem__, slice(0, 1, 1), 'd'
+        )
+        self.assertEqual('a', t[-1:])
+        self.assertRaises(IndexError, t.__setitem__, slice(-2, None), 'e')
+        # stop is out of range
+        self.assertRaises(IndexError, t.__setitem__, slice(0, -2), 'f')
+        t[0] = 'gg'
+        t[1] = 'hh'
+        self.assertEqual(t.string, 'ghh')
+        # stop and start in range but stop is before start
+        self.assertRaises(IndexError, t.__setitem__, slice(1, 0), 'h')
+
     def test_overwriting_template_args(self):
         t = wtp.Template('{{t|a|b|c}}')
         a = t.arguments[-1]
