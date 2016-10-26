@@ -108,13 +108,10 @@ class WikiText:
         """Return self.string[item]."""
         return self.string[key]
 
-    def __setitem__(self, key: slice or int, value: str) -> None:
-        """Set a new string for the given slice or character index.
+    def _check_index(self, key: slice or int) -> (int, int):
+        """Return adjusted start and stop index as tuple.
 
-        Use this method instead of calling `strins` and `strdel` consecutively.
-        By doing so only one of the `_extend_span_update` and
-        `_shrink_span_update` functions will be called and the performance
-        will improve.
+        Used in  __setitem__ and __delitem__.
 
         """
         ss, se = self._get_span()
@@ -126,27 +123,37 @@ class WikiText:
             elif key >= se - ss:
                 raise IndexError('index out of range')
             start = ss + key
-            stop = start + 1
-        else:  # isinstance(key, slice)
-            if key.step is not None:
-                raise NotImplementedError(
-                    'step is not implemented for string setter.'
-                )
-            start, stop = key.start or 0, key.stop
+            return start, start + 1
+        # isinstance(key, slice)
+        if key.step is not None:
+            raise NotImplementedError(
+                'step is not implemented for string setter.'
+            )
+        start, stop = key.start or 0, key.stop
+        if start < 0:
+            start += se - ss
             if start < 0:
-                start += se - ss
-                if start < 0:
-                    raise IndexError('start index out of range')
-            if stop is None:
-                stop = se - ss
-            elif stop < 0:
-                stop += se - ss
-            if start > stop:
-                raise IndexError(
-                    'stop index out of range or start is after the stop'
-                )
-            start += ss
-            stop += ss
+                raise IndexError('start index out of range')
+        if stop is None:
+            stop = se - ss
+        elif stop < 0:
+            stop += se - ss
+        if start > stop:
+            raise IndexError(
+                'stop index out of range or start is after the stop'
+            )
+        return start + ss, stop + ss
+
+    def __setitem__(self, key: slice or int, value: str) -> None:
+        """Set a new string for the given slice or character index.
+
+        Use this method instead of calling `strins` and `strdel` consecutively.
+        By doing so only one of the `_extend_span_update` and
+        `_shrink_span_update` functions will be called and the performance
+        will improve.
+
+        """
+        start, stop = self._check_index(key)
         # Update lststr
         lststr = self._lststr
         lststr0 = lststr[0]
@@ -171,8 +178,8 @@ class WikiText:
         spans_dict = self._type_to_spans
         for k, v in parse_to_spans(value).items():
             spans = spans_dict[k]
-            for ss, se in v:
-                spans.append((ss + start, se + start))
+            for s, e in v:
+                spans.append((s + start, e + start))
 
     def __delitem__(self, key: slice or int) -> None:
         """Remove the specified range or character from self.string.
@@ -182,20 +189,9 @@ class WikiText:
         possibility of insertion into the wrong spans.
 
         """
-        ss, se = self._get_span()
-        selflen = se - ss
-        if isinstance(key, slice):
-            start, stop = key.start, key.stop
-        else:  # isinstance(key, int)
-            start, stop = key, key + 1
-        if start < 0:
-            start += selflen
-        if stop < 0:
-            stop += selflen
+        start, stop = self._check_index(key)
         lststr = self._lststr
         lststr0 = lststr[0]
-        stop += ss
-        start += ss
         # Update lststr
         lststr[0] = lststr0[:start] + lststr0[stop:]
         # Update spans
@@ -225,8 +221,8 @@ class WikiText:
         spans_dict = self._type_to_spans
         for k, v in parse_to_spans(string).items():
             spans = spans_dict[k]
-            for ss, se in v:
-                spans.append((ss + start, se + start))
+            for s, e in v:
+                spans.append((s + start, e + start))
 
     @property
     def string(self) -> str:
