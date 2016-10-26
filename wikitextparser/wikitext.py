@@ -118,15 +118,12 @@ class WikiText:
 
         """
         ss, se = self._get_span()
-        lststr = self._lststr
-        lststr0 = lststr[0]
-        selflen = se - ss
         if isinstance(key, int):
             if key < 0:
-                key += selflen
+                key += se - ss
                 if key < 0:
                     raise IndexError('index out of range')
-            elif key >= selflen:
+            elif key >= se - ss:
                 raise IndexError('index out of range')
             start = ss + key
             stop = start + 1
@@ -137,20 +134,22 @@ class WikiText:
                 )
             start, stop = key.start or 0, key.stop
             if start < 0:
-                start += selflen
+                start += se - ss
                 if start < 0:
                     raise IndexError('start index out of range')
             if stop is None:
-                stop = selflen
+                stop = se - ss
             elif stop < 0:
-                stop += selflen
+                stop += se - ss
             if start > stop:
                 raise IndexError(
                     'stop index out of range or start is after the stop'
                 )
             start += ss
             stop += ss
-            # Update lststr
+        # Update lststr
+        lststr = self._lststr
+        lststr0 = lststr[0]
         lststr[0] = lststr0[:start] + value + lststr0[stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
