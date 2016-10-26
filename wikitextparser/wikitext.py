@@ -202,18 +202,19 @@ class WikiText:
 
     # Todo: def __add__(self, other) and __radd__(self, other)
 
-    def strins(self, index: int, string: str) -> None:
-        """Insert the given string at the specified index."""
+    def insert(self, index: int, string: str) -> None:
+        """Insert the given string before the specified index."""
+        # Todo: inserts x into s at the index given by i (same as s[i:i] = [x])
         ss, se = self._get_span()
+        lststr = self._lststr
+        lststr0 = lststr[0]
         if index < 0:
             index += se - ss
             if index < 0:
                 raise IndexError('index out of range')
-        elif index > se - ss:  # Note that it is not >=. Index can be new.
+        elif index > se - ss + 1:  # Note that it is not >=. Index can be new.
             raise IndexError('index out of range')
         index += ss
-        lststr = self._lststr
-        lststr0 = lststr[0]
         # Update lststr
         lststr[0] = lststr0[:index] + string + lststr0[index:]
         # Update spans

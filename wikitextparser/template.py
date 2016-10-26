@@ -285,10 +285,10 @@ class Template(SubWikiText):
         # Place the addstring in the right position.
         if before:
             arg = get_arg(before, args)
-            arg.strins(0, addstring)
+            arg.insert(0, addstring)
         elif after:
             arg = get_arg(after, args)
-            arg.strins(len(arg.string), addstring)
+            arg.insert(len(arg.string), addstring)
         else:
             if args and not positional:
                 # Insert after the last argument.
@@ -303,7 +303,7 @@ class Template(SubWikiText):
             else:
                 # The template has no arguments or the new arg is
                 # positional AND is to be added at the end of the template.
-                self.strins(len(self.string) - 2, addstring)
+                self.insert(-2, addstring)
 
     def get_arg(self, name: str) -> Argument or None:
         """Return the last argument with the given name.

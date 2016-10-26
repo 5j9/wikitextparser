@@ -61,7 +61,7 @@ class Parameter(SubWikiText):
         """Set the new value. If a default exist, change it. Add ow."""
         olddefault = self.default
         if olddefault is None:
-            self.strins(len('{{{' + self.name), '|' + newdefault)
+            self.insert(len('{{{' + self.name), '|' + newdefault)
         else:
             name = self.name
             self[len('{{{' + name):len('{{{' + name + '|' + olddefault)] =\
@@ -95,10 +95,7 @@ class Parameter(SubWikiText):
                     dig = True
         innermost_default = innermost_param.default
         if innermost_default is None:
-            innermost_param.strins(
-                len(innermost_param.string) - 3,
-                '|{{{' + new_default_name + '}}}'
-            )
+            innermost_param.insert(-3, '|{{{' + new_default_name + '}}}')
         else:
             name = innermost_param.name
             innermost_param[

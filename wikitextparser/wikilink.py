@@ -63,4 +63,4 @@ class WikiLink(SubWikiText):
             else:
                 self[len(head + pipe):len(head + pipe + tail) - 2] = newtext
         elif newtext is not None:
-            self.strins(len(head) - 2, '|' + newtext)
+            self.insert(-2, '|' + newtext)

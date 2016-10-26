@@ -67,8 +67,8 @@ class ExternalLink(SubWikiText):
         """
         if not self.in_brackets:
             url = self.string
-            self.strins(len(url), ' ]')
-            self.strins(0, '[')
+            self.insert(len(url), ' ]')
+            self.insert(0, '[')
             text = ''
         else:
             url = self.url

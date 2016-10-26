@@ -160,9 +160,8 @@ class Tag(SubWikiText):
                 self[start:end] = attr_value
                 return
         # The attr_name is new, add as a new attribute.
-        start = match.span('start')[1]
-        self.strins(
-            start,
+        self.insert(
+            match.span('start')[1],
             ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
         )
 

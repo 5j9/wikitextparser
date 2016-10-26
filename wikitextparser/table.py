@@ -303,7 +303,7 @@ class Table(SubWikiText):
             string = self.string
             h, s, t = string.partition('\n')
             # Insert caption after the first one.
-            self.strins(len(h + s), '|+' + newcaption + '\n')
+            self.insert(len(h + s), '|+' + newcaption + '\n')
 
     @property
     def table_attrs(self) -> str:
@@ -337,7 +337,7 @@ class Table(SubWikiText):
         m = CAPTION_REGEX.match(string)
         if not m:
             # There is no caption-line
-            self.strins(len(h + s), '|+' + attrs + '|\n')
+            self.insert(len(h + s), '|+' + attrs + '|\n')
         else:
             preattrs = m.group('preattrs')
             oldattrs = m.group('attrs') or ''
