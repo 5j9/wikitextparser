@@ -470,7 +470,7 @@ class WikiText:
         else:
             self._type_to_spans = parse_to_spans(self._lststr[0])
 
-    def _pp_type_to_spans(self) -> (str):
+    def _pp_type_to_spans(self) -> str:
         """Create the arguments for the parse function used in pprint method.
 
 
@@ -943,6 +943,3 @@ class SubWikiText(WikiText):
     def _get_span(self) -> tuple:
         """Return the span of self."""
         return self._type_to_spans['subwikitext'][self._index]
-
-
-parse = WikiText
