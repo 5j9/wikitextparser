@@ -40,22 +40,29 @@ class WikiText(unittest.TestCase):
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
     def test_setitem_errors(self):
-        t = wtp.Tag('a')
-        self.assertRaises(IndexError, t.__setitem__, -2, 'b')
-        self.assertEqual('a', t[-9:9])
-        self.assertRaises(IndexError, t.__setitem__, 1, 'c')
+        w = wtp.WikiText('a')
+        self.assertRaises(IndexError, w.__setitem__, -2, 'b')
+        self.assertEqual('a', w[-9:9])
+        self.assertRaises(IndexError, w.__setitem__, 1, 'c')
         self.assertRaises(
-            NotImplementedError, t.__setitem__, slice(0, 1, 1), 'd'
+            NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd'
         )
-        self.assertEqual('a', t[-1:])
-        self.assertRaises(IndexError, t.__setitem__, slice(-2, None), 'e')
+        self.assertEqual('a', w[-1:])
+        self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
         # stop is out of range
-        self.assertRaises(IndexError, t.__setitem__, slice(0, -2), 'f')
-        t[0] = 'gg'
-        t[1] = 'hh'
-        self.assertEqual(t.string, 'ghh')
+        self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
+        w[0] = 'gg'
+        w[1] = 'hh'
+        self.assertEqual(w.string, 'ghh')
         # stop and start in range but stop is before start
-        self.assertRaises(IndexError, t.__setitem__, slice(1, 0), 'h')
+        self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
+
+    def test_strins(self):
+        w = wtp.Tag('c')
+        w.strins(0, 'a')
+        self.assertEqual(w.string, 'ac')
+        w.strins(-1, 'b')
+        self.assertEqual(w.string, 'abc')
 
     def test_overwriting_template_args(self):
         t = wtp.Template('{{t|a|b|c}}')
@@ -713,7 +720,7 @@ class Sections(unittest.TestCase):
         p = wtp.parse(s)
         self.assertEqual('text\r\n', p.sections[0].string)
 
-    def test_other_branches_of_the_code(self):
+    def test_inseting_into_sections(self):
         wt = wtp.WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
         s1.strins(0, 'c\n== s0 ==\nc\n')
