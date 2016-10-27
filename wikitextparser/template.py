@@ -214,7 +214,7 @@ class Template(SubWikiText):
                 name_args_vals[name] = ([arg], [val])
 
     def set_arg(
-        self, name: str,
+        self, name: str or None,
         value: str,
         positional: bool or None=None,
         before: str or None=None,
@@ -246,7 +246,7 @@ class Template(SubWikiText):
                 arg.value = value
             return
         # Adding a new argument
-        if positional is None and not name:
+        if not name and positional is None:
             positional = True
         # Calculate the whitespace needed before arg-name and after arg-value.
         if not positional and preserve_spacing and args:
@@ -291,15 +291,18 @@ class Template(SubWikiText):
             arg.insert(len(arg.string), addstring)
         else:
             if args and not positional:
-                # Insert after the last argument.
-                # The addstring needs to be recalculated because we don't
-                # want to change the the whitespace before the final braces.
                 arg = args[0]
                 arg_string = arg.string
-                arg[0:len(arg_string)] = (
-                    arg.string.rstrip() + after_value + addstring.rstrip() +
-                    after_values[0]
-                )
+                if preserve_spacing:
+                    # Insert after the last argument.
+                    # The addstring needs to be recalculated because we don't
+                    # want to change the the whitespace before the final braces.
+                    arg[0:len(arg_string)] = (
+                        arg.string.rstrip() + after_value + addstring.rstrip() +
+                        after_values[0]
+                    )
+                else:
+                    arg.insert(len(arg_string), addstring)
             else:
                 # The template has no arguments or the new arg is
                 # positional AND is to be added at the end of the template.
@@ -308,7 +311,7 @@ class Template(SubWikiText):
     def get_arg(self, name: str) -> Argument or None:
         """Return the last argument with the given name.
 
-        Return None if no such argument is found.
+        Return None if no argument with that name is found.
 
         """
         return get_arg(name, reversed(self.arguments))

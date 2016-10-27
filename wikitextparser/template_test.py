@@ -187,9 +187,9 @@ class TemplateTest(unittest.TestCase):
         self.assertEqual('صعود', t.name)
 
 
-class TemplateSetArg(unittest.TestCase):
+class SetArg(unittest.TestCase):
 
-    """Test set_arg function of Template class."""
+    """Test set_arg method of Template class."""
 
     def test_set_arg(self):
         # Template with no args, keyword
@@ -225,6 +225,20 @@ class TemplateSetArg(unittest.TestCase):
             '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
         )
 
+    def test_existing_dont_preserve_space(self):
+        t = Template('{{t\n  |  a =   v \n}}')
+        t.set_arg('a', 'w', preserve_spacing=False)
+        self.assertEqual(
+            '{{t\n  |  a =w}}', t.string
+        )
+
+    def test_new_dont_preserve_space(self):
+        t = Template('{{t\n  |  a =   v \n}}')
+        t.set_arg('b', 'w', preserve_spacing=False)
+        self.assertEqual(
+            '{{t\n  |  a =   v \n|b=w}}', t.string
+        )
+
     def test_before(self):
         t = Template('{{t|a|b|c=c|d}}')
         t.set_arg('e', 'e', before='c')
@@ -257,6 +271,11 @@ class TemplateSetArg(unittest.TestCase):
         a = t.arguments[0]
         self.assertEqual(a.value, '1<nowiki>=</nowiki>g')
         self.assertEqual(a.name, '1')
+
+    def test_not_name_and_positional_is_none(self):
+        t = Template('{{t}}')
+        t.set_arg(None, 'v')
+        self.assertEqual('{{t|v}}', t.string)
 
 if __name__ == '__main__':
     unittest.main()
