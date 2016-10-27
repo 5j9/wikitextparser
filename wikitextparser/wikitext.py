@@ -374,28 +374,32 @@ class WikiText:
         # Note: No span should be removed from _type_to_spans.
         rmlength = rmstop - rmstart
         for t, spans in self._type_to_spans.items():
-            for i, (spanstart, spanend) in enumerate(spans):
-                if spanend <= rmstart:
+            for i, (s, e) in enumerate(spans):
+                if e <= rmstart:
+                    # s <= e <= rmstart <= rmstop
                     continue
-                elif rmstop <= spanstart:
-                    # removed part is before the span
-                    spans[i] = (spanstart - rmlength, spanend - rmlength)
-                elif rmstart < spanstart:
-                    # spanstart needs to be changed
-                    # we already know that rmstop is after the spanstart
-                    # so the new spanstart should be located at rmstart
-                    if rmstop <= spanend:
-                        spans[i] = (rmstart, spanend - rmlength)
-                    else:
-                        # Shrink to an empty string.
+                elif rmstop <= s:
+                    # rmstart <= rmstop <= s <= e
+                    spans[i] = (s - rmlength, e - rmlength)
+                elif rmstart < s:
+                    # s needs to be changed.
+                    # We already know that rmstop is after the s,
+                    # therefore the new s should be located at rmstart.
+                    if rmstop > e:
+                        # rmstart < s <= e < rmstop
                         spans[i] = (rmstart, rmstart)
-                else:
-                    # we already know that spanstart is before the rmstart
-                    # so the spanstart needs no change.
-                    if rmstop <= spanend:
-                        spans[i] = (spanstart, spanend - rmlength)
                     else:
-                        spans[i] = (spanstart, rmstart)
+                        # rmstart < s <= rmstop <= e
+                        spans[i] = (rmstart, e - rmlength)
+                else:
+                    # From the previous comparison we know that s is before
+                    # the rmstart; so s needs no change.
+                    if rmstop <= e:
+                        # s <= rmstart <= rmstop <= e
+                        spans[i] = (s, e - rmlength)
+                    else:
+                        # s <= rmstart <= e < rmstop
+                        spans[i] = (s, rmstart)
 
     def _extend_span_update(self, estart: int, elength: int) -> None:
         """Update self._type_to_spans according to the added span."""
