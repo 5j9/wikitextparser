@@ -355,11 +355,7 @@ class WikiText:
         ss, se = self._get_span()
         for type_spans in self._type_to_spans.values():
             for i, (s, e) in enumerate(type_spans):
-                if (
-                    (start <= s and e < stop) or
-                    (start < s and e <= stop) or
-                    (start == s and e == stop and (ss != s or se != e))
-                ):
+                if (start <= s and e <= stop) and (ss != s or se != e):
                     type_spans[i] = (start, start)
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
@@ -381,12 +377,12 @@ class WikiText:
                 elif rmstop <= s:
                     # rmstart <= rmstop <= s <= e
                     spans[i] = (s - rmlength, e - rmlength)
-                elif rmstart < s:
+                elif rmstart <= s:
                     # s needs to be changed.
                     # We already know that rmstop is after the s,
                     # therefore the new s should be located at rmstart.
-                    if rmstop > e:
-                        # rmstart < s <= e < rmstop
+                    if rmstop >= e:
+                        # rmstart <= s <= e < rmstop
                         spans[i] = (rmstart, rmstart)
                     else:
                         # rmstart < s <= rmstop <= e
@@ -394,7 +390,7 @@ class WikiText:
                 else:
                     # From the previous comparison we know that s is before
                     # the rmstart; so s needs no change.
-                    if rmstop <= e:
+                    if rmstop < e:
                         # s <= rmstart <= rmstop <= e
                         spans[i] = (s, e - rmlength)
                     else:
