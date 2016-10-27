@@ -140,6 +140,13 @@ class ShrinkSpanUpdate(unittest.TestCase):
         template.name = template.name.strip()
         self.assertEqual('|d=', arg.string)
 
+    def test_rmstart_s__rmstop__e(self):
+        wt = wtp.WikiText('{{t|<!--c-->}}')
+        c = wt.comments[0]
+        t = wt.templates[0]
+        t[3:8] = ''
+        self.assertEqual(c.string, 'c-->')
+
 
 class ExpandSpanUpdate(unittest.TestCase):
 
@@ -151,13 +158,16 @@ class ExpandSpanUpdate(unittest.TestCase):
         t.name = 't\n    '
         self.assertEqual('|1=2', a.string)
 
-    def test_extend_selfspan_when_inserting_at_the_end_of_selfspan(self):
-        wt = wtp.WikiText('{{ t|a={{#if:c|a}}|b=}}\n')
+    def test_overwriting_or_extending_selfspan_will_cause_data_loss(self):
+        wt = wtp.WikiText('{{t|{{#if:a|b|c}}}}')
         a = wt.templates[0].arguments[0]
         pf = wt.parser_functions[0]
-        a.value += '    \n'
-        self.assertEqual('|a={{#if:c|a}}    \n', a.string)
-        # Note that the parser function is overwritten
+        a.value += ''
+        self.assertEqual('|{{#if:a|b|c}}', a.string)
+        # Note that the old parser function is overwritten
+        self.assertEqual('', pf.string)
+        pf = a.parser_functions[1]
+        a.value = 'a'
         self.assertEqual('', pf.string)
 
 
