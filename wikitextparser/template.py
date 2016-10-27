@@ -160,23 +160,24 @@ class Template(SubWikiText):
     def rm_dup_args_safe(self, tag: str or None=None) -> None:
         """Remove duplicate arguments in a safe manner.
 
-        Remove the duplicate arguments only if:
-        1. Both arguments have the same name AND value.
-        2. Arguments have the same name and one of them is empty. (Remove the
-            empty one.)
+        Remove the duplicate arguments only in the following situations:
+            1. Both arguments have the same name AND value. (Remove one of
+                them.)
+            2. Arguments have the same name and one of them is empty. (Remove
+                the empty one.)
 
-        Warning: Although this is considered to be safe as no meaningful data
-            is removed but the result of the renedered wikitext may actually
-            change if the second arg is empty and removed but the first has a
-            value.
+        Warning: Although this is considered to be safe and no meaningful data
+            is removed from wikitext, but the result of the rendered wikitext
+            may actually change if the second arg is empty and removed but
+            the first had had a value.
 
-        If `tag` is defined, it should be a string, tag the remaining
-        arguments by appending the provided tag to their value.
+        If `tag` is defined, it should be a string that will be appended to
+        the value of the remaining duplicate arguments.
 
         Also see `rm_first_of_dup_args` function.
 
         """
-        name_args_vals = {}
+        name_to_lastarg_vals = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         for arg in reversed(self.arguments):
@@ -187,7 +188,7 @@ class Template(SubWikiText):
             else:
                 # But it's not OK to strip whitespace in positional arguments.
                 val = arg.value.strip()
-            if name in name_args_vals:
+            if name in name_to_lastarg_vals:
                 # This is a duplicate argument.
                 if not val:
                     # This duplicate argument is empty. It's safe to remove it.
@@ -195,23 +196,24 @@ class Template(SubWikiText):
                 else:
                     # Try to remove any of the detected duplicates of this
                     # that are empty or their value equals to this one.
-                    name_args = name_args_vals[name][0]
-                    name_vals = name_args_vals[name][1]
-                    if val in name_vals:
+                    lastarg, dup_vals = name_to_lastarg_vals[name]
+                    if val in dup_vals:
                         del arg[0:len(arg.string)]
-                    elif '' in name_vals:
-                        i = name_vals.index('')
-                        a = name_args.pop(i)
-                        del a[0:len(a.string)]
-                        name_vals.pop(i)
+                    elif '' in dup_vals:
+                        # This happens only if the last occurrence of name has
+                        # been an empty string; other empty values will
+                        # be removed as they are seen.
+                        # In other words index of the empty argument in
+                        # dup_vals is always 0.
+                        del lastarg[0:len(lastarg.string)]
+                        dup_vals.pop(0)
                     else:
                         # It was not possible to remove any of the duplicates.
-                        name_vals.append(arg)
-                        name_vals.append(val)
+                        dup_vals.append(val)
                         if tag:
                             arg.value += tag
             else:
-                name_args_vals[name] = ([arg], [val])
+                name_to_lastarg_vals[name] = (arg, [val])
 
     def set_arg(
         self, name: str or None,

@@ -147,6 +147,10 @@ class TemplateTest(unittest.TestCase):
         t = Template('{{t|1=v|v|1=u}}')
         t.rm_dup_args_safe(tag='<!-- dup -->')
         self.assertEqual('{{t|v<!-- dup -->|1=u}}', t.string)
+        # Duplicate argument's value is empty
+        t = Template('{{t|b|1=c|1=}}')
+        t.rm_dup_args_safe()
+        self.assertEqual('{{t|b|1=c}}', t.string)
 
     def test_has_arg(self):
         t = Template('{{t|a|b=c}}')
