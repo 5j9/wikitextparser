@@ -171,31 +171,6 @@ class ExpandSpanUpdate(unittest.TestCase):
         self.assertEqual('', pf.string)
 
 
-class IndentLevel(unittest.TestCase):
-
-    """Test the _get_indent_level method of the WikiText class."""
-
-    def test_a_in_b(self):
-        s = '{{b|{{a}}}}'
-        a, b = wtp.WikiText(s).templates
-        self.assertEqual(1, b._get_indent_level())
-        self.assertEqual(2, a._get_indent_level())
-
-    def test_repprint(self):
-        """Make sure that pprint won't mutate self."""
-        s = '{{a|{{b|{{c}}}}}}'
-        c, b, a = wtp.WikiText(s).templates
-        self.assertEqual(
-            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pprint(),
-        )
-        # Again:
-        self.assertEqual(
-            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pprint(),
-        )
-
-
 class ExternalLinks(unittest.TestCase):
 
     """Test the WikiText class."""
@@ -422,6 +397,17 @@ class Table(unittest.TestCase):
         s = '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}'
         wt = wtp.parse(s)
         self.assertEqual(len(wt.tables), 0)
+
+
+class IndentLevel(unittest.TestCase):
+
+    """Test the _get_indent_level method of the WikiText class."""
+
+    def test_a_in_b(self):
+        s = '{{b|{{a}}}}'
+        a, b = wtp.WikiText(s).templates
+        self.assertEqual(1, b._get_indent_level())
+        self.assertEqual(2, a._get_indent_level())
 
 
 class PrettyPrint(unittest.TestCase):
@@ -717,6 +703,20 @@ class PrettyPrint(unittest.TestCase):
             '    | 1 = {{c}}\n'
             '}}',
             b.pprint(),
+        )
+
+    def test_repprint(self):
+        """Make sure that pprint won't mutate self."""
+        s = '{{a|{{b|{{c}}}}}}'
+        c, b, a = wtp.WikiText(s).templates
+        self.assertEqual(
+            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
+            a.pprint(),
+        )
+        # Again:
+        self.assertEqual(
+            '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
+            a.pprint(),
         )
 
 
