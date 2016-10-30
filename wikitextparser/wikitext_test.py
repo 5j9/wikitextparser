@@ -398,6 +398,12 @@ class Table(unittest.TestCase):
         wt = wtp.parse(s)
         self.assertEqual(len(wt.tables), 0)
 
+    def test_template_before_or_after_table(self):
+        # This tests self._shadow function.
+        s = '{{t|1}}\n{|class=wikitable\n|a\n|}\n{{t|1}}'
+        p = wtp.parse(s)
+        self.assertEqual([['a']], p.tables[0].getdata())
+
 
 class IndentLevel(unittest.TestCase):
 

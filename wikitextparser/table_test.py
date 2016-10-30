@@ -213,19 +213,16 @@ class GetData(unittest.TestCase):
 
     def test_inline_colspan_and_rowspan(self):
         table = wtp.Table(
-            '{| class=wikitable\n !a !! b !!  c !! colspan = 2 | d \n '
-            '|- \n | e || colspan = "2"| f   || g || h\n |}'
+            '{| class=wikitable\n'
+            ' !a !! b !!  c !! rowspan = 2 | d \n'
+            ' |- \n'
+            ' | e || colspan = "2"| f\n'
+            '|}'
         )
         self.assertEqual(table.getdata(span=True), [
-            ['a', 'b', 'c', 'd', 'd'],
-            ['e', 'f', 'f', 'g', 'h']
+            ['a', 'b', 'c', 'd'],
+            ['e', 'f', 'f', 'd']
         ])
-
-    def test_template_inside_table(self):
-        # This tests self._shadow function.
-        s = '{{t|1}}\n{|class=wikitable\n|a\n|}\n{{t|1}}'
-        p = wtp.parse(s)
-        self.assertEqual([['a']], p.tables[0].getdata())
 
 
 class GetRowData(unittest.TestCase):
