@@ -306,6 +306,12 @@ class Spans(unittest.TestCase):
         # Miscellaneous
         self. assertRegex('{{#language:language code}}', regex)
 
+    def test_wikilinks_inside_exttags(self):
+        wt = wtp.WikiText("<ref>[[w]]</ref>")
+        self.assertEqual(
+            [(5, 10)],
+            wt._type_to_spans['wikilinks'],
+        )
 
 if __name__ == '__main__':
     unittest.main()
