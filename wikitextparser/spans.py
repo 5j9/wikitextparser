@@ -26,7 +26,7 @@ TEMPLATE_NOT_PARAM_REGEX = re.compile(
 TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{\{[^{}]*?\}\}\}')
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
-# See also :
+# See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARSER_FUNCTION_REGEX = re.compile(
     r"""
@@ -332,11 +332,10 @@ def parse_substring_to_spans(
     """Parse the substring to spans.
 
     This function is basically the same as `parse_to_spans`, but accepts an
-    index that indicates the start of the substring. `substrings` are the
+    index that indicates the start of the substring. `substring`s are the
     contents of PARSABLE_TAG_EXTENSIONS.
 
     """
-    # Todo: Do we need to parse for nested tag extensions?
     # Remove the braces inside WikiLinks.
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
@@ -376,14 +375,15 @@ def parse_to_spans_innerloop(
     parser_function_spans: list,
     template_spans: list,
 ) -> None:
-    """Run the main loop for _get_spans.
+    """Find the spans of parameters, parser functions, and templates.
 
     :string: The string or part of string that is being parsed.
     :index: Add to every returned index.
 
-    This function was created because the _get_spans function needs to
-    call it n + 1 time. One time for the whole string and n times for
-    each of the n WikiLinks.
+    This is the innermost loop of the parse_to_spans function.
+    If the string passed to parse_to_spans contains n WikiLinks, then
+    this function will be called n + 1 times. One time for the whole string
+    and n times for each of the n WikiLinks.
 
     """
     while True:
@@ -402,7 +402,7 @@ def parse_to_spans_innerloop(
         # string = re.sub(r'{(?=[^}]*$)', '_', string)
         head, sep, tail = string.rpartition('}')
         string = ''.join((head, sep, tail.replace('{', '_')))
-        # Also Python does not support non-fixed-length lookbehinds
+        # Also the re module does not support non-fixed-length lookbehinds.
         head, sep, tail = string.partition('{')
         string = ''.join((head.replace('}', '_'), sep, tail))
         match = None
