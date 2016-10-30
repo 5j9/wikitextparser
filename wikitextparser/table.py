@@ -163,13 +163,13 @@ class Table(SubWikiText):
         return self._type_to_spans['tables'][self._index]
 
     def getdata(self, span: bool=True) -> list:
-        """Return a list containing list of values of all rows.
+        """Return a list containing lists of row values.
 
-        :span: indicates if rowspans and colspans attributes should be
-            expanded or not.
+        :span: If true, calculate rows according to rowspans and colspans
+            attributes. Otherwise ignore them.
 
-        Due to the lots of complications that it will cause, this function
-        won't look inside templates, parserfunctions, etc.
+        Due to the lots of complications that it may cause, this function
+        won't look inside templates, parser functions, etc.
 
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
         wikitables can be inserted within templates.
@@ -386,7 +386,7 @@ def _apply_attr_spans(
                 attrs[-1].append(None)
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
-    # Some comments indicate the step in that algorithm.
+    # Numbered comments indicate the step in that algorithm.
     # 1
     xwidth = 0
     # 2
@@ -395,9 +395,10 @@ def _apply_attr_spans(
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
     table = []
+    # getdata won't call this function if data is empty.
     # 5
-    if not data:
-        return data
+    # if not data:
+    #     return data
     # 10
     ycurrent = 0
     # 11
