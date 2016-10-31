@@ -104,6 +104,9 @@ class WikiText:
             return True
         return False
 
+    def __len__(self):
+        return len(self.string)
+
     def __getitem__(self, key: slice or int) -> str:
         """Return self.string[item]."""
         return self.string[key]
@@ -333,8 +336,9 @@ class WikiText:
                     subspans.append(span)
 
         # Define the function to be returned.
+        # Todo: index_in_spans can be cached.
         def index_in_spans(index: int) -> bool:
-            """Return True if the given index is found within a subspans."""
+            """Return True if the given index belongs to a sub-span."""
             for ss, se in subspans:
                 if ss <= index < se:
                     return True

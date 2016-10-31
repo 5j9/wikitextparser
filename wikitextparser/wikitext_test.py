@@ -10,6 +10,11 @@ class WikiText(unittest.TestCase):
 
     """Test basic functionalities of the WikiText class."""
 
+    def test_len(self):
+        t2, t1 = wtp.WikiText('{{t1|{{t2}}}}').templates
+        self.assertEqual(len(t2), 6)
+        self.assertEqual(len(t1), 13)
+
     def test_repr(self):
         self.assertEqual(repr(wtp.parse('')), "WikiText('')")
 
