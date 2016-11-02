@@ -374,7 +374,7 @@ class AttrsParser(HTMLParser):
 def _apply_attr_spans(
     attr_spans: list, data: list, string: str
 ) -> list:
-    """Apply colspans to data and return data."""
+    """Apply row and column spans and return data."""
     # Todo: maybe it's better to do this parsing in self.getdata?
     attrs = []
     for r in attr_spans:
@@ -423,8 +423,8 @@ def _apply_attr_spans(
         for j, current_cell in enumerate(row):
             # 13.6
             while (
-                        xcurrent < xwidth and
-                        table[ycurrent][xcurrent] is not None
+                xcurrent < xwidth and
+                table[ycurrent][xcurrent] is not None
             ):
                 xcurrent += 1
             # 13.7
@@ -438,6 +438,9 @@ def _apply_attr_spans(
             try:
                 colspan = int(attrs[i][j]['colspan'])
                 if colspan == 0:
+                    # Note: colspan="0" tells the browser to span the cell to
+                    # the last column of the column group (colgroup)
+                    # http://www.w3schools.com/TAGS/att_td_colspan.asp
                     colspan = 1
             except Exception:
                 colspan = 1
@@ -448,6 +451,9 @@ def _apply_attr_spans(
                 rowspan = 1
             # 13.10
             if rowspan == 0:
+                # Note: rowspan="0" tells the browser to span the cell to the
+                # last row of the table.
+                # http://www.w3schools.com/tags/att_td_rowspan.asp
                 cell_grows_downward = True
                 rowspan = 1
             else:
