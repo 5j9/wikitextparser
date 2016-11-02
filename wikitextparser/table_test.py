@@ -224,6 +224,60 @@ class GetData(unittest.TestCase):
             ['e', 'f', 'f', 'd']
         ])
 
+    def test_growing_downward_growing_cells(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '| a || rowspan=0 | b\n'
+            '|-\n'
+            '| c\n'
+            '|}'
+        )
+        self.assertEqual(table.getdata(span=True), [
+            ['a', 'b'],
+            ['c', 'b'],
+        ])
+
+    def test_colspan_0(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '| colspan=0 | a || b\n'
+            '|-\n'
+            '| c || d\n'
+            '|}'
+        )
+        self.assertEqual(table.getdata(span=True), [
+            ['a', 'b'],
+            ['c', 'd'],
+        ])
+
+    def test_ending_row_group(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '| rowspan = 3 | a || b\n'
+            '|-\n'
+            '| c\n'
+            '|}'
+        )
+        self.assertEqual(table.getdata(span=True), [
+            ['a', 'b'],
+            ['a', 'c'],
+            ['a', None],
+        ])
+
+    def test_ending_row_group_and_rowspan_0(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '| rowspan = 3 | a || rowspan = 0 | b || c\n'
+            '|-\n'
+            '| d\n'
+            '|}'
+        )
+        self.assertEqual(table.getdata(span=True), [
+            ['a', 'b', 'c'],
+            ['a', 'b', 'd'],
+            ['a', 'b', None],
+        ])
+
 
 class GetRowData(unittest.TestCase):
 
