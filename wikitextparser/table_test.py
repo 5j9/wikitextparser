@@ -13,6 +13,41 @@
 import unittest
 
 import wikitextparser as wtp
+from wikitextparser.table import TABLE_REGEX, Cell
+
+
+class TableRegex(unittest.TestCase):
+
+    """Test the table regex."""
+
+    def test_table_regex_match(self):
+        m = TABLE_REGEX.search(
+            '{|\n'
+            '|Orange\n'
+            '|Apple\n'
+            '|-\n'
+            '|Bread\n'
+            '|Pie\n'
+            '|-\n'
+            '|Butter\n'
+            '|Ice cream \n'
+            '|}'
+        )
+        self.assertEqual(
+            m.capturesdict(),
+            {
+                'caption_attrs': [],
+                'caption_text': [],
+                'header': [],
+                'data': [
+                    'Orange', 'Apple', 'Bread', 'Pie', 'Butter', 'Ice cream '
+                ],
+                'table_attrs': [''],
+                'sep': ['|', '|', '|', '|', '|', '|'],
+                'row_sep': ['|-\n', '|-\n'],
+                'cell_attrs': ['', '', '', '', '', ''],
+            }
+        )
 
 
 class GetData(unittest.TestCase):
@@ -21,8 +56,16 @@ class GetData(unittest.TestCase):
 
     def test_each_row_on_a_newline(self):
         table = wtp.Table(
-            '{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-'
-            '\n|Butter\n|Ice cream \n|}'
+            '{|\n'
+            '|Orange\n'
+            '|Apple\n'
+            '|-\n'
+            '|Bread\n'
+            '|Pie\n'
+            '|-\n'
+            '|Butter\n'
+            '|Ice cream \n'
+            '|}'
         )
         self.assertEqual(
             table.getdata(),
@@ -31,7 +74,12 @@ class GetData(unittest.TestCase):
 
     def test_with_optional_rowseprator_on_first_row(self):
         table = wtp.Table(
-            '{| class=wikitable | g\n |- 132131 |||\n  | a | b\n |-\n  | c\n|}'
+            '{| class=wikitable | g\n'
+            ' |- 132131 |||\n'
+            '  | a | b\n'
+            ' |-\n'
+            '  | c\n'
+            '|}'
         )
         self.assertEqual(
             table.getdata(),
@@ -78,9 +126,9 @@ class GetData(unittest.TestCase):
 
     def test_doublepipe_multiline(self):
         table = wtp.Table(
-            '{|\n|| multi\nline\n||\n 1\n|}'
+            '{|\n|| r\n1\n||\n 2\n|}'
         )
-        self.assertEqual(table.getdata(), [['multi\nline', '\n 1']])
+        self.assertEqual(table.getdata(), [['r\n1', '\n 2']])
 
     def test_with_headers(self):
         table = wtp.Table(
@@ -125,8 +173,8 @@ class GetData(unittest.TestCase):
         self.assertEqual(table.getdata(), [['c1', 'c2']])
 
     def test_empty_table(self):
-        table = wtp.Table('{|class=wikitable\n|}')
-        self.assertEqual(table.getdata(), [])
+        table = wtp.Table('{|class=wikitable\n |}')
+        self.assertEqual(table.getdata(), [[]])
 
     def test_empty_cell(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
@@ -170,7 +218,7 @@ class GetData(unittest.TestCase):
         table = wtp.Table('{|class=wikitable\n|a!!b!!c\n|}')
         self.assertEqual(table.getdata(), [['a!!b!!c']])
 
-    def test_caption_in_row_is_treated_as_pipe_and_plut(self):
+    def test_no_inline_caption(self):
         table = wtp.Table('{|class=wikitable\n|a|+b||c\n|}')
         self.assertEqual(table.getdata(), [['+b', 'c']])
 
@@ -201,9 +249,19 @@ class GetData(unittest.TestCase):
 
     def test_colspan_and_rowspan_and_span_true(self):
         table = wtp.Table(
-            '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
-            '|rowspan="2"|21\n|22\n|23\n|24\n  |colspan="2"|25\n|-\n'
-            '|31\n|colspan="2"|32\n|33\n|34\n|}'
+            '{| class="wikitable"\n'
+            '!colspan= 6 |11\n'
+            '|-\n'
+            '|rowspan="2"|21\n'
+            '|22\n'
+            '|23\n|24\n'
+            '  |colspan="2"|25\n'
+            '|-\n'
+            '|31\n'
+            '|colspan="2"|32\n'
+            '|33\n'
+            '|34\n'
+            '|}'
         )
         self.assertEqual(table.getdata(span=True), [
             ['11', '11', '11', '11', '11', '11'],
@@ -359,6 +417,13 @@ class TableAttrs(unittest.TestCase):
             repr(table), "Table('{|class=\"wikitable\"\\n|a\\n|}')"
         )
 
+
+class TableCell(unittest.TestCase):
+
+    """Test the Cell class."""
+
+    def test_basic_attributes(self):
+        Cell('cell')
 
 if __name__ == '__main__':
     unittest.main()

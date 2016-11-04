@@ -2,137 +2,193 @@
 
 
 import re
+import regex
 from html.parser import HTMLParser
 
 from .wikitext import SubWikiText
 
 
-ROWSEP_REGEX = re.compile(r'^\s*[|!]-.*?\n', re.M)
-# https://regex101.com/r/hB4dX2/17
-NEWLINE_CELL_REGEX = re.compile(
+CAPTION = (
     r"""
-    # only for matching, not searching
-    (?P<whitespace>\s*)
-    (?P<sep>[|!])
+    # CAPTION start
     (?:
-      # catch the matching pipe (style holder).
-      \| # immediate closure (attrs='').
-      |
-      (?P<attrs>
+        # Start of caption line
+        \s*\|\+
+        # Optional caption attrs
         (?:
-          [^|\n] # attrs can't contain |
-          (?!(?P=sep){2})
-          # also not !! if sep is !
-        )*?
-      )
-      (?:\|)
-      (?!\|)
-      # not cell separator: ||
+            (?P<caption_attrs>[^\n|]*)
+            (?:\|)
+            (?!\|)
+        )?
+        (?P<caption_text>[^\n]*?)
+        # End of caption line
+        (?:\n|\|\|[^\n]*\n)
     )?
-    # optional := the 1st sep is a single ! or |.
-    (?P<data>[\s\S]*?)
-    (?=
-      # start of the next cell
-      \|\||
-      (?P=sep){2}|
-      $|
-      \n\s*[!|]
+    # CAPTION end
+    """
+)
+SEMI_CAPTION = (
+    r"""
+    # SEMI_CAPTION start
+    (?:
+        \s*
+        \|\+
+        (?:.(?!\n\s*[|!]))*
+        .\n
+    )*
+    # SEMI_CAPTION end
+    """
+)
+ROW_SEPARATOR = (
+    r"""
+    # ROW_SEPARATOR start
+    (?P<row_sep>
+        # Treat multiple consecutive row separators as one.
+        (?>\s*[|!]-[^\n]*\n)+
     )
-    """,
-    re.VERBOSE
+    # ROW_SEPARATOR end
+    """
+)
+CELL_DATA = (
+    r"""
+    # CELL_DATA start
+    (?P<data>
+        (?:
+            (?:
+                .(?!
+                    # start of the next cell
+                    \|\|
+                    |(?P=sep){2}
+                    |\n\s*[!|]
+                )
+            )*.
+        )
+    )\s*
+    # CELL_DATA end
+    """
+)
+CELL_ATTRS = (
+    r"""
+    # CELL_ATTRS start
+    (?:
+        # catch the matching pipe (style holder).
+        (?P<cell_attrs>)\| # immediate closure (attrs='')
+        |(?P<cell_attrs>
+            (?(header)
+                # attrs can't contain "|" (or "!" if the sep is "!")
+                (?>[^|!\n]*)
+                # attrs can't end with "||" (or "!!" if the sep is "!")
+                (?![!|]{2}|\n).
+                |
+                # attrs can't contain "|" (or "!" if the sep is "!")
+                (?>[^|\n]*)
+                # attrs can't end with "||" (or "!!" if the sep is "!")
+                (?!\|{2}|\n).
+            )
+        )
+        |(?P<cell_attrs>) #CELLATTRS are optional
+    )
+    # CELL_ATTRS end
+    """
+)
+NEWLINE_CELL = (
+    r"""
+    # NEWLINE_CELL start
+    \s*
+    (?P<sep>(?P<header>!)|\|)(?!\-)
+    {CELL_ATTRS}
+    {CELL_DATA}
+    # NEWLINE_CELL end
+    """.format(**locals())
 )
 # https://regex101.com/r/qK1pJ8/5
-INLINE_HAEDER_CELL_REGEX = re.compile(
+INLINE_HAEDER_CELL = (
     r"""
-    [|!]{2}
+    # INLINE_HAEDER_CELL start
     (?:
-      # catch the matching pipe (style holder).
-      \| # immediate closure (attrs='').
-      |
-      (?P<attrs>
-        (?:
-          [^|\n] # attrs can't contain |
-          (?!!!)
-          # also not !! if sep is !
-        )*?
-      )
-      (?:\|)
-      (?!\|)
-      # not cell separator: ||
-    )?
-    # optional := the 1st sep is a single ! or |.
-    (?P<data>[\s\S]*?)
-    (?=
-      # start of the next cell
-      \|\||
-      !!|
-      $|
-      \n\s*[!|]
+        [|!]{{2}}
+        {CELL_ATTRS}
+        {CELL_DATA}
     )
-    """,
-    re.VERBOSE
+    # INLINE_HAEDER_CELL end
+    """.format(**locals())
 )
 # https://regex101.com/r/hW8aZ3/7
-INLINE_NONHAEDER_CELL_REGEX = re.compile(
+INLINE_NONHAEDER_CELL = (
     r"""
-    \|\| # catch the matching pipe (style holder).
+    # INLINE_NONHAEDER_CELL start
     (?:
-      # immediate closure (attrs='').
-      \||
-      (?P<attrs>
-        [^|\n]*? # attrs can't contain |
-      )
-      (?:\|)
-      # not cell separator: ||
-      (?!\|)
+        \|\| # catch the matching pipe (style holder).
+        {CELL_ATTRS}
+        {CELL_DATA}
     )
-    # optional := the 1st sep is a single ! or |.
-    ?
-    (?P<data>[\s\S]*?)
-    # start of the next cell
-    (?=\|\||$|\n\s*[!|])
-    """,
-    re.VERBOSE
+    # INLINE_NONHAEDER_CELL end
+    """.format(**locals())
 )
-# Captions are optional and should only be placed
-# between table-start and the first row. Others captions not part of table.
-# The semi-captions regex below will match these invalid captions, too.
-SEMICAPTION_REGEX = re.compile(
+CELL_LINES = (
     r"""
-    ^\s*
-    (?:\|\+[\s\S]*?)+
-    (?=^\s*[|!])
-    """,
-    re.MULTILINE | re.VERBOSE
-)
-# https://regex101.com/r/tH3pU3/6
-CAPTION_REGEX = re.compile(
-    r"""
-    # Everything until the caption line
-    (?P<preattrs>
-      # Start of table
-      {\|
-      (?:
-        (?:
-          (?!\n\s*\|)
-          [\s\S]
-        )*?
-      )
-      # Start of caption line
-      \n\s*\|\+
-    )
-    # Optional caption attrs
+    # CELL_LINES start
     (?:
-      (?P<attrs>[^\n|]*)
-      (?:\|)
-      (?!\|)
-    )?
-    (?P<caption>.*?)
-    # End of caption line
-    (?:\n|\|\|)
-    """,
-    re.VERBOSE
+        {NEWLINE_CELL}
+        (?(header)
+            {INLINE_HAEDER_CELL}*|
+            {INLINE_NONHAEDER_CELL}*
+        )
+    )
+    # CELL_LINES end
+    """.format(**locals())
 )
+FIRST_ROW = (
+    """
+    # FIRST_ROW start
+    (?:
+        # Row separator can be omitted for the first row
+        {ROW_SEPARATOR}?
+        {CELL_LINES}*
+    )
+    # FIRST_ROW end
+    """.format(**locals())
+)
+ROW = (
+    r"""
+    # ROW start
+    (?:
+        {ROW_SEPARATOR}
+        {CELL_LINES}*
+    )
+    # ROW end
+    """.format(**locals())
+)
+ROWS = (
+    r"""
+    # ROWS start
+    # Ignorable captions
+    {SEMI_CAPTION}
+    (?:{FIRST_ROW}{ROW}*)?
+    # ROWS end
+    """.format(**locals())
+)
+TABLE_PATTERN = (
+    r"""
+    # TABLE_PATTERN start
+    (?>
+        {{\|
+        (?P<table_attrs>[^\n]*)\s*
+    )
+    {CAPTION}
+    # Ignorable lines
+    (?:
+        [^|!][^\n]*(?!\s*[|!])
+    )*
+    {ROWS}
+    \|}}
+    # TABLE_PATTERN end
+    """.format(**locals())
+)
+
+TABLE_REGEX = regex.compile(TABLE_PATTERN, regex.VERBOSE | regex.DOTALL)
+from pyperclip import *
+copy(TABLE_REGEX.pattern)
 
 
 class Table(SubWikiText):
@@ -162,13 +218,20 @@ class Table(SubWikiText):
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
+    def _match(self, string):
+        """Match the table to TABLE_REGEX and return the match object."""
+        shadow = self._shadow()
+        return TABLE_REGEX.match(shadow)
+
     def getdata(self, span: bool=True) -> list:
         """Return a list containing lists of row values.
 
-        :span: If true, calculate rows according to rowspans and colspans
+        :span: If true, calculate rows according to rowspan and colspan
             attributes. Otherwise ignore them.
 
-        Due to the lots of complications that it may cause, this function
+        Note: Values will be stripped.
+
+        Due to lots of complications that it may cause, this function
         won't look inside templates, parser functions, etc.
 
         See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
@@ -176,94 +239,51 @@ class Table(SubWikiText):
 
         """
         string = self.string
-        length = len(string)
-        shadow = self._shadow()
-        # Remove table-start and table-end marks.
-        shadow = shadow[:-2].partition('\n')[2].lstrip()
-        # Remove everything until the first row
-        while not (shadow.startswith('!') or shadow.startswith('|')):
-            shadow = shadow.partition('\n')[2].lstrip()
-            if '\n' not in shadow:
-                break
-        string = string[length - len(shadow) - 2:-2]
-        # Remove all semi-captions.
-        m = SEMICAPTION_REGEX.search(shadow)
-        while m:
-            ss, se = m.span()
-            shadow = shadow[:ss] + shadow[se:]
-            string = string[:ss] + string[se:]
-            m = SEMICAPTION_REGEX.search(shadow)
-        dataspans = [[0]]
-        for m in ROWSEP_REGEX.finditer(shadow):
-            dataspans[-1].append(m.start())
-            dataspans.append([m.end()])
-        dataspans[-1].append(-1)
-        cell_spans = []
-        if span:
-            attr_spans = []
-        for ss, se in dataspans:
-            row = shadow[ss:se]
-            if not row.lstrip():
-                # When the optional `|-` for the first row is used or when
-                # there are meaningless row separators that result in rows
-                # containing no cells.
-                continue
-            cell_spans.append([])
-            if span:
-                attr_spans.append([])
-            pos = 0
-            lastpos = -1
-            while pos != lastpos:
-                lastpos = pos
-                m = NEWLINE_CELL_REGEX.match(row, pos)
-                if m:
-                    sep = m.group('sep')
-                    data = m.group('data')
-                    cell_spans[-1].append(
-                        (ss + m.end() - len(data), ss + m.end())
-                    )
-                    if span:
-                        _extend_attr_spans(
-                            # The leading whitespace in newline-cells
-                            # must be ignored
-                            m, attr_spans, ss + len(m.group('whitespace'))
-                        )
-                    pos = m.end()
-                    if sep == '|':
-                        m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
-                        while m:
-                            data = m.group('data')
-                            cell_spans[-1].append(
-                                (ss + m.end() - len(data), ss + m.end())
-                            )
-                            if span:
-                                _extend_attr_spans(
-                                    m, attr_spans, ss + 1
-                                )
-                            pos = m.end()
-                            m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
-                    elif sep == '!':
-                        m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
-                        while m:
-                            data = m.group('data')
-                            cell_spans[-1].append(
-                                (ss + m.end() - len(data), ss + m.end())
-                            )
-                            if span:
-                                _extend_attr_spans(
-                                    m, attr_spans, ss + 1
-                                )
-                            pos = m.end()
-                            m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
-        data = []
-        for g in cell_spans:
-            data.append([])
-            for ss, se in g:
-                # Spaces after the first newline can be meaningful
-                data[-1].append(string[ss:se].strip(' ').rstrip())
-        if span and data:
-            data = _apply_attr_spans(attr_spans, data, string)
-        return data
+        m = self._match(string)
+        data_span_rows = []
+        attr_span_rows = []
+        row_separator_starts = list(reversed(m.starts('row_sep')))
+        data_starts = m.starts('data')
+        data_spans = m.spans('data')
+        attr_spans = m.spans('cell_attrs')
+        if row_separator_starts and row_separator_starts[-1] < data_starts[0]:
+            # Ignore the first optional row separator.
+            row_separator_starts.pop()
+        data_span_row = []
+        attr_span_row = []
+        for i, data_capture in enumerate(data_spans):
+            data_start = data_starts[i]
+            if row_separator_starts and row_separator_starts[-1] < data_start:
+                # Start a new row
+                data_span_rows.append(data_span_row)
+                attr_span_rows.append(attr_span_row)
+                data_span_row = [data_capture]
+                attr_span_row = [attr_spans[i]]
+                row_separator_starts.pop()
+            else:
+                data_span_row.append(data_capture)
+                attr_span_row.append(attr_spans[i])
+        # Append the data for the last row.
+        data_span_rows.append(data_span_row)
+        attr_span_rows.append(attr_span_row)
+        # Note: We have used spans to avoid conflicting templates and pfs.
+        # Parse attributes
+        for i, r in enumerate(attr_span_rows):
+            attr_span_row = attr_span_rows[i]
+            for j, (s, e) in enumerate(r):
+                attr_span_row[j] = attrs_parser(string[s:e])
+        # Convert spans to strings
+        for i, r in enumerate(data_span_rows):
+            data_span_row = data_span_rows[i]
+            for j, (s, e) in enumerate(r):
+                data_span_row[j] = string[s:e].strip(' ')
+        if span and data_span_rows:
+            data_span_rows = _apply_attr_spans(
+                attr_span_rows,
+                data_span_rows,
+                string,
+            )
+        return data_span_rows
 
     def getrdata(self, i: int) -> list:
         """Return the data in the ith row of the table.
@@ -345,9 +365,37 @@ class Table(SubWikiText):
             self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
 
+class Cell(SubWikiText):
+
+    """Create a new Cell object."""
+
+    def __init__(
+        self,
+        string: str or list,
+        spans: list or None=None,
+        index: int or None=None,
+    ) -> None:
+        """Run _common_init. Set _type_to_spans['tables'] if spans is None."""
+        self._common_init(string, spans)
+        if spans is None:
+            self._type_to_spans['cells'] = [(0, len(string))]
+        if index is None:
+            self._index = len(self._type_to_spans['cells']) - 1
+        else:
+            self._index = index
+
+    def __repr__(self) -> str:
+        """Return the string representation of the Cell."""
+        return 'Cell(' + repr(self.string) + ')'
+
+    def _get_span(self) -> tuple:
+        """Return the self-span."""
+        return self._type_to_spans['cells'][self._index]
+
+
 class AttrsParser(HTMLParser):
 
-    """Define the class to construct the attrs_parser instance from it."""
+    """Define the class to construct the attrs_parser from it."""
 
     def handle_starttag(self, tag: str, attrs: list) -> None:
         """Store parsed attrs in self.parsed and then self.reset().
@@ -371,19 +419,8 @@ class AttrsParser(HTMLParser):
         return dict(self.parsed)
 
 
-def _apply_attr_spans(
-    attr_spans: list, data: list, string: str
-) -> list:
-    """Apply row and column spans and return data."""
-    # Todo: maybe it's better to do this parsing in self.getdata?
-    attrs = []
-    for r in attr_spans:
-        attrs.append([])
-        for ss, se in r:
-            if se is not None:
-                attrs[-1].append(attrs_parser(string[ss:se]))
-            else:
-                attrs[-1].append(None)
+def _apply_attr_spans(attr_spans: list, data_spans: list, string: str) -> list:
+    """Apply row and column spans and return data_spans."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
     # Numbered comments indicate the step in that algorithm.
@@ -395,17 +432,17 @@ def _apply_attr_spans(
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
     table = []
-    # getdata won't call this function if data is empty.
+    # getdata won't call this function if data_spans is empty.
     # 5
-    # if not data:
-    #     return data
+    # if not data_spans:
+    #     return data_spans
     # 10
     ycurrent = 0
     # 11
     downward_growing_cells = []
     # 13, 18
     # Algorithm for processing rows
-    for i, row in enumerate(data):
+    for i, row in enumerate(data_spans):
         # 13.1 ycurrent is never greater than yheight
         if yheight == ycurrent:
             yheight += 1
@@ -436,7 +473,7 @@ def _apply_attr_spans(
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
             try:
-                colspan = int(attrs[i][j]['colspan'])
+                colspan = int(attr_spans[i][j]['colspan'])
                 if colspan == 0:
                     # Note: colspan="0" tells the browser to span the cell to
                     # the last column of the column group (colgroup)
@@ -446,7 +483,7 @@ def _apply_attr_spans(
                 colspan = 1
             # 13.9
             try:
-                rowspan = int(attrs[i][j]['rowspan'])
+                rowspan = int(attr_spans[i][j]['rowspan'])
             except Exception:
                 rowspan = 1
             # 13.10
@@ -504,21 +541,6 @@ def _apply_attr_spans(
     # slots that do not have a cell anchored to them,
     # then this is a table model error.
     return table
-
-
-def _extend_attr_spans(match, attr_spans: list, ss: int) -> None:
-    """Extend attr_spans according to parameters.
-
-    Sub-function of self.getdata.
-    """
-    attrs = match.group('attrs')
-    if attrs:
-        attrs_start = ss + match.start() + 1
-        attr_spans[-1].append(
-            (attrs_start, attrs_start + len(attrs))
-        )
-    else:
-        attr_spans[-1].append((None, None))
 
 
 attrs_parser = AttrsParser().parse
