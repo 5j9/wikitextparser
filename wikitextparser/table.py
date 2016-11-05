@@ -11,9 +11,9 @@ from .wikitext import SubWikiText
 CAPTION = (
     r"""
     # CAPTION start
-    (?:
+    (?>
         # Start of caption line
-        \s*\|\+
+        \n\s*\|\+
         # Optional caption attrs
         (?:
             (?P<caption_attrs>[^\n|]*)
@@ -22,7 +22,7 @@ CAPTION = (
         )?
         (?P<caption_text>[^\n]*?)
         # End of caption line
-        (?:\n|\|\|[^\n]*\n)
+        (?:\n|\|\|[^\n]*\n)[^\n]*
     )?
     # CAPTION end
     """
@@ -30,11 +30,11 @@ CAPTION = (
 SEMI_CAPTION = (
     r"""
     # SEMI_CAPTION start
-    (?:
-        \s*
+    (?>
+        \n\s*
         \|\+
         (?:.(?!\n\s*[|!]))*
-        .\n
+        .
     )*
     # SEMI_CAPTION end
     """
@@ -44,7 +44,7 @@ ROW_SEPARATOR = (
     # ROW_SEPARATOR start
     (?P<row_sep>
         # Treat multiple consecutive row separators as one.
-        (?>\s*[|!]-[^\n]*\n)+
+        (?>\n\s*[|!]-[^\n]*)+
     )
     # ROW_SEPARATOR end
     """
@@ -53,8 +53,17 @@ CELL_DATA = (
     r"""
     # CELL_DATA start
     (?P<data>
-        (?:
-            (?:
+        (?(cell_attrs)
+            (?>
+                .(?!
+                    # start of the next cell
+                    \|
+                    |(?P=sep){1}
+                    |\n\s*[!|]
+                )
+            )*.
+            |
+            (?>
                 .(?!
                     # start of the next cell
                     \|\|
@@ -63,14 +72,14 @@ CELL_DATA = (
                 )
             )*.
         )
-    )\s*
+    )
     # CELL_DATA end
     """
 )
 CELL_ATTRS = (
     r"""
     # CELL_ATTRS start
-    (?:
+    (?>
         # catch the matching pipe (style holder).
         (?P<cell_attrs>)\| # immediate closure (attrs='')
         |(?P<cell_attrs>
@@ -94,8 +103,7 @@ CELL_ATTRS = (
 NEWLINE_CELL = (
     r"""
     # NEWLINE_CELL start
-    \s*
-    (?P<sep>(?P<header>!)|\|)(?!\-)
+    \n\s*(?P<sep>(?P<header>!)|\|)(?![-}}+])
     {CELL_ATTRS}
     {CELL_DATA}
     # NEWLINE_CELL end
@@ -105,7 +113,7 @@ NEWLINE_CELL = (
 INLINE_HAEDER_CELL = (
     r"""
     # INLINE_HAEDER_CELL start
-    (?:
+    (?>
         [|!]{{2}}
         {CELL_ATTRS}
         {CELL_DATA}
@@ -117,7 +125,7 @@ INLINE_HAEDER_CELL = (
 INLINE_NONHAEDER_CELL = (
     r"""
     # INLINE_NONHAEDER_CELL start
-    (?:
+    (?>
         \|\| # catch the matching pipe (style holder).
         {CELL_ATTRS}
         {CELL_DATA}
@@ -128,7 +136,7 @@ INLINE_NONHAEDER_CELL = (
 CELL_LINES = (
     r"""
     # CELL_LINES start
-    (?:
+    (?>
         {NEWLINE_CELL}
         (?(header)
             {INLINE_HAEDER_CELL}*|
@@ -141,7 +149,7 @@ CELL_LINES = (
 FIRST_ROW = (
     """
     # FIRST_ROW start
-    (?:
+    (?>
         # Row separator can be omitted for the first row
         {ROW_SEPARATOR}?
         {CELL_LINES}*
@@ -152,7 +160,7 @@ FIRST_ROW = (
 ROW = (
     r"""
     # ROW start
-    (?:
+    (?>
         {ROW_SEPARATOR}
         {CELL_LINES}*
     )
@@ -164,7 +172,7 @@ ROWS = (
     # ROWS start
     # Ignorable captions
     {SEMI_CAPTION}
-    (?:{FIRST_ROW}{ROW}*)?
+    (?>{FIRST_ROW}{ROW}*)?
     # ROWS end
     """.format(**locals())
 )
@@ -173,20 +181,23 @@ TABLE_PATTERN = (
     # TABLE_PATTERN start
     (?>
         {{\|
-        (?P<table_attrs>[^\n]*)\s*
+        (?P<table_attrs>[^\n]*)
     )
     {CAPTION}
     # Ignorable lines
-    (?:
-        [^|!][^\n]*(?!\s*[|!])
+    (?>
+        \n(?>\s*)[^|!][^\n]*
     )*
     {ROWS}
-    \|}}
+    \n\s*\|}}
     # TABLE_PATTERN end
     """.format(**locals())
 )
 
-TABLE_REGEX = regex.compile(TABLE_PATTERN, regex.VERBOSE | regex.DOTALL)
+TABLE_REGEX = regex.compile(
+    TABLE_PATTERN,
+    regex.VERBOSE | regex.DOTALL | regex.MULTILINE,
+)
 from pyperclip import *
 copy(TABLE_REGEX.pattern)
 

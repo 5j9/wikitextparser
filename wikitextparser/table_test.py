@@ -224,15 +224,27 @@ class GetData(unittest.TestCase):
 
     def test_odd_case1(self):
         table = wtp.Table(
-            '{|class=wikitable\n  [[a]]\n |+ cp1\ncp1\n! h1 '
-            '||+ h2\n|-\n! h3 !|+ h4\n|-\n! h5 |!+ h6\n'
-            '|-\n|c1\n|+hod [[that]]\n\ntext\n|c2\n|}'
+            '{|class=wikitable\n'
+            '  [[a]]\n'
+            ' |+ cp1\n'
+            'cp1\n'
+            '! h1 ||+ h2\n'
+            '|-\n'
+            '! a3 !|+ h4\n'
+            '|-\n'
+            '! a5 |!+ h6\n'
+            '|-\n'
+            '|d1\n'
+            '|+hod [[that]]\n\n'
+            'text\n'
+            '|d2\n'
+            '|}'
         )
         self.assertEqual(table.getdata(span=False), [
             ['h1', '+ h2'],
             ['+ h4'],
             ['!+ h6'],
-            ['c1', 'c2']
+            ['d1', 'd2']
         ])
 
     def test_colspan_and_rowspan_and_span_false(self):
