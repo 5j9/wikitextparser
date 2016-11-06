@@ -172,11 +172,10 @@ class Table(SubWikiText):
         pos = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
         while shadow[pos] not in ('!', '|'):
-            p = pos + shadow[pos:].find('\n') + 1
-            if p == pos:
+            i = shadow[pos:].find('\n')
+            if i == -1:
                 break
-            pos = p
-            pos = _lstrip_increase(shadow, pos)
+            pos = _lstrip_increase(shadow, pos + i)
         pos = _semi_caption_increase(shadow, pos)
         data_spans = []
         p = pos
@@ -528,17 +527,13 @@ def _semi_caption_increase(string: str, pos: int) -> int:
     """
     pos = _lstrip_increase(string, pos)
     while string[pos:pos + 2] == '|+':
-        p = pos + string[pos:].find('\n') + 1
-        if p == pos:
-            break
-        pos = p
+        pos = pos + string[pos:].find('\n') + 1
         pos = _lstrip_increase(string, pos)
         while string[pos] not in ('!', '|'):
-            p = pos + string[pos:].find('\n') + 1
-            if pos == p:
+            p = string[pos:].find('\n')
+            if p == -1:
                 break
-            pos = p
-            pos = _lstrip_increase(string, pos)
+            pos = _lstrip_increase(string, pos + p)
     return pos
 
 attrs_parser = AttrsParser().parse
