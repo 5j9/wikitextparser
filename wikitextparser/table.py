@@ -149,19 +149,8 @@ class Table(SubWikiText):
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
-    def getdata(self, span: bool=True) -> list:
-        """Return a list containing lists of row values.
-
-        :span: If true, calculate rows according to rowspans and colspans
-            attributes. Otherwise ignore them.
-
-        Due to the lots of complications that it may cause, this function
-        won't look inside templates, parser functions, etc.
-
-        See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
-        wikitables can be inserted within templates.
-
-        """
+    def _get_spans(self, attrs) -> tuple:
+        """Return attr and data spans."""
         string = self.string
         length = len(string)
         shadow = self._shadow()
@@ -183,8 +172,7 @@ class Table(SubWikiText):
         data_spans.append((p, -2))
 
         cell_spans = []
-        if span:
-            attr_spans = []
+        attr_spans = []
         for s, e in data_spans:
             row = shadow[s:e]
             if not row.lstrip():
@@ -193,7 +181,7 @@ class Table(SubWikiText):
                 # containing no cells.
                 continue
             cell_spans.append([])
-            if span:
+            if attrs:
                 attr_spans.append([])
             pos = 0
             lastpos = -1
@@ -207,7 +195,7 @@ class Table(SubWikiText):
                     cell_spans[-1].append(
                         (s + m.end() - len(data), s + m.end())
                     )
-                    if span:
+                    if attrs:
                         _add_to_attr_spans(
                             # The leading whitespace in newline-cells
                             # must be ignored
@@ -221,7 +209,7 @@ class Table(SubWikiText):
                             cell_spans[-1].append(
                                 (s + m.end() - len(data), s + m.end())
                             )
-                            if span:
+                            if attrs:
                                 _add_to_attr_spans(
                                     m, attr_spans, s + 1
                                 )
@@ -234,12 +222,29 @@ class Table(SubWikiText):
                             cell_spans[-1].append(
                                 (s + m.end() - len(data), s + m.end())
                             )
-                            if span:
+                            if attrs:
                                 _add_to_attr_spans(
                                     m, attr_spans, s + 1
                                 )
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
+        return attr_spans, cell_spans
+
+    def getdata(self, span: bool=True) -> list:
+        """Return a list containing lists of row values.
+
+        :span: If true, calculate rows according to rowspans and colspans
+            attributes. Otherwise ignore them.
+
+        Due to the lots of complications that it may cause, this function
+        won't look inside templates, parser functions, etc.
+
+        See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
+        wikitables can be inserted within templates.
+
+        """
+        attr_spans, cell_spans = self._get_spans(span)
+        string = self.string
         data = []
         for g in cell_spans:
             data.append([])
