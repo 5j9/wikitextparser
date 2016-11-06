@@ -16,16 +16,16 @@ class Argument(SubWikiText):
 
     def __init__(
         self, string: str or list, spans: list or None=None,
-        index: int or None=None, typeindex: str or None=None
+        index: int or None=None, type_: str or None=None
     ) -> None:
         """Initialize the object."""
         self._common_init(string, spans)
-        if typeindex is None:
-            self._typeindex = 'arguments'
+        if type_ is None:
+            self._type = 'arguments'
         else:
-            self._typeindex = typeindex
+            self._type = type_
         if spans is None:
-            self._type_to_spans[self._typeindex] = [(0, len(string))]
+            self._type_to_spans[self._type] = [(0, len(string))]
         if index is None:
             self._index = len(self._type_to_spans['arguments']) - 1
         else:
@@ -37,7 +37,7 @@ class Argument(SubWikiText):
 
     def _get_span(self) -> tuple:
         """Return the self-span."""
-        return self._type_to_spans[self._typeindex][self._index]
+        return self._type_to_spans[self._type][self._index]
 
     @property
     def name(self) -> str:
@@ -52,7 +52,7 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         godstring = self._lststr[0]
-        for ss, se in self._type_to_spans[self._typeindex][:self._index]:
+        for ss, se in self._type_to_spans[self._type][:self._index]:
             if ss < se:
                 equal_index = godstring.find('=', ss, se)
                 if equal_index == -1:
