@@ -40,30 +40,28 @@ class Template(SubWikiText):
     @property
     def arguments(self) -> list:
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_atomic_subspans_split_spans('|')[1:]
+        bar_spans = self._not_in_atomic_subspans_split_spans('|')[1:]
         arguments = []
-        spans = self._type_to_spans
+        type_to_spans = self._type_to_spans
         lststr = self._lststr
-        typeindex = 'ta' + str(self._index)
-        if typeindex not in spans:
-            spans[typeindex] = []
-        aspans = spans[typeindex]
-        if barsplits:
+        typeـ = 'ta' + str(self._index)
+        if typeـ not in type_to_spans:
+            type_to_spans[typeـ] = []
+        arg_spans = type_to_spans[typeـ]
+        if bar_spans:
             # remove the final '}}' from the last argument.
-            barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
-            for aspan in barsplits:
+            bar_spans[-1] = (bar_spans[-1][0], bar_spans[-1][1] - 2)
+            for bar_span in bar_spans:
                 # include the the starting '|'
-                aspan = (aspan[0] + -1, aspan[1])
-                if aspan not in aspans:
-                    aspans.append(aspan)
-                arguments.append(
-                    Argument(
-                        lststr,
-                        spans,
-                        aspans.index(aspan),
-                        typeindex,
-                    )
+                bar_span = (bar_span[0] + -1, bar_span[1])
+                index = next(
+                    (i for i, s in enumerate(arg_spans) if s == bar_span),
+                    None
                 )
+                if index is None:
+                    index = len(arg_spans)
+                    arg_spans.append(bar_span)
+                arguments.append(Argument(lststr, type_to_spans, index, typeـ))
         return arguments
 
     @property
