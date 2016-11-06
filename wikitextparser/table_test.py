@@ -158,6 +158,14 @@ class GetData(unittest.TestCase):
         table = wtp.Table('{|class=wikitable\n|}')
         self.assertEqual(table.getdata(), [])
 
+    def test_empty_table_comment_end(self):
+        table = wtp.Table('{|class=wikitable\n<!-- c -->|}')
+        self.assertEqual(table.getdata(), [[]])
+
+    def test_empty_table_semicaption_comment(self):
+        table = wtp.Table('{|class=wikitable\n|+\n<!-- c -->|}')
+        self.assertEqual(table.getdata(), [[]])
+
     def test_empty_cell(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
         self.assertEqual(table.getdata(), [['a', '', 'c']])
