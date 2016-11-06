@@ -31,7 +31,12 @@ class GetData(unittest.TestCase):
 
     def test_with_optional_rowseprator_on_first_row(self):
         table = wtp.Table(
-            '{| class=wikitable | g\n |- 132131 |||\n  | a | b\n |-\n  | c\n|}'
+            '{| class=wikitable | g\n'
+            ' |- 132131 |||\n'
+            '  | a | b\n'
+            ' |-\n'
+            '  | c\n'
+            '|}'
         )
         self.assertEqual(
             table.getdata(),
@@ -40,7 +45,13 @@ class GetData(unittest.TestCase):
 
     def test_all_rows_are_on_a_single_line(self):
         table = wtp.Table(
-            '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
+            '{|\n'
+            '|a||b||c\n'
+            '|-\n'
+            '|d||e||f\n'
+            '|-\n'
+            '|g||h||i\n'
+            '|}'
         )
         self.assertEqual(
             table.getdata(),
@@ -109,11 +120,23 @@ class GetData(unittest.TestCase):
         )
 
     def test_with_caption_attrs(self):
-        table = wtp.Table('{|class=wikitable\n|+ sal | no\n|a \n|}')
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '|+ sal | no\n'
+            '|a \n'
+            '|}'
+        )
         self.assertEqual(table.getdata(), [['a']])
 
     def test_second_caption_is_ignored(self):
-        table = wtp.Table('{|\n  |+ c1\n  |+ c2\n|-\n|1\n|2\n|}')
+        table = wtp.Table(
+            '{|\n'
+            '  |+ c1\n'
+            '  |+ c2\n'
+            '|-\n'
+            '|1\n'
+            '|2\n'
+            '|}')
         self.assertEqual(table.getdata(), [['1', '2']])
 
     def test_unneeded_newline_after_table_start(self):
@@ -121,7 +144,14 @@ class GetData(unittest.TestCase):
         self.assertEqual(table.getdata(), [['c1', 'c2']])
 
     def test_text_after_tablestart_is_not_actually_inside_the_table(self):
-        table = wtp.Table('{|\n  text\n|-\n|c1\n|c2\n|}')
+        table = wtp.Table(
+            '{|\n'
+            '  text\n'
+            '|-\n'
+            '|c1\n'
+            '|c2\n'
+            '|}'
+        )
         self.assertEqual(table.getdata(), [['c1', 'c2']])
 
     def test_empty_table(self):
@@ -176,9 +206,21 @@ class GetData(unittest.TestCase):
 
     def test_odd_case1(self):
         table = wtp.Table(
-            '{|class=wikitable\n  [[a]]\n |+ cp1\ncp1\n! h1 '
-            '||+ h2\n|-\n! h3 !|+ h4\n|-\n! h5 |!+ h6\n'
-            '|-\n|c1\n|+hod [[that]]\n\ntext\n|c2\n|}'
+            '{|class=wikitable\n'
+            '  [[a]]\n'
+            ' |+ cp1\n'
+            'cp1\n'
+            '! h1 ||+ h2\n'
+            '|-\n'
+            '! h3 !|+ h4\n'
+            '|-\n'
+            '! h5 |!+ h6\n'
+            '|-\n'
+            '|c1\n'
+            '|+t [[w]]\n\n'
+            'text\n'
+            '|c2\n'
+            '|}'
         )
         self.assertEqual(table.getdata(span=False), [
             ['h1', '+ h2'],
