@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 from .wikitext import SubWikiText
 
 
-ROWSEP_REGEX = re.compile(r'^\s*[|!]-.*?\n', re.M)
+ROWSEP_REGEX = re.compile(r'[|!]-[^\n]*\n')
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = re.compile(
     r"""
@@ -94,17 +94,6 @@ INLINE_NONHAEDER_CELL_REGEX = re.compile(
     """,
     re.VERBOSE
 )
-# Captions are optional and should only be placed
-# between table-start and the first row. Others captions not part of table.
-# The semi-captions regex below will match these invalid captions, too.
-SEMICAPTION_REGEX = re.compile(
-    r"""
-    ^\s*
-    (?:\|\+[\s\S]*?)+
-    (?=^\s*[|!])
-    """,
-    re.MULTILINE | re.VERBOSE
-)
 # https://regex101.com/r/tH3pU3/6
 CAPTION_REGEX = re.compile(
     r"""
@@ -179,30 +168,28 @@ class Table(SubWikiText):
         length = len(string)
         shadow = self._shadow()
         # Remove table-start and table-end marks.
-        shadow = shadow[:-2].partition('\n')[2].lstrip()
+        pos = shadow.find('\n') + 1
+        pos = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while not (shadow.startswith('!') or shadow.startswith('|')):
-            shadow = shadow.partition('\n')[2].lstrip()
-            if '\n' not in shadow:
+        while shadow[pos] not in ('!', '|'):
+            p = pos + shadow[pos:].find('\n') + 1
+            if p == pos:
                 break
-        string = string[length - len(shadow) - 2:-2]
-        # Remove all semi-captions.
-        m = SEMICAPTION_REGEX.search(shadow)
-        while m:
-            ss, se = m.span()
-            shadow = shadow[:ss] + shadow[se:]
-            string = string[:ss] + string[se:]
-            m = SEMICAPTION_REGEX.search(shadow)
-        dataspans = [[0]]
-        for m in ROWSEP_REGEX.finditer(shadow):
-            dataspans[-1].append(m.start())
-            dataspans.append([m.end()])
-        dataspans[-1].append(-1)
+            pos = p
+            pos = _lstrip_increase(shadow, pos)
+        pos = _semi_caption_increase(shadow, pos)
+        data_spans = []
+        p = pos
+        for m in ROWSEP_REGEX.finditer(shadow, pos):
+            data_spans.append((p, m.start()))
+            p = m.end()
+        data_spans.append((p, -2))
+
         cell_spans = []
         if span:
             attr_spans = []
-        for ss, se in dataspans:
-            row = shadow[ss:se]
+        for s, e in data_spans:
+            row = shadow[s:e]
             if not row.lstrip():
                 # When the optional `|-` for the first row is used or when
                 # there are meaningless row separators that result in rows
@@ -215,18 +202,19 @@ class Table(SubWikiText):
             lastpos = -1
             while pos != lastpos:
                 lastpos = pos
+                pos = _semi_caption_increase(row, pos)
                 m = NEWLINE_CELL_REGEX.match(row, pos)
                 if m:
                     sep = m.group('sep')
                     data = m.group('data')
                     cell_spans[-1].append(
-                        (ss + m.end() - len(data), ss + m.end())
+                        (s + m.end() - len(data), s + m.end())
                     )
                     if span:
-                        _extend_attr_spans(
+                        _add_to_attr_spans(
                             # The leading whitespace in newline-cells
                             # must be ignored
-                            m, attr_spans, ss + len(m.group('whitespace'))
+                            m, attr_spans, s + len(m.group('whitespace'))
                         )
                     pos = m.end()
                     if sep == '|':
@@ -234,11 +222,11 @@ class Table(SubWikiText):
                         while m:
                             data = m.group('data')
                             cell_spans[-1].append(
-                                (ss + m.end() - len(data), ss + m.end())
+                                (s + m.end() - len(data), s + m.end())
                             )
                             if span:
-                                _extend_attr_spans(
-                                    m, attr_spans, ss + 1
+                                _add_to_attr_spans(
+                                    m, attr_spans, s + 1
                                 )
                             pos = m.end()
                             m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
@@ -247,20 +235,20 @@ class Table(SubWikiText):
                         while m:
                             data = m.group('data')
                             cell_spans[-1].append(
-                                (ss + m.end() - len(data), ss + m.end())
+                                (s + m.end() - len(data), s + m.end())
                             )
                             if span:
-                                _extend_attr_spans(
-                                    m, attr_spans, ss + 1
+                                _add_to_attr_spans(
+                                    m, attr_spans, s + 1
                                 )
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
         data = []
         for g in cell_spans:
             data.append([])
-            for ss, se in g:
+            for s, e in g:
                 # Spaces after the first newline can be meaningful
-                data[-1].append(string[ss:se].strip(' ').rstrip())
+                data[-1].append(string[s:e].strip(' ').rstrip())
         if span and data:
             data = _apply_attr_spans(attr_spans, data, string)
         return data
@@ -506,19 +494,51 @@ def _apply_attr_spans(
     return table
 
 
-def _extend_attr_spans(match, attr_spans: list, ss: int) -> None:
-    """Extend attr_spans according to parameters.
-
-    Sub-function of self.getdata.
-    """
+def _add_to_attr_spans(match, attr_spans: list, pos: int) -> None:
+    """Add the attr span for the match to attr_spans."""
     attrs = match.group('attrs')
     if attrs:
-        attrs_start = ss + match.start() + 1
+        attrs_start = pos + match.start() + 1
         attr_spans[-1].append(
             (attrs_start, attrs_start + len(attrs))
         )
     else:
         attr_spans[-1].append((None, None))
 
+
+def _lstrip_increase(string: str, pos: int) -> int:
+    """Return the new position to lstrip the string."""
+    for c in string[pos:]:
+        if not c.isspace():
+            break
+        pos += 1
+    return pos
+
+
+def _semi_caption_increase(string: str, pos: int) -> int:
+    """Remove starting semi-caption from the string. Return the new pos.
+
+    Captions are optional and only one should be placed between table-start
+    and the first row. Others captions are not part of the table and will
+    be ignored. We call these semi-captions.
+
+    Return the the position of the first character after the starting
+    semi-caption.
+
+    """
+    pos = _lstrip_increase(string, pos)
+    while string[pos:pos + 2] == '|+':
+        p = pos + string[pos:].find('\n') + 1
+        if p == pos:
+            break
+        pos = p
+        pos = _lstrip_increase(string, pos)
+        while string[pos] not in ('!', '|'):
+            p = pos + string[pos:].find('\n') + 1
+            if pos == p:
+                break
+            pos = p
+            pos = _lstrip_increase(string, pos)
+    return pos
 
 attrs_parser = AttrsParser().parse
