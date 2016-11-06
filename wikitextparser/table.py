@@ -20,14 +20,13 @@ NEWLINE_CELL_REGEX = re.compile(
       |
       (?P<attrs>
         (?:
-          [^|\n] # attrs can't contain |
-          (?!(?P=sep){2})
-          # also not !! if sep is !
+          [^|\n]
+          (?!(?P=sep){2}) # attrs can't contain |; or !! if sep is !
         )*?
       )
       (?:\|)
+      # not a cell separator (||)
       (?!\|)
-      # not cell separator: ||
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
@@ -51,14 +50,13 @@ INLINE_HAEDER_CELL_REGEX = re.compile(
       |
       (?P<attrs>
         (?:
-          [^|\n] # attrs can't contain |
-          (?!!!)
-          # also not !! if sep is !
+          [^|\n]
+          (?!!!) # attrs can't contain |; or !! if sep is !
         )*?
       )
       (?:\|)
+      # not a cell separator (||)
       (?!\|)
-      # not cell separator: ||
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
@@ -80,10 +78,10 @@ INLINE_NONHAEDER_CELL_REGEX = re.compile(
       # immediate closure (attrs='').
       \||
       (?P<attrs>
-        [^|\n]*? # attrs can't contain |
+        [^|\n]*? # attrs can't contain |; or !! if sep is !
       )
       (?:\|)
-      # not cell separator: ||
+      # not cell a separator (||)
       (?!\|)
     )
     # optional := the 1st sep is a single ! or |.
