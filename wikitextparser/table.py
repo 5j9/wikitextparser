@@ -151,7 +151,8 @@ class Table(SubWikiText):
         """Return the string representation of the Table."""
         return 'Table(' + repr(self.string) + ')'
 
-    def _get_span(self) -> tuple:
+    @property
+    def _span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
@@ -239,7 +240,7 @@ class Table(SubWikiText):
             table_data = _apply_attr_spans(table_attrs, table_data, string)
         return table_data
 
-    def cells(self, span: bool = True) -> list:
+    def cells(self, span: bool=True) -> list:
         """Return a list of lists containing Cell objects.
 
         If span is True, tearrange the result according to colspan and rospan
@@ -247,24 +248,34 @@ class Table(SubWikiText):
 
         """
         string, match_table = self._get_spans()
-        self._type_to_spans
+        type_ = 'table' + self._index + '_cells'
+        type_to_spans = self._type_to_spans
         table_cells = []
+        table_attrs = []
+        attrs = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
-            for m in match_row:
-                row_cells.append(
-                    Cell(self._lststr, )
-                )
-        if span and table_cells:
-            table_attrs = []
-            for match_row in match_table:
+            if span:
                 row_attrs = []
                 table_attrs.append(row_attrs)
-                for m in match_row:
-                    row_attrs.append(
-                        attrs_parser(string[m.start('attrs'):m.end('attrs')])
+            for m in match_row:
+                if span:
+                    attrs = attrs_parser(
+                        string[m.start('attrs'):m.end('attrs')]
                     )
+                    row_attrs.append(attrs)
+                row_cells.append(
+                    Cell(
+                        self._lststr,
+                        type_to_spans,
+                        index,
+                        type_,
+                        m,
+                        attrs,
+                    )
+                )
+        if table_cells:
             table_cells = _apply_attr_spans(table_attrs, table_cells, string)
         return table_cells
 

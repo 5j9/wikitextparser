@@ -26,7 +26,8 @@ class ParserFunction(SubWikiText):
         """Return the string representation of the ParserFunction."""
         return 'ParserFunction(' + repr(self.string) + ')'
 
-    def _get_span(self) -> tuple:
+    @property
+    def _span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['functions'][self._index]
 
@@ -41,7 +42,7 @@ class ParserFunction(SubWikiText):
         if typeindex not in spans:
             spans[typeindex] = []
         aspans = spans[typeindex]
-        ss, se = self._get_span()
+        ss, se = self._span
         # remove the final '}}' from the last argument.
         barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
         # first argument

@@ -25,7 +25,8 @@ class Parameter(SubWikiText):
         """Return the string representation of the Parameter."""
         return 'Parameter(' + repr(self.string) + ')'
 
-    def _get_span(self) -> tuple:
+    @property
+    def _span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['parameters'][self._index]
 

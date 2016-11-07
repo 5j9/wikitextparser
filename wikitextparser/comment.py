@@ -25,7 +25,8 @@ class Comment(SubWikiText):
         """Return the string representation of the Comment."""
         return 'Comment(' + repr(self.string) + ')'
 
-    def _get_span(self) -> tuple:
+    @property
+    def _span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['comments'][self._index]
 

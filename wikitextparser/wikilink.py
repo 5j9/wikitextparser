@@ -25,7 +25,8 @@ class WikiLink(SubWikiText):
         """Return the string representation of the WikiLink."""
         return 'WikiLink(' + repr(self.string) + ')'
 
-    def _get_span(self) -> tuple:
+    @property
+    def _span(self) -> tuple:
         """Return the self-span."""
         return self._type_to_spans['wikilinks'][self._index]
 
