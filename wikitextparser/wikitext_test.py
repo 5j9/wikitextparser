@@ -412,13 +412,13 @@ class Table(unittest.TestCase):
 
 class IndentLevel(unittest.TestCase):
 
-    """Test the _get_indent_level method of the WikiText class."""
+    """Test the _indent_level method of the WikiText class."""
 
     def test_a_in_b(self):
         s = '{{b|{{a}}}}'
         a, b = wtp.WikiText(s).templates
-        self.assertEqual(1, b._get_indent_level())
-        self.assertEqual(2, a._get_indent_level())
+        self.assertEqual(1, b._indent_level)
+        self.assertEqual(2, a._indent_level)
 
 
 class PrettyPrint(unittest.TestCase):

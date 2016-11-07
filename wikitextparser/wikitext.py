@@ -423,7 +423,8 @@ class WikiText:
                     # Added part is inside the span
                     spans[i] = (spanstart, spanend + elength)
 
-    def _get_indent_level(self) -> int:
+    @property
+    def _indent_level(self) -> int:
         """Calculate the indent level for self.pprint function.
 
         Minimum returned value for templates and parser functions is 1.
@@ -552,7 +553,7 @@ class WikiText:
             ]
             max_name_len = max(arg_name_lengths)
             # Format template.name.
-            level = template._get_indent_level()
+            level = template._indent_level
             newline_indent = '\n' + indent * level
             if level == 1:
                 last_comment_indent = '<!--\n' + indent * (level - 1) + '-->'
@@ -647,7 +648,7 @@ class WikiText:
             # parser functions. See:
             # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
             #    Stripping_whitespace
-            level = function._get_indent_level()
+            level = function._indent_level
             newline_indent = '\n' + indent * level
             if len(args) == 1:
                 arg = args[0]
