@@ -5,15 +5,15 @@ import re
 from html.parser import HTMLParser
 
 from .wikitext import SubWikiText
+from .cell import Cell
 
 
-ROWSEP_REGEX = re.compile(r'[|!]-[^\n]*\n')
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = re.compile(
     r"""
     # only for matching, not searching
     (?P<whitespace>\s*)
-    (?P<sep>[|!])
+    (?P<sep>[|!](?![+}-]))
     (?:
       # catch the matching pipe (style holder).
       \| # immediate closure (attrs='').
@@ -32,10 +32,10 @@ NEWLINE_CELL_REGEX = re.compile(
     (?P<data>[\s\S]*?)
     (?=
       # start of the next cell
+      \n\s*[!|]|
       \|\||
       (?P=sep){2}|
-      $|
-      \n\s*[!|]
+      $
     )
     """,
     re.VERBOSE
@@ -62,10 +62,10 @@ INLINE_HAEDER_CELL_REGEX = re.compile(
     (?P<data>[\s\S]*?)
     (?=
       # start of the next cell
+      \n\s*[!|]|
       \|\||
       !!|
-      $|
-      \n\s*[!|]
+      $
     )
     """,
     re.VERBOSE
@@ -88,7 +88,11 @@ INLINE_NONHAEDER_CELL_REGEX = re.compile(
     ?
     (?P<data>[\s\S]*?)
     # start of the next cell
-    (?=\|\||$|\n\s*[!|])
+    (?=
+        \|\||
+        $|
+        \n\s*[!|]
+    )
     """,
     re.VERBOSE
 )
@@ -125,6 +129,8 @@ CAPTION_REGEX = re.compile(
 class Table(SubWikiText):
 
     """Create a new Table object."""
+    # Todo: Define has, get, set, delete methods to access table attributes.
+    # They should provide the same API as tag and cell classes.
 
     def __init__(
         self,
@@ -149,89 +155,75 @@ class Table(SubWikiText):
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
-    def _get_spans(self, attrs) -> tuple:
-        """Return attr and data spans."""
+    def _get_spans(self, attrs: bool) -> tuple:
+        """Return (self.string, attr_spans, cell_spans, data_spans)."""
         string = self.string
-        length = len(string)
         shadow = self._shadow()
         # Remove table-start and table-end marks.
-        pos = shadow.find('\n') + 1
-        pos = _lstrip_increase(shadow, pos)
+        pos = shadow.find('\n')
+        lsp = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while shadow[pos] not in ('!', '|'):
-            i = shadow[pos:].find('\n')
-            if i == -1:
+        while shadow[lsp] not in ('!', '|'):
+            nlp = shadow.find('\n', lsp)
+            if nlp == -1:
                 break
-            pos = _lstrip_increase(shadow, pos + i)
+            pos = nlp
+            lsp = _lstrip_increase(shadow, pos)
+        # Start of the first row
+        table_cell_spans = []
+        table_data_spans = []
+        table_attr_spans = []
         pos = _semi_caption_increase(shadow, pos)
-        data_spans = []
-        p = pos
-        for m in ROWSEP_REGEX.finditer(shadow, pos):
-            data_spans.append((p, m.start()))
-            p = m.end()
-        data_spans.append((p, -2))
-
-        cell_spans = []
-        attr_spans = []
-        for s, e in data_spans:
-            row = shadow[s:e]
-            if not row.lstrip():
-                # When the optional `|-` for the first row is used or when
-                # there are meaningless row separators that result in rows
-                # containing no cells.
-                continue
-            cell_spans.append([])
-            if attrs:
-                attr_spans.append([])
-            pos = 0
-            lastpos = -1
-            while pos != lastpos:
-                lastpos = pos
-                pos = _semi_caption_increase(row, pos)
-                m = NEWLINE_CELL_REGEX.match(row, pos)
-                if m:
-                    sep = m.group('sep')
-                    data = m.group('data')
-                    cell_spans[-1].append(
-                        (s + m.end() - len(data), s + m.end())
-                    )
-                    if attrs:
-                        _add_to_attr_spans(
-                            # The leading whitespace in newline-cells
-                            # must be ignored
-                            m, attr_spans, s + len(m.group('whitespace'))
-                        )
-                    pos = m.end()
-                    if sep == '|':
-                        m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
-                        while m:
-                            data = m.group('data')
-                            cell_spans[-1].append(
-                                (s + m.end() - len(data), s + m.end())
-                            )
-                            if attrs:
-                                _add_to_attr_spans(
-                                    m, attr_spans, s + 1
-                                )
-                            pos = m.end()
-                            m = INLINE_NONHAEDER_CELL_REGEX.match(row, pos)
-                    elif sep == '!':
-                        m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
-                        while m:
-                            data = m.group('data')
-                            cell_spans[-1].append(
-                                (s + m.end() - len(data), s + m.end())
-                            )
-                            if attrs:
-                                _add_to_attr_spans(
-                                    m, attr_spans, s + 1
-                                )
-                            pos = m.end()
-                            m = INLINE_HAEDER_CELL_REGEX.match(row, pos)
-        return attr_spans, cell_spans
+        rsp = _row_separator_increase(shadow, pos)
+        pos = -1
+        while pos != rsp:
+            pos = rsp
+            # We have a new row.
+            m = NEWLINE_CELL_REGEX.match(shadow, pos)
+            # Don't add a row if there are no new cells.
+            if m:
+                row_cell_spans = []
+                table_cell_spans.append(row_cell_spans)
+                row_data_spans = []
+                table_data_spans.append(row_data_spans)
+                if attrs:
+                    row_attr_spans = []
+                    table_attr_spans.append(row_attr_spans)
+            while m:
+                row_cell_spans.append(m.span())
+                row_data_spans.append(m.span('data'))
+                if attrs:
+                    row_attr_spans.append(m.span('attrs'))
+                sep = m.group('sep')
+                pos = m.end()
+                if sep == '|':
+                    m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
+                    while m:
+                        row_cell_spans.append(m.span())
+                        row_data_spans.append(m.span('data'))
+                        if attrs:
+                            row_attr_spans.append(m.span('attrs'))
+                        pos = m.end()
+                        m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
+                elif sep == '!':
+                    m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
+                    while m:
+                        row_cell_spans.append(m.span())
+                        row_data_spans.append(m.span('data'))
+                        if attrs:
+                            row_attr_spans.append(m.span('attrs'))
+                        pos = m.end()
+                        m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
+                pos = _semi_caption_increase(shadow, pos)
+                m = NEWLINE_CELL_REGEX.match(shadow, pos)
+            # if shadow.find('\n', pos) == -1:
+            #     # Final line.
+            #     break
+            rsp = _row_separator_increase(shadow, pos)
+        return string, table_attr_spans, table_cell_spans, table_data_spans
 
     def getdata(self, span: bool=True) -> list:
-        """Return a list containing lists of row values.
+        """Return a list containing lists of stripped row values.
 
         :span: If true, calculate rows according to rowspans and colspans
             attributes. Otherwise ignore them.
@@ -243,17 +235,31 @@ class Table(SubWikiText):
         wikitables can be inserted within templates.
 
         """
-        attr_spans, cell_spans = self._get_spans(span)
-        string = self.string
+        # Todo: Add a new parameter: strip
+        string, attr_spans, cell_spans, data_spans = self._get_spans(span)
         data = []
-        for g in cell_spans:
+        for g in data_spans:
             data.append([])
             for s, e in g:
                 # Spaces after the first newline can be meaningful
-                data[-1].append(string[s:e].strip(' ').rstrip())
+                data[-1].append(string[s:e].lstrip(' ').rstrip())
         if span and data:
             data = _apply_attr_spans(attr_spans, data, string)
         return data
+
+    def getcells(self, span: bool = True) -> list:
+        """Return a list of lists containing Cell objects."""
+        string, attr_spans, cell_spans = self._get_spans(span)
+        # Todo: Rewrite this.
+        cells = []
+        for g in cell_spans:
+            cells.append([])
+            for s, e in g:
+                # Spaces after the first newline can be meaningful
+                cells[-1].append(Cell(string[s:e], ...))
+        if span and cells:
+            cells = _apply_attr_spans(attr_spans, cells, string)
+        return cells
 
     def getrdata(self, i: int) -> list:
         """Return the data in the ith row of the table.
@@ -496,47 +502,54 @@ def _apply_attr_spans(
     return table
 
 
-def _add_to_attr_spans(match, attr_spans: list, pos: int) -> None:
-    """Add the attr span for the match to attr_spans."""
-    attrs = match.group('attrs')
-    if attrs:
-        attrs_start = pos + match.start() + 1
-        attr_spans[-1].append(
-            (attrs_start, attrs_start + len(attrs))
-        )
-    else:
-        attr_spans[-1].append((None, None))
-
-
 def _lstrip_increase(string: str, pos: int) -> int:
     """Return the new position to lstrip the string."""
-    for c in string[pos:]:
-        if not c.isspace():
-            break
+    length = len(string)
+    while pos < length and string[pos].isspace():
         pos += 1
     return pos
 
 
 def _semi_caption_increase(string: str, pos: int) -> int:
-    """Remove starting semi-caption from the string. Return the new pos.
+    """Return the position after the starting semi-caption.
 
     Captions are optional and only one should be placed between table-start
     and the first row. Others captions are not part of the table and will
     be ignored. We call these semi-captions.
 
-    Return the the position of the first character after the starting
-    semi-caption.
+    """
+    lsp = _lstrip_increase(string, pos)
+    while string.startswith('|+', lsp):
+        pos = string.find('\n', lsp + 2)
+        lsp = _lstrip_increase(string, pos)
+        while string[lsp] not in ('!', '|'):
+            # This line is a continuation of semi-caption line.
+            nlp = string.find('\n', lsp + 1)
+            if nlp == -1:
+                # This is the last line that ends with '|}'.
+                return pos
+            pos = nlp
+            lsp = _lstrip_increase(string, nlp)
+    return pos
+
+
+def _row_separator_increase(string: str, pos: int) -> int:
+    """Return the position after the starting row separator line.
+
+    Also skips any semi-caption lines before and after the separator.
 
     """
-    pos = _lstrip_increase(string, pos)
-    while string[pos:pos + 2] == '|+':
-        pos = pos + string[pos:].find('\n') + 1
-        pos = _lstrip_increase(string, pos)
-        while string[pos] not in ('!', '|'):
-            p = string[pos:].find('\n')
-            if p == -1:
-                break
-            pos = _lstrip_increase(string, pos + p)
+    # General format of row separators: r'\|-[^\n]*\n'
+    scp = _semi_caption_increase(string, pos)
+    lsp = _lstrip_increase(string, scp)
+    while string.startswith('|-', lsp):
+        # We are on a row separator line.
+        nlp = string.find('\n', lsp + 2)
+        if nlp == -1:
+            return pos
+        pos = _semi_caption_increase(string, nlp)
+        lsp = _lstrip_increase(string, pos)
     return pos
+
 
 attrs_parser = AttrsParser().parse
