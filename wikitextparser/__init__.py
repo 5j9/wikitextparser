@@ -1,6 +1,8 @@
 """Initialize the wikitextparser."""
 
 
+import regex as _regex
+
 from .parameter import Parameter
 from .argument import Argument
 from .externallink import ExternalLink
@@ -14,6 +16,7 @@ from .parser_function import ParserFunction
 from .tag import Tag
 
 
+_regex.DEFAULT_VERSION = _regex.VERSION1
 _wikitext.ExternalLink = ExternalLink
 _wikitext.WikiLink = WikiLink
 _wikitext.Template = Template

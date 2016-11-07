@@ -6,7 +6,6 @@ import regex
 from .wikitext import SubWikiText
 
 
-regex.DEFAULT_VERSION = regex.VERSION1
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
 TAG_NAME = r'(?P<name>[A-Za-z0-9]+)'
@@ -131,7 +130,7 @@ class Tag(SubWikiText):
         return self._match
 
     def get(self, attr_name: str) -> str or None:
-        """Return the last value for the attribute with the given name.
+        """Return the value of the last attribute with the given name.
 
         Return None if the attr_name does not exist in self.
         If there are already multiple attributes with the given name, only
@@ -166,7 +165,7 @@ class Tag(SubWikiText):
         )
 
     def delete(self, attr_name: str) -> None:
-        """Remove all the attributes with the given name.
+        """Delete all the attributes with the given name.
 
         Pass if the attr_name is not found in self.
 
