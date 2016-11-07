@@ -1,7 +1,7 @@
 ﻿"""Define the Table class."""
 
 
-import re
+import regex as re
 from html.parser import HTMLParser
 
 from .wikitext import SubWikiText
@@ -129,8 +129,8 @@ CAPTION_REGEX = re.compile(
 class Table(SubWikiText):
 
     """Create a new Table object."""
-    # Todo: Define has, get, set, delete methods to access table attributes.
-    # They should provide the same API as tag and cell classes.
+    # Todo: Define has, get, set, and delete methods.
+    # They should provide the same API as in Tag and Cell classes.
 
     def __init__(
         self,
@@ -155,8 +155,8 @@ class Table(SubWikiText):
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
-    def _get_spans(self, attrs: bool) -> tuple:
-        """Return (self.string, attr_spans, cell_spans, data_spans)."""
+    def _get_spans(self) -> tuple:
+        """Return (self.string, match_table)."""
         string = self.string
         shadow = self._shadow()
         # Remove table-start and table-end marks.
@@ -170,9 +170,7 @@ class Table(SubWikiText):
             pos = nlp
             lsp = _lstrip_increase(shadow, pos)
         # Start of the first row
-        table_cell_spans = []
-        table_data_spans = []
-        table_attr_spans = []
+        match_table = []
         pos = _semi_caption_increase(shadow, pos)
         rsp = _row_separator_increase(shadow, pos)
         pos = -1
@@ -182,45 +180,28 @@ class Table(SubWikiText):
             m = NEWLINE_CELL_REGEX.match(shadow, pos)
             # Don't add a row if there are no new cells.
             if m:
-                row_cell_spans = []
-                table_cell_spans.append(row_cell_spans)
-                row_data_spans = []
-                table_data_spans.append(row_data_spans)
-                if attrs:
-                    row_attr_spans = []
-                    table_attr_spans.append(row_attr_spans)
+                match_row = []
+                match_table.append(match_row)
             while m:
-                row_cell_spans.append(m.span())
-                row_data_spans.append(m.span('data'))
-                if attrs:
-                    row_attr_spans.append(m.span('attrs'))
+                match_row.append(m)
                 sep = m.group('sep')
                 pos = m.end()
                 if sep == '|':
                     m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
-                        row_cell_spans.append(m.span())
-                        row_data_spans.append(m.span('data'))
-                        if attrs:
-                            row_attr_spans.append(m.span('attrs'))
+                        match_row.append(m)
                         pos = m.end()
                         m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
                 elif sep == '!':
                     m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
-                        row_cell_spans.append(m.span())
-                        row_data_spans.append(m.span('data'))
-                        if attrs:
-                            row_attr_spans.append(m.span('attrs'))
+                        match_row.append(m)
                         pos = m.end()
                         m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
                 pos = _semi_caption_increase(shadow, pos)
                 m = NEWLINE_CELL_REGEX.match(shadow, pos)
-            # if shadow.find('\n', pos) == -1:
-            #     # Final line.
-            #     break
             rsp = _row_separator_increase(shadow, pos)
-        return string, table_attr_spans, table_cell_spans, table_data_spans
+        return string, match_table
 
     def getdata(self, span: bool=True) -> list:
         """Return a list containing lists of stripped row values.
@@ -236,18 +217,29 @@ class Table(SubWikiText):
 
         """
         # Todo: Add a new parameter: strip
-        string, attr_spans, cell_spans, data_spans = self._get_spans(span)
-        data = []
-        for g in data_spans:
-            data.append([])
-            for s, e in g:
+        string, match_table = self._get_spans()
+        table_data = []
+        for match_row in match_table:
+            row_data = []
+            table_data.append(row_data)
+            for m in match_row:
                 # Spaces after the first newline can be meaningful
-                data[-1].append(string[s:e].lstrip(' ').rstrip())
-        if span and data:
-            data = _apply_attr_spans(attr_spans, data, string)
-        return data
+                row_data.append(
+                    string[m.start('data'):m.end('data')].lstrip(' ').rstrip()
+                )
+        if span and table_data:
+            table_attrs = []
+            for match_row in match_table:
+                row_attrs = []
+                table_attrs.append(row_attrs)
+                for m in match_row:
+                    row_attrs.append(
+                        attrs_parser(string[m.start('attrs'):m.end('attrs')])
+                    )
+            table_data = _apply_attr_spans(table_attrs, table_data, string)
+        return table_data
 
-    def getcells(self, span: bool = True) -> list:
+    def cells(self, span: bool = True) -> list:
         """Return a list of lists containing Cell objects."""
         string, attr_spans, cell_spans = self._get_spans(span)
         # Todo: Rewrite this.
@@ -368,18 +360,9 @@ class AttrsParser(HTMLParser):
 
 
 def _apply_attr_spans(
-    attr_spans: list, data: list, string: str
+    table_attrs: list, table_data: list, string: str
 ) -> list:
-    """Apply row and column spans and return data."""
-    # Todo: maybe it's better to do this parsing in self.getdata?
-    attrs = []
-    for r in attr_spans:
-        attrs.append([])
-        for ss, se in r:
-            if se is not None:
-                attrs[-1].append(attrs_parser(string[ss:se]))
-            else:
-                attrs[-1].append(None)
+    """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
     # Numbered comments indicate the step in that algorithm.
@@ -391,17 +374,17 @@ def _apply_attr_spans(
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
     table = []
-    # getdata won't call this function if data is empty.
+    # getdata won't call this function if table_data is empty.
     # 5
-    # if not data:
-    #     return data
+    # if not table_data:
+    #     return table_data
     # 10
     ycurrent = 0
     # 11
     downward_growing_cells = []
     # 13, 18
     # Algorithm for processing rows
-    for i, row in enumerate(data):
+    for i, row in enumerate(table_data):
         # 13.1 ycurrent is never greater than yheight
         if yheight == ycurrent:
             yheight += 1
@@ -432,7 +415,7 @@ def _apply_attr_spans(
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
             try:
-                colspan = int(attrs[i][j]['colspan'])
+                colspan = int(table_attrs[i][j]['colspan'])
                 if colspan == 0:
                     # Note: colspan="0" tells the browser to span the cell to
                     # the last column of the column group (colgroup)
@@ -442,7 +425,7 @@ def _apply_attr_spans(
                 colspan = 1
             # 13.9
             try:
-                rowspan = int(attrs[i][j]['rowspan'])
+                rowspan = int(table_attrs[i][j]['rowspan'])
             except Exception:
                 rowspan = 1
             # 13.10
