@@ -109,8 +109,10 @@ class Tag(SubWikiText):
         else:
             self._index = index
         # The following attributes are used for caching.
-        self._string = string
-        self._match = match
+        self._cached_string = (
+            string if isinstance(string, str) else self.string
+        )
+        self._cached_match = match
 
     def __repr__(self) -> str:
         """Return the string representation of self."""
@@ -123,11 +125,11 @@ class Tag(SubWikiText):
     def _get_match(self):
         """Return the match object for the current tag. Cache the result."""
         string = self.string
-        if not self._match or not self._string == string:
+        if not self._cached_match or not self._cached_string == string:
             # Compute the match
-            self._match = TAG_REGEX.fullmatch(string)
-            self._string = string
-        return self._match
+            self._cached_match = TAG_REGEX.fullmatch(string)
+            self._cached_string = string
+        return self._cached_match
 
     def get(self, attr_name: str) -> str or None:
         """Return the value of the last attribute with the given name.
