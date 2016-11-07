@@ -125,10 +125,11 @@ class Tag(SubWikiText):
     def _get_match(self):
         """Return the match object for the current tag. Cache the result."""
         string = self.string
-        if not self._cached_match or not self._cached_string == string:
-            # Compute the match
-            self._cached_match = TAG_REGEX.fullmatch(string)
-            self._cached_string = string
+        if self._cached_match and self._cached_string == string:
+            return self._cached_match
+        # Compute the match
+        self._cached_match = TAG_REGEX.fullmatch(string)
+        self._cached_string = string
         return self._cached_match
 
     def get(self, attr_name: str) -> str or None:
