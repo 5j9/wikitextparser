@@ -7,10 +7,11 @@ import wikitextparser as wtp
 from wikitextparser.table import Cell
 
 
-class Cell(unittest.TestCase):
+class TableCell(unittest.TestCase):
 
-    """Argument test class."""
+    """Test the Cell class."""
 
+    @unittest.expectedFailure
     def test_basic(self):
         c = Cell('\n| a ')
         self.assertEqual(' a ', c.value)
