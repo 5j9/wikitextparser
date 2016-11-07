@@ -145,7 +145,7 @@ Extracting cell values of a table is easy:
     |-
     |   Butter   || Ice cream ||  and more
     |}""")
-    >>> pprint(p.tables[0].getdata())
+    >>> pprint(p.tables[0].data())
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
@@ -161,7 +161,7 @@ And values are rearranged according to colspan and rowspan attributes (by defaul
     !colspan = "2" | d || e
     |-
     |}""")
-    >>> t.getdata(span=True)
+    >>> t.data(span=True)
     [['a', 'b', 'c'], ['d', 'd', 'e']]
 
 Have a look at the test modules for more details and probable pitfalls.

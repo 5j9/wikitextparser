@@ -3,6 +3,7 @@
 
 import regex as re
 from html.parser import HTMLParser
+import warnings
 
 from .wikitext import SubWikiText
 from .cell import Cell
@@ -203,7 +204,14 @@ class Table(SubWikiText):
             rsp = _row_separator_increase(shadow, pos)
         return string, match_table
 
-    def getdata(self, span: bool=True) -> list:
+    def getdata(self, span: bool=True):
+        """Use Table.data instead."""
+        warnings.warn(
+            'Table.getdata is deprecated. Use Table.data instead.'
+        )
+        return self.data(span)
+
+    def data(self, span: bool=True) -> list:
         """Return a list containing lists of stripped row values.
 
         :span: If true, calculate rows according to rowspans and colspans
@@ -245,6 +253,9 @@ class Table(SubWikiText):
         If span is True, tearrange the result according to colspan and rospan
         attributes.
 
+        If only need the values inside cells, then use the ``data`` method
+        instead.
+
         """
         string, match_table = self._get_spans()
         type_ = 'table' + str(self._index) + '_cells'
@@ -284,15 +295,15 @@ class Table(SubWikiText):
         i is the index and starts from 0.
 
         """
-        # Todo: Cache self.getdata?
-        return self.getdata()[i]
+        # Todo: Cache self.data?
+        return self.data()[i]
 
     def getcdata(self, i: int) -> list:
         """Return the data in ith column of the table as a list.
 
         i is the index and starts from 0.
         """
-        return [r[i] for r in self.getdata()]
+        return [r[i] for r in self.data()]
 
     @property
     def caption(self) -> str or None:
@@ -399,7 +410,7 @@ def _apply_attr_spans(
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
     table = []
-    # getdata won't call this function if table_data is empty.
+    # Table.data won't call this function if table_data is empty.
     # 5
     # if not table_data:
     #     return table_data

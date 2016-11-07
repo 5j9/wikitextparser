@@ -15,9 +15,9 @@ import unittest
 import wikitextparser as wtp
 
 
-class GetData(unittest.TestCase):
+class Data(unittest.TestCase):
 
-    """Test the GetData method of the table class."""
+    """Test the data method of the table class."""
 
     def test_each_row_on_a_newline(self):
         table = wtp.Table(
@@ -33,7 +33,7 @@ class GetData(unittest.TestCase):
             '|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
         )
 
@@ -47,7 +47,7 @@ class GetData(unittest.TestCase):
             '|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [['b'], ['c']],
         )
 
@@ -62,7 +62,7 @@ class GetData(unittest.TestCase):
             '|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
         )
 
@@ -73,7 +73,7 @@ class GetData(unittest.TestCase):
             '|   Butter   || Ice cream ||  and more\n|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [
                 ['Orange', 'Apple', 'more'],
                 ['Bread', 'Pie', 'more'],
@@ -86,7 +86,7 @@ class GetData(unittest.TestCase):
             '\n* ulli1\n* ulli2\n* ulli3\n|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [
                 [
                     'multi\nline\ntext. \n\n2nd paragraph.',
@@ -99,7 +99,7 @@ class GetData(unittest.TestCase):
         table = wtp.Table(
             '{|\n|| multi\nline\n||\n 1\n|}'
         )
-        self.assertEqual(table.getdata(), [['multi\nline', '\n 1']])
+        self.assertEqual(table.data(), [['multi\nline', '\n 1']])
 
     def test_with_headers(self):
         table = wtp.Table(
@@ -108,7 +108,7 @@ class GetData(unittest.TestCase):
             '|Butter\n|1\n|5.00\n|-\n!Total\n|\n|15.00\n|}'
         )
         self.assertEqual(
-            table.getdata(), [
+            table.data(), [
                 ['Item', 'Amount', 'Cost'],
                 ['Orange', '10', '7.00'],
                 ['Bread', '4', '3.00'],
@@ -123,7 +123,7 @@ class GetData(unittest.TestCase):
             '|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
         )
         self.assertEqual(
-            table.getdata(),
+            table.data(),
             [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
         )
 
@@ -134,7 +134,7 @@ class GetData(unittest.TestCase):
             '|a \n'
             '|}'
         )
-        self.assertEqual(table.getdata(), [['a']])
+        self.assertEqual(table.data(), [['a']])
 
     def test_second_caption_is_ignored(self):
         table = wtp.Table(
@@ -145,11 +145,11 @@ class GetData(unittest.TestCase):
             '|1\n'
             '|2\n'
             '|}')
-        self.assertEqual(table.getdata(), [['1', '2']])
+        self.assertEqual(table.data(), [['1', '2']])
 
     def test_unneeded_newline_after_table_start(self):
         table = wtp.Table('{|\n\n|-\n|c1\n|c2\n|}')
-        self.assertEqual(table.getdata(), [['c1', 'c2']])
+        self.assertEqual(table.data(), [['c1', 'c2']])
 
     def test_text_after_tablestart_is_not_actually_inside_the_table(self):
         table = wtp.Table(
@@ -160,30 +160,30 @@ class GetData(unittest.TestCase):
             '|c2\n'
             '|}'
         )
-        self.assertEqual(table.getdata(), [['c1', 'c2']])
+        self.assertEqual(table.data(), [['c1', 'c2']])
 
     def test_empty_table(self):
         table = wtp.Table('{|class=wikitable\n|}')
-        self.assertEqual(table.getdata(), [])
+        self.assertEqual(table.data(), [])
 
     def test_empty_table_comment_end(self):
         table = wtp.Table(
             '{|class=wikitable\n'
             '<!-- c -->|}'
         )
-        self.assertEqual(table.getdata(), [])
+        self.assertEqual(table.data(), [])
 
     def test_empty_table_semicaption_comment(self):
         table = wtp.Table('{|class=wikitable\n|+\n<!-- c -->|}')
-        self.assertEqual(table.getdata(), [])
+        self.assertEqual(table.data(), [])
 
     def test_empty_cell(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
-        self.assertEqual(table.getdata(), [['a', '', 'c']])
+        self.assertEqual(table.data(), [['a', '', 'c']])
 
     def test_pipe_as_text(self):
         table = wtp.Table('{|class=wikitable\n||a | || c\n|}')
-        self.assertEqual(table.getdata(), [['a |', 'c']])
+        self.assertEqual(table.data(), [['a |', 'c']])
 
     def test_meaningless_rowsep(self):
         table = wtp.Table(
@@ -192,11 +192,11 @@ class GetData(unittest.TestCase):
             '|-\n'
             '|}'
         )
-        self.assertEqual(table.getdata(), [['a', '', 'c']])
+        self.assertEqual(table.data(), [['a', '', 'c']])
 
     def test_template_inside_table(self):
         table = wtp.Table('{|class=wikitable\n|-\n|{{text|a}}\n|}')
-        self.assertEqual(table.getdata(), [['{{text|a}}']])
+        self.assertEqual(table.data(), [['{{text|a}}']])
 
     def test_only_pipes_can_seprate_attributes(self):
         """According to the note at mw:Help:Tables#Table_headers."""
@@ -204,29 +204,29 @@ class GetData(unittest.TestCase):
             '{|class=wikitable\n! style="text-align:left;"! '
             'Item\n! Amount\n! Cost\n|}'
         )
-        self.assertEqual(table.getdata(), [
+        self.assertEqual(table.data(), [
             ['style="text-align:left;"! Item', 'Amount', 'Cost']
         ])
         table = wtp.Table(
             '{|class=wikitable\n! style="text-align:left;"| '
             'Item\n! Amount\n! Cost\n|}'
         )
-        self.assertEqual(table.getdata(), [
+        self.assertEqual(table.data(), [
             ['Item', 'Amount', 'Cost']
         ])
 
     def test_double_exclamation_marks_are_valid_on_header_rows(self):
         table = wtp.Table('{|class=wikitable\n!a!!b!!c\n|}')
-        self.assertEqual(table.getdata(), [['a', 'b', 'c']])
+        self.assertEqual(table.data(), [['a', 'b', 'c']])
 
     def test_double_exclamation_marks_are_valid_only_on_header_rows(self):
         # Actually I'm not sure about this in general.
         table = wtp.Table('{|class=wikitable\n|a!!b!!c\n|}')
-        self.assertEqual(table.getdata(), [['a!!b!!c']])
+        self.assertEqual(table.data(), [['a!!b!!c']])
 
     def test_caption_in_row_is_treated_as_pipe_and_plut(self):
         table = wtp.Table('{|class=wikitable\n|a|+b||c\n|}')
-        self.assertEqual(table.getdata(), [['+b', 'c']])
+        self.assertEqual(table.data(), [['+b', 'c']])
 
     def test_odd_case1(self):
         table = wtp.Table(
@@ -246,7 +246,7 @@ class GetData(unittest.TestCase):
             '|c2\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=False), [
+        self.assertEqual(table.data(span=False), [
             ['h1', '+ h2'],
             ['+ h4'],
             ['!+ h6'],
@@ -259,7 +259,7 @@ class GetData(unittest.TestCase):
             '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
         )
-        self.assertEqual(table.getdata(span=False), [
+        self.assertEqual(table.data(span=False), [
             ['11'],
             ['21', '22', '23', '24', '25'],
             ['31', '32', '33', '34'],
@@ -271,7 +271,7 @@ class GetData(unittest.TestCase):
             '|rowspan="2"|21\n|22\n|23\n|24\n  |colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['11', '11', '11', '11', '11', '11'],
             ['21', '22', '23', '24', '25', '25'],
             ['21', '31', '32', '32', '33', '34'],
@@ -285,7 +285,7 @@ class GetData(unittest.TestCase):
             ' | e || colspan = "2"| f\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b', 'c', 'd'],
             ['e', 'f', 'f', 'd']
         ])
@@ -298,7 +298,7 @@ class GetData(unittest.TestCase):
             '| c\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b'],
             ['c', 'b'],
         ])
@@ -311,7 +311,7 @@ class GetData(unittest.TestCase):
             '| c || d\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b'],
             ['c', 'd'],
         ])
@@ -324,7 +324,7 @@ class GetData(unittest.TestCase):
             '| c\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b'],
             ['a', 'c'],
             ['a', None],
@@ -338,7 +338,7 @@ class GetData(unittest.TestCase):
             '| d\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b', 'c'],
             ['a', 'b', 'd'],
             ['a', 'b', None],
@@ -425,6 +425,25 @@ class TableAttrs(unittest.TestCase):
             repr(table), "Table('{|class=\"wikitable\"\\n|a\\n|}')"
         )
 
+
+class TalbeCells(unittest.TestCase):
+
+    """Test the cells method of the table."""
+
+
+    def test_cell_extraction(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '|| 1 | 1 || a | 2\n'
+            '| 3 ||| 4\n'
+            '|| 5\n'
+            '! 6 !! 7 !| 8\n'
+            '!| 9 || 0\n'
+            '|}'
+        )
+        cells = table.cells()
+        self.assertEqual(len(cells), 1)
+        self.assertEqual(len(cells[0]), 10)
 
 if __name__ == '__main__':
     unittest.main()
