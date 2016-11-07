@@ -135,12 +135,12 @@ class Table(SubWikiText):
     def __init__(
         self,
         string: str or list,
-        spans: list or None=None,
+        type_to_spans: list or None=None,
         index: int or None=None,
     ) -> None:
-        """Run _common_init. Set _type_to_spans['tables'] if spans is None."""
-        self._common_init(string, spans)
-        if spans is None:
+        """Run _common_init and set _type_to_spans['tables']."""
+        self._common_init(string, type_to_spans)
+        if type_to_spans is None:
             self._type_to_spans['tables'] = [(0, len(string))]
         if index is None:
             self._index = len(self._type_to_spans['tables']) - 1
@@ -216,7 +216,7 @@ class Table(SubWikiText):
         wikitables can be inserted within templates.
 
         """
-        # Todo: Add a new parameter: strip
+        # Todo: Add a new parameter: strip?
         string, match_table = self._get_spans()
         table_data = []
         for match_row in match_table:
@@ -240,18 +240,33 @@ class Table(SubWikiText):
         return table_data
 
     def cells(self, span: bool = True) -> list:
-        """Return a list of lists containing Cell objects."""
-        string, attr_spans, cell_spans = self._get_spans(span)
-        # Todo: Rewrite this.
-        cells = []
-        for g in cell_spans:
-            cells.append([])
-            for s, e in g:
-                # Spaces after the first newline can be meaningful
-                cells[-1].append(Cell(string[s:e], ...))
-        if span and cells:
-            cells = _apply_attr_spans(attr_spans, cells, string)
-        return cells
+        """Return a list of lists containing Cell objects.
+
+        If span is True, tearrange the result according to colspan and rospan
+        attributes.
+
+        """
+        string, match_table = self._get_spans()
+        self._type_to_spans
+        table_cells = []
+        for match_row in match_table:
+            row_cells = []
+            table_cells.append(row_cells)
+            for m in match_row:
+                row_cells.append(
+                    Cell(self._lststr, )
+                )
+        if span and table_cells:
+            table_attrs = []
+            for match_row in match_table:
+                row_attrs = []
+                table_attrs.append(row_attrs)
+                for m in match_row:
+                    row_attrs.append(
+                        attrs_parser(string[m.start('attrs'):m.end('attrs')])
+                    )
+            table_cells = _apply_attr_spans(table_attrs, table_cells, string)
+        return table_cells
 
     def getrdata(self, i: int) -> list:
         """Return the data in the ith row of the table.

@@ -11,12 +11,12 @@ class ExternalLink(SubWikiText):
     def __init__(
         self,
         string: str or list,
-        spans: list or None=None,
+        type_to_spans: list or None=None,
         index: int or None=None,
     ) -> None:
-        """Run _common_init. Set _type_to_spans['extlinks'] if not spans."""
-        self._common_init(string, spans)
-        if spans is None:
+        """Run _common_init and set _type_to_spans['extlinks']."""
+        self._common_init(string, type_to_spans)
+        if type_to_spans is None:
             self._type_to_spans['extlinks'] = [(0, len(string))]
         if index is None:
             self._index = len(self._type_to_spans['extlinks']) - 1

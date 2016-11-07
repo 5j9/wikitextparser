@@ -71,10 +71,10 @@ class WikiText:
     def __init__(
             self,
             string: str,
-            spans: list or None=None,
+            type_to_spans: list or None=None,
     ) -> None:
         """Initialize the object."""
-        self._common_init(string, spans)
+        self._common_init(string, type_to_spans)
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -466,7 +466,7 @@ class WikiText:
                 )
         return shadow
 
-    def _common_init(self, lststr: str or list, spans: list) -> None:
+    def _common_init(self, lststr: str or list, type_to_spans: list) -> None:
         """Do the common initializations required for subclasses of WikiText.
 
         Set the initial values and self._lststr, self._type_to_spans.
@@ -474,16 +474,16 @@ class WikiText:
         Parameters:
         :lststr: The raw string of the object to be parsed or a list pointing
             to the mother string of the parent object.
-        :spans: If the lststr is already parsed, pass its _type_to_spans
-            property as spans to avoid parsing it again.
+        :type_to_spans: If the lststr is already parsed, pass its
+            _type_to_spans property as type_to_spans to avoid parsing it again.
 
         """
         if isinstance(lststr, list):
             self._lststr = lststr
         else:
             self._lststr = [lststr]
-        if spans:
-            self._type_to_spans = spans
+        if type_to_spans:
+            self._type_to_spans = type_to_spans
         else:
             self._type_to_spans = parse_to_spans(self._lststr[0])
 
@@ -930,7 +930,7 @@ class SubWikiText(WikiText):
     def __init__(
         self,
         string: str or list,
-        spans: list,
+        type_to_spans: list,
         index: int,
     ) -> None:
         """Initialize the object.
@@ -939,7 +939,7 @@ class SubWikiText(WikiText):
         Set self._index
 
         """
-        self._common_init(string, spans)
+        self._common_init(string, type_to_spans)
         # SubWikiText is not used directly so we don't need the following:
         # if index is None:
         #     self._index = len(self._type_to_spans['subwikitext']) - 1

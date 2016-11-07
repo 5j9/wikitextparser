@@ -15,16 +15,16 @@ class Argument(SubWikiText):
     """
 
     def __init__(
-        self, string: str or list, spans: list or None=None,
+        self, string: str or list, type_to_spans: list or None=None,
         index: int or None=None, type_: str or None=None
     ) -> None:
         """Initialize the object."""
-        self._common_init(string, spans)
+        self._common_init(string, type_to_spans)
         if type_ is None:
             self._type = 'arguments'
         else:
             self._type = type_
-        if spans is None:
+        if type_to_spans is None:
             self._type_to_spans[self._type] = [(0, len(string))]
         if index is None:
             self._index = len(self._type_to_spans['arguments']) - 1

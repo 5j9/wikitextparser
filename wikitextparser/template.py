@@ -19,11 +19,11 @@ class Template(SubWikiText):
     def __init__(
         self,
         string: str or list,
-        spans: list or None=None,
+        type_to_spans: list or None=None,
         index: int or None=None,
     ) -> None:
         """Initialize the object."""
-        self._common_init(string, spans)
+        self._common_init(string, type_to_spans)
         if index is None:
             self._index = len(self._type_to_spans['templates']) - 1
         else:
