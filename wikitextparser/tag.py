@@ -109,10 +109,9 @@ class Tag(SubWikiText):
         else:
             self._index = index
         # The following attributes are used for caching.
-        self._cached_string = (
-            string if isinstance(string, str) else self.string
-        )
-        self._cached_match = match
+        string = string if isinstance(string, str) else self.string
+        self._cached_string = string
+        self._cached_match = TAG_REGEX.fullmatch(string)
 
     def __repr__(self) -> str:
         """Return the string representation of self."""
@@ -122,10 +121,11 @@ class Tag(SubWikiText):
         """Return the span of this object."""
         return self._type_to_spans['tags'][self._index]
 
-    def _get_match(self):
+    @property
+    def _match(self):
         """Return the match object for the current tag. Cache the result."""
         string = self.string
-        if self._cached_match and self._cached_string == string:
+        if self._cached_string == string:
             return self._cached_match
         # Compute the match
         self._cached_match = TAG_REGEX.fullmatch(string)
@@ -141,7 +141,7 @@ class Tag(SubWikiText):
         Return an empty string if the mentioned name is an empty attribute.
 
         """
-        match = self._get_match()
+        match = self._match
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
                 return match.captures('attr_value')[-i - 1]
@@ -155,7 +155,7 @@ class Tag(SubWikiText):
         standard the value for such attributes is implicitly the empty string.
 
         """
-        match = self._get_match()
+        match = self._match
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
                 start, end = match.spans('attr_value')[-i - 1]
@@ -173,7 +173,7 @@ class Tag(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
-        match = self._get_match()
+        match = self._match
         # Must be done in reversed order because the spans
         # change after each deletion.
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
@@ -183,19 +183,19 @@ class Tag(SubWikiText):
 
     def has(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
-        return attr_name in self._get_match().captures('attr_name')
+        return attr_name in self._match.captures('attr_name')
 
     @property
     def name(self) -> str:
         """Return tag name."""
-        return self._get_match()['name']
+        return self._match['name']
 
     @name.setter
     def name(self, name: str) -> None:
         """Set a new tag name."""
         # The name in the end tag should be replaced first because the spans
         # of the match object change after each replacement.
-        match = self._get_match()
+        match = self._match
         start, end = match.span('end_name')
         if start != -1:
             self[start:end] = name
@@ -205,7 +205,7 @@ class Tag(SubWikiText):
     @property
     def contents(self) -> str:
         """Return tag contents."""
-        return self._get_match()['contents']
+        return self._match['contents']
 
     @contents.setter
     def contents(self, contents: str) -> None:
@@ -219,7 +219,7 @@ class Tag(SubWikiText):
         '<t>n</t>'
 
         """
-        match = self._get_match()
+        match = self._match
         start, end = match.span('contents')
         if start != -1:
             self[start:end] = contents
@@ -231,7 +231,7 @@ class Tag(SubWikiText):
     @property
     def parsed_contents(self) -> SubWikiText:
         """Return the contents as a SubWikiText object."""
-        match = self._get_match()
+        match = self._match
         span = match.span('contents')
         spans = self._type_to_spans
         swt_spans = spans.setdefault('subwikitext', [span])
