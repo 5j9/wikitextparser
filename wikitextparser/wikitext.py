@@ -480,14 +480,10 @@ class WikiText:
             _type_to_spans property as type_to_spans to avoid parsing it again.
 
         """
-        if isinstance(lststr, list):
-            self._lststr = lststr
-        else:
-            self._lststr = [lststr]
-        if type_to_spans:
-            self._type_to_spans = type_to_spans
-        else:
-            self._type_to_spans = parse_to_spans(self._lststr[0])
+        self._lststr = lststr if isinstance(lststr, list) else [lststr]
+        self._type_to_spans = (
+            type_to_spans if type_to_spans else parse_to_spans(self._lststr[0])
+        )
 
     def _pp_type_to_spans(self) -> str:
         """Create the arguments for the parse function used in pprint method.

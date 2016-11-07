@@ -142,10 +142,9 @@ class Table(SubWikiText):
         self._common_init(string, type_to_spans)
         if type_to_spans is None:
             self._type_to_spans['tables'] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._type_to_spans['tables']) - 1
-        else:
-            self._index = index
+        self._index = len(
+            self._type_to_spans['tables']
+        ) - 1 if index is None else index
 
     def __repr__(self) -> str:
         """Return the string representation of the Table."""
@@ -248,7 +247,7 @@ class Table(SubWikiText):
 
         """
         string, match_table = self._get_spans()
-        type_ = 'table' + self._index + '_cells'
+        type_ = 'table' + str(self._index) + '_cells'
         type_to_spans = self._type_to_spans
         table_cells = []
         table_attrs = []

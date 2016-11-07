@@ -16,10 +16,9 @@ class Comment(SubWikiText):
     ) -> None:
         """Run self._common_init."""
         self._common_init(string, type_to_spans)
-        if index is None:
-            self._index = len(self._type_to_spans['comments']) - 1
-        else:
-            self._index = index
+        self._index = len(
+            self._type_to_spans['comments']
+        ) - 1 if index is None else index
 
     def __repr__(self) -> str:
         """Return the string representation of the Comment."""

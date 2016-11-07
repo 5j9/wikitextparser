@@ -104,10 +104,9 @@ class Tag(SubWikiText):
         self._common_init(string, type_to_spans)
         if type_to_spans is None:
             self._type_to_spans['tags'] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._type_to_spans['tags']) - 1
-        else:
-            self._index = index
+        self._index = len(
+            self._type_to_spans['tags']
+        ) - 1 if index is None else index
         # The following attributes are used for caching.
         string = string if isinstance(string, str) else self.string
         self._cached_string = string

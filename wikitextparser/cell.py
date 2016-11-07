@@ -25,16 +25,12 @@ class Cell(SubWikiText):
     ) -> None:
         """Initialize the object."""
         self._common_init(string, type_to_spans)
-        if type_ is None:
-            self._type = 'cells'
-        else:
-            self._type = type_
+        self._type = 'cells' if type_ is None else type
         if type_to_spans is None:
             self._type_to_spans[self._type] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._type_to_spans['cells']) - 1
-        else:
-            self._index = index
+        self._index = len(
+            self._type_to_spans['cells']
+        ) - 1 if index is None else index
         self._cached_string = (
             string if isinstance(string, str) else self.string
         )

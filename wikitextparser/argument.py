@@ -20,10 +20,7 @@ class Argument(SubWikiText):
     ) -> None:
         """Initialize the object."""
         self._common_init(string, type_to_spans)
-        if type_ is None:
-            self._type = 'arguments'
-        else:
-            self._type = type_
+        self._type = 'arguments' if type_ is None else type_
         if type_to_spans is None:
             self._type_to_spans[self._type] = [(0, len(string))]
         if index is None:
