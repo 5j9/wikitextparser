@@ -21,8 +21,16 @@ class GetData(unittest.TestCase):
 
     def test_each_row_on_a_newline(self):
         table = wtp.Table(
-            '{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-'
-            '\n|Butter\n|Ice cream \n|}'
+            '{|\n'
+            '|Orange\n'
+            '|Apple\n'
+            '|-\n'
+            '|Bread\n'
+            '|Pie\n'
+            '|-\n'
+            '|Butter\n'
+            '|Ice cream \n'
+            '|}'
         )
         self.assertEqual(
             table.getdata(),
@@ -159,12 +167,15 @@ class GetData(unittest.TestCase):
         self.assertEqual(table.getdata(), [])
 
     def test_empty_table_comment_end(self):
-        table = wtp.Table('{|class=wikitable\n<!-- c -->|}')
-        self.assertEqual(table.getdata(), [[]])
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '<!-- c -->|}'
+        )
+        self.assertEqual(table.getdata(), [])
 
     def test_empty_table_semicaption_comment(self):
         table = wtp.Table('{|class=wikitable\n|+\n<!-- c -->|}')
-        self.assertEqual(table.getdata(), [[]])
+        self.assertEqual(table.getdata(), [])
 
     def test_empty_cell(self):
         table = wtp.Table('{|class=wikitable\n||a || || c\n|}')
@@ -175,7 +186,12 @@ class GetData(unittest.TestCase):
         self.assertEqual(table.getdata(), [['a |', 'c']])
 
     def test_meaningless_rowsep(self):
-        table = wtp.Table('{|class=wikitable\n||a || || c\n|-\n|}')
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '||a || || c\n'
+            '|-\n'
+            '|}'
+        )
         self.assertEqual(table.getdata(), [['a', '', 'c']])
 
     def test_template_inside_table(self):
