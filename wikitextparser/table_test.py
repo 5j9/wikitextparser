@@ -352,6 +352,12 @@ class Data(unittest.TestCase):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
         self.assertEqual(table.column_data(1), ['b', 'e', 'h'])
 
+    def test_header_attr_with_exclamation_mark(self):
+        table = wtp.Table(
+            '{|class=wikitable\n! 1 !! a1 ! a2 | 2 || class=a3 ! id=a4 | 3\n|}'
+        )
+        self.assertEqual(table.data(), [['1', '2', '3']])
+
 
 class Caption(unittest.TestCase):
 

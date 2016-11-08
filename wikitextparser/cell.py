@@ -11,31 +11,31 @@ from .tag import ATTR
 NEWLINE_CELL_REGEX = regex.compile(
     r"""
     # only for matching, not searching
-    (?P<whitespace>\s*)
+    \s*
     (?P<sep>[|!](?![+}-]))
     (?:
-      # catch the matching pipe (style holder).
-      \| # immediate closure (attrs='').
-      |
-      (?P<attrs>
-        (?:
-          [^|\n]
-          (?!(?P=sep){2}) # attrs can't contain |; or !! if sep is !
-        )*?
-      )
-      # attribute-data separator
-      \|
-      # not a cell separator (||)
-      (?!\|)
+        # catch the matching pipe (style holder).
+        \| # immediate closure (attrs='').
+        |
+        (?P<attrs>
+            (?:
+                [^|\n]
+                (?!(?P=sep){2}) # attrs end with `|`; or `!!` if sep is `!`
+            )*?
+        )
+        # attribute-data separator
+        \|
+        # not a cell separator (||)
+        (?!\|)
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
     (?=
-      # start of the next cell
-      \n\s*[!|]|
-      \|\||
-      (?P=sep){2}|
-      $
+        # start of the next cell
+        \n\s*[!|]|
+        \|\||
+        (?P=sep){2}|
+        $
     )
     """,
     regex.VERBOSE
@@ -50,9 +50,10 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
         |
         (?P<attrs>
             (?:
-                [^|!\n]
-                (?!!!) # attrs can't contain |; or !! if sep is !
-            )*?
+                [^|\n]
+                # inline header attrs end with `|` (above) or `!!` (below)
+                (?!!!)
+            )*
         )
         (?:
             # attribute-data separator
@@ -70,7 +71,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
         # start of the next cell
         \n\s*[!|]|
         \|\||
-        !|
+        !!|
         $
     )
     """,
@@ -81,15 +82,15 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     r"""
     \|\| # catch the matching pipe (style holder).
     (?:
-      # immediate closure (attrs='').
-      \||
-      (?P<attrs>
-        [^|\n]*? # attrs can't contain |; or !! if sep is !
-      )
-      # attribute-data separator
-      (?:\|)
-      # not cell a separator (||)
-      (?!\|)
+        # immediate closure (attrs='').
+        \||
+        (?P<attrs>
+            [^|\n]*? # non-header attrs end with a `|`
+        )
+        # attribute-data separator
+        \|
+        # not cell a separator (||)
+        (?!\|)
     )
     # optional := the 1st sep is a single ! or |.
     ?
