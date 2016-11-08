@@ -338,7 +338,7 @@ class Data(unittest.TestCase):
             '| d\n'
             '|}'
         )
-        self.assertEqual(table.data(span=True), [
+        self.assertEqual(table.getdata(span=True), [
             ['a', 'b', 'c'],
             ['a', 'b', 'd'],
             ['a', 'b', None],
@@ -346,11 +346,15 @@ class Data(unittest.TestCase):
 
     def test_row_data(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.row_data(1), ['d', 'e', 'f'])
+        self.assertEqual(table.getrdata(1), ['d', 'e', 'f'])
 
     def test_column_data(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.column_data(1), ['b', 'e', 'h'])
+        self.assertEqual(table.getcdata(1), ['b', 'e', 'h'])
+
+    def test_column_and_row_data(self):
+        table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
+        self.assertEqual(table.data(column=1, row=1), 'e')
 
     def test_header_attr_with_exclamation_mark(self):
         table = wtp.Table(

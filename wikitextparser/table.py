@@ -133,47 +133,74 @@ class Table(SubWikiText):
         )
         return self.data(span)
 
-    def data(self, span: bool=True) -> list:
-        """Return a list containing lists of stripped row values.
+    def data(
+        self, span: bool=True,
+        strip: bool= True,
+        row: int=None,
+        column: int=None
+    ) -> list:
+        """Return a list containing lists of row values.
 
         :span: If true, calculate rows according to rowspans and colspans
             attributes. Otherwise ignore them.
+        :row: Return the specified row only. Zero-based index.
+        :column: Return the specified column only. Zero-based index.
 
-        Due to the lots of complications that it may cause, this function
-        won't look inside templates, parser functions, etc.
-
-        See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
-        wikitables can be inserted within templates.
+        Note: Due to the lots of complications that it may cause, this function
+            won't look inside templates, parser functions, etc.
+            See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
+            wikitables can be inserted within templates.
 
         """
-        # Todo: Add a new parameter: strip?
         string, match_table = self._string_match_table
         table_data = []
-        for match_row in match_table:
-            row_data = []
-            table_data.append(row_data)
-            for m in match_row:
-                # Spaces after the first newline can be meaningful
-                row_data.append(
-                    string[m.start('data'):m.end('data')].lstrip(' ').rstrip()
-                )
-        if span and table_data:
-            table_attrs = []
+        if strip:
             for match_row in match_table:
-                row_attrs = []
-                table_attrs.append(row_attrs)
+                row_data = []
+                table_data.append(row_data)
                 for m in match_row:
-                    row_attrs.append(
-                        attrs_parser(string[m.start('attrs'):m.end('attrs')])
-                    )
-            table_data = _apply_attr_spans(table_attrs, table_data, string)
-        return table_data
+                    # Spaces after the first newline can be meaningful
+                    s, e = m.span('data')
+                    row_data.append(string[s:e].lstrip(' ').rstrip())
+        else:
+            for match_row in match_table:
+                row_data = []
+                table_data.append(row_data)
+                for m in match_row:
+                    s, e = m.span('data')
+                    row_data.append(string[s:e])
+        if table_data:
+            if span:
+                table_attrs = []
+                for match_row in match_table:
+                    row_attrs = []
+                    table_attrs.append(row_attrs)
+                    for m in match_row:
+                        row_attrs.append(
+                            attrs_parser(
+                                string[m.start('attrs'):m.end('attrs')]
+                            )
+                        )
+                table_data = _apply_attr_spans(table_attrs, table_data, string)
+        if row is None:
+            if column is None:
+                return table_data
+            return [r[column] for r in table_data]
+        if column is None:
+            return table_data[row]
+        return table_data[row][column]
 
-    def cells(self, span: bool=True) -> list:
+    def cells(
+        self, span: bool=True, row: int=None, column: int=None
+    ) -> list or Cell:
         """Return a list of lists containing Cell objects.
 
-        If span is True, tearrange the result according to colspan and rospan
-        attributes.
+        :span: If is True, rearrange the result according to colspan and rospan
+            attributes.
+        :row: Return the specified row only. Zero-based index.
+        :column: Return the specified column only. Zero-based index.
+
+        If both row and column are provided, return the relevant cell object.
 
         If only need the values inside cells, then use the ``data`` method
         instead.
@@ -222,39 +249,29 @@ class Table(SubWikiText):
                 )
         if table_cells:
             table_cells = _apply_attr_spans(table_attrs, table_cells, string)
-        return table_cells
+        if row is None:
+            if column is None:
+                return table_cells
+            return [r[column] for r in table_cells]
+        if column is None:
+            return table_cells[row]
+        return table_cells[row][column]
 
-    def getrdata(self, span: bool=True):
-        """Use Table.row_data instead."""
+    def getrdata(self, i: int, span: bool=True):
+        """Use Table.data(span, row=i) instead."""
         warnings.warn(
-            'Table.getrdata is deprecated. Use Table.row_data instead.',
+            'Table.getrdata is deprecated. Use data(span, row=i) instead.',
             DeprecationWarning,
         )
-        return self.row_data(span)
+        return self.data(span, row=i)
 
-    def row_data(self, i: int, span: bool=True) -> list:
-        """Return the data in the ith row of the table.
-
-        i is the index and starts from 0.
-
-        """
-        # Todo: Cache self.data?
-        return self.data(span)[i]
-
-    def getcdata(self, span: bool=True):
-        """Use Table.row_data instead."""
+    def getcdata(self, i: int, span: bool=True):
+        """Use Table.data(span, column=i) instead."""
         warnings.warn(
-            'Table.getcdata is deprecated. Use Table.column_data instead.',
+            'Table.getcdata is deprecated. Use data(span, column=i) instead.',
             DeprecationWarning,
         )
-        return self.column_data(span)
-
-    def column_data(self, i: int) -> list:
-        """Return the data in ith column of the table as a list.
-
-        i is the index and starts from 0.
-        """
-        return [r[i] for r in self.data()]
+        return self.data(span, column=i)
 
     @property
     def caption(self) -> str or None:
