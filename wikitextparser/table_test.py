@@ -361,10 +361,18 @@ class Data(unittest.TestCase):
     def test_nonheader_attr_with_exclamation_mark(self):
         table = wtp.Table(
             '{|class=wikitable\n'
-            '| 1 !! 1 ! 1 |||| 1 || a3 ! a4 | 2\n'
+            '| 1 !! 1 ! 1 |||| 3 || a4 ! a4 | 4\n'
             '|}'
         )
-        self.assertEqual(table.data(), [['1 !! 1 ! 1', '', '1', '2']])
+        self.assertEqual(table.data(), [['1 !! 1 ! 1', '', '3', '4']])
+
+    def test_single_exclamation_is_not_attribute_data_separator(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '! 1 !! 2 ! 2 !!!! 4 || a5 ! a5 | 5\n'
+            '|}'
+        )
+        self.assertEqual(table.data(), [['1', '2 ! 2', '', '4', '5']])
 
 
 class Caption(unittest.TestCase):

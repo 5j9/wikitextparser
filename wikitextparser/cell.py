@@ -47,6 +47,8 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
     (?:
         # catch the matching pipe (style holder).
         \| # immediate closure (attrs='').
+        # not a cell separator (||)
+        (?!\|)
         |
         (?P<attrs>
             (?:
@@ -60,9 +62,6 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
             \|
             # make sure that it's not a cell separator (||)
             (?!\|)
-            |
-            # the other attribute-data separator
-            !(?!!)
         )
     )?
     # optional := the 1st sep is a single ! or |.
@@ -84,7 +83,7 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     (?:
         # immediate closure (attrs='').
         \|
-        # not cell a separator (||)
+        # not a cell separator (||)
         (?!\|)
         |
         (?P<attrs>
