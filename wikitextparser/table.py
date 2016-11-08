@@ -289,16 +289,32 @@ class Table(SubWikiText):
             table_cells = _apply_attr_spans(table_attrs, table_cells, string)
         return table_cells
 
-    def getrdata(self, i: int) -> list:
+    def getrdata(self, span: bool=True):
+        """Use Table.row_data instead."""
+        warnings.warn(
+            'Table.getrdata is deprecated. Use Table.row_data instead.',
+            DeprecationWarning,
+        )
+        return self.row_data(span)
+
+    def row_data(self, i: int, span: bool=True) -> list:
         """Return the data in the ith row of the table.
 
         i is the index and starts from 0.
 
         """
         # Todo: Cache self.data?
-        return self.data()[i]
+        return self.data(span)[i]
 
-    def getcdata(self, i: int) -> list:
+    def getcdata(self, span: bool=True):
+        """Use Table.row_data instead."""
+        warnings.warn(
+            'Table.getcdata is deprecated. Use Table.column_data instead.',
+            DeprecationWarning,
+        )
+        return self.column_data(span)
+
+    def column_data(self, i: int) -> list:
         """Return the data in ith column of the table as a list.
 
         i is the index and starts from 0.

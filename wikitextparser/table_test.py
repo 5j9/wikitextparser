@@ -344,23 +344,13 @@ class Data(unittest.TestCase):
             ['a', 'b', None],
         ])
 
-
-class GetRowData(unittest.TestCase):
-
-    """Test the getrdata method of the Table class."""
-
-    def test_second_of_three(self):
+    def test_row_data(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getrdata(1), ['d', 'e', 'f'])
+        self.assertEqual(table.row_data(1), ['d', 'e', 'f'])
 
-
-class GetColData(unittest.TestCase):
-
-    """Test the getcdata method of the Table class."""
-
-    def test_second_of_three(self):
+    def test_column_data(self):
         table = wtp.Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getcdata(1), ['b', 'e', 'h'])
+        self.assertEqual(table.column_data(1), ['b', 'e', 'h'])
 
 
 class Caption(unittest.TestCase):
@@ -437,13 +427,27 @@ class TalbeCells(unittest.TestCase):
             '|| 1 | 1 || a | 2\n'
             '| 3 ||| 4\n'
             '|| 5\n'
-            '! 6 !! 7 !| 8\n'
-            '!| 9 || 0\n'
+            '! 6 !! a | 7\n'
+            '!| 8 || 9\n'
             '|}'
         )
         cells = table.cells()
         self.assertEqual(len(cells), 1)
-        self.assertEqual(len(cells[0]), 10)
+        self.assertEqual(len(cells[0]), 9)
+        cell_string = (
+            '\n|| 1 | 1 ',
+            '|| a | 2',
+            '\n| 3 ',
+            '||| 4',
+            '\n|| 5',
+            '\n! 6 ',
+            '!! a | 7',
+            '\n!| 8 ',
+            '|| 9',
+        )
+        for r in cells:
+            for i, c in enumerate(r):
+                self.assertEqual(c.string, cell_string[i])
 
 if __name__ == '__main__':
     unittest.main()
