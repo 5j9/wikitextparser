@@ -1,104 +1,21 @@
 ﻿"""Define the Table class."""
 
 
-import regex as re
 from html.parser import HTMLParser
 import warnings
 
+import regex
+
 from .wikitext import SubWikiText
-from .cell import Cell
+from .cell import (
+    Cell,
+    NEWLINE_CELL_REGEX,
+    INLINE_HAEDER_CELL_REGEX,
+    INLINE_NONHAEDER_CELL_REGEX
+)
 
 
-# https://regex101.com/r/hB4dX2/17
-NEWLINE_CELL_REGEX = re.compile(
-    r"""
-    # only for matching, not searching
-    (?P<whitespace>\s*)
-    (?P<sep>[|!](?![+}-]))
-    (?:
-      # catch the matching pipe (style holder).
-      \| # immediate closure (attrs='').
-      |
-      (?P<attrs>
-        (?:
-          [^|\n]
-          (?!(?P=sep){2}) # attrs can't contain |; or !! if sep is !
-        )*?
-      )
-      (?:\|)
-      # not a cell separator (||)
-      (?!\|)
-    )?
-    # optional := the 1st sep is a single ! or |.
-    (?P<data>[\s\S]*?)
-    (?=
-      # start of the next cell
-      \n\s*[!|]|
-      \|\||
-      (?P=sep){2}|
-      $
-    )
-    """,
-    re.VERBOSE
-)
-# https://regex101.com/r/qK1pJ8/5
-INLINE_HAEDER_CELL_REGEX = re.compile(
-    r"""
-    [|!]{2}
-    (?:
-      # catch the matching pipe (style holder).
-      \| # immediate closure (attrs='').
-      |
-      (?P<attrs>
-        (?:
-          [^|\n]
-          (?!!!) # attrs can't contain |; or !! if sep is !
-        )*?
-      )
-      (?:\|)
-      # not a cell separator (||)
-      (?!\|)
-    )?
-    # optional := the 1st sep is a single ! or |.
-    (?P<data>[\s\S]*?)
-    (?=
-      # start of the next cell
-      \n\s*[!|]|
-      \|\||
-      !!|
-      $
-    )
-    """,
-    re.VERBOSE
-)
-# https://regex101.com/r/hW8aZ3/7
-INLINE_NONHAEDER_CELL_REGEX = re.compile(
-    r"""
-    \|\| # catch the matching pipe (style holder).
-    (?:
-      # immediate closure (attrs='').
-      \||
-      (?P<attrs>
-        [^|\n]*? # attrs can't contain |; or !! if sep is !
-      )
-      (?:\|)
-      # not cell a separator (||)
-      (?!\|)
-    )
-    # optional := the 1st sep is a single ! or |.
-    ?
-    (?P<data>[\s\S]*?)
-    # start of the next cell
-    (?=
-        \|\||
-        $|
-        \n\s*[!|]
-    )
-    """,
-    re.VERBOSE
-)
-# https://regex101.com/r/tH3pU3/6
-CAPTION_REGEX = re.compile(
+CAPTION_REGEX = regex.compile(
     r"""
     # Everything until the caption line
     (?P<preattrs>
@@ -123,7 +40,7 @@ CAPTION_REGEX = re.compile(
     # End of caption line
     (?:\n|\|\|)
     """,
-    re.VERBOSE
+    regex.VERBOSE
 )
 
 
@@ -156,7 +73,8 @@ class Table(SubWikiText):
         """Return the self-span."""
         return self._type_to_spans['tables'][self._index]
 
-    def _get_spans(self) -> tuple:
+    @property
+    def _string_match_table(self) -> tuple:
         """Return (self.string, match_table)."""
         string = self.string
         shadow = self._shadow()
@@ -207,7 +125,8 @@ class Table(SubWikiText):
     def getdata(self, span: bool=True):
         """Use Table.data instead."""
         warnings.warn(
-            'Table.getdata is deprecated. Use Table.data instead.'
+            'Table.getdata is deprecated. Use Table.data instead.',
+            DeprecationWarning,
         )
         return self.data(span)
 
@@ -225,7 +144,7 @@ class Table(SubWikiText):
 
         """
         # Todo: Add a new parameter: strip?
-        string, match_table = self._get_spans()
+        string, match_table = self._string_match_table
         table_data = []
         for match_row in match_table:
             row_data = []
@@ -257,15 +176,19 @@ class Table(SubWikiText):
         instead.
 
         """
-        string, match_table = self._get_spans()
-        type_ = 'table' + str(self._index) + '_cells'
+        string, match_table = self._string_match_table
+        type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
+        if type_ not in type_to_spans:
+            type_to_spans[type_] = []
+        spans = type_to_spans[type_]
         table_cells = []
         table_attrs = []
         attrs = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
+            header = match_row[0].group('sep') == '!'
             if span:
                 row_attrs = []
                 table_attrs.append(row_attrs)
@@ -275,9 +198,18 @@ class Table(SubWikiText):
                         string[m.start('attrs'):m.end('attrs')]
                     )
                     row_attrs.append(attrs)
+                span = m.span()
+                index = next(
+                    (i for i, s in enumerate(spans) if s == span),
+                    None
+                )
+                if index is None:
+                    index = len(spans)
+                    spans.append(span)
                 row_cells.append(
                     Cell(
                         self._lststr,
+                        header,
                         type_to_spans,
                         index,
                         type_,
@@ -354,6 +286,7 @@ class Table(SubWikiText):
         See [[mw:Help:Tables#Attributes on tables]] for more info.
 
         """
+        # Todo: Use attrs, get, set, etc. and deprecate this function
         return self.string.partition('\n')[0][2:]
 
     @table_attrs.setter
@@ -406,6 +339,7 @@ class AttrsParser(HTMLParser):
         Example:
             >>> AttrsParser().parse('''\t colspan = " 2 " rowspan=\n6 ''')
             [('colspan', ' 2 '), ('rowspan', '6')]
+
         """
         self.feed('<a ' + attrs + '>')
         return dict(self.parsed)

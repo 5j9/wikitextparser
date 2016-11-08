@@ -7,6 +7,103 @@ from .wikitext import SubWikiText
 from .tag import ATTR
 
 
+# https://regex101.com/r/hB4dX2/17
+NEWLINE_CELL_REGEX = regex.compile(
+    r"""
+    # only for matching, not searching
+    (?P<whitespace>\s*)
+    (?P<sep>[|!](?![+}-]))
+    (?:
+      # catch the matching pipe (style holder).
+      \| # immediate closure (attrs='').
+      |
+      (?P<attrs>
+        (?:
+          [^|\n]
+          (?!(?P=sep){2}) # attrs can't contain |; or !! if sep is !
+        )*?
+      )
+      # attribute-data separator
+      \|
+      # not a cell separator (||)
+      (?!\|)
+    )?
+    # optional := the 1st sep is a single ! or |.
+    (?P<data>[\s\S]*?)
+    (?=
+      # start of the next cell
+      \n\s*[!|]|
+      \|\||
+      (?P=sep){2}|
+      $
+    )
+    """,
+    regex.VERBOSE
+)
+# https://regex101.com/r/qK1pJ8/5
+INLINE_HAEDER_CELL_REGEX = regex.compile(
+    r"""
+    [|!]{2}
+    (?:
+        # catch the matching pipe (style holder).
+        \| # immediate closure (attrs='').
+        |
+        (?P<attrs>
+            (?:
+                [^|!\n]
+                (?!!!) # attrs can't contain |; or !! if sep is !
+            )*?
+        )
+        (?:
+            # attribute-data separator
+            \|
+            # make sure that it's not a cell separator (||)
+            (?!\|)
+            |
+            # the other attribute-data separator
+            !(?!!)
+        )
+    )?
+    # optional := the 1st sep is a single ! or |.
+    (?P<data>[\s\S]*?)
+    (?=
+        # start of the next cell
+        \n\s*[!|]|
+        \|\||
+        !|
+        $
+    )
+    """,
+    regex.VERBOSE
+)
+# https://regex101.com/r/hW8aZ3/7
+INLINE_NONHAEDER_CELL_REGEX = regex.compile(
+    r"""
+    \|\| # catch the matching pipe (style holder).
+    (?:
+      # immediate closure (attrs='').
+      \||
+      (?P<attrs>
+        [^|\n]*? # attrs can't contain |; or !! if sep is !
+      )
+      # attribute-data separator
+      (?:\|)
+      # not cell a separator (||)
+      (?!\|)
+    )
+    # optional := the 1st sep is a single ! or |.
+    ?
+    (?P<data>[\s\S]*?)
+    # start of the next cell
+    (?=
+        \|\||
+        $|
+        \n\s*[!|]
+    )
+    """,
+    regex.VERBOSE
+)
+# https://regex101.com/r/tH3pU3/6
 ATTR_REGEX = regex.compile(ATTR, flags=regex.DOTALL | regex.VERBOSE)
 
 
@@ -17,6 +114,7 @@ class Cell(SubWikiText):
     def __init__(
         self,
         string: str or list,
+        header: bool=False,
         type_to_spans: list or None=None,
         index: int or None=None,
         type_: str or None=None,
@@ -25,7 +123,7 @@ class Cell(SubWikiText):
     ) -> None:
         """Initialize the object."""
         self._common_init(string, type_to_spans)
-        self._type = 'cells' if type_ is None else type
+        self._type = 'cells' if type_ is None else type_
         if type_to_spans is None:
             self._type_to_spans[self._type] = [(0, len(string))]
         self._index = len(
@@ -49,24 +147,32 @@ class Cell(SubWikiText):
         return self._type_to_spans[self._type][self._index]
 
     @property
-    def value(self) -> str:
-        """Return cell's value."""
-        match = self._match
-        return match.group('data')
-
-    @value.setter
-    def value(self, new_value: str) -> None:
-        """Assign new_value to self."""
-        raise NotImplementedError
-
-    @property
     def _match(self):
         """Return the match object for the current tag. Cache the result."""
         string = self.string
         if self._cached_match and self._cached_string == string:
             return self._cached_match
-        # Todo: Compute self._cached_match and self._cached_string.
-        ...
+        if string.startswith('\n'):
+            m = NEWLINE_CELL_REGEX.match(string)
+            self.header = m.group('sep') == '!'
+            return m
+        elif self.header:
+            m = INLINE_HAEDER_CELL_REGEX.match(string)
+        else:
+            m = INLINE_NONHAEDER_CELL_REGEX.match(string)
+        self._cached_match = m
+        self._cached_string = string
+        return m
+
+    @property
+    def value(self) -> str:
+        """Return cell's value."""
+        return self._match.group('data')
+
+    @value.setter
+    def value(self, new_value: str) -> None:
+        """Assign new_value to self."""
+        raise NotImplementedError
 
     @property
     def attrs(self) -> dict:
