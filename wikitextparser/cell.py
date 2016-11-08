@@ -14,8 +14,11 @@ NEWLINE_CELL_REGEX = regex.compile(
     \s*
     (?P<sep>[|!](?![+}-]))
     (?:
-        # catch the matching pipe (style holder).
-        \| # immediate closure (attrs='').
+        # catch the matching pipe (attrs limiter)
+        # immediate closure (attrs='')
+        \|
+        # not a cell separator (||)
+        (?!\|)
         |
         (?P<attrs>
             (?:
@@ -31,11 +34,10 @@ NEWLINE_CELL_REGEX = regex.compile(
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
     (?=
-        # start of the next cell
-        \n\s*[!|]|
-        \|\||
+        \|\|| # start of the next inline-cell
+        \n\s*[!|]| # start of the next newline-cell
         (?P=sep){2}|
-        $
+        $ # end of cell-string
     )
     """,
     regex.VERBOSE
@@ -65,12 +67,14 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
         )
     )?
     # optional := the 1st sep is a single ! or |.
-    (?P<data>[\s\S]*?)
+    (?P<data>[^|]*?)
     (?=
-        # start of the next cell
+        # start of the next newline-cell
         \n\s*[!|]|
+        # start of the next inline-cell
         \|\||
         !!|
+        # end of cell-string
         $
     )
     """,
@@ -96,12 +100,13 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     )
     # optional := the 1st sep is a single ! or |.
     ?
-    (?P<data>[\s\S]*?)
-    # start of the next cell
-    (?=
-        \|\||
-        $|
-        \n\s*[!|]
+    (?P<data>
+        [^|]*?
+        (?=
+            \|\|| # start of the next inline-cell
+            \n\s*[!|]| # start of the next newline-cell
+            $ # end of cell-string
+        )
     )
     """,
     regex.VERBOSE

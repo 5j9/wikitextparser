@@ -374,6 +374,14 @@ class Data(unittest.TestCase):
         )
         self.assertEqual(table.data(), [['1', '2 ! 2', '', '4', '5']])
 
+    def test_newline_cell_attr_closure_cant_be_cell_sep(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '||||| 2 ! 2\n'
+            '|}'
+        )
+        self.assertEqual(table.data(), [['', '', '2 ! 2']])
+
 
 class Caption(unittest.TestCase):
 
