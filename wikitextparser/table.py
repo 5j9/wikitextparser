@@ -19,26 +19,29 @@ CAPTION_REGEX = regex.compile(
     r"""
     # Everything until the caption line
     (?P<preattrs>
-      # Start of table
-      {\|
-      (?:
+        # Start of table
+        {\|
         (?:
-          (?!\n\s*\|)
-          [\s\S]
-        )*?
-      )
-      # Start of caption line
-      \n\s*\|\+
+            (?:
+                (?!\n\s*\|)
+                [\s\S]
+            )*?
+        )
+        # Start of caption line
+        \n\s*\|\+
     )
     # Optional caption attrs
     (?:
-      (?P<attrs>[^\n|]*)
-      (?:\|)
-      (?!\|)
+        (?P<attrs>[^\n|]*)
+        (?:\|)
+        (?!\|)
     )?
     (?P<caption>.*?)
     # End of caption line
-    (?:\n|\|\|)
+    (?:
+        \n|
+        \|\|
+    )
     """,
     regex.VERBOSE
 )
@@ -513,10 +516,8 @@ def _row_separator_increase(string: str, pos: int) -> int:
     lsp = _lstrip_increase(string, scp)
     while string.startswith('|-', lsp):
         # We are on a row separator line.
-        nlp = string.find('\n', lsp + 2)
-        if nlp == -1:
-            return pos
-        pos = _semi_caption_increase(string, nlp)
+        pos = string.find('\n', lsp + 2)
+        pos = _semi_caption_increase(string, pos)
         lsp = _lstrip_increase(string, pos)
     return pos
 
