@@ -358,6 +358,14 @@ class Data(unittest.TestCase):
         )
         self.assertEqual(table.data(), [['1', '2', '3']])
 
+    def test_nonheader_attr_with_exclamation_mark(self):
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '| 1 !! 1 ! 1 |||| 1 || a3 ! a4 | 2\n'
+            '|}'
+        )
+        self.assertEqual(table.data(), [['1 !! 1 ! 1', '', '1', '2']])
+
 
 class Caption(unittest.TestCase):
 

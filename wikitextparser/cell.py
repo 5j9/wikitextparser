@@ -83,7 +83,10 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     \|\| # catch the matching pipe (style holder).
     (?:
         # immediate closure (attrs='').
-        \||
+        \|
+        # not cell a separator (||)
+        (?!\|)
+        |
         (?P<attrs>
             [^|\n]*? # non-header attrs end with a `|`
         )
