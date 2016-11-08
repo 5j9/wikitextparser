@@ -24,7 +24,7 @@ NEWLINE_CELL_REGEX = regex.compile(
             (?:
                 [^|\n]
                 (?!(?P=sep){2}) # attrs end with `|`; or `!!` if sep is `!`
-            )*?
+            )*
         )
         # attribute-data separator
         \|
@@ -48,7 +48,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
     [|!]{2}
     (?:
         # catch the matching pipe (style holder).
-        \| # immediate closure (attrs='').
+        \| # immediate closure (attrs='')
         # not a cell separator (||)
         (?!\|)
         |
@@ -188,12 +188,15 @@ class Cell(SubWikiText):
         string = self.string
         if self._cached_attrs is not None and string == self._cached_string:
             return self._cached_attrs
-        match = self._match
-        match = ATTR_REGEX.fullmatch(match.group('attrs'))
+        attrs_group = self._match.group('attrs')
+        if attrs_group:
+            m = ATTR_REGEX.fullmatch(attrs_group)
+            attrs = dict(zip(
+                m.captures('attr_name'), m.captures('attr_value')
+            ))
+        else:
+            attrs = {}
         self._cached_string = string
-        attrs = dict(zip(
-            match.captures('attr_name'), match.captures('attr_value')
-        ))
         self._cached_attrs = attrs
         return attrs
 
