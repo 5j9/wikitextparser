@@ -44,10 +44,10 @@ class Template(SubWikiText):
         arguments = []
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        typeـ = 'ta' + str(self._index)
-        if typeـ not in type_to_spans:
-            type_to_spans[typeـ] = []
-        arg_spans = type_to_spans[typeـ]
+        type_ = 'ta' + str(self._index)
+        if type_ not in type_to_spans:
+            type_to_spans[type_] = []
+        arg_spans = type_to_spans[type_]
         if bar_spans:
             # remove the final '}}' from the last argument.
             bar_spans[-1] = (bar_spans[-1][0], bar_spans[-1][1] - 2)
@@ -61,7 +61,7 @@ class Template(SubWikiText):
                 if index is None:
                     index = len(arg_spans)
                     arg_spans.append(bar_span)
-                arguments.append(Argument(lststr, type_to_spans, index, typeـ))
+                arguments.append(Argument(lststr, type_to_spans, index, type_))
         return arguments
 
     @property
