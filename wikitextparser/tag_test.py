@@ -99,9 +99,9 @@ class Tag(unittest.TestCase):
         t = wtp.Tag('<t n1=v1 n2=v2 n1=\'v3\'>c</t>')
         t.set('n1', 'v4')
         t.set('n2', 'v5')
-        self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=\'v4\'>c</t>')
+        self.assertEqual(t.string, '<t n1=v1 n2="v5" n1="v4">c</t>')
         t.set('id', '1')
-        self.assertEqual(t.string, '<t n1=v1 n2=v5 n1=\'v4\' id="1">c</t>')
+        self.assertEqual(t.string, '<t n1=v1 n2="v5" n1="v4" id="1">c</t>')
         t = wtp.Tag('<t>c</t>')
         t.set('n', '')
 

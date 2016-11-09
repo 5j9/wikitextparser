@@ -162,14 +162,19 @@ class Tag(SubWikiText):
         match = self._match
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
-                start, end = match.spans('attr_value')[-i - 1]
-                self[start:end] = attr_value
+                vs, ve = match.spans('attr_value')[-i - 1]
+                q = 1 if match.string[ve] in '"\'' else 0
+                self[vs - q:ve + q] = '"{}"'.format(
+                    attr_value.replace('"', '&quot;')
+                )
                 return
         # The attr_name is new, add as a new attribute.
+        fmt = ' {}="{}"' if attr_value else ' {}'
         self.insert(
             match.span('start')[1],
-            ' {}="{}"'.format(attr_name, attr_value.replace("'", '&#39;'))
+            fmt.format(attr_name, attr_value.replace('"', '&quot;'))
         )
+        return
 
     def delete(self, attr_name: str) -> None:
         """Delete all the attributes with the given name.
@@ -248,4 +253,3 @@ def attrs_parser(attrs: str, pos=0, endpos=-1) -> dict:
     m = ATTRS_REGEX.fullmatch(attrs, pos=pos, endpos=endpos)
     if m:
         return dict(zip(m.captures('attr_name'), m.captures('attr_value')))
-    return {}
