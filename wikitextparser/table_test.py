@@ -95,6 +95,12 @@ class Data(unittest.TestCase):
             ]
         )
 
+    def test_strip_is_false(self):
+        table = wtp.Table(
+            '{|class=wikitable\n| a || b \n|}'
+        )
+        self.assertEqual(table.data(strip=False), [[' a ', ' b ']])
+
     def test_doublepipe_multiline(self):
         table = wtp.Table(
             '{|\n|| multi\nline\n||\n 1\n|}'
@@ -454,7 +460,6 @@ class TalbeCells(unittest.TestCase):
 
     """Test the cells method of the table."""
 
-
     def test_cell_extraction(self):
         table = wtp.Table(
             '{|class=wikitable\n'
@@ -482,6 +487,13 @@ class TalbeCells(unittest.TestCase):
         for r in cells:
             for i, c in enumerate(r):
                 self.assertEqual(c.string, cell_string[i])
+        # Single cell
+        self.assertEqual(table.cells(row=0, column=4).string, cell_string[4])
+        # Column only
+        self.assertEqual(table.cells(column=4)[0].string, cell_string[4])
+        # Row only
+        self.assertEqual(table.cells(row=0)[4].string, cell_string[4])
+
 
 if __name__ == '__main__':
     unittest.main()
