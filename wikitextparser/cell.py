@@ -55,7 +55,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
         (?P<attrs>
             (?:
                 [^|\n]
-                # inline header attrs end with `|` (above) or `!!` (below)
+                # inline _header attrs end with `|` (above) or `!!` (below)
                 (?!!!)
             )*
         )
@@ -91,7 +91,7 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
         (?!\|)
         |
         (?P<attrs>
-            [^|\n]*? # non-header attrs end with a `|`
+            [^|\n]*? # non-_header attrs end with a `|`
         )
         # attribute-data separator
         \|
@@ -140,6 +140,7 @@ class Cell(SubWikiText):
         self._cached_string = (
             string if isinstance(string, str) else self.string
         )
+        self._header = header
         self._cached_match = match
         self._cached_attrs = attrs if attrs is not None else (
             ATTR_REGEX.fullmatch(match.group('attrs')) if match else None
@@ -162,9 +163,8 @@ class Cell(SubWikiText):
             return self._cached_match
         if string.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(string)
-            self.header = m.group('sep') == '!'
-            return m
-        elif self.header:
+            self._header = m.group('sep') == '!'
+        elif self._header:
             m = INLINE_HAEDER_CELL_REGEX.match(string)
         else:
             m = INLINE_NONHAEDER_CELL_REGEX.match(string)
@@ -180,7 +180,8 @@ class Cell(SubWikiText):
     @value.setter
     def value(self, new_value: str) -> None:
         """Assign new_value to self."""
-        raise NotImplementedError
+        s, e = self._match.span('data')
+        self[s:e] = new_value
 
     @property
     def attrs(self) -> dict:
