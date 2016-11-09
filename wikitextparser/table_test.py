@@ -458,6 +458,12 @@ class Caption(unittest.TestCase):
             ' style="caption-side:bottom; color:#e76700;"'
         )
 
+    def test_changing_cell_should_effect_the_table(self):
+        t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
+        c = t.cells(0, 0)
+        c.set('a', 'b2')
+        self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|c\n|}')
+
 
 class TableAttrs(unittest.TestCase):
 

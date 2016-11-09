@@ -154,9 +154,6 @@ class Cell(SubWikiText):
         self._index = len(
             self._type_to_spans['cells']
         ) - 1 if index is None else index
-        self._cached_string = (
-            string if isinstance(string, str) else self.string
-        )
         self._header = header
         self._cached_match = match
         self._cached_attrs = attrs if attrs is not None else (
@@ -174,9 +171,16 @@ class Cell(SubWikiText):
 
     @property
     def _match(self):
-        """Return the match object for the current tag. Cache the result."""
+        """Return the match object for the current tag. Cache the result.
+
+        Be extra careful when using this property. The position of match
+        may be something other than zero if the match is cached from the
+        parent object (the initial value).
+
+        """
         string = self.string
-        if self._cached_match and self._cached_string == string:
+        cached_match = self._cached_match
+        if cached_match and cached_match.string == string:
             return self._cached_match
         if string.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(string)
@@ -186,7 +190,6 @@ class Cell(SubWikiText):
         else:
             m = INLINE_NONHAEDER_CELL_REGEX.match(string)
         self._cached_match = m
-        self._cached_string = string
         return m
 
     @property
@@ -197,14 +200,19 @@ class Cell(SubWikiText):
     @value.setter
     def value(self, new_value: str) -> None:
         """Assign new_value to self."""
-        s, e = self._match.span('data')
-        self[s:e] = new_value
+        match = self._match
+        s, e = match.span('data')
+        pos = match.start()
+        if pos:
+            self[s - pos:e - pos] = new_value
+        else:
+            self[s:e] = new_value
 
     @property
     def attrs(self) -> dict:
         """Return the attributes of self as a dict."""
         string = self.string
-        if self._cached_attrs is not None and string == self._cached_string:
+        if self._cached_attrs is not None and string == self._cached_match.string:
             return self._cached_attrs
         attrs_group = self._match.group('attrs')
         if attrs_group:
@@ -214,7 +222,6 @@ class Cell(SubWikiText):
             ))
         else:
             attrs = {}
-        self._cached_string = string
         self._cached_attrs = attrs
         return attrs
 
@@ -242,6 +249,7 @@ class Cell(SubWikiText):
 
         """
         cell_match = self._match
+        pos = cell_match.start()
         string = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
@@ -249,13 +257,18 @@ class Cell(SubWikiText):
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
+                    if attrs_start:
+                        # The cached match uses the position of the
+                        # parent object. Adjust it to use the current position.
+                        vs -= pos
+                        ve -= pos
                     q = 1 if attrs_m.string[ve] in '"\'' else 0
                     self[vs - q:ve + q] = '"{}"'.format(
                         attr_value.replace('"', '&quot;')
                     )
                     return
             # We have some attributes, but none of them is attr_name
-            attr_end = cell_match.end('attrs')
+            attr_end = cell_match.end('attrs') - pos
             fmt = '{}="{}" ' if string[attr_end - 1] == ' ' else ' {}="{}"'
             self.insert(
                 attr_end,
@@ -264,10 +277,9 @@ class Cell(SubWikiText):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        string = cell_match.string
         if string.startswith('\n'):
             self.insert(
-                cell_match.start('sep') + 1,
+                cell_match.start('sep') + 1 - pos,
                 fmt.format(attr_name, attr_value.replace('"', '&quot;'))
             )
             return
@@ -286,6 +298,7 @@ class Cell(SubWikiText):
         if attr_name not in self.attrs:
             return
         cell_match = self._match
+        pos = cell_match.start()
         string = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         attrs_m = ATTRS_REGEX.match(string, attrs_start, attrs_end)
@@ -294,4 +307,4 @@ class Cell(SubWikiText):
         for i, capture in enumerate(reversed(attrs_m.captures('attr_name'))):
             if capture == attr_name:
                 start, stop = attrs_m.spans('attr')[-i - 1]
-                del self[start:stop]
+                del self[start - pos:stop - pos]
