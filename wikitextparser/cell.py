@@ -22,63 +22,82 @@ NEWLINE_CELL_REGEX = regex.compile(
         |
         (?P<attrs>
             (?:
-                [^|\n]
-                (?!(?P=sep){2}) # attrs end with `|`; or `!!` if sep is `!`
+                [^\n]
+                (?!
+                    # attrs end with `|`; or `!!` if sep is `!`
+                    (?P=sep){2}|\|\|
+                )
             )*
         )
         # attribute-data separator
         \|
-        # not a cell separator (||)
-        (?!\|)
+        (?!
+            # not a cell separator (||)
+            \||
+            # start of a new cell
+            \!\!
+        )
     )?
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
     (?=
-        \|\|| # start of the next inline-cell
-        \n\s*[!|]| # start of the next newline-cell
+        # start of the next inline-cell
+        \|\||
         (?P=sep){2}|
-        $ # end of cell-string
+        \|!!|
+        # start of the next newline-cell
+        \n\s*[!|]|
+        # end of cell-string
+        $
     )
     """,
     regex.VERBOSE
 )
 # https://regex101.com/r/qK1pJ8/5
+# In header rows, any "!!" is treated as "||".
+# See: https://github.com/wikimedia/mediawiki/blob/
+# 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
 INLINE_HAEDER_CELL_REGEX = regex.compile(
     r"""
-    [|!]{2}
-    (?:
-        # catch the matching pipe (style holder).
-        \| # immediate closure (attrs='')
-        # not a cell separator (||)
-        (?!\|)
+    (?>
+        \|!! # immediate closure
         |
-        (?P<attrs>
-            (?:
-                [^|\n]
-                # inline _header attrs end with `|` (above) or `!!` (below)
-                (?!!!)
-            )*
-        )
+        (?>!{2}|\|{2})
         (?:
-            # attribute-data separator
-            \|
-            # make sure that it's not a cell separator (||)
+            # catch the matching pipe (style holder).
+            \| # immediate closure
+            # not a cell separator (||)
             (?!\|)
-        )
-    )?
+            |
+            (?P<attrs>
+                (?:
+                    # inline header attrs end with `|` (above) or `!!` (below)
+                    (?!!{2})
+                    [^|\n]
+                )*
+            )
+            (?:
+                # attribute-data separator
+                \|
+                # make sure that it's not a cell separator (||)
+                (?!\|)
+            )
+        )?
+    )
     # optional := the 1st sep is a single ! or |.
-    (?P<data>[^|]*?)
+    (?P<data>.*?)
     (?=
         # start of the next newline-cell
         \n\s*[!|]|
         # start of the next inline-cell
         \|\||
         !!|
+        \|!!|
         # end of cell-string
         $
     )
     """,
-    regex.VERBOSE
+    regex.VERBOSE | regex.DOTALL
 )
 # https://regex101.com/r/hW8aZ3/7
 INLINE_NONHAEDER_CELL_REGEX = regex.compile(
@@ -236,13 +255,15 @@ class Cell(SubWikiText):
                     )
                     return
             # We have some attributes, but none of them is attr_name
+            attr_end = cell_match.end('attrs')
+            fmt = '{}="{}" ' if string[attr_end - 1] == ' ' else ' {}="{}"'
             self.insert(
-                cell_match.end('attrs'),
+                attr_end,
                 fmt.format(attr_name, attr_value.replace('"', '&#39;')),
             )
             return
         # There is no attributes span in this cell. Create one.
-        fmt = ' {}="{}" |' if attr_value else ' {}'
+        fmt = ' {}="{}" |' if attr_value else ' {} |'
         string = cell_match.string
         if string.startswith('\n'):
             self.insert(

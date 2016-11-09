@@ -392,6 +392,22 @@ class Data(unittest.TestCase):
         )
         self.assertEqual(table.data(), [['', '', '2 ! 2']])
 
+    def test_attr_delimiter_cant_be_adjacent_to_cell_delimiter(self):
+        """Couldn't find a logical explanation for MW's behaviour."""
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '!a| !!b|c\n'
+            '|}'
+        )
+        self.assertEqual(table.data(), [['', 'c']])
+        # Remove one space and...
+        table = wtp.Table(
+            '{|class=wikitable\n'
+            '!a|!!b|c\n'
+            '|}'
+        )
+        self.assertEqual(table.data(), [['a', 'b|c']])
+
 
 class Caption(unittest.TestCase):
 
