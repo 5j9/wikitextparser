@@ -56,12 +56,11 @@ class TableCell(unittest.TestCase):
         c.set('n', '')
         self.assertEqual(c.string, '!! n | 00')
 
-    @unittest.expectedFailure
     def test_space_or_quote_at_set_boundary(self):
         c = Cell('!!n=v|', True)
         c.set('m', 'w')
         self.assertEqual(c.string, '!!n=v m="w"|')
-        c = Cell('! n=v |', True)
+        c = Cell('!! n=v |', True)
         c.set('m', 'w')
         self.assertEqual(c.string, '!! n=v m="w" |')
 
