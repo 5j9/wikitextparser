@@ -283,4 +283,15 @@ class Cell(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
-        raise NotImplementedError
+        if attr_name not in self.attrs:
+            return
+        cell_match = self._match
+        string = cell_match.string
+        attrs_start, attrs_end = cell_match.span('attrs')
+        attrs_m = ATTRS_REGEX.match(string, attrs_start, attrs_end)
+        # Must be done in reversed order because the spans
+        # change after each deletion.
+        for i, capture in enumerate(reversed(attrs_m.captures('attr_name'))):
+            if capture == attr_name:
+                start, stop = attrs_m.spans('attr')[-i - 1]
+                del self[start:stop]

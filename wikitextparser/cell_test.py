@@ -64,6 +64,16 @@ class TableCell(unittest.TestCase):
         c.set('m', 'w')
         self.assertEqual(c.string, '!! n=v m="w" |')
 
+    def test_delete(self):
+        c = Cell('!!n=v|', True)
+        c.delete('n')
+        self.assertEqual(c.string, '!!|')
+        c = Cell('!!n=v1 m=w n="v2"|', True)
+        c.delete('n')
+        self.assertEqual(c.string, '!!m=w |')
+        # Test removing a non-existing attribute
+        c.delete('n')
+
 
 if __name__ == '__main__':
     unittest.main()
