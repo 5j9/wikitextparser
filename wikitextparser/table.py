@@ -189,7 +189,7 @@ class Table(SubWikiText):
         return table_data[row][column]
 
     def cells(
-        self, span: bool=True, row: int=None, column: int=None
+        self, row: int=None, column: int=None, span: bool=True,
     ) -> list or Cell:
         """Return a list of lists containing Cell objects.
 
@@ -213,6 +213,7 @@ class Table(SubWikiText):
         spans = type_to_spans[type_]
         table_cells = []
         table_attrs = []
+        attrs = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
