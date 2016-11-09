@@ -4,7 +4,7 @@
 import regex
 
 from .wikitext import SubWikiText
-from .tag import ATTR
+from .tag import ATTRS_REGEX
 
 
 # https://regex101.com/r/hB4dX2/17
@@ -111,8 +111,6 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     """,
     regex.VERBOSE
 )
-# https://regex101.com/r/tH3pU3/6
-ATTR_REGEX = regex.compile(ATTR, flags=regex.DOTALL | regex.VERBOSE)
 
 
 class Cell(SubWikiText):
@@ -143,7 +141,7 @@ class Cell(SubWikiText):
         self._header = header
         self._cached_match = match
         self._cached_attrs = attrs if attrs is not None else (
-            ATTR_REGEX.fullmatch(match.group('attrs')) if match else None
+            ATTRS_REGEX.fullmatch(match.group('attrs')) if match else None
         )
 
     def __repr__(self) -> str:
@@ -191,7 +189,7 @@ class Cell(SubWikiText):
             return self._cached_attrs
         attrs_group = self._match.group('attrs')
         if attrs_group:
-            m = ATTR_REGEX.fullmatch(attrs_group)
+            m = ATTRS_REGEX.fullmatch(attrs_group)
             attrs = dict(zip(
                 m.captures('attr_name'), m.captures('attr_value')
             ))

@@ -7,6 +7,7 @@ import warnings
 import regex
 
 from .wikitext import SubWikiText
+from .tag import attrs_parser
 from .cell import (
     Cell,
     NEWLINE_CELL_REGEX,
@@ -176,11 +177,8 @@ class Table(SubWikiText):
                     row_attrs = []
                     table_attrs.append(row_attrs)
                     for m in match_row:
-                        row_attrs.append(
-                            attrs_parser(
-                                string[m.start('attrs'):m.end('attrs')]
-                            )
-                        )
+                        s, e = m.span('attrs')
+                        row_attrs.append(attrs_parser(string, s, e))
                 table_data = _apply_attr_spans(table_attrs, table_data, string)
         if row is None:
             if column is None:
@@ -214,7 +212,6 @@ class Table(SubWikiText):
         spans = type_to_spans[type_]
         table_cells = []
         table_attrs = []
-        attrs = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
@@ -224,9 +221,8 @@ class Table(SubWikiText):
                 table_attrs.append(row_attrs)
             for m in match_row:
                 if span:
-                    attrs = attrs_parser(
-                        string[m.start('attrs'):m.end('attrs')]
-                    )
+                    s, e = m.span('attrs')
+                    attrs = attrs_parser(string, s, e)
                     row_attrs.append(attrs)
                 span = m.span()
                 index = next(
@@ -336,33 +332,6 @@ class Table(SubWikiText):
             oldattrs = m.group('attrs') or ''
             # Caption and attrs or Caption but no attrs
             self[len(preattrs):len(preattrs + oldattrs)] = attrs
-
-
-class AttrsParser(HTMLParser):
-
-    """Define the class to construct the attrs_parser instance from it."""
-
-    def handle_starttag(self, tag: str, attrs: list) -> None:
-        """Store parsed attrs in self.parsed and then self.reset().
-
-        The `tag` argument is the name of the tag converted to lower case.
-        The `attrs` argument is a list of (name, value) pairs containing the
-            attributes found inside the tag’s <> brackets.
-
-        """
-        self.parsed = attrs
-        self.reset()
-
-    def parse(self, attrs: str) -> dict:
-        """Return a dict of parsed name and value pairs.
-
-        Example:
-            >>> AttrsParser().parse('''\t colspan = " 2 " rowspan=\n6 ''')
-            [('colspan', ' 2 '), ('rowspan', '6')]
-
-        """
-        self.feed('<a ' + attrs + '>')
-        return dict(self.parsed)
 
 
 def _apply_attr_spans(
@@ -537,6 +506,3 @@ def _row_separator_increase(string: str, pos: int) -> int:
         pos = _semi_caption_increase(string, pos)
         lsp = _lstrip_increase(string, pos)
     return pos
-
-
-attrs_parser = AttrsParser().parse

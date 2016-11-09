@@ -40,6 +40,11 @@ ATTR_VAL = (
 ).format(**locals())
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTR = r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
+ATTRS_REGEX = regex.compile(
+    # Leading space is not required at the start of the attribute string.
+    r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'.format(**locals()),
+    flags=regex.VERBOSE
+)
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
 #     'link', 'meta', 'param', 'source', 'track', 'wbr'
@@ -150,9 +155,8 @@ class Tag(SubWikiText):
         """Set the value for the given attribute name.
 
         If there are already multiple attributes with the given name, only
-        get the value for the last one.
-        If attr_value == '', use the empty attribute syntax. According to the
-        standard the value for such attributes is implicitly the empty string.
+        set the value for the last one.
+        If attr_value == '', use the implicit empty attribute syntax.
 
         """
         match = self._match
@@ -237,3 +241,11 @@ class Tag(SubWikiText):
         swt_spans = spans.setdefault('subwikitext', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
         return SubWikiText(self._lststr, spans, index)
+
+
+def attrs_parser(attrs: str, pos=0, endpos=-1) -> dict:
+    """Return a dict of attribute names and values."""
+    m = ATTRS_REGEX.fullmatch(attrs, pos=pos, endpos=endpos)
+    if m:
+        return dict(zip(m.captures('attr_name'), m.captures('attr_value')))
+    return {}
