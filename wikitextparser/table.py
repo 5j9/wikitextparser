@@ -204,6 +204,7 @@ class Table(SubWikiText):
         instead.
 
         """
+        ss = self._span[0]
         string, match_table = self._string_match_table
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
@@ -224,7 +225,8 @@ class Table(SubWikiText):
                     s, e = m.span('attrs')
                     attrs = attrs_parser(string, s, e)
                     row_attrs.append(attrs)
-                span = m.span()
+                ms, me = m.span()
+                span = (ss + ms, ss + me)
                 index = next(
                     (i for i, s in enumerate(spans) if s == span),
                     None

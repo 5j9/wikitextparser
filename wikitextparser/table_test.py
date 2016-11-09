@@ -510,6 +510,12 @@ class TalbeCells(unittest.TestCase):
         # Row only
         self.assertEqual(table.cells(row=0)[4].string, cell_string[4])
 
+    def test_cell_spans(self):
+        table = wtp.parse(
+            '<!-- c -->{|class=wikitable\n| a \n|}'
+        ).tables[0]
+        self.assertEqual(table.cells(row=0, column=0).value, ' a ')
+
 
 if __name__ == '__main__':
     unittest.main()
