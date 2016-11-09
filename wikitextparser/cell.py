@@ -141,7 +141,7 @@ class Cell(SubWikiText):
         self._header = header
         self._cached_match = match
         self._cached_attrs = attrs if attrs is not None else (
-            ATTRS_REGEX.fullmatch(match.group('attrs')) if match else None
+            ATTRS_REGEX.match(match.group('attrs')) if match else None
         )
 
     def __repr__(self) -> str:
@@ -189,7 +189,7 @@ class Cell(SubWikiText):
             return self._cached_attrs
         attrs_group = self._match.group('attrs')
         if attrs_group:
-            m = ATTRS_REGEX.fullmatch(attrs_group)
+            m = ATTRS_REGEX.match(attrs_group)
             attrs = dict(zip(
                 m.captures('attr_name'), m.captures('attr_value')
             ))
@@ -218,12 +218,43 @@ class Cell(SubWikiText):
         """Set the value for the given attribute name.
 
         If there are already multiple attributes with that name, only
-        get the value for the last one.
-        If attr_value == '', use the empty attribute syntax. According to the
-        standard the value for such attributes is implicitly the empty string.
+        set the value for the last one.
+        If attr_value == '', use the implicit empty attribute syntax.
 
         """
-        raise NotImplementedError
+        cell_match = self._match
+        string = cell_match.string
+        attrs_start, attrs_end = cell_match.span('attrs')
+        if attrs_start != -1:
+            attrs_m = ATTRS_REGEX.match(string, attrs_start, attrs_end)
+            for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
+                if n == attr_name:
+                    vs, ve = attrs_m.spans('attr_value')[-i - 1]
+                    q = 1 if attrs_m.string[ve] in '"\'' else 0
+                    self[vs - q:ve + q] = '"{}"'.format(
+                        attr_value.replace('"', '&quot;')
+                    )
+                    return
+            # We have some attributes, but none of them is attr_name
+            self.insert(
+                cell_match.end('attrs'),
+                fmt.format(attr_name, attr_value.replace('"', '&#39;')),
+            )
+            return
+        # There is no attributes span in this cell. Create one.
+        fmt = ' {}="{}" |' if attr_value else ' {}'
+        string = cell_match.string
+        if string.startswith('\n'):
+            self.insert(
+                cell_match.start('sep') + 1,
+                fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+            )
+            return
+        # An inline cell
+        self.insert(
+            2, fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+        )
+        return
 
     def delete(self, attr_name: str) -> None:
         """Delete all the attributes with the given name.
