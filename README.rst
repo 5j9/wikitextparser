@@ -164,7 +164,26 @@ And values are rearranged according to colspan and rowspan attributes (by defaul
     >>> t.data(span=True)
     [['a', 'b', 'c'], ['d', 'd', 'e']]
 
-Have a look at the test modules for more details and probable pitfalls.
+By calling the ``cells`` method of a ``Table``, you can access table cells as ``Cell`` objects which provide methods for getting or setting each cell's attributes and values individually.
+
+.. code:: python
+
+    >>> cell = t.cells(row=1, column=1)
+    >>> cell.attrs
+    {'colspan': '2'}
+    >>> cell.set('colspan', '3')
+    >>> print(t.string)
+    {| class="wikitable sortable"
+    |-
+    ! a !! b !! c
+    |-
+    !colspan = "3" | d || e
+    |-
+    |}
+
+Cell (and Tag) instances have `get`, `set`, `has`, and  `delete` methods to access their attributes.
+
+Have a look at the test modules for more examples and probable pitfalls.
 
 Compared with mwparserfromhell
 ==============================
@@ -178,6 +197,11 @@ But if you need to
 
 then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under development and the API may change drastically in the future versions.
 
-Of-course `wikitextparser` has its own unique features, too. Extracting wikitables data as Python lists, pretty-printing templates, and a few other advanced functions. Adding some of the above features are planned for the future...
+Adding some of the features above is planned for the future...
 
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C . I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete parse tree, instead tries to figure things out as the user requests for them. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+Of-course `wikitextparser` has its own unique features, too. Accessing to individual cells of each table, pretty-printing templates, and a few other advanced functions.
+
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete
+parse tree, instead tries to figure things out as the user requests for them.
+However if you are working with on-line data, any difference is usually
+negligible as the main bottleneck will be the network latency.
