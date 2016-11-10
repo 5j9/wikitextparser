@@ -519,12 +519,14 @@ class Cells(unittest.TestCase):
     def test_changing_cell_should_effect_the_table(self):
         t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
         c = t.cells(0, 0)
+        c.value = 'v'
+        self.assertEqual(c.value, 'v')
         c.set('a', 'b2')
-        self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|c\n|}')
+        self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|v\n|}')
         c.delete('a')
-        self.assertEqual(t.string, '{|class=wikitable\n||c\n|}')
+        self.assertEqual(t.string, '{|class=wikitable\n||v\n|}')
         c.set('c', 'd')
-        self.assertEqual(t.string, '{|class=wikitable\n| c="d"|c\n|}')
+        self.assertEqual(t.string, '{|class=wikitable\n| c="d"|v\n|}')
 
 
 if __name__ == '__main__':

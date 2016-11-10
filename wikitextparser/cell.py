@@ -184,7 +184,7 @@ class Cell(SubWikiText):
         """
         string = self.string
         cached_match = self._cached_match
-        if cached_match and cached_match.string == string:
+        if cached_match and cached_match.group() == string:
             return self._cached_match
         if string.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(string)
@@ -216,7 +216,10 @@ class Cell(SubWikiText):
     def attrs(self) -> dict:
         """Return the attributes of self as a dict."""
         string = self.string
-        if self._cached_attrs is not None and string == self._cached_match.string:
+        if (
+            self._cached_attrs is not None and
+            string == self._cached_match.group()
+        ):
             return self._cached_attrs
         attrs_group = self._match.group('attrs')
         if attrs_group:
