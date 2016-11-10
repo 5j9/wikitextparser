@@ -15,7 +15,8 @@ NEWLINE_CELL_REGEX = regex.compile(
     (?P<sep>[|!](?![+}-]))
     (?:
         # catch the matching pipe (attrs limiter)
-        # immediate closure (attrs='')
+        # immediate closure
+        (?P<attrs>)
         \|
         # not a cell separator (||)
         (?!\|)
@@ -60,12 +61,14 @@ NEWLINE_CELL_REGEX = regex.compile(
 INLINE_HAEDER_CELL_REGEX = regex.compile(
     r"""
     (?>
-        \|!! # immediate closure
+        \|!(?P<attrs>)! # immediate closure
         |
         (?>!{2}|\|{2})
         (?:
             # catch the matching pipe (style holder).
-            \| # immediate closure
+            # immediate closure
+            (?P<attrs>)
+            \|
             # not a cell separator (||)
             (?!\|)
             |
@@ -104,7 +107,8 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     r"""
     \|\| # catch the matching pipe (style holder).
     (?:
-        # immediate closure (attrs='').
+        # immediate closure
+        (?P<attrs>)
         \|
         # not a cell separator (||)
         (?!\|)
@@ -257,13 +261,8 @@ class Cell(SubWikiText):
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
-                    if attrs_start:
-                        # The cached match uses the position of the
-                        # parent object. Adjust it to use the current position.
-                        vs -= pos
-                        ve -= pos
                     q = 1 if attrs_m.string[ve] in '"\'' else 0
-                    self[vs - q:ve + q] = '"{}"'.format(
+                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(
                         attr_value.replace('"', '&quot;')
                     )
                     return

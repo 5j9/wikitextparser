@@ -458,12 +458,6 @@ class Caption(unittest.TestCase):
             ' style="caption-side:bottom; color:#e76700;"'
         )
 
-    def test_changing_cell_should_effect_the_table(self):
-        t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
-        c = t.cells(0, 0)
-        c.set('a', 'b2')
-        self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|c\n|}')
-
 
 class TableAttrs(unittest.TestCase):
 
@@ -478,7 +472,7 @@ class TableAttrs(unittest.TestCase):
         )
 
 
-class TalbeCells(unittest.TestCase):
+class Cells(unittest.TestCase):
 
     """Test the cells method of the table."""
 
@@ -521,6 +515,16 @@ class TalbeCells(unittest.TestCase):
             '<!-- c -->{|class=wikitable\n| a \n|}'
         ).tables[0]
         self.assertEqual(table.cells(row=0, column=0).value, ' a ')
+
+    def test_changing_cell_should_effect_the_table(self):
+        t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
+        c = t.cells(0, 0)
+        c.set('a', 'b2')
+        self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|c\n|}')
+        c.delete('a')
+        self.assertEqual(t.string, '{|class=wikitable\n||c\n|}')
+        c.set('c', 'd')
+        self.assertEqual(t.string, '{|class=wikitable\n| c="d"|c\n|}')
 
 
 if __name__ == '__main__':
