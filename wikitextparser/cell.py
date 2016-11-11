@@ -182,17 +182,17 @@ class Cell(SubWikiText):
         parent object (the initial value).
 
         """
-        string = self._shadow()
+        shadow = self._shadow
         cached_match = self._cached_match
-        if cached_match and cached_match.group() == string:
+        if cached_match and cached_match.group() == shadow:
             return self._cached_match
-        if string.startswith('\n'):
-            m = NEWLINE_CELL_REGEX.match(string)
+        if shadow.startswith('\n'):
+            m = NEWLINE_CELL_REGEX.match(shadow)
             self._header = m.group('sep') == '!'
         elif self._header:
-            m = INLINE_HAEDER_CELL_REGEX.match(string)
+            m = INLINE_HAEDER_CELL_REGEX.match(shadow)
         else:
-            m = INLINE_NONHAEDER_CELL_REGEX.match(string)
+            m = INLINE_NONHAEDER_CELL_REGEX.match(shadow)
         self._cached_match = m
         return m
 

@@ -442,6 +442,7 @@ class WikiText:
                 level += 1
         return level
 
+    @property
     def _shadow(self) -> str:
         """Return a copy of self.string with specified subspans replaced.
 
@@ -877,7 +878,7 @@ class WikiText:
         tables = []
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        shadow = self._shadow()
+        shadow = self._shadow
         ss, se = self._span
         if 'tables' not in type_to_spans:
             # All the added spans will be new.

@@ -81,7 +81,7 @@ class Table(SubWikiText):
     def _string_match_table(self) -> tuple:
         """Return (self.string, match_table)."""
         string = self.string
-        shadow = self._shadow()
+        shadow = self._shadow
         # Remove table-start and table-end marks.
         pos = shadow.find('\n')
         lsp = _lstrip_increase(shadow, pos)
