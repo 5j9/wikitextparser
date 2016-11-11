@@ -3,7 +3,7 @@
 
 import unittest
 
-from wikitextparser.table import Cell
+from wikitextparser.table import Table, Cell
 
 
 class TableCell(unittest.TestCase):
@@ -73,6 +73,16 @@ class TableCell(unittest.TestCase):
         self.assertEqual(c.string, '!!m=w |')
         # Test removing a non-existing attribute
         c.delete('n')
+
+    def test_update_match_from_shadow(self):
+        t = Table('{|class=wikitable\n|{{text|s}}\n|}')
+        c = t.cells(0, 0)
+        self.assertEqual(c.value, '{{text|s}}')
+        t = c.templates[0]
+        t.arguments[0].value = 't'
+        self.assertEqual(c.value, '{{text|t}}')
+
+
 
 
 if __name__ == '__main__':

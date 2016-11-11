@@ -182,7 +182,7 @@ class Cell(SubWikiText):
         parent object (the initial value).
 
         """
-        string = self.string
+        string = self._shadow()
         cached_match = self._cached_match
         if cached_match and cached_match.group() == string:
             return self._cached_match
@@ -199,7 +199,10 @@ class Cell(SubWikiText):
     @property
     def value(self) -> str:
         """Return cell's value."""
-        return self._match.group('data')
+        m = self._match
+        pos = m.start()
+        s, e = m.span('data')
+        return self[s - pos:e - pos]
 
     @value.setter
     def value(self, new_value: str) -> None:
