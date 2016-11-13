@@ -160,6 +160,7 @@ class Cell(SubWikiText):
         ) - 1 if index is None else index
         self._header = header
         self._cached_match = match
+        self._cached_string = self.string if match else None
         self._cached_attrs = attrs if attrs is not None else (
             ATTRS_REGEX.match(match.group('attrs')) if match else None
         )
@@ -182,10 +183,12 @@ class Cell(SubWikiText):
         parent object (the initial value).
 
         """
-        shadow = self._shadow
+        cached_string = self._cached_string
         cached_match = self._cached_match
-        if cached_match and cached_match.group() == shadow:
+        string = self.string
+        if cached_match and cached_string == string:
             return self._cached_match
+        shadow = self._shadow
         if shadow.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(shadow)
             self._header = m.group('sep') == '!'
@@ -194,6 +197,7 @@ class Cell(SubWikiText):
         else:
             m = INLINE_NONHAEDER_CELL_REGEX.match(shadow)
         self._cached_match = m
+        self._cached_string = string
         return m
 
     @property
@@ -219,11 +223,9 @@ class Cell(SubWikiText):
     def attrs(self) -> dict:
         """Return the attributes of self as a dict."""
         string = self.string
-        if (
-            self._cached_attrs is not None and
-            string == self._cached_match.group()
-        ):
-            return self._cached_attrs
+        cached_attrs = self._cached_attrs
+        if cached_attrs is not None and self._cached_string == string:
+            return cached_attrs
         attrs_group = self._match.group('attrs')
         if attrs_group:
             m = ATTRS_REGEX.match(attrs_group)
@@ -260,10 +262,10 @@ class Cell(SubWikiText):
         """
         cell_match = self._match
         pos = cell_match.start()
-        string = cell_match.string
+        shadow = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
-            attrs_m = ATTRS_REGEX.match(string, attrs_start, attrs_end)
+            attrs_m = ATTRS_REGEX.match(shadow, attrs_start, attrs_end)
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
@@ -274,7 +276,7 @@ class Cell(SubWikiText):
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs') - pos
-            fmt = '{}="{}" ' if string[attr_end - 1] == ' ' else ' {}="{}"'
+            fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
             self.insert(
                 attr_end,
                 fmt.format(attr_name, attr_value.replace('"', '&#39;')),
@@ -282,7 +284,7 @@ class Cell(SubWikiText):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if string.startswith('\n'):
+        if shadow.startswith('\n'):
             self.insert(
                 cell_match.start('sep') + 1 - pos,
                 fmt.format(attr_name, attr_value.replace('"', '&quot;'))
@@ -304,9 +306,9 @@ class Cell(SubWikiText):
             return
         cell_match = self._match
         pos = cell_match.start()
-        string = cell_match.string
+        shadow = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
-        attrs_m = ATTRS_REGEX.match(string, attrs_start, attrs_end)
+        attrs_m = ATTRS_REGEX.match(shadow, attrs_start, attrs_end)
         # Must be done in reversed order because the spans
         # change after each deletion.
         for i, capture in enumerate(reversed(attrs_m.captures('attr_name'))):
