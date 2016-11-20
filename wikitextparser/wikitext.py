@@ -304,7 +304,7 @@ class WikiText:
     ):
         """Return a function that can tell if an index is in atomic subspans.
 
-        Atomic subspans are those which are parsed seperately. They currently
+        Atomic sub-spans are those which are parsed separately. They currently
         include the following:
             (
                 'templates', 'parameters', 'functions',
