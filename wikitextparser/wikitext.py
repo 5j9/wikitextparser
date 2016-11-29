@@ -1,4 +1,4 @@
-﻿"""Define the Wikitext and _Indexed_WikiText classes."""
+﻿"""Define the Wikitext and SubWikiText classes."""
 
 
 import re
