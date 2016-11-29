@@ -94,13 +94,11 @@ class Tag(SubWikiText):
 
     """Create a new Tag object."""
 
-    _type = 'tags'
-
     def __init__(
         self,
         string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
+        _type_to_spans: list or None=None,
+        _index: int or None=None,
         match=None,
     ) -> None:
         """Initialize the Tag object.
@@ -108,12 +106,7 @@ class Tag(SubWikiText):
         Run _common_init and set _type_to_spans['extlinks'].
 
         """
-        self._common_init(string, type_to_spans)
-        if type_to_spans is None:
-            self._type_to_spans['tags'] = [(0, len(string))]
-        self._index = len(
-            self._type_to_spans['tags']
-        ) - 1 if index is None else index
+        super().__init__(string, _type_to_spans, _index, 'Tag')
         self._cached_match = TAG_REGEX.fullmatch(string)
 
     @property

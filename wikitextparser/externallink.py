@@ -8,22 +8,6 @@ class ExternalLink(SubWikiText):
 
     """Create a new ExternalLink object."""
 
-    _type = 'ExternalLink'
-
-    def __init__(
-        self,
-        string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
-    ) -> None:
-        """Run _common_init and set _type_to_spans['extlinks']."""
-        self._common_init(string, type_to_spans)
-        if type_to_spans is None:
-            self._type_to_spans['ExternalLink'] = [(0, len(string))]
-        self._index = len(
-            self._type_to_spans['ExternalLink']
-        ) - 1 if index is None else index
-
     @property
     def url(self) -> str:
         """Return the url part of the ExternalLink."""

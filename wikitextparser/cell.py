@@ -144,21 +144,14 @@ class Cell(SubWikiText):
         self,
         string: str or list,
         header: bool=False,
-        type_to_spans: list or None=None,
-        index: int or None=None,
-        type_: str or None=None,
+        _type_to_spans: list or None=None,
+        _index: int or None=None,
+        _type: str or None=None,
         match=None,
         attrs: dict or None=None,
     ) -> None:
         """Initialize the object."""
-        self._common_init(string, type_to_spans)
-        type_ = 'cells' if type_ is None else type_
-        self._type = type_
-        if type_to_spans is None:
-            self._type_to_spans[type_] = [(0, len(string))]
-        self._index = len(
-            self._type_to_spans[type_]
-        ) - 1 if index is None else index
+        super().__init__(string, _type_to_spans, _index, _type)
         self._header = header
         self._cached_match = match
         self._cached_string = self.string if match else None

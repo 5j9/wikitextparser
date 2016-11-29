@@ -16,20 +16,6 @@ class Template(SubWikiText):
 
     """
 
-    _type = 'Template'
-
-    def __init__(
-        self,
-        string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
-    ) -> None:
-        """Initialize the object."""
-        self._common_init(string, type_to_spans)
-        self._index = len(
-            self._type_to_spans['Template']
-        ) - 1 if index is None else index
-
     @property
     def arguments(self) -> list:
         """Parse template content. Create self.name and self.arguments."""

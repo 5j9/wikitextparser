@@ -8,20 +8,6 @@ class WikiLink(SubWikiText):
 
     """Create a new WikiLink object."""
 
-    _type = 'WikiLink'
-
-    def __init__(
-        self,
-        string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
-    ) -> None:
-        """Initialize the object."""
-        self._common_init(string, type_to_spans)
-        self._index = len(
-            self._type_to_spans['WikiLink']
-        ) - 1 if index is None else index
-
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""

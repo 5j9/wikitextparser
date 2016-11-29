@@ -54,22 +54,6 @@ class Table(SubWikiText):
     # Todo: Define has, get, set, and delete methods.
     # They should provide the same API as in Tag and Cell classes.
 
-    _type = 'tables'
-
-    def __init__(
-        self,
-        string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
-    ) -> None:
-        """Run _common_init and set _type_to_spans['tables']."""
-        self._common_init(string, type_to_spans)
-        if type_to_spans is None:
-            self._type_to_spans['tables'] = [(0, len(string))]
-        self._index = len(
-            self._type_to_spans['tables']
-        ) - 1 if index is None else index
-
     @property
     def _string_match_table(self) -> tuple:
         """Return (self.string, match_table)."""

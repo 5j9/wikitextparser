@@ -70,11 +70,24 @@ class WikiText:
 
     def __init__(
             self,
-            string: str,
-            type_to_spans: list or None=None,
+            string: str or list,
+            _type_to_spans: list or None=None,
     ) -> None:
-        """Initialize the object."""
-        self._common_init(string, type_to_spans)
+        """Initialize the object.
+
+        Set the initial values for self._lststr, self._type_to_spans.
+
+        Parameters:
+        - lststr: The raw string of the object to be parsed or a list pointing
+            to the mother string of the parent object.
+        - _type_to_spans: If the lststr is already parsed, pass its
+            _type_to_spans property as _type_to_spans to avoid parsing it again.
+
+        """
+        self._lststr = string if isinstance(string, list) else [string]
+        self._type_to_spans = (
+            _type_to_spans if _type_to_spans else parse_to_spans(self._lststr[0])
+        )
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -469,23 +482,6 @@ class WikiText:
                 )
         return shadow
 
-    def _common_init(self, lststr: str or list, type_to_spans: list) -> None:
-        """Do the common initializations required for subclasses of WikiText.
-
-        Set the initial values and self._lststr, self._type_to_spans.
-
-        Parameters:
-        :lststr: The raw string of the object to be parsed or a list pointing
-            to the mother string of the parent object.
-        :type_to_spans: If the lststr is already parsed, pass its
-            _type_to_spans property as type_to_spans to avoid parsing it again.
-
-        """
-        self._lststr = lststr if isinstance(lststr, list) else [lststr]
-        self._type_to_spans = (
-            type_to_spans if type_to_spans else parse_to_spans(self._lststr[0])
-        )
-
     def _pp_type_to_spans(self) -> str:
         """Create the arguments for the parse function used in pprint method.
 
@@ -805,9 +801,9 @@ class WikiText:
         lststr = self._lststr
         ss, se = self._span
         selfstring = self.string
-        if 'sections' not in type_to_spans:
+        if 'Section' not in type_to_spans:
             # All the added spans will be new.
-            spans = type_to_spans['sections'] = []
+            spans = type_to_spans['Section'] = []
             # Lead section
             mspan = LEAD_SECTION_REGEX.match(selfstring).span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
@@ -836,7 +832,7 @@ class WikiText:
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        spans = type_to_spans['sections']
+        spans = type_to_spans['Section']
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
         # Lead section
@@ -880,9 +876,9 @@ class WikiText:
         lststr = self._lststr
         shadow = self._shadow
         ss, se = self._span
-        if 'tables' not in type_to_spans:
+        if 'Table' not in type_to_spans:
             # All the added spans will be new.
-            spans = type_to_spans['tables'] = []
+            spans = type_to_spans['Table'] = []
             index = 0
             m = True
             while m:
@@ -898,7 +894,7 @@ class WikiText:
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
-        spans = type_to_spans['tables']
+        spans = type_to_spans['Table']
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
         m = True
@@ -926,13 +922,12 @@ class SubWikiText(WikiText):
 
     """
 
-    _type = 'SubWikiText'
-
     def __init__(
         self,
         string: str or list,
-        type_to_spans: list,
-        index: int,
+        _type_to_spans: list or None=None,
+        _index: int=None,
+        _type: str or None=None,
     ) -> None:
         """Initialize the object.
 
@@ -940,16 +935,31 @@ class SubWikiText(WikiText):
         Set self._index
 
         """
-        self._common_init(string, type_to_spans)
-        # SubWikiText is not used directly so we don't need the following:
-        # if index is None:
-        #     self._index = len(self._type_to_spans['SubWikiText']) - 1
-        self._index = index
+        _type = _type or self.__class__.__name__
+        self._type = _type
 
-    def _gen_subspan_indices(self, type_: str or None=None):
+        super().__init__(string, _type_to_spans)
+
+        # Note: _type_to_spans and _index are either both None or not None.
+        if _type_to_spans is None and _type not in {
+            'Parameter',
+            'ParserFunction',
+            'Template',
+            'WikiLink',
+            'Comment',
+            'ExtTag',
+        }:
+            self._type_to_spans[_type] = [(0, len(string))]
+            self._index = 0
+        else:
+            self._index = len(
+                self._type_to_spans[_type]
+            ) - 1 if _index is None else _index
+
+    def _gen_subspan_indices(self, _type: str or None=None):
         """Yield all the subspan indices excluding self._span."""
         s, e = self._span
-        for i, (ss, ee) in enumerate(self._type_to_spans[type_]):
+        for i, (ss, ee) in enumerate(self._type_to_spans[_type]):
             # Do not yield self._span.
             if s < ss and ee <= e:
                 yield i

@@ -14,21 +14,6 @@ class Argument(SubWikiText):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
-    def __init__(
-        self, string: str or list, type_to_spans: list or None=None,
-        index: int or None=None, type_: str or None=None
-    ) -> None:
-        """Initialize the object."""
-        self._common_init(string, type_to_spans)
-        type_ = 'arguments' if type_ is None else type_
-        self._type = type_
-        if type_to_spans is None:
-            self._type_to_spans[type_] = [(0, len(string))]
-        if index is None:
-            self._index = len(self._type_to_spans[type_]) - 1
-        else:
-            self._index = index
-
     @property
     def name(self) -> str:
         """Return argument's name.

@@ -16,21 +16,22 @@ class Section(WikiText):
     def __init__(
         self,
         string: str or list,
-        type_to_spans: list or None=None,
-        index: int or None=None,
+        _type_to_spans: list or None=None,
+        _index: int or None=None,
     ) -> None:
-        """Initialize the object."""
-        self._common_init(string, type_to_spans)
-        if type_to_spans is None:
-            self._type_to_spans['sections'] = [(0, len(string))]
-        self._index = len(
-            self._type_to_spans['sections']
-        ) - 1 if index is None else index
+        """Initialize the Table object."""
+        super().__init__(string, _type_to_spans)
+        self._type = 'Section'
+        if _type_to_spans is None:
+            self._type_to_spans['Section'] = [(0, len(string))]
+            self._index = 0
+        else:
+            self._index = _index
 
     @property
     def _span(self) -> tuple:
-        """Return selfspan (span of self.string in self._lststr[0])."""
-        return self._type_to_spans['sections'][self._index]
+        """Return the span of self."""
+        return self._type_to_spans[self._type][self._index]
 
     @property
     def level(self) -> int:
