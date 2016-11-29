@@ -81,8 +81,8 @@ class WikiText:
         return self.string
 
     def __repr__(self) -> str:
-        """Return the string representation of the WikiText."""
-        return 'WikiText(' + repr(self.string) + ')'
+        """Return the string representation of self."""
+        return '{0}({1})'.format(self.__class__.__name__, repr(self.string))
 
     def __contains__(self, value: str or WikiText) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
@@ -943,10 +943,6 @@ class SubWikiText(WikiText):
         # if index is None:
         #     self._index = len(self._type_to_spans['subwikitext']) - 1
         self._index = index
-
-    def __repr__(self) -> str:
-        """Return the string representation of the Comment."""
-        return 'SubWikiText(' + repr(self.string) + ')'
 
     def _gen_subspan_indices(self, type_: str or None=None):
         """Yield all the subspan indices excluding self._span."""

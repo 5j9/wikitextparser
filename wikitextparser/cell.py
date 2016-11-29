@@ -165,10 +165,6 @@ class Cell(SubWikiText):
             ATTRS_REGEX.match(match.group('attrs')) if match else None
         )
 
-    def __repr__(self) -> str:
-        """Return the string representation of self."""
-        return 'Cell(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return self-span."""

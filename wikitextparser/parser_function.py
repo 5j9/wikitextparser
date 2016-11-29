@@ -21,10 +21,6 @@ class ParserFunction(SubWikiText):
             self._type_to_spans['functions']
         ) - 1 if index is None else index
 
-    def __repr__(self) -> str:
-        """Return the string representation of the ParserFunction."""
-        return 'ParserFunction(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return the self-span."""

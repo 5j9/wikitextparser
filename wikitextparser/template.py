@@ -28,10 +28,6 @@ class Template(SubWikiText):
             self._type_to_spans['templates']
         ) - 1 if index is None else index
 
-    def __repr__(self) -> str:
-        """Return the string representation of the Template."""
-        return 'Template(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return the self-span."""

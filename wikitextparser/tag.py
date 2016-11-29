@@ -114,10 +114,6 @@ class Tag(SubWikiText):
         ) - 1 if index is None else index
         self._cached_match = TAG_REGEX.fullmatch(string)
 
-    def __repr__(self) -> str:
-        """Return the string representation of self."""
-        return 'Tag(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return the span of this object."""

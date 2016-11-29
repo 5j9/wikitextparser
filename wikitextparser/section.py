@@ -27,10 +27,6 @@ class Section(WikiText):
             self._type_to_spans['sections']
         ) - 1 if index is None else index
 
-    def __repr__(self) -> str:
-        """Return the string representation of the Argument."""
-        return 'Section(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return selfspan (span of self.string in self._lststr[0])."""

@@ -68,10 +68,6 @@ class Table(SubWikiText):
             self._type_to_spans['tables']
         ) - 1 if index is None else index
 
-    def __repr__(self) -> str:
-        """Return the string representation of the Table."""
-        return 'Table(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return the self-span."""

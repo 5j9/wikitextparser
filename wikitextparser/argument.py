@@ -28,10 +28,6 @@ class Argument(SubWikiText):
         else:
             self._index = index
 
-    def __repr__(self) -> str:
-        """Return the string representation of the Argument."""
-        return 'Argument(' + repr(self.string) + ')'
-
     @property
     def _span(self) -> tuple:
         """Return the self-span."""
