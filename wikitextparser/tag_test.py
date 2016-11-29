@@ -122,4 +122,4 @@ class Tag(unittest.TestCase):
         self.assertEqual(c1.wikilinks[0].target, 'w')
         # The new contents object won't create a new span
         c2 = t.parsed_contents
-        self.assertEqual(len(c2._type_to_spans['wikilinks']), 1)
+        self.assertEqual(len(c2._type_to_spans['WikiLink']), 1)

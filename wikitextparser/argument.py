@@ -20,18 +20,14 @@ class Argument(SubWikiText):
     ) -> None:
         """Initialize the object."""
         self._common_init(string, type_to_spans)
-        self._type = 'arguments' if type_ is None else type_
+        type_ = 'arguments' if type_ is None else type_
+        self._type = type_
         if type_to_spans is None:
-            self._type_to_spans[self._type] = [(0, len(string))]
+            self._type_to_spans[type_] = [(0, len(string))]
         if index is None:
-            self._index = len(self._type_to_spans['arguments']) - 1
+            self._index = len(self._type_to_spans[type_]) - 1
         else:
             self._index = index
-
-    @property
-    def _span(self) -> tuple:
-        """Return the self-span."""
-        return self._type_to_spans[self._type][self._index]
 
     @property
     def name(self) -> str:

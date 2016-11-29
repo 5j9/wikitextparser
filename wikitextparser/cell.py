@@ -152,11 +152,12 @@ class Cell(SubWikiText):
     ) -> None:
         """Initialize the object."""
         self._common_init(string, type_to_spans)
-        self._type = 'cells' if type_ is None else type_
+        type_ = 'cells' if type_ is None else type_
+        self._type = type_
         if type_to_spans is None:
-            self._type_to_spans[self._type] = [(0, len(string))]
+            self._type_to_spans[type_] = [(0, len(string))]
         self._index = len(
-            self._type_to_spans['cells']
+            self._type_to_spans[type_]
         ) - 1 if index is None else index
         self._header = header
         self._cached_match = match
@@ -164,11 +165,6 @@ class Cell(SubWikiText):
         self._cached_attrs = attrs if attrs is not None else (
             ATTRS_REGEX.match(match.group('attrs')) if match else None
         )
-
-    @property
-    def _span(self) -> tuple:
-        """Return self-span."""
-        return self._type_to_spans[self._type][self._index]
 
     @property
     def _match(self):

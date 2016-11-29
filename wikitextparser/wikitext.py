@@ -307,8 +307,8 @@ class WikiText:
         Atomic sub-spans are those which are parsed separately. They currently
         include the following:
             (
-                'templates', 'parameters', 'functions',
-                'wikilinks', 'comments', 'exttags'
+                'Template', 'Parameter', 'ParserFunction',
+                'Wikilink', 'Comment', 'ExtTag'
             )
 
         `ss` and `se` indicate the spanstart and spanend of the current span.
@@ -329,8 +329,8 @@ class WikiText:
         subspans = []
         types_to_spans = self._type_to_spans
         for key in (
-            'templates', 'parameters', 'functions',
-            'wikilinks', 'comments', 'exttags'
+            'Template', 'Parameter', 'ParserFunction',
+            'WikiLink', 'Comment', 'ExtTag'
         ):
             for span in types_to_spans[key]:
                 if ss < span[0] and span[1] <= se:
@@ -434,10 +434,10 @@ class WikiText:
         """
         ss, se = self._span
         level = 1  # a template is always found in itself
-        for s, e in self._type_to_spans['templates']:
+        for s, e in self._type_to_spans['Template']:
             if s < ss and se < e:
                 level += 1
-        for s, e in self._type_to_spans['functions']:
+        for s, e in self._type_to_spans['ParserFunction']:
             if s < ss and se < e:
                 level += 1
         return level
@@ -451,13 +451,13 @@ class WikiText:
         inside them.
 
         The replaced subspans are:
-            ('templates', 'wikilinks', 'functions', 'exttags', 'comments',)
+            ('Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',)
 
         """
         ss, se = self._span
         shadow = self.string
         for type_ in (
-            'templates', 'wikilinks', 'functions', 'exttags', 'comments',
+            'Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',
         ):
             for s, e in self._type_to_spans[type_]:
                 if s < ss or e > se:
@@ -707,7 +707,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 index,
-            ) for index in self._gen_subspan_indices('parameters')
+            ) for index in self._gen_subspan_indices('Parameter')
         ]
 
     @property
@@ -718,7 +718,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 index,
-            ) for index in self._gen_subspan_indices('functions')
+            ) for index in self._gen_subspan_indices('ParserFunction')
         ]
 
     @property
@@ -729,7 +729,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 index,
-            ) for index in self._gen_subspan_indices('templates')
+            ) for index in self._gen_subspan_indices('Template')
         ]
 
     @property
@@ -740,7 +740,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 index,
-            ) for index in self._gen_subspan_indices('wikilinks')
+            ) for index in self._gen_subspan_indices('WikiLink')
         ]
 
     @property
@@ -751,7 +751,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 index,
-            ) for index in self._gen_subspan_indices('comments')
+            ) for index in self._gen_subspan_indices('Comment')
         ]
 
     @property
@@ -761,9 +761,9 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        if 'extlinks' not in type_to_spans:
+        if 'ExternalLink' not in type_to_spans:
             # All the added spans will be new.
-            spans = type_to_spans['extlinks'] = []
+            spans = type_to_spans['ExternalLink'] = []
             index = 0
             for m in EXTERNALLINK_REGEX.finditer(self.string):
                 mspan = m.span()
@@ -774,9 +774,9 @@ class WikiText:
                 )
                 index += 1
             return external_links
-        # There are already some extlink spans. Use the already existing ones
-        # when the detected span is one of those.
-        spans = type_to_spans['extlinks']
+        # There are already some ExternalLink spans. Use the already existing
+        # ones when the detected span is one of those.
+        spans = type_to_spans['ExternalLink']
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
         for m in EXTERNALLINK_REGEX.finditer(self.string):
@@ -926,6 +926,8 @@ class SubWikiText(WikiText):
 
     """
 
+    _type = 'SubWikiText'
+
     def __init__(
         self,
         string: str or list,
@@ -941,7 +943,7 @@ class SubWikiText(WikiText):
         self._common_init(string, type_to_spans)
         # SubWikiText is not used directly so we don't need the following:
         # if index is None:
-        #     self._index = len(self._type_to_spans['subwikitext']) - 1
+        #     self._index = len(self._type_to_spans['SubWikiText']) - 1
         self._index = index
 
     def _gen_subspan_indices(self, type_: str or None=None):
@@ -955,4 +957,4 @@ class SubWikiText(WikiText):
     @property
     def _span(self) -> tuple:
         """Return the span of self."""
-        return self._type_to_spans['subwikitext'][self._index]
+        return self._type_to_spans[self._type][self._index]

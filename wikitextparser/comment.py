@@ -8,6 +8,8 @@ class Comment(SubWikiText):
 
     """Create a new <!-- comment --> object."""
 
+    _type = 'Comment'
+
     def __init__(
         self,
         string: str or list,
@@ -17,13 +19,8 @@ class Comment(SubWikiText):
         """Run self._common_init."""
         self._common_init(string, type_to_spans)
         self._index = len(
-            self._type_to_spans['comments']
+            self._type_to_spans['Comment']
         ) - 1 if index is None else index
-
-    @property
-    def _span(self) -> tuple:
-        """Return the self-span."""
-        return self._type_to_spans['comments'][self._index]
 
     @property
     def contents(self) -> str:

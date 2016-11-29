@@ -16,6 +16,8 @@ class Template(SubWikiText):
 
     """
 
+    _type = 'Template'
+
     def __init__(
         self,
         string: str or list,
@@ -25,13 +27,8 @@ class Template(SubWikiText):
         """Initialize the object."""
         self._common_init(string, type_to_spans)
         self._index = len(
-            self._type_to_spans['templates']
+            self._type_to_spans['Template']
         ) - 1 if index is None else index
-
-    @property
-    def _span(self) -> tuple:
-        """Return the self-span."""
-        return self._type_to_spans['templates'][self._index]
 
     @property
     def arguments(self) -> list:

@@ -8,6 +8,8 @@ class Parameter(SubWikiText):
 
     """Create a new {{{parameters}}} object."""
 
+    _type = 'Parameter'
+
     def __init__(
         self,
         string: str or list,
@@ -17,13 +19,8 @@ class Parameter(SubWikiText):
         """Initialize the object."""
         self._common_init(string, type_to_spans)
         self._index = len(
-            self._type_to_spans['parameters']
+            self._type_to_spans['Parameter']
         ) - 1 if index is None else index
-
-    @property
-    def _span(self) -> tuple:
-        """Return the self-span."""
-        return self._type_to_spans['parameters'][self._index]
 
     @property
     def name(self) -> str:

@@ -54,6 +54,8 @@ class Table(SubWikiText):
     # Todo: Define has, get, set, and delete methods.
     # They should provide the same API as in Tag and Cell classes.
 
+    _type = 'tables'
+
     def __init__(
         self,
         string: str or list,
@@ -67,11 +69,6 @@ class Table(SubWikiText):
         self._index = len(
             self._type_to_spans['tables']
         ) - 1 if index is None else index
-
-    @property
-    def _span(self) -> tuple:
-        """Return the self-span."""
-        return self._type_to_spans['tables'][self._index]
 
     @property
     def _string_match_table(self) -> tuple:

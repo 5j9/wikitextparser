@@ -94,6 +94,8 @@ class Tag(SubWikiText):
 
     """Create a new Tag object."""
 
+    _type = 'tags'
+
     def __init__(
         self,
         string: str or list,
@@ -113,11 +115,6 @@ class Tag(SubWikiText):
             self._type_to_spans['tags']
         ) - 1 if index is None else index
         self._cached_match = TAG_REGEX.fullmatch(string)
-
-    @property
-    def _span(self) -> tuple:
-        """Return the span of this object."""
-        return self._type_to_spans['tags'][self._index]
 
     @property
     def _match(self):
@@ -236,7 +233,7 @@ class Tag(SubWikiText):
         match = self._match
         span = match.span('contents')
         spans = self._type_to_spans
-        swt_spans = spans.setdefault('subwikitext', [span])
+        swt_spans = spans.setdefault('SubWikiText', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
         return SubWikiText(self._lststr, spans, index)
 
