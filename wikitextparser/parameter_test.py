@@ -37,6 +37,10 @@ class Parameter(unittest.TestCase):
         p = wtp.Parameter('{{{ Q }}}')
         p.default = ' V '
         self.assertEqual('{{{ Q | V }}}', p.string)
+        p.default = ''
+        self.assertEqual('{{{ Q |}}}', p.string)
+        p.default = None
+        self.assertEqual('{{{ Q }}}', p.string)
 
     def test_appending_default(self):
         p = wtp.Parameter('{{{p1|{{{p2|}}}}}}')
@@ -71,6 +75,23 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
         p.append_default('p2')
         self.assertEqual('{{{p1|{{{p2|}}}}}}', p.string)
+
+    def test_ignore_comment_pipes(self):
+        # name
+        p = wtp.Parameter('{{{1<!-- |comment| -->|text}}}')
+        self.assertEquals(p.name, '1<!-- |comment| -->')
+        # name.setter
+        p.name = '2<!-- |comment| -->'
+        self.assertEquals(p.name, '2<!-- |comment| -->')
+        # default
+        self.assertEquals(p.default, 'text')
+        # default.setter
+        p.default = 'default'
+        self.assertEquals(p.string, '{{{2<!-- |comment| -->|default}}}')
+        # pipe
+        p.default = None
+        self.assertEquals(p.string, '{{{2<!-- |comment| -->}}}')
+        self.assertEquals(p.pipe, '')
 
 
 if __name__ == '__main__':

@@ -11,40 +11,48 @@ class Parameter(SubWikiText):
     @property
     def name(self) -> str:
         """Return current parameter's name."""
-        return self.string[3:-3].partition('|')[0]
+        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        if pipe:
+            return name[3:]
+        return name[3:-3]
 
     @name.setter
-    def name(self, newname) -> None:
+    def name(self, newname: str) -> None:
         """Set the new name."""
-        name, pipe, default = self.string[3:-3].partition('|')
-        self[3:3 + len(name)] = newname
+        self[3:3 + len(self.name)] = newname
 
     @property
     def pipe(self) -> str:
         """Return `|` if there is a pipe (default value) in the Parameter.
 
          Return '' otherwise.
+
          """
-        return self.string[3:-3].partition('|')[1]
+        return self._not_in_atomic_subspans_partition('|')[1]
 
     @property
     def default(self) -> str or None:
-        """Return the default value."""
-        # Todo: Ignore the pipes inside comments.
-        string = self.string[3:-3]
-        if '|' in string:
-            return string.partition('|')[2]
+        """Return the default value. Return None if there is no default."""
+        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        if pipe:
+            return default[:-3]
 
     @default.setter
-    def default(self, newdefault: str) -> None:
-        """Set the new value. If a default exist, change it. Add ow."""
-        olddefault = self.default
-        if olddefault is None:
-            self.insert(len('{{{' + self.name), '|' + newdefault)
-        else:
-            name = self.name
-            self[len('{{{' + name):len('{{{' + name + '|' + olddefault)] =\
-                '|' + newdefault
+    def default(self, newdefault: str or None) -> None:
+        """Set a new default value. Use None to remove default."""
+        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        if not pipe:
+            # olddefault is None
+            if newdefault is None:
+                return
+            self.insert(-3, '|' + newdefault)
+            return
+        if newdefault is None:
+            # Only newdefault is None
+            del self[len(name):-3]
+            return
+        # olddefault is not None and newdefault is not None
+        self[len(name):-3] = '|' + newdefault
 
     def append_default(self, new_default_name: str) -> None:
         """Append a new default parameter in the appropriate place.
