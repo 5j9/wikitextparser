@@ -41,6 +41,9 @@ class Parameter(unittest.TestCase):
         self.assertEqual('{{{ Q |}}}', p.string)
         p.default = None
         self.assertEqual('{{{ Q }}}', p.string)
+        # Setting default to None when it is already None
+        p.default = None
+        self.assertEqual('{{{ Q }}}', p.string)
 
     def test_appending_default(self):
         p = wtp.Parameter('{{{p1|{{{p2|}}}}}}')
