@@ -4,7 +4,7 @@
 import regex
 
 from .wikitext import SubWikiText
-from .tag import ATTRS_REGEX
+from .tag import ATTRS_REGEX, SubWikiTextWithAttrs
 
 
 # https://regex101.com/r/hB4dX2/17
@@ -136,7 +136,7 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
 )
 
 
-class Cell(SubWikiText):
+class Cell(SubWikiTextWithAttrs):
 
     """Create a new Cell object."""
 
@@ -147,16 +147,17 @@ class Cell(SubWikiText):
         _type_to_spans: list or None=None,
         _index: int or None=None,
         _type: str or None=None,
-        match=None,
-        attrs: dict or None=None,
+        _match=None,
+        _attrs_match: dict or None=None,
     ) -> None:
         """Initialize the object."""
         super().__init__(string, _type_to_spans, _index, _type)
         self._header = header
-        self._cached_match = match
-        self._cached_string = self.string if match else None
-        self._cached_attrs = attrs if attrs is not None else (
-            ATTRS_REGEX.match(match.group('attrs')) if match else None
+        self._cached_match = _match
+        self._cached_string = self.string if _match else None
+        self._cached_attrs_match = (
+            _attrs_match if _attrs_match is not None else
+            ATTRS_REGEX.match(_match.group('attrs')) if _match else None
         )
 
     @property
@@ -183,6 +184,7 @@ class Cell(SubWikiText):
             m = INLINE_NONHAEDER_CELL_REGEX.match(shadow)
         self._cached_match = m
         self._cached_string = string
+        self._cached_attrs_match = None
         return m
 
     @property
@@ -205,37 +207,16 @@ class Cell(SubWikiText):
             self[s:e] = new_value
 
     @property
-    def attrs(self) -> dict:
-        """Return the attributes of self as a dict."""
+    def _attrs_match(self):
+        """Return the match object for attributes."""
         string = self.string
-        cached_attrs = self._cached_attrs
-        if cached_attrs is not None and self._cached_string == string:
-            return cached_attrs
-        attrs_group = self._match.group('attrs')
-        if attrs_group:
-            m = ATTRS_REGEX.match(attrs_group)
-            attrs = dict(zip(
-                m.captures('attr_name'), m.captures('attr_value')
-            ))
-        else:
-            attrs = {}
-        self._cached_attrs = attrs
-        return attrs
-
-    def get(self, attr_name: str) -> str:
-        """Return the value of the last attribute with the given name.
-
-        Return None if the attr_name does not exist in self.
-        If there are already multiple attributes with the given name, only
-            return the value of the last one.
-        Return an empty string if the mentioned name is an empty attribute.
-
-        """
-        return self.attrs[attr_name]
-
-    def has(self, attr_name: str) -> bool:
-        """Return True if self contains an attribute with the given name."""
-        return attr_name in self.attrs
+        cache = self._cached_attrs_match
+        if cache is not None and self._cached_string == string:
+            return cache
+        s, e = self._match.span('attrs')
+        attrs_match = ATTRS_REGEX.match(string, s, e)
+        self._cached_attrs_match = attrs_match
+        return attrs_match
 
     def set(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
@@ -280,23 +261,3 @@ class Cell(SubWikiText):
             2, fmt.format(attr_name, attr_value.replace('"', '&quot;'))
         )
         return
-
-    def delete(self, attr_name: str) -> None:
-        """Delete all the attributes with the given name.
-
-        Pass if the attr_name is not found in self.
-
-        """
-        if attr_name not in self.attrs:
-            return
-        cell_match = self._match
-        pos = cell_match.start()
-        shadow = cell_match.string
-        attrs_start, attrs_end = cell_match.span('attrs')
-        attrs_m = ATTRS_REGEX.match(shadow, attrs_start, attrs_end)
-        # Must be done in reversed order because the spans
-        # change after each deletion.
-        for i, capture in enumerate(reversed(attrs_m.captures('attr_name'))):
-            if capture == attr_name:
-                start, stop = attrs_m.spans('attr')[-i - 1]
-                del self[start - pos:stop - pos]

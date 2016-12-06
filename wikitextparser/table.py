@@ -7,7 +7,7 @@ import warnings
 import regex
 
 from .wikitext import SubWikiText
-from .tag import attrs_parser
+from .tag import attrs_parser, ATTRS_REGEX
 from .cell import (
     Cell,
     NEWLINE_CELL_REGEX,
@@ -201,8 +201,17 @@ class Table(SubWikiText):
             for m in match_row:
                 if span:
                     s, e = m.span('attrs')
-                    attrs = attrs_parser(string, s, e)
+                    attrs_match = ATTRS_REGEX.match(string, s, e)
+                    if attrs_match:
+                        captures = attrs_match.captures
+                        attrs = dict(zip(
+                            captures('attr_name'), captures('attr_value')
+                        ))
+                    else:
+                        attrs = None
                     row_attrs.append(attrs)
+                else:
+                    attrs_match = None
                 ms, me = m.span()
                 span = (ss + ms, ss + me)
                 index = next(
@@ -220,7 +229,7 @@ class Table(SubWikiText):
                         index,
                         type_,
                         m,
-                        attrs,
+                        attrs_match,
                     )
                 )
         if table_cells:
