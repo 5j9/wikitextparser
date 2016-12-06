@@ -90,35 +90,28 @@ TAG_REGEX = regex.compile(
 )
 
 
-class Tag(SubWikiText):
+class SubWikiTextWithAttrs(SubWikiText):
 
-    """Create a new Tag object."""
+    """Define a class for SubWikiText objects that have attributes.
 
-    def __init__(
-        self,
-        string: str or list,
-        _type_to_spans: list or None=None,
-        _index: int or None=None,
-        match=None,
-    ) -> None:
-        """Initialize the Tag object.
+    Any class inheriting from SubWikiTextWithAttrs should already have a
+    _attrs_match property.
 
-        Run _common_init and set _type_to_spans['extlinks'].
+    """
 
-        """
-        super().__init__(string, _type_to_spans, _index, 'Tag')
-        self._cached_match = TAG_REGEX.fullmatch(string)
+    _attrs_match = None
 
     @property
-    def _match(self):
-        """Return the match object for the current tag. Cache the result."""
-        string = self.string
-        cached_match = self._cached_match
-        if cached_match.string == string:
-            return cached_match
-        # Compute the match
-        self._cached_match = TAG_REGEX.fullmatch(string)
-        return self._cached_match
+    def attrs(self):
+        """Return self attributes as a dictionary."""
+        return dict(zip(
+            self._attrs_match.captures('attr_name'),
+            self._attrs_match.captures('attr_value')
+        ))
+
+    def has(self, attr_name: str) -> bool:
+        """Return True if self contains an attribute with the given name."""
+        return attr_name in self._attrs_match.captures('attr_name')
 
     def get(self, attr_name: str) -> str or None:
         """Return the value of the last attribute with the given name.
@@ -129,7 +122,7 @@ class Tag(SubWikiText):
         Return an empty string if the mentioned name is an empty attribute.
 
         """
-        match = self._match
+        match = self._attrs_match
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
                 return match.captures('attr_value')[-i - 1]
@@ -142,7 +135,7 @@ class Tag(SubWikiText):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
-        match = self._match
+        match = self._attrs_match
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
             if capture == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
@@ -165,7 +158,7 @@ class Tag(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
-        match = self._match
+        match = self._attrs_match
         # Must be done in reversed order because the spans
         # change after each deletion.
         for i, capture in enumerate(reversed(match.captures('attr_name'))):
@@ -173,9 +166,40 @@ class Tag(SubWikiText):
                 start, stop = match.spans('attr')[-i - 1]
                 del self[start:stop]
 
-    def has(self, attr_name: str) -> bool:
-        """Return True if self contains an attribute with the given name."""
-        return attr_name in self._match.captures('attr_name')
+
+class Tag(SubWikiTextWithAttrs):
+
+    """Create a new Tag object."""
+
+    def __init__(
+        self,
+        string: str or list,
+        _type_to_spans: list or None=None,
+        _index: int or None=None,
+        match=None,
+    ) -> None:
+        """Initialize the Tag object.
+
+        Run _common_init and set _type_to_spans['extlinks'].
+
+        """
+        super().__init__(string, _type_to_spans, _index, 'Tag')
+        self._cached_match = (
+            TAG_REGEX.fullmatch(string) if match is None else match
+        )
+
+    @property
+    def _match(self):
+        """Return the match object for the current tag. Cache the result."""
+        string = self.string
+        cached_match = self._cached_match
+        if cached_match.string != string:
+            # Compute the match
+            cached_match = TAG_REGEX.fullmatch(string)
+            self._cached_match = cached_match
+        return cached_match
+
+    _attrs_match = _match
 
     @property
     def name(self) -> str:

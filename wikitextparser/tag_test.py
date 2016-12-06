@@ -104,6 +104,7 @@ class Tag(unittest.TestCase):
         self.assertEqual(t.string, '<t n1=v1 n2="v5" n1="v4" id="1">c</t>')
         t = wtp.Tag('<t>c</t>')
         t.set('n', '')
+        self.assertEqual(t.string, '<t n>c</t>')
 
     def test_attr_deletion(self):
         t = wtp.Tag('<t n1=v1 n1=v333 n2=v22>c</t>')
@@ -123,3 +124,7 @@ class Tag(unittest.TestCase):
         # The new contents object won't create a new span
         c2 = t.parsed_contents
         self.assertEqual(len(c2._type_to_spans['WikiLink']), 1)
+
+    def test_attrs(self):
+        t = wtp.Tag('<t n1=v1 n2="v2" n3>c</t>')
+        self.assertEqual(t.attrs, {'n1': 'v1', 'n2': 'v2', 'n3': ''})
