@@ -156,7 +156,7 @@ class Table(SubWikiText):
                     for m in match_row:
                         s, e = m.span('attrs')
                         row_attrs.append(attrs_parser(string, s, e))
-                table_data = _apply_attr_spans(table_attrs, table_data, string)
+                table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:
                 return table_data
@@ -190,7 +190,6 @@ class Table(SubWikiText):
         spans = type_to_spans[type_]
         table_cells = []
         table_attrs = []
-        attrs = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
@@ -204,13 +203,13 @@ class Table(SubWikiText):
                     attrs_match = ATTRS_REGEX.match(string, s, e)
                     if attrs_match:
                         captures = attrs_match.captures
-                        attrs = dict(zip(
+                        row_attrs.append(dict(zip(
                             captures('attr_name'), captures('attr_value')
-                        ))
+                        )))
                     else:
-                        attrs = None
-                    row_attrs.append(attrs)
+                        row_attrs.append(None)
                 else:
+                    # todo: get cells when span is false
                     attrs_match = None
                 ms, me = m.span()
                 span = (ss + ms, ss + me)
@@ -233,7 +232,7 @@ class Table(SubWikiText):
                     )
                 )
         if table_cells:
-            table_cells = _apply_attr_spans(table_attrs, table_cells, string)
+            table_cells = _apply_attr_spans(table_attrs, table_cells)
         if row is None:
             if column is None:
                 return table_cells
@@ -323,9 +322,7 @@ class Table(SubWikiText):
             self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
 
-def _apply_attr_spans(
-    table_attrs: list, table_data: list, string: str
-) -> list:
+def _apply_attr_spans(table_attrs: list, table_data: list) -> list:
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
