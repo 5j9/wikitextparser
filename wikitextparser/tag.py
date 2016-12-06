@@ -104,10 +104,8 @@ class SubWikiTextWithAttrs(SubWikiText):
     @property
     def attrs(self):
         """Return self attributes as a dictionary."""
-        return dict(zip(
-            self._attrs_match.captures('attr_name'),
-            self._attrs_match.captures('attr_value')
-        ))
+        captures = self._attrs_match.captures
+        return dict(zip(captures('attr_name'), captures('attr_value')))
 
     def has(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
@@ -122,10 +120,10 @@ class SubWikiTextWithAttrs(SubWikiText):
         Return an empty string if the mentioned name is an empty attribute.
 
         """
-        match = self._attrs_match
-        for i, capture in enumerate(reversed(match.captures('attr_name'))):
+        captures = self._attrs_match.captures
+        for i, capture in enumerate(reversed(captures('attr_name'))):
             if capture == attr_name:
-                return match.captures('attr_value')[-i - 1]
+                return captures('attr_value')[-i - 1]
 
     def set(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
@@ -158,6 +156,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
+        # Todo: match may have an offset
         match = self._attrs_match
         # Must be done in reversed order because the spans
         # change after each deletion.
@@ -257,6 +256,7 @@ class Tag(SubWikiTextWithAttrs):
 
 def attrs_parser(attrs: str, pos=0, endpos=-1) -> dict:
     """Return a dict of attribute names and values."""
-    m = ATTRS_REGEX.fullmatch(attrs, pos=pos, endpos=endpos)
+    m = ATTRS_REGEX.match(attrs, pos=pos, endpos=endpos)
     if m:
-        return dict(zip(m.captures('attr_name'), m.captures('attr_value')))
+        captures = m.captures
+        return dict(zip(captures('attr_name'), captures('attr_value')))
