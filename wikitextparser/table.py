@@ -54,7 +54,7 @@ class Table(SubWikiText):
     # They should provide the same API as in Tag and Cell classes.
 
     @property
-    def _string_match_table(self) -> tuple:
+    def _table_string_match(self) -> tuple:
         """Return (self.string, match_table)."""
         string = self.string
         shadow = self._shadow
@@ -129,7 +129,7 @@ class Table(SubWikiText):
             wikitables can be inserted within templates.
 
         """
-        string, match_table = self._string_match_table
+        string, match_table = self._table_string_match
         table_data = []
         if strip:
             for match_row in match_table:
@@ -181,7 +181,7 @@ class Table(SubWikiText):
 
         """
         ss = self._span[0]
-        string, match_table = self._string_match_table
+        string, match_table = self._table_string_match
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
         if type_ not in type_to_spans:
