@@ -20,7 +20,6 @@ class ParserFunction(SubWikiText):
         if typeindex not in spans:
             spans[typeindex] = []
         aspans = spans[typeindex]
-        ss, se = self._span
         # remove the final '}}' from the last argument.
         barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
         # first argument

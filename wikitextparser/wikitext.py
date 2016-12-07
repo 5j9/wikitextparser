@@ -81,12 +81,14 @@ class WikiText:
         - lststr: The raw string of the object to be parsed or a list pointing
             to the mother string of the parent object.
         - _type_to_spans: If the lststr is already parsed, pass its
-            _type_to_spans property as _type_to_spans to avoid parsing it again.
+            _type_to_spans property as _type_to_spans to avoid parsing it
+            again.
 
         """
-        self._lststr = string if isinstance(string, list) else [string]
+        lststr = string if isinstance(string, list) else [string]
+        self._lststr = lststr
         self._type_to_spans = (
-            _type_to_spans if _type_to_spans else parse_to_spans(self._lststr[0])
+            _type_to_spans if _type_to_spans else parse_to_spans(lststr[0])
         )
 
     def __str__(self) -> str:
@@ -482,7 +484,7 @@ class WikiText:
                 )
         return shadow
 
-    def _pp_type_to_spans(self) -> str:
+    def _pp_type_to_spans(self) -> dict:
         """Create the arguments for the parse function used in pprint method.
 
 
@@ -505,7 +507,7 @@ class WikiText:
                 newspans.append((s - ss, e - ss))
         return type_to_spans
 
-    def pprint(self, indent: str='    ', remove_comments=False) -> None:
+    def pprint(self, indent: str='    ', remove_comments=False) -> str:
         """Return a pretty-print of self.string as string.
 
         Try to organize templates and parser functions by indenting, aligning

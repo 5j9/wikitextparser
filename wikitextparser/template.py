@@ -275,10 +275,10 @@ class Template(SubWikiText):
                 if preserve_spacing:
                     # Insert after the last argument.
                     # The addstring needs to be recalculated because we don't
-                    # want to change the the whitespace before the final braces.
+                    # want to change the the whitespace before final braces.
                     arg[0:len(arg_string)] = (
-                        arg.string.rstrip() + after_value + addstring.rstrip() +
-                        after_values[0]
+                        arg.string.rstrip() + after_value +
+                        addstring.rstrip() + after_values[0]
                     )
                 else:
                     arg.insert(len(arg_string), addstring)

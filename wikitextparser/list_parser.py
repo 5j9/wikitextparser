@@ -121,7 +121,6 @@ class ListParser:
                     # ; title : definition text
                     # So we check for : in the remainder text to split up the
                     # title and definition, without b0rking links.
-                    term = t2 = ''
                     found_colon, term, t2 = self.find_colon_no_links(t)
                     if found_colon is not False:
                         t = t2

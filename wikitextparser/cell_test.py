@@ -95,7 +95,5 @@ class TableCell(unittest.TestCase):
         self.assertEqual(c.attrs, {'a': ''})
 
 
-
-
 if __name__ == '__main__':
     unittest.main()

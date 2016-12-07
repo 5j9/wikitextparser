@@ -18,7 +18,11 @@ class Spans(unittest.TestCase):
             True
         )
         self.assertEqual(
-            '<ul><li> Lists are easy to do:\n<ul><li> start every line</li></ul></li>\n<li> with a star\n<ul><li> more stars mean\n<ul><li> deeper levels</li></ul></li></ul></li></ul>\n',
+            '<ul><li> Lists are easy to do:\n'
+            '<ul><li> start every line</li></ul></li>\n'
+            '<li> with a star\n'
+            '<ul><li> more stars mean\n'
+            '<ul><li> deeper levels</li></ul></li></ul></li></ul>\n',
             o
         )
         o = p.do_block_levels(
@@ -30,7 +34,11 @@ class Spans(unittest.TestCase):
             True
         )
         self.assertEqual(
-            '<ol><li>list item A1\n<ol><li>list item B1</li>\n<li>list item B2</li></ol>\n<dl><dd>continuing list item A1</dd></dl></li>\n<li>list item A2</li></ol>\n',
+            '<ol><li>list item A1\n'
+            '<ol><li>list item B1</li>\n'
+            '<li>list item B2</li></ol>\n'
+            '<dl><dd>continuing list item A1</dd></dl></li>\n'
+            '<li>list item A2</li></ol>\n',
             o
         )
 
