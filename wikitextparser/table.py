@@ -197,13 +197,14 @@ class Table(SubWikiText):
             if span:
                 row_attrs = []
                 table_attrs.append(row_attrs)
+                row_attrs_append = row_attrs.append
             for m in match_row:
                 if span:
                     s, e = m.span('attrs')
                     # NOte: ATTRS_REGEX always matches, even to empty strings.
                     attrs_match = ATTRS_REGEX.match(string, s, e)
                     captures = attrs_match.captures
-                    row_attrs.append(dict(zip(
+                    row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
                     )))
                 ms, me = m.span()
