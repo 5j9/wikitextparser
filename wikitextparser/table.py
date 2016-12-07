@@ -1,7 +1,6 @@
 ﻿"""Define the Table class."""
 
 
-from html.parser import HTMLParser
 import warnings
 
 import regex
@@ -375,20 +374,14 @@ def _apply_attr_spans(table_attrs: list, table_data: list) -> list:
                     if xwidth > len(r):
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
-            try:
-                colspan = int(table_attrs[i][j]['colspan'])
-                if colspan == 0:
-                    # Note: colspan="0" tells the browser to span the cell to
-                    # the last column of the column group (colgroup)
-                    # http://www.w3schools.com/TAGS/att_td_colspan.asp
-                    colspan = 1
-            except Exception:
+            colspan = int(table_attrs[i][j].get('colspan', 1))
+            if colspan == 0:
+                # Note: colspan="0" tells the browser to span the cell to
+                # the last column of the column group (colgroup)
+                # http://www.w3schools.com/TAGS/att_td_colspan.asp
                 colspan = 1
             # 13.9
-            try:
-                rowspan = int(table_attrs[i][j]['rowspan'])
-            except Exception:
-                rowspan = 1
+            rowspan = int(table_attrs[i][j].get('rowspan', 1))
             # 13.10
             if rowspan == 0:
                 # Note: rowspan="0" tells the browser to span the cell to the
