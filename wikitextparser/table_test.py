@@ -528,6 +528,11 @@ class Cells(unittest.TestCase):
         c.set('c', 'd')
         self.assertEqual(t.string, '{|class=wikitable\n| c="d"|v\n|}')
 
+    def test_cell_span_false(self):
+        t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
+        c = t.cells(span=False)
+        self.assertEquals(len(c), 1)
+
 
 if __name__ == '__main__':
     unittest.main()

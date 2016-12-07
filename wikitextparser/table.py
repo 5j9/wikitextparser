@@ -189,6 +189,7 @@ class Table(SubWikiText):
         spans = type_to_spans[type_]
         table_cells = []
         table_attrs = []
+        attrs_match = None
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
@@ -205,18 +206,15 @@ class Table(SubWikiText):
                     row_attrs.append(dict(zip(
                         captures('attr_name'), captures('attr_value')
                     )))
-                else:
-                    # todo: get cells when span is false
-                    attrs_match = None
                 ms, me = m.span()
-                span = (ss + ms, ss + me)
+                cell_span = (ss + ms, ss + me)
                 index = next(
-                    (i for i, s in enumerate(spans) if s == span),
+                    (i for i, s in enumerate(spans) if s == cell_span),
                     None
                 )
                 if index is None:
                     index = len(spans)
-                    spans.append(span)
+                    spans.append(cell_span)
                 row_cells.append(
                     Cell(
                         self._lststr,
@@ -228,7 +226,7 @@ class Table(SubWikiText):
                         attrs_match,
                     )
                 )
-        if table_cells:
+        if table_cells and span:
             table_cells = _apply_attr_spans(table_attrs, table_cells)
         if row is None:
             if column is None:
