@@ -199,14 +199,12 @@ class Table(SubWikiText):
             for m in match_row:
                 if span:
                     s, e = m.span('attrs')
+                    # NOte: ATTRS_REGEX always matches, even to empty strings.
                     attrs_match = ATTRS_REGEX.match(string, s, e)
-                    if attrs_match:
-                        captures = attrs_match.captures
-                        row_attrs.append(dict(zip(
-                            captures('attr_name'), captures('attr_value')
-                        )))
-                    else:
-                        row_attrs.append(None)
+                    captures = attrs_match.captures
+                    row_attrs.append(dict(zip(
+                        captures('attr_name'), captures('attr_value')
+                    )))
                 else:
                     # todo: get cells when span is false
                     attrs_match = None
