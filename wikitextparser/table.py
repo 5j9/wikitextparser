@@ -2,6 +2,7 @@
 
 
 import warnings
+from typing import List, Match, Union, Optional, TypeVar
 
 import regex
 
@@ -45,7 +46,7 @@ CAPTION_REGEX = regex.compile(
     """,
     regex.VERBOSE
 )
-
+T = TypeVar('T')
 
 class Table(SubWikiText):
 
@@ -54,9 +55,8 @@ class Table(SubWikiText):
     # They should provide the same API as in Tag and Cell classes.
 
     @property
-    def _table_string_match(self) -> tuple:
+    def _table_string_match(self) -> List[List[Match]]:
         """Return (self.string, match_table)."""
-        string = self.string
         shadow = self._shadow
         # Remove table-start and table-end marks.
         pos = shadow.find('\n')
@@ -100,9 +100,9 @@ class Table(SubWikiText):
                 pos = _semi_caption_increase(shadow, pos)
                 m = NEWLINE_CELL_REGEX.match(shadow, pos)
             rsp = _row_separator_increase(shadow, pos)
-        return string, match_table
+        return match_table
 
-    def getdata(self, span: bool=True):
+    def getdata(self, span: bool=True) -> List[List[str]]:
         """Use Table.data instead."""
         warnings.warn(
             'Table.getdata is deprecated. Use Table.data instead.',
@@ -115,7 +115,7 @@ class Table(SubWikiText):
         strip: bool= True,
         row: int=None,
         column: int=None
-    ) -> list:
+    ) -> Union[List[List[str]], List[str], str]:
         """Return a list containing lists of row values.
 
         :span: If true, calculate rows according to rowspans and colspans
@@ -129,7 +129,8 @@ class Table(SubWikiText):
             wikitables can be inserted within templates.
 
         """
-        string, match_table = self._table_string_match
+        match_table = self._table_string_match
+        string = self.string
         table_data = []
         if strip:
             for match_row in match_table:
@@ -166,7 +167,7 @@ class Table(SubWikiText):
 
     def cells(
         self, row: int=None, column: int=None, span: bool=True,
-    ) -> list or Cell:
+    ) -> Union[List[List[Cell]], List[Cell], Cell]:
         """Return a list of lists containing Cell objects.
 
         :span: If is True, rearrange the result according to colspan and rospan
@@ -181,7 +182,9 @@ class Table(SubWikiText):
 
         """
         ss = self._span[0]
-        string, match_table = self._table_string_match
+        match_table = self._table_string_match
+        # todo: maybe shadow is better than string? add tests.
+        string = self.string
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
         if type_ not in type_to_spans:
@@ -237,7 +240,7 @@ class Table(SubWikiText):
             return table_cells[row]
         return table_cells[row][column]
 
-    def getrdata(self, i: int, span: bool=True):
+    def getrdata(self, i: int, span: bool=True) -> List[str]:
         """Use Table.data(span, row=i) instead."""
         warnings.warn(
             'Table.getrdata is deprecated. Use data(span, row=i) instead.',
@@ -245,7 +248,7 @@ class Table(SubWikiText):
         )
         return self.data(span, row=i)
 
-    def getcdata(self, i: int, span: bool=True):
+    def getcdata(self, i: int, span: bool=True) -> List[str]:
         """Use Table.data(span, column=i) instead."""
         warnings.warn(
             'Table.getcdata is deprecated. Use data(span, column=i) instead.',
@@ -254,7 +257,7 @@ class Table(SubWikiText):
         return self.data(span, column=i)
 
     @property
-    def caption(self) -> str or None:
+    def caption(self) -> Optional[str]:
         """Return caption of the table."""
         m = CAPTION_REGEX.match(self.string)
         if m:
@@ -296,14 +299,14 @@ class Table(SubWikiText):
         self[2:2 + len(h[2:])] = attrs
 
     @property
-    def caption_attrs(self) -> str or None:
+    def caption_attrs(self) -> Optional[str]:
         """Return caption attributes."""
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m.group('attrs')
 
     @caption_attrs.setter
-    def caption_attrs(self, attrs: str):
+    def caption_attrs(self, attrs: str) -> None:
         """Set new caption attributes."""
         string = self.string
         h, s, t = string.partition('\n')
@@ -318,7 +321,9 @@ class Table(SubWikiText):
             self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
 
-def _apply_attr_spans(table_attrs: list, table_data: list) -> list:
+def _apply_attr_spans(
+    table_attrs: List[List[Match]], table_data: List[List[T]]
+) -> List[List[T]]:
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1

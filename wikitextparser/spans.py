@@ -2,6 +2,7 @@
 
 
 import re
+from typing import Dict, List, Tuple
 
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
@@ -239,7 +240,7 @@ COMMENT_REGEX = re.compile(
 SINGLE_BRACES_REGEX = re.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
-def parse_to_spans(string: str) -> dict:
+def parse_to_spans(string: str) -> Dict[str, List[Tuple[int, int]]]:
     """Calculate and set self._type_to_spans.
 
     The result is a dictionary containing lists of spans:

@@ -1,6 +1,8 @@
 ﻿"""The WikiLink class."""
 
 
+from typing import Optional
+
 from .wikitext import SubWikiText
 
 
@@ -33,7 +35,7 @@ class WikiLink(SubWikiText):
             return tail[:-2]
 
     @text.setter
-    def text(self, newtext: str or None) -> None:
+    def text(self, newtext: Optional[str]) -> None:
         """Set self.text to newtext. Remove the text if newtext is None."""
         head, pipe, tail = self._not_in_atomic_subspans_partition('|')
         if pipe:

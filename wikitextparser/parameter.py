@@ -1,6 +1,8 @@
 ﻿"""Define the Parameter class."""
 
 
+from typing import Optional
+
 from .wikitext import SubWikiText
 
 
@@ -31,14 +33,14 @@ class Parameter(SubWikiText):
         return self._not_in_atomic_subspans_partition('|')[1]
 
     @property
-    def default(self) -> str or None:
+    def default(self) -> Optional[str]:
         """Return the default value. Return None if there is no default."""
         name, pipe, default = self._not_in_atomic_subspans_partition('|')
         if pipe:
             return default[:-3]
 
     @default.setter
-    def default(self, newdefault: str or None) -> None:
+    def default(self, newdefault: Optional[str]) -> None:
         """Set a new default value. Use None to remove default."""
         name, pipe, default = self._not_in_atomic_subspans_partition('|')
         if not pipe:

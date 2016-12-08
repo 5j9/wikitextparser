@@ -2,6 +2,7 @@
 
 
 import re
+from typing import Tuple, MutableSequence, Union, List, Dict
 
 from .wikitext import WikiText
 
@@ -15,9 +16,9 @@ class Section(WikiText):
 
     def __init__(
         self,
-        string: str or list,
-        _type_to_spans: list or None=None,
-        _index: int or None=None,
+        string: Union[str, MutableSequence[str]],
+        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
+        _index: int=None,
     ) -> None:
         """Initialize the Table object."""
         super().__init__(string, _type_to_spans)
@@ -29,7 +30,7 @@ class Section(WikiText):
             self._index = _index
 
     @property
-    def _span(self) -> tuple:
+    def _span(self) -> Tuple[int, int]:
         """Return the span of self."""
         return self._type_to_spans[self._type][self._index]
 

@@ -16,7 +16,9 @@ WikiTextParser currently only supports Python 3.3+
 Installation
 ============
 
-Use ``pip install wikitextparser``
+Make sure ``setuptools`` is up-to-date: ``pip install -U setuptools``
+
+Use ``pip install wikitextparser`` to install WikiTextParser.
 
 Usage
 =====

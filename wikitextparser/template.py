@@ -2,10 +2,14 @@
 
 
 import re
+from typing import List, Optional, TypeVar, Iterator
 
 from .wikitext import SubWikiText
 from .argument import Argument
 from .spans import COMMENT_REGEX
+
+
+T = TypeVar('T')
 
 
 class Template(SubWikiText):
@@ -17,7 +21,7 @@ class Template(SubWikiText):
     """
 
     @property
-    def arguments(self) -> list:
+    def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         bar_spans = self._not_in_atomic_subspans_split_spans('|')[1:]
         arguments = []
@@ -61,7 +65,7 @@ class Template(SubWikiText):
     def normal_name(
         self,
         rm_namespaces=('Template',),
-        code: str or None=None,
+        code: str=None,
     ) -> str:
         """Return normal form of the name.
 
@@ -108,6 +112,7 @@ class Template(SubWikiText):
                     break
         # Use space instead of underscore
         name = name.replace('_', ' ')
+        # todo: this is site dependant and should be an argument.
         # Use uppercase for the first letter
         n0 = name[0]
         if n0.islower():
@@ -134,7 +139,7 @@ class Template(SubWikiText):
             else:
                 names.append(name)
 
-    def rm_dup_args_safe(self, tag: str or None=None) -> None:
+    def rm_dup_args_safe(self, tag: str=None) -> None:
         """Remove duplicate arguments in a safe manner.
 
         Remove the duplicate arguments only in the following situations:
@@ -193,11 +198,11 @@ class Template(SubWikiText):
                 name_to_lastarg_vals[name] = (arg, [val])
 
     def set_arg(
-        self, name: str or None,
+        self, name: str,
         value: str,
-        positional: bool or None=None,
-        before: str or None=None,
-        after: str or None=None,
+        positional: bool=None,
+        before: str=None,
+        after: str=None,
         preserve_spacing: bool=True
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
@@ -287,7 +292,7 @@ class Template(SubWikiText):
                 # positional AND is to be added at the end of the template.
                 self.insert(-2, addstring)
 
-    def get_arg(self, name: str) -> Argument or None:
+    def get_arg(self, name: str) -> Optional[Argument]:
         """Return the last argument with the given name.
 
         Return None if no argument with that name is found.
@@ -295,7 +300,7 @@ class Template(SubWikiText):
         """
         return get_arg(name, reversed(self.arguments))
 
-    def has_arg(self, name: str, value: str or None=None) -> bool:
+    def has_arg(self, name: str, value: str=None) -> bool:
         """Return true if the is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -323,7 +328,7 @@ class Template(SubWikiText):
         return False
 
 
-def mode(list_: list):
+def mode(list_: List[T]) -> T:
     """Return the most common item in the list.
 
     Return the first one if there are more than one most common items.
@@ -342,7 +347,7 @@ def mode(list_: list):
     return max(set(list_), key=list_.count)
 
 
-def get_arg(name: str, args) -> Argument or None:
+def get_arg(name: str, args: Iterator[Argument]) -> Optional[Argument]:
     """Return the first argument in the args that has the given name.
 
     Return None if no such argument is found.

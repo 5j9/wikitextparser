@@ -3,6 +3,9 @@
 
 import re
 from copy import deepcopy
+from typing import (
+    MutableSequence, Dict, List, Tuple, Union, Callable, Iterable
+)
 
 from wcwidth import wcswidth
 
@@ -70,8 +73,8 @@ class WikiText:
 
     def __init__(
             self,
-            string: str or list,
-            _type_to_spans: list or None=None,
+            string: Union[str, MutableSequence[str]],
+            _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
     ) -> None:
         """Initialize the object.
 
@@ -99,7 +102,7 @@ class WikiText:
         """Return the string representation of self."""
         return '{0}({1})'.format(self.__class__.__name__, repr(self.string))
 
-    def __contains__(self, value: str or WikiText) -> bool:
+    def __contains__(self, value: Union[str, 'WikiText']) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
 
         Also self and parsed_wikitext should belong to the same parsed
@@ -122,11 +125,11 @@ class WikiText:
     def __len__(self):
         return len(self.string)
 
-    def __getitem__(self, key: slice or int) -> str:
+    def __getitem__(self, key: Union[slice, int]) -> str:
         """Return self.string[item]."""
         return self.string[key]
 
-    def _check_index(self, key: slice or int) -> (int, int):
+    def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
 
         Used in  __setitem__ and __delitem__.
@@ -162,7 +165,7 @@ class WikiText:
             )
         return start + ss, stop + ss
 
-    def __setitem__(self, key: slice or int, value: str) -> None:
+    def __setitem__(self, key: Union[slice, int], value: str) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -199,7 +202,7 @@ class WikiText:
             for s, e in v:
                 spans.append((s + start, e + start))
 
-    def __delitem__(self, key: slice or int) -> None:
+    def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
 
         Note: If an operation involves both insertion and deletion, it'll be
@@ -264,11 +267,11 @@ class WikiText:
         self[0:] = newstring
 
     @property
-    def _span(self) -> tuple:
+    def _span(self) -> Tuple[int, int]:
         """Return self-span."""
         return 0, len(self._lststr[0])
 
-    def _not_in_atomic_subspans_split(self, char: str) -> list:
+    def _not_in_atomic_subspans_split(self, char: str) -> List[str]:
         """Split self.string where `char`'s not in atomic subspans."""
         # not used
         ss, se = self._span
@@ -285,7 +288,9 @@ class WikiText:
             splits.append(string[findstart:index])
             findstart = index + 1
 
-    def _not_in_atomic_subspans_partition(self, char: str) -> tuple:
+    def _not_in_atomic_subspans_partition(
+        self, char: str
+    ) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic subspans."""
         ss, se = self._span
         string = self._lststr[0][ss:se]
@@ -298,7 +303,9 @@ class WikiText:
             return string, '', ''
         return string[:index], char, string[index + 1:]
 
-    def _not_in_atomic_subspans_split_spans(self, char: str) -> list:
+    def _not_in_atomic_subspans_split_spans(
+        self, char: str
+    ) -> List[Tuple[int, int]]:
         """Like _not_in_atomic_subspans_split but return spans."""
         ss, se = self._span
         string = self._lststr[0][ss:se]
@@ -315,8 +322,8 @@ class WikiText:
             findstart = index + 1
 
     def _in_atomic_subspans_factory(
-        self, ss: int or None=None, se: int or None=None
-    ):
+        self, ss: int=None, se: int=None
+    ) -> Callable[[int], bool]:
         """Return a function that can tell if an index is in atomic subspans.
 
         Atomic sub-spans are those which are parsed separately. They currently
@@ -698,7 +705,7 @@ class WikiText:
 
     # Todo: Isn't it better to use generators for the following properties?
     @property
-    def parameters(self) -> list:
+    def parameters(self) -> List['Parameter']:
         """Return a list of parameter objects."""
         return [
             Parameter(
@@ -709,7 +716,7 @@ class WikiText:
         ]
 
     @property
-    def parser_functions(self) -> list:
+    def parser_functions(self) -> List['ParserFunction']:
         """Return a list of parser function objects."""
         return [
             ParserFunction(
@@ -720,7 +727,7 @@ class WikiText:
         ]
 
     @property
-    def templates(self) -> list:
+    def templates(self) -> List['Template']:
         """Return a list of templates as template objects."""
         return [
             Template(
@@ -731,7 +738,7 @@ class WikiText:
         ]
 
     @property
-    def wikilinks(self) -> list:
+    def wikilinks(self) -> List['WikiLink']:
         """Return a list of wikilink objects."""
         return [
             WikiLink(
@@ -742,7 +749,7 @@ class WikiText:
         ]
 
     @property
-    def comments(self) -> list:
+    def comments(self) -> List['Comment']:
         """Return a list of comment objects."""
         return [
             Comment(
@@ -753,7 +760,7 @@ class WikiText:
         ]
 
     @property
-    def external_links(self) -> list:
+    def external_links(self) -> List['ExternalLink']:
         """Return a list of found external link objects."""
         external_links = []
         type_to_spans = self._type_to_spans
@@ -791,7 +798,7 @@ class WikiText:
         return external_links
 
     @property
-    def sections(self) -> list:
+    def sections(self) -> List['Section']:
         """Return a list of section in current wikitext.
 
         The first section will always be the lead section, even if it is an
@@ -871,7 +878,7 @@ class WikiText:
         return sections
 
     @property
-    def tables(self) -> list:
+    def tables(self) -> List['Table']:
         """Return a list of found table objects."""
         tables = []
         type_to_spans = self._type_to_spans
@@ -926,10 +933,10 @@ class SubWikiText(WikiText):
 
     def __init__(
         self,
-        string: str or list,
-        _type_to_spans: list or None=None,
+        string: Union[str, MutableSequence[str]],
+        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
         _index: int=None,
-        _type: str or None=None,
+        _type: str=None,
     ) -> None:
         """Initialize the object.
 
@@ -958,7 +965,7 @@ class SubWikiText(WikiText):
                 self._type_to_spans[_type]
             ) - 1 if _index is None else _index
 
-    def _gen_subspan_indices(self, _type: str or None=None):
+    def _gen_subspan_indices(self, _type: str=None) -> Iterable[int]:
         """Yield all the subspan indices excluding self._span."""
         s, e = self._span
         for i, (ss, ee) in enumerate(self._type_to_spans[_type]):
@@ -967,6 +974,6 @@ class SubWikiText(WikiText):
                 yield i
 
     @property
-    def _span(self) -> tuple:
+    def _span(self) -> Tuple[int, int]:
         """Return the span of self."""
         return self._type_to_spans[self._type][self._index]

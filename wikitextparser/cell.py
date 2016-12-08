@@ -1,9 +1,10 @@
 ﻿"""Define the Cell class."""
 
 
+from typing import Match, MutableSequence, Union, Dict, List, Tuple
+
 import regex
 
-from .wikitext import SubWikiText
 from .tag import ATTRS_REGEX, SubWikiTextWithAttrs
 
 
@@ -142,13 +143,13 @@ class Cell(SubWikiTextWithAttrs):
 
     def __init__(
         self,
-        string: str or list,
+        string: Union[str, MutableSequence[str]],
         header: bool=False,
-        _type_to_spans: list or None=None,
-        _index: int or None=None,
-        _type: str or None=None,
-        _match=None,
-        _attrs_match: dict or None=None,
+        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
+        _index: int=None,
+        _type: str=None,
+        _match: Match=None,
+        _attrs_match: Match=None,
     ) -> None:
         """Initialize the object."""
         super().__init__(string, _type_to_spans, _index, _type)

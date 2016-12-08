@@ -1,5 +1,6 @@
 ﻿"""Define the Tag class."""
 
+from typing import Dict, Optional, Match
 
 import regex
 
@@ -102,7 +103,7 @@ class SubWikiTextWithAttrs(SubWikiText):
     _attrs_match = None
 
     @property
-    def attrs(self):
+    def attrs(self) -> Dict[str, str]:
         """Return self attributes as a dictionary."""
         captures = self._attrs_match.captures
         return dict(zip(captures('attr_name'), captures('attr_value')))
@@ -111,7 +112,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         """Return True if self contains an attribute with the given name."""
         return attr_name in self._attrs_match.captures('attr_name')
 
-    def get(self, attr_name: str) -> str or None:
+    def get(self, attr_name: str) -> Optional[str]:
         """Return the value of the last attribute with the given name.
 
         Return None if the attr_name does not exist in self.
@@ -156,7 +157,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
-        # Todo: match may have an offset
+        # Todo: Cell match may have an offset?
         match = self._attrs_match
         # Must be done in reversed order because the spans
         # change after each deletion.
@@ -173,9 +174,9 @@ class Tag(SubWikiTextWithAttrs):
     def __init__(
         self,
         string: str or list,
-        _type_to_spans: list or None=None,
-        _index: int or None=None,
-        match=None,
+        _type_to_spans: list=None,
+        _index: int=None,
+        match: Match=None,
     ) -> None:
         """Initialize the Tag object.
 
@@ -188,7 +189,7 @@ class Tag(SubWikiTextWithAttrs):
         )
 
     @property
-    def _match(self):
+    def _match(self) -> Match:
         """Return the match object for the current tag. Cache the result."""
         string = self.string
         cached_match = self._cached_match
@@ -254,7 +255,7 @@ class Tag(SubWikiTextWithAttrs):
         return SubWikiText(self._lststr, spans, index)
 
 
-def attrs_parser(attrs: str, pos=0, endpos=-1) -> dict:
+def attrs_parser(attrs: str, pos=0, endpos=-1) -> Dict[str, str]:
     """Return a dict of attribute names and values."""
     m = ATTRS_REGEX.match(attrs, pos=pos, endpos=endpos)
     if m:

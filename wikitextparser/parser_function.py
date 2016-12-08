@@ -1,5 +1,6 @@
 """"Define the ParserFunction class."""
 
+from typing import List
 
 from .wikitext import SubWikiText
 from .argument import Argument
@@ -10,7 +11,7 @@ class ParserFunction(SubWikiText):
     """Create a new ParserFunction object."""
 
     @property
-    def arguments(self) -> list:
+    def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         barsplits = self._not_in_atomic_subspans_split_spans('|')
         arguments = []
