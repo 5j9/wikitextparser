@@ -2,6 +2,7 @@ git:
     depth: 1
 language: python
 install:
+    - pip install -U setuptools
     - pip install .
     - pip install codecov
 script:
