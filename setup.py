@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     install_requires=['wcwidth', 'regex'],
     extras_require={
-        'python_version == "3.3" or python_version == "3.4"': ['typing'],
+        ":python_version == '3.3' or python_version == '3.4'": ['typing'],
     },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
