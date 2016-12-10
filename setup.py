@@ -8,8 +8,9 @@ from sys import version_info
 
 here = path.abspath(path.dirname(__file__))
 
-install_requires = ['wcwidth', 'regex']
+install_requires = ['regex', 'wcwidth']
 if version_info < (3, 5):
+    # Require typing in source distribution
     install_requires.append('typing')
 
 setup(
@@ -24,7 +25,8 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     packages=find_packages(),
     install_requires=install_requires,
-    # extras_require={"python_version < '3.5'": ['typing']},
+    # Require 'typing' in python wheel
+    extras_require={"python_version < '3.5'": ['typing']},
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
