@@ -16,7 +16,7 @@ if version_info < (3, 5):
 setup(
     name='wikitextparser',
     # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-    version='0.11.1.dev4',
+    version='0.11.1.dev5',
     description='A simple, purely python, WikiText parsing tool.',
     long_description=open(path.join(here, 'README.rst')).read(),
     url='https://github.com/5j9/wikitextparser',
@@ -26,9 +26,7 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     # Require 'typing' in python wheel
-    extras_require={
-        "python_version = '3.3' or python_version = '3.4'": ['typing']
-    },
+    extras_require={"python_version < '3.5'": ['typing']},
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
