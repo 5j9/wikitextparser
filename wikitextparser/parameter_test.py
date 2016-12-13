@@ -82,19 +82,19 @@ class Parameter(unittest.TestCase):
     def test_ignore_comment_pipes(self):
         # name
         p = wtp.Parameter('{{{1<!-- |comment| -->|text}}}')
-        self.assertEquals(p.name, '1<!-- |comment| -->')
+        self.assertEqual(p.name, '1<!-- |comment| -->')
         # name.setter
         p.name = '2<!-- |comment| -->'
-        self.assertEquals(p.name, '2<!-- |comment| -->')
+        self.assertEqual(p.name, '2<!-- |comment| -->')
         # default
-        self.assertEquals(p.default, 'text')
+        self.assertEqual(p.default, 'text')
         # default.setter
         p.default = 'default'
-        self.assertEquals(p.string, '{{{2<!-- |comment| -->|default}}}')
+        self.assertEqual(p.string, '{{{2<!-- |comment| -->|default}}}')
         # pipe
         p.default = None
-        self.assertEquals(p.string, '{{{2<!-- |comment| -->}}}')
-        self.assertEquals(p.pipe, '')
+        self.assertEqual(p.string, '{{{2<!-- |comment| -->}}}')
+        self.assertEqual(p.pipe, '')
 
 
 if __name__ == '__main__':

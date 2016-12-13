@@ -531,7 +531,7 @@ class Cells(unittest.TestCase):
     def test_cell_span_false(self):
         t = wtp.Table('{|class=wikitable\n|a=b|c\n|}')
         c = t.cells(span=False)
-        self.assertEquals(len(c), 1)
+        self.assertEqual(len(c), 1)
 
 
 if __name__ == '__main__':
