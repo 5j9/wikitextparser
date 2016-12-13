@@ -28,22 +28,24 @@ class Argument(SubWikiText):
         position = 1
         godstring = self._lststr[0]
         for ss, se in self._type_to_spans[self._type][:self._index]:
+            # Make sure the span is not closed.
             if ss < se:
                 equal_index = godstring.find('=', ss, se)
                 if equal_index == -1:
+                    # A preceding positional argument is detected.
                     position += 1
+                    continue
+                in_subspans = self._in_atomic_subspans_factory(ss, se)
+                while equal_index != -1:
+                    if not in_subspans(equal_index):
+                        # This is a keyword argument
+                        break
+                    # We don't care for this kind of equal sign.
+                    # Look for the next one.
+                    equal_index = godstring.find('=', equal_index + 1, se)
                 else:
-                    in_subspans = self._in_atomic_subspans_factory(ss, se)
-                    while equal_index != -1:
-                        if not in_subspans(equal_index):
-                            # This is a keyword argument
-                            break
-                        # We don't care for this kind of equal sign.
-                        # Look for the next one.
-                        equal_index = godstring.find('=', equal_index + 1, se)
-                    else:
-                        # All the equal signs where inside a subspan.
-                        position += 1
+                    # All the equal signs where inside a subspan.
+                    position += 1
         return str(position)
 
     @name.setter
