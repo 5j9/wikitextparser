@@ -4,7 +4,7 @@
 import re
 from copy import deepcopy
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Callable, Iterable
+    MutableSequence, Dict, List, Tuple, Union, Callable, Generator
 )
 
 from wcwidth import wcswidth
@@ -947,7 +947,9 @@ class SubWikiText(WikiText):
                 self._type_to_spans[_type]
             ) - 1 if _index is None else _index
 
-    def _gen_subspan_indices(self, _type: str=None) -> Iterable[int]:
+    def _gen_subspan_indices(
+        self, _type: str=None
+    ) -> Generator[int, None, None]:
         """Yield all the subspan indices excluding self._span."""
         s, e = self._span
         for i, (ss, ee) in enumerate(self._type_to_spans[_type]):
