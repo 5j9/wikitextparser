@@ -198,13 +198,11 @@ But if you need to
 * parse style tags like `'''bold'''` and ''italics'' (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
 * extract `HTML tags <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.tag>`_ or `entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
 
-then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under development and the API may change drastically in the future versions.
+then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under heavy development and the API may change drastically in the future versions.
 
 Adding some of the features above is planned for the future...
 
-Of-course `wikitextparser` has its own unique features, too. Accessing to individual cells of each table, pretty-printing templates, and a few other advanced functions.
+Of-course `wikitextparser` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
 
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete
-parse tree, instead tries to figure things out as the user requests for them.
-However if you are working with on-line data, any difference is usually
-negligible as the main bottleneck will be the network latency.
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete parse tree, instead tries to figure things out as the user requests for them.
+However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
