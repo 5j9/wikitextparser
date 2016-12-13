@@ -128,3 +128,7 @@ class Tag(unittest.TestCase):
     def test_attrs(self):
         t = wtp.Tag('<t n1=v1 n2="v2" n3>c</t>')
         self.assertEqual(t.attrs, {'n1': 'v1', 'n2': 'v2', 'n3': ''})
+
+    def test_contents_contains_tl(self):
+        t = wtp.Tag('<b>{{text|t}}</b>')
+        self.assertEqual(t.contents, '{{text|t}}')

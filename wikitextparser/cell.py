@@ -210,12 +210,12 @@ class Cell(SubWikiTextWithAttrs):
     @property
     def _attrs_match(self):
         """Return the match object for attributes."""
-        string = self.string
+        shadow = self._shadow
         cache = self._cached_attrs_match
-        if cache is not None and self._cached_string == string:
+        if cache is not None and self._cached_string == shadow:
             return cache
         s, e = self._match.span('attrs')
-        attrs_match = ATTRS_REGEX.match(string, s, e)
+        attrs_match = ATTRS_REGEX.match(shadow, s, e)
         self._cached_attrs_match = attrs_match
         return attrs_match
 

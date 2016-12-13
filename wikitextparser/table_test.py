@@ -466,10 +466,26 @@ class TableAttrs(unittest.TestCase):
     def test_multiline_table(self):
         table = wtp.Table('{|s\n|a\n|}')
         self.assertEqual(table.table_attrs, 's')
+        self.assertEqual(table.attrs, {'s': ''})
+        self.assertEqual(table.has_attr('s'), True)
+        self.assertEqual(table.has_attr('n'), False)
+        self.assertEqual(table.get_attr('s'), '')
         table.table_attrs = 'class="wikitable"'
         self.assertEqual(
             repr(table), "Table('{|class=\"wikitable\"\\n|a\\n|}')"
         )
+        self.assertEqual(table.get_attr('class'), 'wikitable')
+        table.set_attr('class', 'sortable')
+        self.assertEqual(table.attrs, {'class': 'sortable'})
+
+    def test_attr_contains_template_newline_invalid_chars(self):
+        t = wtp.parse(
+            '  {| class=wikitable |ب style="color: {{text| 1 =\n'
+            'red}};"\n'
+            '| cell\n'
+            '|}\n'
+        ).tables[0]
+        self.assertEqual(t.get_attr('style'), 'color: {{text| 1 =\nred}};')
 
 
 class Cells(unittest.TestCase):

@@ -181,7 +181,10 @@ By calling the ``cells`` method of a ``Table``, you can access table cells as ``
     |-
     |}
 
-Cell (and Tag) instances have `get`, `set`, `has`, and  `delete` methods to access their attributes.
+You can access HTML attributes of Tag, Table, and Cell instances using
+`get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
+
+
 
 Have a look at the test modules for more examples and probable pitfalls.
 

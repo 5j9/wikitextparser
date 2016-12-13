@@ -6,8 +6,7 @@ from typing import List, Match, Union, Optional, TypeVar
 
 import regex
 
-from .wikitext import SubWikiText
-from .tag import attrs_parser, ATTRS_REGEX
+from .tag import attrs_parser, ATTRS_REGEX, SubWikiTextWithAttrs
 from .cell import (
     Cell,
     NEWLINE_CELL_REGEX,
@@ -48,7 +47,8 @@ CAPTION_REGEX = regex.compile(
 )
 T = TypeVar('T')
 
-class Table(SubWikiText):
+
+class Table(SubWikiTextWithAttrs):
 
     """Create a new Table object."""
     # Todo: Define has, get, set, and delete methods.
@@ -56,7 +56,7 @@ class Table(SubWikiText):
 
     @property
     def _table_string_match(self) -> List[List[Match]]:
-        """Return (self.string, match_table)."""
+        """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
         pos = shadow.find('\n')
@@ -279,6 +279,16 @@ class Table(SubWikiText):
             h, s, t = string.partition('\n')
             # Insert caption after the first one.
             self.insert(len(h + s), '|+' + newcaption + '\n')
+
+    @property
+    def _attrs_match(self) -> Match:
+        shadow = self._shadow
+        cache = getattr(self, '_cached_attrs_match', None)
+        if cache and cache.string == shadow:
+            return cache
+        attrs_match = ATTRS_REGEX.match(shadow, 2, shadow.find('\n'))
+        self._cached_attrs_match = attrs_match
+        return attrs_match
 
     @property
     def table_attrs(self) -> str:

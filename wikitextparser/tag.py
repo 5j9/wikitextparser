@@ -96,22 +96,30 @@ class SubWikiTextWithAttrs(SubWikiText):
 
     """Define a class for SubWikiText objects that have attributes.
 
-    Any class inheriting from SubWikiTextWithAttrs should already have a
-    _attrs_match property.
+    Any class that is going to inherit from SubWikiTextWithAttrs should provide
+    _attrs_match property. Note that matching should be done on shadow.
+    It's usually a good idea to cache the _attrs_match property.
 
     """
 
-    _attrs_match = None
+    _attrs_match = None  # type: Match
 
     @property
     def attrs(self) -> Dict[str, str]:
         """Return self attributes as a dictionary."""
-        captures = self._attrs_match.captures
-        return dict(zip(captures('attr_name'), captures('attr_value')))
+        spans = self._attrs_match.spans
+        string = self.string
+        return dict(zip(
+            (string[s:e] for s, e in spans('attr_name')),
+            (string[s:e] for s, e in spans('attr_value')),
+        ))
 
     def has_attr(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
-        return attr_name in self._attrs_match.captures('attr_name')
+        string = self.string
+        return attr_name in (
+            string[s:e] for s, e in self._attrs_match.spans('attr_name')
+        )
 
     def has(self, attr_name: str) -> bool:
         """Deprecated alias for has_attr."""
@@ -127,10 +135,12 @@ class SubWikiTextWithAttrs(SubWikiText):
         Return an empty string if the mentioned name is an empty attribute.
 
         """
-        captures = self._attrs_match.captures
-        for i, capture in enumerate(reversed(captures('attr_name'))):
-            if capture == attr_name:
-                return captures('attr_value')[-i - 1]
+        spans = self._attrs_match.spans
+        string = self.string
+        for i, (s, e) in enumerate(reversed(spans('attr_name'))):
+            if string[s:e] == attr_name:
+                s, e = spans('attr_value')[-i - 1]
+                return string[s:e]
 
     def get(self, attr_name: str) -> Optional[str]:
         """Deprecated alias for get_attr."""
@@ -146,15 +156,16 @@ class SubWikiTextWithAttrs(SubWikiText):
 
         """
         match = self._attrs_match
-        for i, capture in enumerate(reversed(match.captures('attr_name'))):
-            if capture == attr_name:
+        string = self.string
+        for i, (s, e) in enumerate(reversed(match.spans('attr_name'))):
+            if string[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
                 q = 1 if match.string[ve] in '"\'' else 0
                 self[vs - q:ve + q] = '"{}"'.format(
                     attr_value.replace('"', '&quot;')
                 )
                 return
-        # The attr_name is new, add as a new attribute.
+        # The attr_name is new, add a new attribute.
         fmt = ' {}="{}"' if attr_value else ' {}'
         self.insert(
             match.span('start')[1],
@@ -175,10 +186,11 @@ class SubWikiTextWithAttrs(SubWikiText):
         """
         # Todo: Cell match may have an offset?
         match = self._attrs_match
+        string = self.string
         # Must be done in reversed order because the spans
         # change after each deletion.
-        for i, capture in enumerate(reversed(match.captures('attr_name'))):
-            if capture == attr_name:
+        for i, (s, e) in enumerate(reversed(match.spans('attr_name'))):
+            if string[s:e] == attr_name:
                 start, stop = match.spans('attr')[-i - 1]
                 del self[start:stop]
 
@@ -215,11 +227,11 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def _match(self) -> Match:
         """Return the match object for the current tag. Cache the result."""
-        string = self.string
+        shadow = self._shadow
         cached_match = self._cached_match
-        if cached_match.string != string:
+        if cached_match.string != shadow:
             # Compute the match
-            cached_match = TAG_REGEX.fullmatch(string)
+            cached_match = TAG_REGEX.fullmatch(shadow)
             self._cached_match = cached_match
         return cached_match
 
@@ -228,24 +240,28 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def name(self) -> str:
         """Return tag name."""
-        return self._match['name']
+        s, e = self._match.span('name')
+        return self.string[s:e]
 
     @name.setter
     def name(self, name: str) -> None:
         """Set a new tag name."""
         # The name in the end tag should be replaced first because the spans
         # of the match object change after each replacement.
-        match = self._match
-        start, end = match.span('end_name')
+        span = self._match.span
+        start, end = span('end_name')
         if start != -1:
             self[start:end] = name
-        start, end = match.span('name')
+        start, end = span('name')
         self[start:end] = name
 
     @property
-    def contents(self) -> str:
+    def contents(self) -> Optional[str]:
         """Return tag contents."""
-        return self._match['contents']
+        s, e = self._match.span('contents')
+        if s == -1:
+            return None
+        return self.string[s:e]
 
     @contents.setter
     def contents(self, contents: str) -> None:
@@ -265,14 +281,13 @@ class Tag(SubWikiTextWithAttrs):
             self[start:end] = contents
         else:
             # This is a self-closing tag.
-            start, end = match.span('self_closing')
-            self[start:end] = '>{0}</{1}>'.format(contents, match['name'])
+            s, e = match.span('self_closing')
+            self[s:e] = '>{0}</{1}>'.format(contents, match['name'])
 
     @property
     def parsed_contents(self) -> SubWikiText:
         """Return the contents as a SubWikiText object."""
-        match = self._match
-        span = match.span('contents')
+        span = self._match.span('contents')
         spans = self._type_to_spans
         swt_spans = spans.setdefault('SubWikiText', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
