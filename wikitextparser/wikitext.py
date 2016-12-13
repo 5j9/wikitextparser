@@ -299,7 +299,7 @@ class WikiText:
             findstart = index + 1
 
     def _in_atomic_subspans_factory(
-        self, ss: int=None, se: int=None
+        self, ss: int, se: int
     ) -> Callable[[int], bool]:
         """Return a function that can tell if an index is in atomic subspans.
 
@@ -322,9 +322,6 @@ class WikiText:
             * _atomic_split_spans
 
         """
-        # Calculate subspans
-        if ss is None:
-            ss, se = self._span
         subspans = []
         types_to_spans = self._type_to_spans
         for key in (
