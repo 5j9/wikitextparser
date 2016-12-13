@@ -1,6 +1,7 @@
 ﻿"""Define the Tag class."""
 
 from typing import Dict, Optional, Match
+from warnings import warn
 
 import regex
 
@@ -108,11 +109,16 @@ class SubWikiTextWithAttrs(SubWikiText):
         captures = self._attrs_match.captures
         return dict(zip(captures('attr_name'), captures('attr_value')))
 
-    def has(self, attr_name: str) -> bool:
+    def has_attr(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
         return attr_name in self._attrs_match.captures('attr_name')
 
-    def get(self, attr_name: str) -> Optional[str]:
+    def has(self, attr_name: str) -> bool:
+        """Deprecated alias for has_attr."""
+        warn('`has` is depracated, use `has_attr` instead', DeprecationWarning)
+        return self.has_attr(attr_name)
+
+    def get_attr(self, attr_name: str) -> Optional[str]:
         """Return the value of the last attribute with the given name.
 
         Return None if the attr_name does not exist in self.
@@ -126,7 +132,12 @@ class SubWikiTextWithAttrs(SubWikiText):
             if capture == attr_name:
                 return captures('attr_value')[-i - 1]
 
-    def set(self, attr_name: str, attr_value: str) -> None:
+    def get(self, attr_name: str) -> Optional[str]:
+        """Deprecated alias for get_attr."""
+        warn('`get` is depracated, use `get_attr` instead', DeprecationWarning)
+        return self.get_attr(attr_name)
+
+    def set_attr(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
 
         If there are already multiple attributes with the given name, only
@@ -151,7 +162,12 @@ class SubWikiTextWithAttrs(SubWikiText):
         )
         return
 
-    def delete(self, attr_name: str) -> None:
+    def set(self, attr_name: str, attr_value: str) -> None:
+        """Deprecated alias for set_attr."""
+        warn('`set` is depracated, use `set_attr` instead', DeprecationWarning)
+        return self.set_attr(attr_name, attr_value)
+
+    def del_attr(self, attr_name: str) -> None:
         """Delete all the attributes with the given name.
 
         Pass if the attr_name is not found in self.
@@ -165,6 +181,14 @@ class SubWikiTextWithAttrs(SubWikiText):
             if capture == attr_name:
                 start, stop = match.spans('attr')[-i - 1]
                 del self[start:stop]
+
+    def delete(self, attr_name: str) -> None:
+        """Deprecated alias for del_attr."""
+        warn(
+            '`delete` is depracated, use `del_attr` instead',
+            DeprecationWarning
+        )
+        return self.del_attr(attr_name)
 
 
 class Tag(SubWikiTextWithAttrs):
