@@ -55,17 +55,15 @@ class Table(SubWikiTextWithAttrs):
     # They should provide the same API as in Tag and Cell classes.
 
     @property
-    def _table_string_match(self) -> List[List[Match]]:
+    def _match_table(self) -> List[List[Match]]:
         """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
         pos = shadow.find('\n')
         lsp = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while shadow[lsp] not in ('!', '|'):
+        while shadow[lsp] not in '!|':
             nlp = shadow.find('\n', lsp)
-            if nlp == -1:
-                break
             pos = nlp
             lsp = _lstrip_increase(shadow, pos)
         # Start of the first row
@@ -129,7 +127,7 @@ class Table(SubWikiTextWithAttrs):
             wikitables can be inserted within templates.
 
         """
-        match_table = self._table_string_match
+        match_table = self._match_table
         string = self.string
         table_data = []
         if strip:
@@ -182,7 +180,7 @@ class Table(SubWikiTextWithAttrs):
 
         """
         ss = self._span[0]
-        match_table = self._table_string_match
+        match_table = self._match_table
         # todo: maybe shadow is better than string? add tests.
         string = self.string
         type_ = 'tc' + str(self._index)
