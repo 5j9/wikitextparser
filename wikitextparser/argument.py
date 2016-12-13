@@ -21,7 +21,7 @@ class Argument(SubWikiText):
         For positional arguments return the position as a string.
 
         """
-        pipename, equal, value = self._not_in_atomic_subspans_partition('=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             return pipename[1:]
         # positional argument
@@ -62,7 +62,7 @@ class Argument(SubWikiText):
     @property
     def positional(self) -> bool:
         """Return True if there is an equal sign in the argument else False."""
-        if self._not_in_atomic_subspans_partition('=')[1]:
+        if self._atomic_partition('=')[1]:
             return False
         else:
             return True
@@ -74,7 +74,7 @@ class Argument(SubWikiText):
         Raise ValueError if setting positional argument to keyword argument.
 
         """
-        pipename, equal, value = self._not_in_atomic_subspans_partition('=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             # Keyword argument
             if to_positional:
@@ -95,7 +95,7 @@ class Argument(SubWikiText):
     @property
     def value(self) -> str:
         """Return value of a keyword argument."""
-        pipename, equal, value = self._not_in_atomic_subspans_partition('=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             return value
         # Anonymous parameter
@@ -104,7 +104,7 @@ class Argument(SubWikiText):
     @value.setter
     def value(self, newvalue: str) -> None:
         """Assign the newvalue to self."""
-        pipename, equal, value = self._not_in_atomic_subspans_partition('=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             pnel = len(pipename + equal)
             self[pnel:pnel + len(value)] = newvalue

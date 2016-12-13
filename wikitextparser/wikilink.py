@@ -13,7 +13,7 @@ class WikiLink(SubWikiText):
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""
-        head, pipe, tail = self._not_in_atomic_subspans_partition('|')
+        head, pipe, tail = self._atomic_partition('|')
         if pipe:
             return head[2:]
         else:
@@ -22,7 +22,7 @@ class WikiLink(SubWikiText):
     @target.setter
     def target(self, newtarget: str) -> None:
         """Set a new target."""
-        head, pipe, tail = self._not_in_atomic_subspans_partition('|')
+        head, pipe, tail = self._atomic_partition('|')
         if not pipe:
             head = head[:-2]
         self[2:len(head)] = newtarget
@@ -30,14 +30,14 @@ class WikiLink(SubWikiText):
     @property
     def text(self) -> str:
         """Return display text of this WikiLink."""
-        head, pipe, tail = self._not_in_atomic_subspans_partition('|')
+        head, pipe, tail = self._atomic_partition('|')
         if pipe:
             return tail[:-2]
 
     @text.setter
     def text(self, newtext: Optional[str]) -> None:
         """Set self.text to newtext. Remove the text if newtext is None."""
-        head, pipe, tail = self._not_in_atomic_subspans_partition('|')
+        head, pipe, tail = self._atomic_partition('|')
         if pipe:
             if newtext is None:
                 del self[len(head + pipe) - 1:len(head + pipe + tail) - 2]

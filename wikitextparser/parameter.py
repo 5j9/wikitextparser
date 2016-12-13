@@ -13,7 +13,7 @@ class Parameter(SubWikiText):
     @property
     def name(self) -> str:
         """Return current parameter's name."""
-        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        name, pipe, default = self._atomic_partition('|')
         if pipe:
             return name[3:]
         return name[3:-3]
@@ -30,19 +30,19 @@ class Parameter(SubWikiText):
          Return '' otherwise.
 
          """
-        return self._not_in_atomic_subspans_partition('|')[1]
+        return self._atomic_partition('|')[1]
 
     @property
     def default(self) -> Optional[str]:
         """Return the default value. Return None if there is no default."""
-        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        name, pipe, default = self._atomic_partition('|')
         if pipe:
             return default[:-3]
 
     @default.setter
     def default(self, newdefault: Optional[str]) -> None:
         """Set a new default value. Use None to remove default."""
-        name, pipe, default = self._not_in_atomic_subspans_partition('|')
+        name, pipe, default = self._atomic_partition('|')
         if not pipe:
             # olddefault is None
             if newdefault is None:

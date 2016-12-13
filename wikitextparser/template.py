@@ -23,7 +23,7 @@ class Template(SubWikiText):
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        bar_spans = self._not_in_atomic_subspans_split_spans('|')[1:]
+        bar_spans = self._atomic_split_spans('|')[1:]
         arguments = []
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -50,7 +50,7 @@ class Template(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        h = self._not_in_atomic_subspans_partition('|')[0]
+        h = self._atomic_partition('|')[0]
         if len(h) == len(self.string):
             return h[2:-2]
         else:

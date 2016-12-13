@@ -13,7 +13,7 @@ class ParserFunction(SubWikiText):
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._not_in_atomic_subspans_split_spans('|')
+        barsplits = self._atomic_split_spans('|')
         arguments = []
         spans = self._type_to_spans
         lststr = self._lststr

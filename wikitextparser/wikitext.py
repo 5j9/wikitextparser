@@ -271,53 +271,30 @@ class WikiText:
         """Return self-span."""
         return 0, len(self._lststr[0])
 
-    def _not_in_atomic_subspans_split(self, char: str) -> List[str]:
-        """Split self.string where `char`'s not in atomic subspans."""
-        # not used
-        ss, se = self._span
-        string = self._lststr[0][ss:se]
-        splits = []
-        findstart = 0
-        in_spans = self._in_atomic_subspans_factory()
-        while True:
-            index = string.find(char, findstart)
-            while in_spans(ss + index):
-                index = string.find(char, index + 1)
-            if index == -1:
-                return splits + [string[findstart:]]
-            splits.append(string[findstart:index])
-            findstart = index + 1
-
-    def _not_in_atomic_subspans_partition(
+    def _atomic_partition(
         self, char: str
     ) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic subspans."""
-        ss, se = self._span
-        string = self._lststr[0][ss:se]
-        findstart = 0
-        in_spans = self._in_atomic_subspans_factory()
-        index = string.find(char, findstart)
-        while in_spans(ss + index):
-            index = string.find(char, index + 1)
+        shadow = self._shadow
+        string = self.string
+        index = shadow.find(char)
         if index == -1:
             return string, '', ''
         return string[:index], char, string[index + 1:]
 
-    def _not_in_atomic_subspans_split_spans(
+    def _atomic_split_spans(
         self, char: str
     ) -> List[Tuple[int, int]]:
         """Like _not_in_atomic_subspans_split but return spans."""
+        shadow = self._shadow
         ss, se = self._span
-        string = self._lststr[0][ss:se]
         results = []
         findstart = 0
-        in_spans = self._in_atomic_subspans_factory()
         while True:
-            index = string.find(char, findstart)
-            while in_spans(ss + index):
-                index = string.find(char, index + 1)
+            index = shadow.find(char, findstart)
             if index == -1:
-                return results + [(ss + findstart, se)]
+                results.append((ss + findstart, se))
+                return results
             results.append((ss + findstart, ss + index))
             findstart = index + 1
 
@@ -340,9 +317,9 @@ class WikiText:
         arguments with "|" or "=" as a separator.
 
         The following functions depend on this function:
-            * _not_in_atomic_subspans_partition
+            * _atomic_partition
             * _not_in_atomic_subspans_split
-            * _not_in_atomic_subspans_split_spans
+            * _atomic_split_spans
 
         """
         # Calculate subspans
@@ -468,7 +445,7 @@ class WikiText:
     def _shadow(self) -> str:
         """Return a copy of self.string with specified subspans replaced.
 
-        Subspans are replaced by a block of colons of the same size.
+        Subspans are replaced by a block of spaces of the same size.
         This function is called upon extracting tables or extracting the data
         inside them.
 
@@ -477,18 +454,26 @@ class WikiText:
 
         """
         ss, se = self._span
-        shadow = self.string
+        string = self.string
+        cached_string, cached_shadow = getattr(
+            self, '_shadow_cache', (None, None)
+        )
+        if cached_string == string:
+            return cached_shadow
+        shadow = string
         for type_ in (
             'Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',
+            'Parameter'
         ):
             for s, e in self._type_to_spans[type_]:
-                if s < ss or e > se:
+                if s < ss or e > se or (s == ss and e == se):
                     continue
                 shadow = (
                     shadow[:s - ss] +
-                    (e - s) * ':' +
+                    (e - s) * ' ' +
                     shadow[e - ss:]
                 )
+        self._shadow_cache = (string, shadow)
         return shadow
 
     def _pp_type_to_spans(self) -> dict:
