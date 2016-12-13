@@ -65,21 +65,25 @@ class Template(SubWikiText):
     def normal_name(
         self,
         rm_namespaces=('Template',),
+        capital_links=False,
         code: str=None,
     ) -> str:
-        """Return normal form of the name.
+        """Return normal form of self.name.
 
-        # Remove comments.
-        # Remove language code.
-        # Remove namespace ("template:" or any of `localized_namespaces`.
-        # Use space instead of underscore.
-        # Remove consecutive spaces.
-        # Use uppercase for the first letter.
-        # Remove #anchor.
+        - Remove comments.
+        - Remove language code.
+        - Remove namespace ("template:" or any of `localized_namespaces`.
+        - Use space instead of underscore.
+        - Remove consecutive spaces.
+        - Use uppercase for the first letter if `capital_links`.
+        - Remove #anchor.
 
         :rm_namespaces: is used to provide additional localized namespaces
             for the template namespace. They will be removed from the result.
             Default is ('Template',).
+        :capital_links: If True, convert the first letter of the template's
+            name to a capital letter. See [[mw:Manual:$wgCapitalLinks]] for
+            more info.
         :code: is the language code.
 
         Example:
@@ -112,11 +116,11 @@ class Template(SubWikiText):
                     break
         # Use space instead of underscore
         name = name.replace('_', ' ')
-        # todo: this is site dependant and should be an argument.
-        # Use uppercase for the first letter
-        n0 = name[0]
-        if n0.islower():
-            name = n0.upper() + name[1:]
+        if capital_links:
+            # Use uppercase for the first letter
+            n0 = name[0]
+            if n0.islower():
+                name = n0.upper() + name[1:]
         # Remove #anchor
         name, sep, tail = name.partition('#')
         return ' '.join(name.split())
