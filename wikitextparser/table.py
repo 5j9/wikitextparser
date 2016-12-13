@@ -472,9 +472,6 @@ def _semi_caption_increase(string: str, pos: int) -> int:
         while string[lsp] not in ('!', '|'):
             # This line is a continuation of semi-caption line.
             nlp = string.find('\n', lsp + 1)
-            if nlp == -1:
-                # This is the last line that ends with '|}'.
-                return pos
             pos = nlp
             lsp = _lstrip_increase(string, nlp)
     return pos
