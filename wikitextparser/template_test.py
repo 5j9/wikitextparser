@@ -51,7 +51,6 @@ class TemplateTest(unittest.TestCase):
 
     def test_normal_name(self):
         t = Template('{{ u |a}}')
-        help(t.normal_name)
         self.assertEqual('u', t.normal_name())
         self.assertEqual('U', t.normal_name(capital_links=True))
         t = Template('{{ template: u |a}}')
