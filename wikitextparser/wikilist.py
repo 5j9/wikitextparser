@@ -15,7 +15,7 @@ LIST_PATTERN = (
         (?<pattern>{pattern})
         (?(?<=;\s*)
             # mark inline definition as an item
-            (?<item>[^:\n]*)(?>:(?<item>.*))?
+            (?<item>[^:\n]*)(?<fullitem>:(?<item>.*))?
             (?>\n|\Z)%s
             |
             # non-definition
@@ -116,10 +116,10 @@ class WikiList(SubWikiText):
 
         """
         match = self._match
-        ms = match.start()
+        ss = self._span[0]
         s, e = match.spans('fullitem')[i]
-        s -= ms
-        e -= ms
+        e += (ss - s)
+        s = ss
         sublists = []
         pattern = self.pattern + pattern
         for lst in self.lists(pattern):

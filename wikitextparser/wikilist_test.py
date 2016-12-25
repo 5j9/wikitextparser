@@ -100,6 +100,14 @@ class WikiListTest(unittest.TestCase):
         self.assertEqual(swl.items, [' and nest them'])
         sswl = swl.sublists(0, '\*')[0]
         self.assertEqual(sswl.items, [' like this'])
+        ssswl = sswl.sublists(0, '[;:]')[0]
+        self.assertEqual(ssswl.items, [
+            ' definitions',
+            ' work:',
+            ' apple',
+            ' banana',
+            ' fruits',
+        ])
 
 if __name__ == '__main__':
     unittest.main()
