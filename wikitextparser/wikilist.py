@@ -100,7 +100,7 @@ class WikiList(SubWikiText):
     def level(self) -> int:
         """Return level of nesting for the current list.
 
-        Level is zero-based i.e. the level for list `* a` is zero.
+        Level is a one-based index, for example the level for `* a` will be 1.
 
         """
         return len(self._match['pattern'])
