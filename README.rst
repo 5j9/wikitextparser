@@ -27,7 +27,7 @@ Here is a short demo of some of the functionalities:
 
     >>> import wikitextparser as wtp
 
-WikiTextParser can detect sections, parserfunctions, templates, wikilinks, external links, arguments, tables, and HTML comments in your wikitext:
+WikiTextParser can detect sections, parserfunctions, templates, wikilinks, external links, arguments, tables, wiki-lists, and HTML comments in your wikitext:
 
 .. code:: python
 
@@ -185,6 +185,48 @@ You can access HTML attributes of Tag, Table, and Cell instances using
 `get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
 
 
+You can look for list based on their starting pattern and then access their items or sub-items using resultant list methods.
+
+.. code:: python
+
+        >>> parsed = wtp.parse(
+            'text\n'
+            '* list item a\n'
+            '* list item b\n'
+            '** sub-list of b\n'
+            '* list item c\n'
+            '** sub-list of b\n'
+            'text'
+        )
+        >>> wikilist = parsed.lists(pattern='\*')[0]
+        >>> wikilist.items
+        [' list item a', ' list item b', ' list item c']
+        >>> wikilist.lists('\*\*')
+        [WikiList('** sub-list of b\n'), WikiList('** sub-list of b\n')]
+        >>> wikilist.sublists(1, '\*')[0].items
+        [' sub-list of b']
+
+You can convert one type of list to another using the convert method:
+
+.. code:: python
+
+        >>> wl = wtp.WikiList(
+            ':*A1\n:*#B1\n:*#B2\n:*:continuing A1\n:*A2',
+            pattern=':\*'
+        )
+        >>> print(wl)
+        :*A1
+        :*#B1
+        :*#B2
+        :*:continuing A1
+        :*A2
+        >>> wl.convert('#')
+        >>> print(wl)
+        #A1
+        ##B1
+        ##B2
+        #:continuing A1
+        #A2
 
 Have a look at the test modules for more examples and probable pitfalls.
 
