@@ -14,7 +14,7 @@ class WikiListTest(unittest.TestCase):
             '* with a star\n'
             '** more stars mean\n'
             '*** deeper levels',
-            startchars='*'
+            pattern='\*'
         )
         items = ul.items
         self.assertEqual(items, [' Lists are easy to do:', ' with a star'])
@@ -36,14 +36,14 @@ class WikiListTest(unittest.TestCase):
             '##1-3\n'
             ' -->\n'
             '#2\n',
-            startchars='#'
+            pattern='\#'
         )
         self.assertEqual(wl.items[1], '2')
 
     def test_dont_return_shadow(self):
         wl = wtp.WikiList(
             '#1 {{t}}',
-            startchars='#'
+            pattern='\#'
         )
         self.assertEqual(wl.items[0], '1 {{t}}')
 
@@ -54,13 +54,33 @@ class WikiListTest(unittest.TestCase):
             '## 0.1\n'
             '#* 0.0\n'
             '# 2\n',
-            startchars='#'
+            pattern='\#'
         )
         items = wl.items[0]
         self.assertEqual(items, ' 0')
-        subitems0 = wl.sublists(0, '#')[0]
+        subitems0 = wl.sublists(0, '\#')[0]
         self.assertEqual(subitems0.items, [' 0.0', ' 0.1'])
 
+    def test_mixed_definition_lists(self):
+        wl = wtp.WikiList(
+            '; Mixed definition lists\n'
+            '; item 1 : definition\n'
+            ':; sub-item 1 plus term\n'
+            ':: two colons plus definition\n'
+            ':; sub-item 2 : colon plus definition\n'
+            '; item 2 \n'
+            ': back to the main list\n',
+            pattern='[:;]\s*'
+        )
+        self.assertEqual(
+            wl.items,
+            [
+                'Mixed definition lists',
+                'item 1 : definition',
+                'item 2 ',
+                'back to the main list',
+            ]
+        )
 
 
 if __name__ == '__main__':
