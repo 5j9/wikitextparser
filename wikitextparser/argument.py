@@ -35,6 +35,7 @@ class Argument(SubWikiText):
                     # A preceding positional argument is detected.
                     position += 1
                     continue
+                # Todo: cache the results of the following code?
                 in_subspans = self._in_atomic_subspans_factory(ss, se)
                 while equal_index != -1:
                     if not in_subspans(equal_index):

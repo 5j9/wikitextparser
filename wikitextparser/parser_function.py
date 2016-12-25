@@ -1,5 +1,6 @@
 """"Define the ParserFunction class."""
 
+
 from typing import List
 
 from .wikitext import SubWikiText

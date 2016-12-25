@@ -181,7 +181,7 @@ class Table(SubWikiTextWithAttrs):
         """
         ss = self._span[0]
         match_table = self._match_table
-        # todo: maybe shadow is better than string? add tests.
+        # Todo: maybe shadow is better than string? add tests.
         string = self.string
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
