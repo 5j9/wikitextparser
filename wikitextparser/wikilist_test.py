@@ -109,5 +109,26 @@ class WikiListTest(unittest.TestCase):
             ' fruits',
         ])
 
+    def test_convert(self):
+        wl = wtp.WikiList(
+            ':*A1\n'
+            ':*#B1\n'
+            ':*#B2\n'
+            ':*:continuing A1\n'
+            ':*A2',
+            pattern=':\*'
+        )
+        wl.convert('#')
+        self.assertEqual(
+            wl.string,
+            '#A1\n'
+            '##B1\n'
+            '##B2\n'
+            '#:continuing A1\n'
+            '#A2'
+        )
+        self.assertEqual(wl.pattern, '\#')
+
+
 if __name__ == '__main__':
     unittest.main()

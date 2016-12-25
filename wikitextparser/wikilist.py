@@ -103,12 +103,12 @@ class WikiList(SubWikiText):
         Level is zero-based i.e. the level for list `* a` is zero.
 
         """
-        return len(self.pattern) - 1
+        return len(self._match['pattern'])
 
     def sublists(
         self, i: int, pattern: str
     ) -> List['WikiList']:
-        """Return the Lists inside the item with the given item index.
+        """Return the Lists inside the item with the given index.
 
         :pattern: The starting symbol for the desired sub-lists.
             The `pattern` of the current list will be automatically added
@@ -132,5 +132,6 @@ class WikiList(SubWikiText):
         """Convert to another list type by replacing starting pattern."""
         match = self._match
         ms = match.start()
-        for s, e in match.spans('pattern'):
+        for s, e in reversed(match.spans('pattern')):
             self[s - ms:e - ms] = newstart
+        self.pattern = regex.escape(newstart)
