@@ -4,7 +4,7 @@
 # Todo: Consider using seperate strings for each node.
 
 
-import re
+import regex
 from copy import deepcopy
 from typing import (
     MutableSequence, Dict, List, Tuple, Union, Callable, Generator
@@ -21,35 +21,35 @@ from .spans import (
 
 
 # HTML
-HTML_TAG_REGEX = re.compile(
+HTML_TAG_REGEX = regex.compile(
     r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
-    re.DOTALL | re.IGNORECASE,
+    regex.DOTALL | regex.IGNORECASE,
 )
 # External links
 BRACKET_EXTERNALLINK_PATTERN = (
     r'\[' + VALID_EXTLINK_SCHEMES_PATTERN + VALID_EXTLINK_CHARS_PATTERN +
     r' *[^\]\n]*\]'
 )
-EXTERNALLINK_REGEX = re.compile(
+EXTERNALLINK_REGEX = regex.compile(
     r'(' + BARE_EXTERNALLINK_PATTERN + r'|' +
     BRACKET_EXTERNALLINK_PATTERN + r')',
-    re.IGNORECASE,
+    regex.IGNORECASE,
 )
 # Todo: Perhaps the following regular expressions could be improved by using
 # the features of the regex module.
 # Sections
-SECTION_HEADER_REGEX = re.compile(r'^=[^\n]+?= *$', re.M)
-LEAD_SECTION_REGEX = re.compile(
+SECTION_HEADER_REGEX = regex.compile(r'^=[^\n]+?= *$', regex.M)
+LEAD_SECTION_REGEX = regex.compile(
     r'.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|\Z)',
-    re.DOTALL | re.MULTILINE,
+    regex.DOTALL | regex.MULTILINE,
 )
-SECTION_REGEX = re.compile(
+SECTION_REGEX = regex.compile(
     SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
     SECTION_HEADER_REGEX.pattern + '|\Z)',
-    re.DOTALL | re.MULTILINE,
+    regex.DOTALL | regex.MULTILINE,
 )
 # Tables
-TABLE_REGEX = re.compile(
+TABLE_REGEX = regex.compile(
     r"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
@@ -66,7 +66,7 @@ TABLE_REGEX = re.compile(
     \n\s*
     (?:\|}|\Z)
     """,
-    re.DOTALL | re.MULTILINE | re.VERBOSE
+    regex.DOTALL | regex.MULTILINE | regex.VERBOSE
 )
 
 
@@ -906,6 +906,56 @@ class WikiText:
                 tables.append(Table(lststr, type_to_spans, mindex))
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
+
+    def lists(self, pattern: str) -> List['WikiList']:
+        """Return a list of WikiList objects.
+
+        :pattern: The starting pattern for list items.
+            Pattern will be passed to regex engine with VERBOSE flag, so `#`
+            and `*` should be escaped. Examples:
+
+                - `\#` means top-level ordered lists
+                - `\#\*` means unordred lists inside an ordered one
+
+            Currently definition lists are not well supported, but you can
+            use `[:;]` as their pattern.
+
+            Tips and tricks:
+
+                Be careful when using the following patterns as they will
+                probably cause malfunction in the `sublists` method of the
+                resultant List. (However they should be safe to use if you are
+                not going to use the `sublists` method.)
+
+                - Use `\*+` as a pattern and nested unordered lists will be
+                    treated as flat.
+                - Use `\*\s*` as pattern to rtstrip `items` of the list.
+
+        """
+        lststr = self._lststr
+        type_to_spans = self._type_to_spans
+        spans = type_to_spans.setdefault('WikiList', [])
+        pattern = pattern
+        # if the last char is ']', we are looking for definition lists
+        list_regex = regex.compile(
+            LIST_PATTERN.format(pattern=pattern),
+            regex.MULTILINE | regex.VERBOSE,
+        )
+        ss = self._span[0]
+        lists = []
+        for index, m in enumerate(list_regex.finditer(self._shadow)):
+            ms, me = m.span()
+            span = ss + ms, ss + me
+            index = next((i for i, s in enumerate(spans) if s == span), None)
+            if index is None:
+                index = len(spans)
+                spans.append(span)
+            lists.append(
+                WikiList(
+                    lststr, pattern, m, type_to_spans, index, 'WikiList'
+                )
+            )
+        return lists
 
 
 class SubWikiText(WikiText):
