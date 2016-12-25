@@ -118,6 +118,7 @@ class WikiListTest(unittest.TestCase):
             ':*A2',
             pattern=':\*'
         )
+        self.assertEqual(wl.level, 2)
         wl.convert('#')
         self.assertEqual(
             wl.string,
@@ -128,7 +129,12 @@ class WikiListTest(unittest.TestCase):
             '#A2'
         )
         self.assertEqual(wl.pattern, '\#')
+        self.assertEqual(wl.level, 1)
 
+    def test_cache_update(self):
+        wl = wtp.WikiList('*a {{t}}', pattern='\*')
+        wl.templates[0].name = 'ttt'
+        self.assertEqual(wl.string, '*a {{ttt}}')
 
 if __name__ == '__main__':
     unittest.main()
