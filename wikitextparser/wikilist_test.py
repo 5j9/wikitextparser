@@ -47,7 +47,7 @@ class WikiListTest(unittest.TestCase):
         )
         self.assertEqual(wl.items[0], '1 {{t}}')
 
-    def test_subitems_for_an_item(self):
+    def test_subitems_for_the_first_item(self):
         wl = wtp.WikiList(
             '# 0\n'
             '## 0.0\n'
@@ -60,6 +60,24 @@ class WikiListTest(unittest.TestCase):
         self.assertEqual(items, ' 0')
         subitems0 = wl.sublists(0, '\#')[0]
         self.assertEqual(subitems0.items, [' 0.0', ' 0.1'])
+
+    def test_subitems_for_the_second_item(self):
+        parsed = wtp.parse(
+            'text\n'
+            '* list item a\n'
+            '* list item b\n'
+            '** sub-list of b\n'
+            '* list item c\n'
+            'text'
+        )
+        wikilist = parsed.lists(pattern='\*')[0]
+        self.assertEqual(
+            wikilist.items, [' list item a', ' list item b', ' list item c']
+        )
+        sublist = wikilist.sublists(1, '\*')[0]
+        self.assertEqual(
+            sublist.items, [' sub-list of b']
+        )
 
     def test_mixed_definition_lists(self):
         wl = wtp.WikiList(
@@ -135,6 +153,7 @@ class WikiListTest(unittest.TestCase):
         wl = wtp.WikiList('*a {{t}}', pattern='\*')
         wl.templates[0].name = 'ttt'
         self.assertEqual(wl.string, '*a {{ttt}}')
+
 
 if __name__ == '__main__':
     unittest.main()

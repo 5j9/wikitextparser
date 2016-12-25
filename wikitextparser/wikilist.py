@@ -117,9 +117,10 @@ class WikiList(SubWikiText):
         """
         match = self._match
         ss = self._span[0]
+        ms = match.start()
         s, e = match.spans('fullitem')[i]
-        e += (ss - s)
-        s = ss
+        e -= ms - ss
+        s -= ms - ss
         sublists = []
         pattern = self.pattern + pattern
         for lst in self.lists(pattern):
