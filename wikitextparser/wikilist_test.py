@@ -76,12 +76,30 @@ class WikiListTest(unittest.TestCase):
             wl.items,
             [
                 'Mixed definition lists',
-                'item 1 : definition',
+                'item 1 ',
+                ' definition',
                 'item 2 ',
                 'back to the main list',
             ]
         )
 
+    def test_travese_mixed_list_completely(self):
+        wl = wtp.WikiList(
+            '* Or create mixed lists\n'
+            '*# and nest them\n'
+            '*#* like this\n'
+            '*#*; definitions\n'
+            '*#*: work:\n'
+            '*#*; apple\n'
+            '*#*; banana\n'
+            '*#*: fruits',
+            pattern='\*'
+        )
+        self.assertEqual(wl.items, [' Or create mixed lists'])
+        swl = wl.sublists(0, '\#')[0]
+        self.assertEqual(swl.items, [' and nest them'])
+        sswl = swl.sublists(0, '\*')[0]
+        self.assertEqual(sswl.items, [' like this'])
 
 if __name__ == '__main__':
     unittest.main()

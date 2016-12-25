@@ -1,6 +1,5 @@
 """Define the class for List objects."""
 
-
 from typing import List, Union, Tuple, Dict, MutableSequence, Match
 
 import regex
@@ -8,17 +7,24 @@ import regex
 from .wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = r'(?>^(?P<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
+SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
 LIST_PATTERN = (
     r'''
-    (?P<fullitem>
+    (?<fullitem>
         ^
-        (?P<pattern>{pattern})
-        (?P<item>.*)
-        (?>\n|\Z)%s
+        (?<pattern>{pattern})
+        (?(?<=;\s*)
+            # mark inline definition as an item
+            (?<item>[^:\n]*)(?>:(?<item>.*))?
+            (?>\n|\Z)%s
+            |
+            # non-definition
+            (?<item>.*)
+            (?>\n|\Z)%s
+        )
     )+
     '''
-    % SUBLIST_PATTERN
+    % (SUBLIST_PATTERN, SUBLIST_PATTERN)
 )
 
 
@@ -69,7 +75,6 @@ class WikiList(SubWikiText):
         Don't include subitems and the start pattern.
 
         """
-        # todo: special care is needed for description lists
         items = []
         append = items.append
         string = self.string
