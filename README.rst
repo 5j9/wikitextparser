@@ -181,11 +181,11 @@ By calling the ``cells`` method of a ``Table``, you can access table cells as ``
     |-
     |}
 
-You can access HTML attributes of Tag, Table, and Cell instances using
+Access HTML attributes of Tag, Table, and Cell instances using
 `get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
 
 
-You can look for list based on their starting pattern and then access their items or sub-items using resultant list methods.
+Look for lists based on their starting pattern and then access their items or sub-items using resultant lists methods.
 
 .. code:: python
 
@@ -206,7 +206,7 @@ You can look for list based on their starting pattern and then access their item
         >>> wikilist.sublists(1, '\*')[0].items
         [' sub-list of b']
 
-You can convert one type of list to another using the convert method:
+Convert one type of list to another using the convert method:
 
 .. code:: python
 
