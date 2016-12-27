@@ -60,6 +60,10 @@ class WikiListTest(unittest.TestCase):
         self.assertEqual(items, ' 0')
         subitems0 = wl.sublists(0, '\#')[0]
         self.assertEqual(subitems0.items, [' 0.0', ' 0.1'])
+        # Test to see that arguments are optional.
+        sublists = wl.sublists()
+        self.assertEqual(sublists[1].fullitems, ['#* 0.0\n'])
+        self.assertEqual(sublists[0].items, [' 0.0', ' 0.1'])
 
     def test_subitems_for_the_second_item(self):
         parsed = wtp.parse(

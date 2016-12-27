@@ -106,27 +106,44 @@ class WikiList(SubWikiText):
         return len(self._match['pattern'])
 
     def sublists(
-        self, i: int, pattern: str
+        self, i: int=None, pattern: str=None
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
+
+        :i: The index if the item which its sublists are desired.
+            The performance is likely to be better if `i` is None.
 
         :pattern: The starting symbol for the desired sub-lists.
             The `pattern` of the current list will be automatically added
             as prefix.
+            Although this parameter is optional, but specifying it can improve
+            the performance.
 
         """
+        patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
+        self_pattern = self.pattern
+        lists = self.lists
+        sublists = []
+        sublists_append = sublists.append
+        if i is None:
+            # Any sublist is acceptable
+            for pattern in patterns:
+                for lst in lists(self_pattern + pattern):
+                    sublists_append(lst)
+            return sublists
+        # Only return sub-lists that are within the given item
         match = self._match
+        fullitem_spans = match.spans('fullitem')
         ss = self._span[0]
         ms = match.start()
-        s, e = match.spans('fullitem')[i]
+        s, e = fullitem_spans[i]
         e -= ms - ss
         s -= ms - ss
-        sublists = []
-        pattern = self.pattern + pattern
-        for lst in self.lists(pattern):
-            ls, le = lst._span
-            if s < ls and le <= e:
-                sublists.append(lst)
+        for pattern in patterns:
+            for lst in lists(self_pattern + pattern):
+                ls, le = lst._span
+                if s < ls and le <= e:
+                    sublists_append(lst)
         return sublists
 
     def convert(self, newstart: str) -> None:
