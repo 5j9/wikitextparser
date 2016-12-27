@@ -911,16 +911,14 @@ class WikiText:
         """Return a list of WikiList objects.
 
         :pattern: The starting pattern for list items.
-            Pattern will be passed to regex engine with VERBOSE flag, so `#`
-            and `*` should be escaped. Examples:
+            Return all types of lists (ol, ul, and dl) if pattern is None.
+            If pattern is not None, it will be passed to the regex engine with
+            VERBOSE flag on, so `#` and `*` should be escaped. Examples:
 
                 - `\#` means top-level ordered lists
                 - `\#\*` means unordred lists inside an ordered one
-
-            Currently definition lists are not well supported, but you can
-            use `[:;]` as their pattern.
-
-            Return all types of lists (ol, ul, and dl) if pattern is None.
+                - Currently definition lists are not well supported, but you
+                    can use `[:;]` as their pattern.
 
             Tips and tricks:
 
@@ -933,12 +931,15 @@ class WikiText:
                     treated as flat.
                 - Use `\*\s*` as pattern to rtstrip `items` of the list.
 
+                Although this parameter is optional, but specifying it can
+                improve the performance.
+
         """
         lists = []
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
-        patterns = (pattern,) if pattern else ('\#', '\*', '[:;]')
+        patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
         for pattern in patterns:
             list_regex = regex.compile(
                 LIST_PATTERN.format(pattern=pattern),
