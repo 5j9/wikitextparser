@@ -773,5 +773,15 @@ class Sections(unittest.TestCase):
         self.assertEqual('=== s2 ===\nc\n', s3.string)
 
 
+class WikiList(unittest.TestCase):
+
+    def test_get_lists_with_no_pattern(self):
+        wikitext = '*a\n#b\n;c:d'
+        parsed = wtp.parse(wikitext)
+        lists = parsed.lists()
+        self.assertEqual(len(lists), 3)
+        self.assertEqual(lists[2].items, ['c', 'd'])
+
+
 if __name__ == '__main__':
     unittest.main()

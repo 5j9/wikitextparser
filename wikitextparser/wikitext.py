@@ -907,7 +907,7 @@ class WikiText:
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
-    def lists(self, pattern: str) -> List['WikiList']:
+    def lists(self, pattern: str=None) -> List['WikiList']:
         """Return a list of WikiList objects.
 
         :pattern: The starting pattern for list items.
@@ -919,6 +919,8 @@ class WikiText:
 
             Currently definition lists are not well supported, but you can
             use `[:;]` as their pattern.
+
+            Return all types of lists (ol, ul, and dl) if pattern is None.
 
             Tips and tricks:
 
@@ -932,29 +934,29 @@ class WikiText:
                 - Use `\*\s*` as pattern to rtstrip `items` of the list.
 
         """
+        lists = []
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
-        pattern = pattern
-        # if the last char is ']', we are looking for definition lists
-        list_regex = regex.compile(
-            LIST_PATTERN.format(pattern=pattern),
-            regex.MULTILINE | regex.VERBOSE,
-        )
-        ss = self._span[0]
-        lists = []
-        for index, m in enumerate(list_regex.finditer(self._shadow)):
-            ms, me = m.span()
-            span = ss + ms, ss + me
-            index = next((i for i, s in enumerate(spans) if s == span), None)
-            if index is None:
-                index = len(spans)
-                spans.append(span)
-            lists.append(
-                WikiList(
-                    lststr, pattern, m, type_to_spans, index, 'WikiList'
-                )
+        patterns = (pattern,) if pattern else ('\#', '\*', '[:;]')
+        for pattern in patterns:
+            list_regex = regex.compile(
+                LIST_PATTERN.format(pattern=pattern),
+                regex.MULTILINE | regex.VERBOSE,
             )
+            ss = self._span[0]
+            for index, m in enumerate(list_regex.finditer(self._shadow)):
+                ms, me = m.span()
+                span = ss + ms, ss + me
+                index = next((i for i, s in enumerate(spans) if s == span), None)
+                if index is None:
+                    index = len(spans)
+                    spans.append(span)
+                lists.append(
+                    WikiList(
+                        lststr, pattern, m, type_to_spans, index, 'WikiList'
+                    )
+                )
         return lists
 
 
