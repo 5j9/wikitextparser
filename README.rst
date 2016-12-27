@@ -185,28 +185,44 @@ Access HTML attributes of Tag, Table, and Cell instances using
 `get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
 
 
-Look for lists based on their starting pattern and then access their items or sub-items using resultant lists methods.
+The `lists` method provides access to lists within the wikitext.
 
 .. code:: python
 
-        >>> parsed = wtp.parse(
-            'text\n'
-            '* list item a\n'
-            '* list item b\n'
-            '** sub-list of b\n'
-            '* list item c\n'
-            '** sub-list of b\n'
-            'text'
-        )
-        >>> wikilist = parsed.lists(pattern='\*')[0]
-        >>> wikilist.items
-        [' list item a', ' list item b', ' list item c']
-        >>> wikilist.lists('\*\*')
-        [WikiList('** sub-list of b\n'), WikiList('** sub-list of b\n')]
-        >>> wikilist.sublists(1, '\*')[0].items
-        [' sub-list of b']
+    >>> parsed = wtp.parse(
+        'text\n'
+        '* list item a\n'
+        '* list item b\n'
+        '** sub-list of b\n'
+        '* list item c\n'
+        '** sub-list of b\n'
+        'text'
+    )
+    >>> wikilist = parsed.lists()[0]
+    >>> wikilist.items
+    [' list item a', ' list item b', ' list item c']
 
-Convert one type of list to another using the convert method:
+The `sublists` method can be used to get all sublists of the current list or just sublists of specific items:
+
+.. code:: python
+
+    >>> wikilist.sublists()
+    [WikiList('** sub-list of b\n'), WikiList('** sub-list of b\n')]
+    >>> wikilist.sublists(1)[0].items
+    [' sub-list of b']
+
+It also has an optional `pattern` argument that works similar to `lists`, except that the current list pattern will be automatically added to it as a prefix:
+
+.. code:: python
+
+    >>> wikilist = wtp.WikiList('#a\n#b\n##ba\n#*bb\n#:bc\n#c', '\#')
+    >>> wikilist.sublists()
+    [WikiList('##ba\n'), WikiList('#*bb\n'), WikiList('#:bc\n')]
+    >>> wikilist.sublists(pattern='\*')
+    [WikiList('#*bb\n')]
+
+
+Convert one type of list to another using the convert method. Specifying the starting pattern of the desired lists can facilitate finding them and improves the performance:
 
 .. code:: python
 
