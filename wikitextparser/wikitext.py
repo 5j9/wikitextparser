@@ -84,8 +84,8 @@ class WikiText:
         Set the initial values for self._lststr, self._type_to_spans.
 
         Parameters:
-        - lststr: The raw string of the object to be parsed or a list pointing
-            to the mother string of the parent object.
+        - string: The string to be parsed or a list containing the string of
+            the parent object.
         - _type_to_spans: If the lststr is already parsed, pass its
             _type_to_spans property as _type_to_spans to avoid parsing it
             again.
