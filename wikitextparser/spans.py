@@ -1,8 +1,9 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-import re
 from typing import Dict, List, Tuple
+
+import regex
 
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
@@ -14,22 +15,22 @@ TEMPLATE_PATTERN = (
     r'[^' + INVALID_TITLE_CHARS_PATTERN + r']*'
     r'\s*(\|[^{}]*?\}\}|\}\})'
 )
-INVALID_NAME_TEMPLATE_REGEX = re.compile(
+INVALID_NAME_TEMPLATE_REGEX = regex.compile(
     r'\{\{\s*'
     r'[_\s]*'
     r'\s*(\|[^{}]*?\}\}|\}\})'
 )
-TEMPLATE_NOT_PARAM_REGEX = re.compile(
+TEMPLATE_NOT_PARAM_REGEX = regex.compile(
     TEMPLATE_PATTERN + r'(?!\})'
     r'|(?<!{)' + TEMPLATE_PATTERN
 )
 # Parameters
-TEMPLATE_PARAMETER_REGEX = re.compile(r'\{\{\{[^{}]*?\}\}\}')
+TEMPLATE_PARAMETER_REGEX = regex.compile(r'\{\{\{[^{}]*?\}\}\}')
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-PARSER_FUNCTION_REGEX = re.compile(
+PARSER_FUNCTION_REGEX = regex.compile(
     r"""
     \{\{\s*
     (?:
@@ -127,7 +128,7 @@ PARSER_FUNCTION_REGEX = re.compile(
     )
     :[^{}]*?\}\}
     """,
-    re.VERBOSE
+    regex.VERBOSE
 )
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
@@ -147,11 +148,11 @@ BARE_EXTERNALLINK_PATTERN = (
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_REGEX = re.compile(
+WIKILINK_REGEX = regex.compile(
     r'\[\[(?!' + BARE_EXTERNALLINK_PATTERN + r')' +
     '[^' + INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') + ']*'
     r'(\]\]|\|(?:[\S\s](?!\[\[))*?\]\])',
-    re.IGNORECASE,
+    regex.IGNORECASE,
 )
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
@@ -192,7 +193,7 @@ TAG_EXTENSIONS = [
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-EXTENSION_TAGS_REGEX = re.compile(
+EXTENSION_TAGS_REGEX = regex.compile(
     r'<(' + '|'.join(TAG_EXTENSIONS) +
     r""")
     \b[^>]*
@@ -212,7 +213,7 @@ EXTENSION_TAGS_REGEX = re.compile(
     )*?
     # tag-end
     </\1\s*>""",
-    re.IGNORECASE | re.VERBOSE,
+    regex.IGNORECASE | regex.VERBOSE,
 )
 # Contents of the some of the tags mentioned above can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
@@ -233,11 +234,11 @@ PARSABLE_TAG_EXTENSIONS = [
     'gallery',
     'indicator',
 ]
-COMMENT_REGEX = re.compile(
+COMMENT_REGEX = regex.compile(
     r'<!--.*?-->',
-    re.DOTALL,
+    regex.DOTALL,
 )
-SINGLE_BRACES_REGEX = re.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
+SINGLE_BRACES_REGEX = regex.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
 def parse_to_spans(string: str) -> Dict[str, List[Tuple[int, int]]]:
@@ -400,10 +401,10 @@ def parse_to_spans_innerloop(
                 group = match.group()
                 string = string.replace(group, len(group) * '_')
         # The following was much more faster than
-        # string = re.sub(r'{(?=[^}]*$)', '_', string)
+        # string = regex.sub(r'{(?=[^}]*$)', '_', string)
         head, sep, tail = string.rpartition('}')
         string = ''.join((head, sep, tail.replace('{', '_')))
-        # Also the re module does not support non-fixed-length lookbehinds.
+        # Also the regex module does not support non-fixed-length lookbehinds.
         head, sep, tail = string.partition('{')
         string = ''.join((head.replace('}', '_'), sep, tail))
         match = None
