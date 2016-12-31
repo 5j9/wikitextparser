@@ -19,6 +19,7 @@ from .wikilist import LIST_PATTERN as _LIST_PATTERN
 
 
 _regex.DEFAULT_VERSION = _regex.VERSION1
+
 _wikitext.ExternalLink = ExternalLink
 _wikitext.WikiLink = WikiLink
 _wikitext.Template = Template
@@ -29,7 +30,6 @@ _wikitext.Table = Table
 _wikitext.Section = Section
 _wikitext.WikiList = WikiList
 _wikitext.LIST_PATTERN = _LIST_PATTERN
-
 
 WikiText = _wikitext.WikiText
 parse = WikiText
