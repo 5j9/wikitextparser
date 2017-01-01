@@ -30,8 +30,7 @@ class Argument(SubWikiText):
         for ss, se in self._type_to_spans[self._type][:self._index]:
             # Make sure the span is not closed.
             if ss < se:
-                # Todo: Which one is better: ord('=') or b'='?
-                equal_index = _bytearray.find(b'=', ss, se)
+                equal_index = _bytearray.find(61, ss, se)  # 61 == ord('=')
                 if equal_index == -1:
                     # A preceding positional argument is detected.
                     position += 1

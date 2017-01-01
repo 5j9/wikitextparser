@@ -190,8 +190,6 @@ class WikiText:
         will improve.
 
         """
-        if isinstance(value, str):
-            raise NotImplementedError
         start, stop = self._check_index(key)
         # Update lststr
         _bytearray = self._bytearray
@@ -254,9 +252,6 @@ class WikiText:
         point to somewhere in self.string.
 
         """
-        # todo: remvoe this
-        if isinstance(value, str):
-            raise NotImplementedError
         ss, se = self._span
         _bytearray = self._bytearray
         if index < 0:
@@ -483,7 +478,7 @@ class WikiText:
         )
         if cached_bytes == self_bytes:
             return cached_shadow
-        shadow = self_bytes.copy()
+        shadow = self_bytes #.copy()
         for type_ in (
             'Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',
             'Parameter'

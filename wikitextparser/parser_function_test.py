@@ -49,16 +49,6 @@ class ParserFunction(unittest.TestCase):
         wt = wtp.WikiText("""{{آرایش‌عدد:text|R}}""")
         self.assertEqual(1, len(wt.parser_functions))
 
-    def test_unicode_name(self):
-        wt = wtp.WikiText("""{{
-        #اگرخطا: {{ #حساب: 1*{{{AuthorMask}}} }}
-        |{{{AuthorMask}}}
-        |<del>{{loop|{{{AuthorMask}}}|2=&emsp;}}</del>
-      }}""")
-        print(wt.parser_functions)
-        pf1, pf2 = wt.parser_functions
-        self.assertEqual(pf1.name, ' #حساب')
-        self.assertEqual(pf1.parameters[0].name, 'AuthorMask')
 
 if __name__ == '__main__':
     unittest.main()
