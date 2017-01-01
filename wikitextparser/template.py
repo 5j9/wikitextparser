@@ -50,17 +50,21 @@ class Template(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        h = self._atomic_partition('|')[0]
-        if len(h) == len(self.string):
-            return h[2:-2]
+        h = self._atomic_partition(b'|')[0]
+        if len(h) == len(self):
+            return h[2:-2].decode()
         else:
-            return h[2:]
+            return h[2:].decode()
 
     @name.setter
     def name(self, newname: str) -> None:
         """Set the new name for the template."""
-        name = self.name
-        self[2:2 + len(name)] = newname
+        h = self._atomic_partition(b'|')[0]
+        if len(h) == len(self):
+            name = h[2:-2]
+        else:
+            name = h[2:]
+        self[2:2 + len(name)] = newname.encode()
 
     def normal_name(
         self,

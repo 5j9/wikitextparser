@@ -21,46 +21,46 @@ class WikiText(unittest.TestCase):
     def test_getitem(self):
         s = '{{t1|{{t2}}}}'
         t2, t1 = wtp.WikiText(s).templates
-        self.assertEqual(t2[2], 't')
-        self.assertEqual(t2[2:4], 't2')
-        self.assertEqual(t2[-4:-2], 't2')
-        self.assertEqual(t2[-3], '2')
+        self.assertEqual(t2[2], ord('t'))
+        self.assertEqual(t2[2:4], bytearray(b't2'))
+        self.assertEqual(t2[-4:-2], b't2')
+        self.assertEqual(t2[-3], ord('2'))
 
     def test_setitem(self):
         s = '{{t1|{{t2}}}}'
         wt = wtp.WikiText(s)
         t2, t1 = wt.templates
-        t2[2] = 'a'
+        t2[2] = b'a'
         self.assertEqual(t2.string, '{{a2}}')
         self.assertEqual(t1.string, '{{t1|{{a2}}}}')
-        t2[2] = 'bb'
+        t2[2] = b'bb'
         self.assertEqual(t2.string, '{{bb2}}')
         self.assertEqual(t1.string, '{{t1|{{bb2}}}}')
-        t2[2:5] = 'ccc'
+        t2[2:5] = b'ccc'
         self.assertEqual(t2.string, '{{ccc}}')
         self.assertEqual(t1.string, '{{t1|{{ccc}}}}')
-        t2[-5:-2] = 'd'
+        t2[-5:-2] = b'd'
         self.assertEqual(wt.string, '{{t1|{{d}}}}')
-        t2[-3] = 'e'
+        t2[-3] = b'e'
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
     def test_setitem_errors(self):
         w = wtp.WikiText('a')
-        self.assertRaises(IndexError, w.__setitem__, -2, 'b')
-        self.assertEqual('a', w[-9:9])
-        self.assertRaises(IndexError, w.__setitem__, 1, 'c')
+        self.assertRaises(IndexError, w.__setitem__, -2, b'b')
+        self.assertEqual(b'a', w[-9:9])
+        self.assertRaises(IndexError, w.__setitem__, 1, b'c')
         self.assertRaises(
-            NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd'
+            NotImplementedError, w.__setitem__, slice(0, 1, 1), b'd'
         )
-        self.assertEqual('a', w[-1:])
-        self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
+        self.assertEqual(b'a', w[-1:])
+        self.assertRaises(IndexError, w.__setitem__, slice(-2, None), b'e')
         # stop is out of range
-        self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
-        w[0] = 'gg'
-        w[1] = 'hh'
+        self.assertRaises(IndexError, w.__setitem__, slice(0, -2), b'f')
+        w[0] = bytearray(b'gg')
+        w[1] = bytearray(b'hh')
         self.assertEqual(w.string, 'ghh')
         # stop and start in range but stop is before start
-        self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
+        self.assertRaises(IndexError, w.__setitem__, slice(1, 0), b'h')
 
     def test_insert(self):
         w = wtp.WikiText('c')
@@ -68,7 +68,7 @@ class WikiText(unittest.TestCase):
         self.assertEqual(w.string, 'ac')
         # Just to show that ``w.insert(i, s)`` is the same as ``w[i:i] = s``:
         v = wtp.WikiText('c')
-        v[0:0] = 'a'
+        v[0:0] = b'a'
         self.assertEqual(w.string, v.string)
         w.insert(-1, 'b')
         self.assertEqual(w.string, 'abc')
@@ -149,7 +149,8 @@ class ShrinkSpanUpdate(unittest.TestCase):
         wt = wtp.WikiText('{{t|<!--c-->}}')
         c = wt.comments[0]
         t = wt.templates[0]
-        t[3:8] = ''
+        # Todo: Also accept strings.
+        t[3:8] = b''
         self.assertEqual(c.string, 'c-->')
 
 
@@ -287,13 +288,11 @@ class ExternalLinks(unittest.TestCase):
         self.assertEqual('{{t}}', str(wt.templates[0]))
 
     def test_dont_parse_source_tag(self):
-        s = "<source>{{t}}</source>"
-        wt = wtp.WikiText(s)
+        wt = wtp.WikiText('<source>{{t}}</source>')
         self.assertEqual(0, len(wt.templates))
 
     def test_comment_in_parserfunction_name(self):
-        s = "{{<!--c\n}}-->#if:|a}}"
-        wt = wtp.WikiText(s)
+        wt = wtp.WikiText('{{<!--c\n}}-->#if:|a}}')
         self.assertEqual(1, len(wt.parser_functions))
 
     def test_wikilink2externallink_fallback(self):
@@ -709,6 +708,7 @@ class PrettyPrint(unittest.TestCase):
 
     def test_pprint_inner_template(self):
         c, b, a = wtp.WikiText('{{a|{{b|{{c}}}}}}').templates
+        print(b.pprint())
         self.assertEqual(
             '{{b\n'
             '    | 1 = {{c}}\n'

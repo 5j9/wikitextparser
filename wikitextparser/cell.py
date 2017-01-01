@@ -10,7 +10,7 @@ from .tag import ATTRS_REGEX, SubWikiTextWithAttrs
 
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = regex.compile(
-    r"""
+    rb"""
     # only for matching, not searching
     \s*
     (?P<sep>[|!](?![+}-]))
@@ -60,7 +60,7 @@ NEWLINE_CELL_REGEX = regex.compile(
 # See: https://github.com/wikimedia/mediawiki/blob/
 # 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
 INLINE_HAEDER_CELL_REGEX = regex.compile(
-    r"""
+    rb"""
     (?>
         \|!(?P<attrs>)! # immediate closure
         |
@@ -105,7 +105,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
 )
 # https://regex101.com/r/hW8aZ3/7
 INLINE_NONHAEDER_CELL_REGEX = regex.compile(
-    r"""
+    rb"""
     \|\| # catch the matching pipe (style holder).
     (?:
         # immediate closure
@@ -176,9 +176,9 @@ class Cell(SubWikiTextWithAttrs):
         if cached_match and cached_string == string:
             return self._cached_match
         shadow = self._shadow
-        if shadow.startswith('\n'):
+        if shadow.startswith(b'\n'):
             m = NEWLINE_CELL_REGEX.match(shadow)
-            self._header = m.group('sep') == '!'
+            self._header = m.group('sep') == b'!'
         elif self._header:
             m = INLINE_HAEDER_CELL_REGEX.match(shadow)
         else:
@@ -194,7 +194,7 @@ class Cell(SubWikiTextWithAttrs):
         m = self._match
         pos = m.start()
         s, e = m.span('data')
-        return self[s - pos:e - pos]
+        return self[s - pos:e - pos].decode()
 
     @value.setter
     def value(self, new_value: str) -> None:
@@ -203,9 +203,9 @@ class Cell(SubWikiTextWithAttrs):
         s, e = match.span('data')
         pos = match.start()
         if pos:
-            self[s - pos:e - pos] = new_value
+            self[s - pos:e - pos] = new_value.encode()
         else:
-            self[s:e] = new_value
+            self[s:e] = new_value.encode()
 
     @property
     def _attrs_match(self):
@@ -219,6 +219,7 @@ class Cell(SubWikiTextWithAttrs):
         self._cached_attrs_match = attrs_match
         return attrs_match
 
+    # Todo: Where is set_attr?
     def set(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
 
@@ -251,14 +252,17 @@ class Cell(SubWikiTextWithAttrs):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if shadow.startswith('\n'):
+        if shadow.startswith(b'\n'):
             self.insert(
                 cell_match.start('sep') + 1 - pos,
-                fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+                fmt.format(
+                    attr_name, attr_value.replace('"', '&quot;')
+                ).encode()
             )
             return
         # An inline cell
         self.insert(
-            2, fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+            2,
+            fmt.format(attr_name, attr_value.replace('"', '&quot;')).encode(),
         )
         return

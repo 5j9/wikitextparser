@@ -1,7 +1,7 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 import regex
 
@@ -240,7 +240,9 @@ COMMENT_REGEX = regex.compile(rb'<!--.*?-->', regex.DOTALL)
 SINGLE_BRACES_REGEX = regex.compile(rb'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
 
 
-def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
+def parse_to_spans(
+    byte_array: Union[bytearray, str]
+) -> Dict[str, List[Tuple[int, int]]]:
     """Calculate and set self._type_to_spans.
 
     The result is a dictionary containing lists of spans:
@@ -254,7 +256,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
     }
 
     """
-    byte_array = byte_array.copy()
+    byte_array = bytearray(byte_array)
     comment_spans = []
     extension_tag_spans = []
     wikilink_spans = []
@@ -267,7 +269,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
         mspan = match.span()
         comment_spans.append(mspan)
         ms, me = mspan
-        byte_array[ms:me] = b'_' * (me - ms)
+        byte_array[ms:me] = b' ' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_REGEX.finditer(byte_array):
         mspan = match.span()

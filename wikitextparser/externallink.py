@@ -50,7 +50,7 @@ class ExternalLink(SubWikiText):
         else:
             url = self.url
             text = self.text
-        self[len('[' + url + ' '):len('[' + url + ' ' + text)] = newtext
+        self[len('[' + url + ' '):len('[' + url + ' ' + text)] = newtext.encode()
 
     @property
     def in_brackets(self) -> bool:

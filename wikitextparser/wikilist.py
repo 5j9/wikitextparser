@@ -7,9 +7,9 @@ import regex
 from .wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
+SUBLIST_PATTERN = rb'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
 LIST_PATTERN = (
-    r'''
+    rb'''
     (?<fullitem>
         ^
         (?<pattern>{pattern})

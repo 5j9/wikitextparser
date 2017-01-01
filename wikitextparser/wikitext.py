@@ -133,12 +133,12 @@ class WikiText:
         return False
 
     def __len__(self):
-        """Return len of self._bytearray."""
-        return len(self._bytearray)
+        """Return length of self.string."""
+        return len(self.string)
 
-    def __getitem__(self, key: Union[slice, int]) -> bytearray:
+    def __getitem__(self, key: Union[slice, int]) -> str:
         """Return self.string[item]."""
-        return self._bytearray[key]
+        return self.string[key]
 
     # Todo: A better name or more info in docstring.
     def _check_index(self, key: Union[slice, int]) -> (int, int):
@@ -177,7 +177,9 @@ class WikiText:
             )
         return start + ss, stop + ss
 
-    def __setitem__(self, key: Union[slice, int], value: bytearray) -> None:
+    def __setitem__(
+        self, key: Union[slice, int], value: Union[bytearray, str]
+    ) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -186,6 +188,8 @@ class WikiText:
         will improve.
 
         """
+        if isinstance(value, str):
+            raise NotImplementedError
         start, stop = self._check_index(key)
         # Update lststr
         _bytearray = self._bytearray
@@ -221,8 +225,8 @@ class WikiText:
         possibility of insertion into the wrong spans.
 
         """
+        _bytearray = self._bytearray.encode()
         start, stop = self._check_index(key)
-        _bytearray = self._bytearray
         # Update lststr
         _bytearray[start:stop] = b''
         # Update spans
@@ -243,9 +247,14 @@ class WikiText:
         it only avoids some condition checks as it rules out the possibility
         of the key being an slice, or the need to shrink any of the sub-spans.
 
+        If valie is bytes, the index should be given according to
+        self._bytearray but if value is an str instance, then the index should
+        point to somewhere in self.string.
+
         """
         if isinstance(value, str):
-            value = bytes(value)
+            value = value.encode()
+            raise NotImplementedError
         ss, se = self._span
         _bytearray = self._bytearray
         if index < 0:
@@ -256,7 +265,7 @@ class WikiText:
             index = se - ss
         index += ss
         # Update lststr
-        _bytearray.insert(index, value)
+        _bytearray[index:index] = value
         # Update spans
         self._extend_span_update(
             estart=index,
@@ -520,13 +529,13 @@ class WikiText:
         parsed = WikiText(self._bytearray.copy(), self._pp_type_to_spans())
         if remove_comments:
             for c in parsed.comments:
-                c[:] = b''
+                del c[:]
         else:
             # Only remove comments that only contain whitespace.
             for c in parsed.comments:  # type: Comment
                 # Todo: use c[:]
                 if not c.contents.strip():
-                    c[:] = b''
+                    del c[:]
         # todo: bytes-check the rest
         # First remove all current spacings.
         for template in parsed.templates:
@@ -843,7 +852,7 @@ class WikiText:
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
         # Lead section
         ms, me = LEAD_SECTION_REGEX.match(self_bytes).span()
-        mspan = (ms + ss, me + ss)
+        mspan = (ss + ms, ss + me)
         mindex = existing_span_to_index.get(mspan)
         if mindex is None:
             spans.append(mspan)
@@ -855,7 +864,7 @@ class WikiText:
         # Adjust other sections
         for m in SECTION_REGEX.finditer(self_bytes):
             ms, me = m.span()
-            mspan = (me + ss, me + ss)
+            mspan = (ss + ms, ss + me)
             mindex = existing_span_to_index.get(mspan)
             if mindex is None:
                 spans.append(mspan)
@@ -881,7 +890,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         _bytearray = self._bytearray
         # todo: bytes-check
-        shadow = self._shadow
+        shadow = self._shadow.copy()
         ss, se = self._span
         if 'Table' not in type_to_spans:
             # All the added spans will be new.
@@ -897,7 +906,7 @@ class WikiText:
                     spans.append(mspan)
                     tables.append(Table(_bytearray, type_to_spans, index))
                     index += 1
-                    shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
+                    shadow[ms:me] = b'_' * (me - ms)
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
@@ -917,7 +926,7 @@ class WikiText:
                     index += 1
                     mindex = index
                 tables.append(Table(_bytearray, type_to_spans, mindex))
-                shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
+                shadow[ms:me] = b'_' * (me - ms)
         return tables
 
     def lists(self, pattern: str=None) -> List['WikiList']:
@@ -953,10 +962,11 @@ class WikiText:
         # todo: bytes-check
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
-        patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
+        patterns = (b'\#', b'\*', b'[:;]') if pattern is None \
+            else (pattern.encode(),)
         for pattern in patterns:
             list_regex = regex.compile(
-                LIST_PATTERN.format(pattern=pattern),
+                LIST_PATTERN.replace(b'{pattern}', pattern),
                 regex.MULTILINE | regex.VERBOSE,
             )
             ss = self._span[0]

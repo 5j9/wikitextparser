@@ -44,7 +44,8 @@ ATTR_VAL = (
 ATTR = r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
 ATTRS_REGEX = regex.compile(
     # Leading space is not required at the start of the attribute string.
-    r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'.format(**locals()),
+    r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'
+    .format(**locals()).encode(),
     flags=regex.VERBOSE
 )
 # VOID_ELEMENTS = (

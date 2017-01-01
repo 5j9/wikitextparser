@@ -59,10 +59,10 @@ class Table(SubWikiTextWithAttrs):
         """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
-        pos = shadow.find('\n')
+        pos = shadow.find(b'\n')
         lsp = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while shadow[lsp] not in '!|':
+        while shadow[lsp] not in b'!|':
             nlp = shadow.find('\n', lsp)
             pos = nlp
             lsp = _lstrip_increase(shadow, pos)
@@ -83,13 +83,13 @@ class Table(SubWikiTextWithAttrs):
                 match_row.append(m)
                 sep = m.group('sep')
                 pos = m.end()
-                if sep == '|':
+                if sep == b'|':
                     m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
                         match_row.append(m)
                         pos = m.end()
                         m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
-                elif sep == '!':
+                elif sep == b'!':
                     m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
                         match_row.append(m)
@@ -182,7 +182,7 @@ class Table(SubWikiTextWithAttrs):
         ss = self._span[0]
         match_table = self._match_table
         # Todo: maybe shadow is better than string? add tests.
-        string = self.string
+        shadow = self._shadow
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
         if type_ not in type_to_spans:
@@ -203,7 +203,7 @@ class Table(SubWikiTextWithAttrs):
                 if span:
                     s, e = m.span('attrs')
                     # NOte: ATTRS_REGEX always matches, even to empty strings.
-                    attrs_match = ATTRS_REGEX.match(string, s, e)
+                    attrs_match = ATTRS_REGEX.match(shadow, s, e)
                     captures = attrs_match.captures
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
@@ -449,15 +449,16 @@ def _apply_attr_spans(
     return table
 
 
-def _lstrip_increase(string: str, pos: int) -> int:
-    """Return the new position to lstrip the string."""
-    length = len(string)
-    while pos < length and string[pos].isspace():
+def _lstrip_increase(shadow: bytearray, pos: int) -> int:
+    """Return the new position to lstrip the shadow."""
+    length = len(shadow)
+    # Todo: use regex or simplify
+    while pos < length and chr(shadow[pos]).isspace():
         pos += 1
     return pos
 
 
-def _semi_caption_increase(string: str, pos: int) -> int:
+def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting semi-caption.
 
     Captions are optional and only one should be placed between table-start
@@ -465,30 +466,30 @@ def _semi_caption_increase(string: str, pos: int) -> int:
     be ignored. We call these semi-captions.
 
     """
-    lsp = _lstrip_increase(string, pos)
-    while string.startswith('|+', lsp):
-        pos = string.find('\n', lsp + 2)
-        lsp = _lstrip_increase(string, pos)
-        while string[lsp] not in ('!', '|'):
+    lsp = _lstrip_increase(shadow, pos)
+    while shadow.startswith(b'|+', lsp):
+        pos = shadow.find('\n', lsp + 2)
+        lsp = _lstrip_increase(shadow, pos)
+        while shadow[lsp] not in (b'!', b'|'):
             # This line is a continuation of semi-caption line.
-            nlp = string.find('\n', lsp + 1)
+            nlp = shadow.find('\n', lsp + 1)
             pos = nlp
-            lsp = _lstrip_increase(string, nlp)
+            lsp = _lstrip_increase(shadow, nlp)
     return pos
 
 
-def _row_separator_increase(string: str, pos: int) -> int:
+def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting row separator line.
 
     Also skips any semi-caption lines before and after the separator.
 
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    scp = _semi_caption_increase(string, pos)
-    lsp = _lstrip_increase(string, scp)
-    while string.startswith('|-', lsp):
+    scp = _semi_caption_increase(shadow, pos)
+    lsp = _lstrip_increase(shadow, scp)
+    while shadow.startswith(b'|-', lsp):
         # We are on a row separator line.
-        pos = string.find('\n', lsp + 2)
-        pos = _semi_caption_increase(string, pos)
-        lsp = _lstrip_increase(string, pos)
+        pos = shadow.find(b'\n', lsp + 2)
+        pos = _semi_caption_increase(shadow, pos)
+        lsp = _lstrip_increase(shadow, pos)
     return pos

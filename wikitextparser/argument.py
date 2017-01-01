@@ -44,7 +44,7 @@ class Argument(SubWikiText):
                         break
                     # We don't care for this kind of equal sign.
                     # Look for the next one.
-                    equal_index = _bytearray.find('=', equal_index + 1, se)
+                    equal_index = _bytearray.find(b'=', equal_index + 1, se)
                 else:
                     # All the equal signs where inside a subspan.
                     position += 1
@@ -83,7 +83,7 @@ class Argument(SubWikiText):
         if equal:
             # Keyword argument
             if to_positional:
-                del self[1:len(pipename + '=')]
+                del self[1:len(pipename + b'=')]
             else:
                 return
         elif to_positional:
@@ -112,6 +112,6 @@ class Argument(SubWikiText):
         pipename, equal, value = self._atomic_partition(b'=')
         if equal:
             pnel = len(pipename + equal)
-            self[pnel:pnel + len(value)] = newvalue
+            self[pnel:pnel + len(value)] = newvalue.encode()
         else:
-            self[1:len(pipename)] = newvalue
+            self[1:len(pipename)] = newvalue.encode()
