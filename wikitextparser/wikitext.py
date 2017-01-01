@@ -120,7 +120,7 @@ class WikiText:
         # Is it useful (and a good practice) to also accepts str inputs
         # and check if self.string contains it?
         if isinstance(value, str):
-            value = bytes(value)
+            value = value.encode()
         if isinstance(value, (bytes, bytearray)):
             return value in self._bytearray
         # isinstance(value, WikiText)
@@ -134,11 +134,13 @@ class WikiText:
 
     def __len__(self):
         """Return length of self.string."""
-        return len(self.string)
+        s, e = self._span
+        return e - s
 
-    def __getitem__(self, key: Union[slice, int]) -> str:
+    def __getitem__(self, key: Union[slice, int]) -> bytearray:
         """Return self.string[item]."""
-        return self.string[key]
+        s, e = self._span
+        return self._bytearray[s:e][key]
 
     # Todo: A better name or more info in docstring.
     def _check_index(self, key: Union[slice, int]) -> (int, int):
@@ -178,7 +180,7 @@ class WikiText:
         return start + ss, stop + ss
 
     def __setitem__(
-        self, key: Union[slice, int], value: Union[bytearray, str]
+        self, key: Union[slice, int], value: bytearray
     ) -> None:
         """Set a new string for the given slice or character index.
 
@@ -225,7 +227,7 @@ class WikiText:
         possibility of insertion into the wrong spans.
 
         """
-        _bytearray = self._bytearray.encode()
+        _bytearray = self._bytearray
         start, stop = self._check_index(key)
         # Update lststr
         _bytearray[start:stop] = b''
@@ -252,8 +254,8 @@ class WikiText:
         point to somewhere in self.string.
 
         """
+        # todo: remvoe this
         if isinstance(value, str):
-            value = value.encode()
             raise NotImplementedError
         ss, se = self._span
         _bytearray = self._bytearray
@@ -526,7 +528,8 @@ class WikiText:
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = WikiText(self._bytearray.copy(), self._pp_type_to_spans())
+        s, e = self._span
+        parsed = WikiText(self._bytearray[s:e], self._pp_type_to_spans())
         if remove_comments:
             for c in parsed.comments:
                 del c[:]
@@ -775,7 +778,7 @@ class WikiText:
             # All the added spans will be new.
             spans = type_to_spans['ExternalLink'] = []
             index = 0
-            for m in EXTERNALLINK_REGEX.finditer(self.string):
+            for m in EXTERNALLINK_REGEX.finditer(_bytearray[ss:se]):
                 mspan = m.span()
                 mspan = (mspan[0] + ss, mspan[1] + ss)
                 spans.append(mspan)
@@ -789,7 +792,7 @@ class WikiText:
         spans = type_to_spans['ExternalLink']
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
-        for m in EXTERNALLINK_REGEX.finditer(self.string):
+        for m in EXTERNALLINK_REGEX.finditer(_bytearray[ss:se]):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
             mindex = existing_span_to_index.get(mspan)
@@ -966,7 +969,7 @@ class WikiText:
             else (pattern.encode(),)
         for pattern in patterns:
             list_regex = regex.compile(
-                LIST_PATTERN.replace(b'{pattern}', pattern),
+                LIST_PATTERN % {b'pattern': pattern},
                 regex.MULTILINE | regex.VERBOSE,
             )
             ss = self._span[0]
@@ -979,7 +982,8 @@ class WikiText:
                     spans.append(span)
                 lists.append(
                     WikiList(
-                        _bytearray, pattern, m, type_to_spans, index, 'WikiList'
+                        _bytearray, pattern.decode(), m,
+                        type_to_spans, index, 'WikiList'
                     )
                 )
         return lists

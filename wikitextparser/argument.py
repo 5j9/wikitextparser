@@ -57,7 +57,7 @@ class Argument(SubWikiText):
         If this is a positional argument, convert it to keyword argument.
 
         """
-        oldname = self.name
+        oldname = self.name.encode()
         if self.positional:
             self[0:1] = b'|' + newname.encode() + b'='
         else:

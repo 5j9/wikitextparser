@@ -228,6 +228,8 @@ class Cell(SubWikiTextWithAttrs):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
+        attr_name = attr_name.encode()
+        attr_value = attr_value.encode()
         cell_match = self._match
         pos = cell_match.start()
         shadow = cell_match.string
@@ -237,32 +239,46 @@ class Cell(SubWikiTextWithAttrs):
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
-                    q = 1 if attrs_m.string[ve] in '"\'' else 0
-                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(
-                        attr_value.replace('"', '&quot;')
+                    q = 1 if attrs_m.string[ve] in b'"\'' else 0
+                    self[vs - q - pos:ve + q - pos] = b'"%s"' % (
+                        attr_value.replace(b'"', b'&quot;')
                     )
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs') - pos
-            fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
+            if shadow[attr_end - 1] == 32:  # ord(' ')
+                self.insert(
+                    attr_end,
+                    b'%s="%s" ' % (
+                        attr_name, attr_value.replace(b'"', b'&#39;')
+                    ),
+                )
+                return
             self.insert(
                 attr_end,
-                fmt.format(attr_name, attr_value.replace('"', '&#39;')),
+                b' %s="%s"' % (
+                    attr_name, attr_value.replace(b'"', b'&#39;')
+                ),
             )
             return
         # There is no attributes span in this cell. Create one.
-        fmt = ' {}="{}" |' if attr_value else ' {} |'
         if shadow.startswith(b'\n'):
+            if attr_value:
+                self.insert(
+                    cell_match.start('sep') + 1 - pos,
+                    b' %s="%s" |' %
+                    (attr_name, attr_value.replace(b'"', b'&quot;')),
+                )
+                return
             self.insert(
-                cell_match.start('sep') + 1 - pos,
-                fmt.format(
-                    attr_name, attr_value.replace('"', '&quot;')
-                ).encode()
+                cell_match.start('sep') + 1 - pos, b' %s |' % attr_name
             )
             return
         # An inline cell
-        self.insert(
-            2,
-            fmt.format(attr_name, attr_value.replace('"', '&quot;')).encode(),
-        )
-        return
+        if attr_value:
+            self.insert(
+                2, b' %s="%s" |' % (
+                attr_name, attr_value.replace(b'"', b'&quot;'))
+            )
+            return
+        self.insert(2, b' %s |' % attr_name)

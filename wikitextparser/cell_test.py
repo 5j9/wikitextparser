@@ -88,7 +88,7 @@ class TableCell(unittest.TestCase):
         # Fill _cached_attrs_match and _cached_match
         self.assertEqual(c.attrs, {})
         # Invalidate both caches
-        c.insert(2, 'a|')
+        c.insert(2, b'a|')
         # Update _cached_match
         self.assertEqual(c.value, 'v')
         # _cached_attrs_match should not be valid

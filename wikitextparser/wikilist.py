@@ -7,12 +7,12 @@ import regex
 from .wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = rb'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
+SUBLIST_PATTERN = rb'(?>^(?<pattern>%(pattern)s)[:;#*].*(?>\n|\Z))*'
 LIST_PATTERN = (
     rb'''
     (?<fullitem>
         ^
-        (?<pattern>{pattern})
+        (?<pattern>%%(pattern)s)
         (?(?<=;\s*)
             # mark inline definition as an item
             (?<item>[^:\n]*)(?<fullitem>:(?<item>.*))?
@@ -47,7 +47,7 @@ class WikiList(SubWikiText):
             self._cached_match = _match
         else:
             self._cached_match = regex.fullmatch(
-                LIST_PATTERN.format(pattern=pattern),
+                LIST_PATTERN % {b'pattern': pattern.encode()},
                 self._shadow,
                 regex.MULTILINE | regex.VERBOSE,
             )
@@ -61,7 +61,7 @@ class WikiList(SubWikiText):
         if s + len(shadow) == e and match.string.find(shadow) == s:
             return match
         match = regex.fullmatch(
-            LIST_PATTERN.format(pattern=self.pattern),
+            LIST_PATTERN % {b'pattern': self.pattern.encode()},
             self._shadow,
             regex.MULTILINE | regex.VERBOSE,
         )
@@ -151,5 +151,5 @@ class WikiList(SubWikiText):
         match = self._match
         ms = match.start()
         for s, e in reversed(match.spans('pattern')):
-            self[s - ms:e - ms] = newstart
+            self[s - ms:e - ms] = newstart.encode()
         self.pattern = regex.escape(newstart)

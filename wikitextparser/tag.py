@@ -67,12 +67,12 @@ START_TAG = (
     )
     '''
 ).format(**locals())
-START_TAG_REGEX = regex.compile(START_TAG, regex.VERBOSE)
+START_TAG_REGEX = regex.compile(START_TAG.encode(), regex.VERBOSE)
 END_OF_START_TAG = (
     r'(?P<end></(?P<end_name>(?P=name))[{SPACE_CHARS}]*>)'.format(**locals())
 )
 END_TAG = r'(?P<end></{TAG_NAME}[{SPACE_CHARS}]*>)'.format(**locals())
-END_TAG_REGEX = regex.compile(END_TAG)
+END_TAG_REGEX = regex.compile(END_TAG.encode())
 # Note that the following regex won't check for nested tags
 TAG_REGEX = regex.compile(
     r'''
@@ -88,7 +88,7 @@ TAG_REGEX = regex.compile(
         >(?P<contents>.*?){END_OF_START_TAG}|
         (?P<start_only>>)
     )
-    '''.format(**locals()),
+    '''.format(**locals()).encode(),
     flags=regex.DOTALL | regex.VERBOSE
 )
 
@@ -109,17 +109,21 @@ class SubWikiTextWithAttrs(SubWikiText):
     def attrs(self) -> Dict[str, str]:
         """Return self attributes as a dictionary."""
         spans = self._attrs_match.spans
-        string = self.string
-        return dict(zip(
-            (string[s:e] for s, e in spans('attr_name')),
-            (string[s:e] for s, e in spans('attr_value')),
-        ))
+        s, e = self._span
+        byte_array = self._bytearray[s:e]
+        return {
+            an.decode(): av.decode() for an, av in zip(
+            (byte_array[s:e] for s, e in spans('attr_name')),
+            (byte_array[s:e] for s, e in spans('attr_value')),
+        )}
 
     def has_attr(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
-        string = self.string
+        s, e = self._span
+        byte_array = self._bytearray[s:e]
         return attr_name in (
-            string[s:e] for s, e in self._attrs_match.spans('attr_name')
+            byte_array[s:e].decode()
+            for s, e in self._attrs_match.spans('attr_name')
         )
 
     def has(self, attr_name: str) -> bool:
@@ -136,12 +140,14 @@ class SubWikiTextWithAttrs(SubWikiText):
         Return an empty string if the mentioned name is an empty attribute.
 
         """
+        attr_name = attr_name.encode()
         spans = self._attrs_match.spans
-        string = self.string
+        s, e = self._span
+        byte_array = self._bytearray[s:e]
         for i, (s, e) in enumerate(reversed(spans('attr_name'))):
-            if string[s:e] == attr_name:
+            if byte_array[s:e] == attr_name:
                 s, e = spans('attr_value')[-i - 1]
-                return string[s:e]
+                return byte_array[s:e].decode()
 
     def get(self, attr_name: str) -> Optional[str]:
         """Deprecated alias for get_attr."""
@@ -156,23 +162,27 @@ class SubWikiTextWithAttrs(SubWikiText):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
+        attr_name = attr_name.encode()
         match = self._attrs_match
-        string = self.string
+        s, e = self._span
+        byte_array = self._bytearray[s:e]
         for i, (s, e) in enumerate(reversed(match.spans('attr_name'))):
-            if string[s:e] == attr_name:
+            if byte_array[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
-                q = 1 if match.string[ve] in '"\'' else 0
+                q = 1 if match.string[ve] in b'"\'' else 0
                 self[vs - q:ve + q] = '"{}"'.format(
                     attr_value.replace('"', '&quot;')
-                )
+                ).encode()
                 return
         # The attr_name is new, add a new attribute.
-        fmt = ' {}="{}"' if attr_value else ' {}'
-        self.insert(
-            match.span('start')[1],
-            fmt.format(attr_name, attr_value.replace('"', '&quot;'))
-        )
-        return
+        if attr_value:
+            self.insert(
+                match.span('start')[1], b' %s="%s"' % (
+                    attr_name, attr_value.encode().replace(b'"', b'&quot;')
+                ),
+            )
+            return
+        self.insert(match.span('start')[1], b' %s' % attr_name)
 
     def set(self, attr_name: str, attr_value: str) -> None:
         """Deprecated alias for set_attr."""
@@ -186,12 +196,14 @@ class SubWikiTextWithAttrs(SubWikiText):
 
         """
         # Todo: Cell match may have an offset?
+        attr_name = attr_name.encode()
         match = self._attrs_match
-        string = self.string
+        s, e = self._span
+        byte_array = self._bytearray[s:e]
         # Must be done in reversed order because the spans
         # change after each deletion.
         for i, (s, e) in enumerate(reversed(match.spans('attr_name'))):
-            if string[s:e] == attr_name:
+            if byte_array[s:e] == attr_name:
                 start, stop = match.spans('attr')[-i - 1]
                 del self[start:stop]
 
@@ -222,7 +234,7 @@ class Tag(SubWikiTextWithAttrs):
         """
         super().__init__(string, _type_to_spans, _index, 'Tag')
         self._cached_match = (
-            TAG_REGEX.fullmatch(string) if match is None else match
+            TAG_REGEX.fullmatch(string.encode()) if match is None else match
         )
 
     @property
@@ -242,13 +254,14 @@ class Tag(SubWikiTextWithAttrs):
     def name(self) -> str:
         """Return tag name."""
         s, e = self._match.span('name')
-        return self.string[s:e]
+        return self[s:e].decode()
 
     @name.setter
     def name(self, name: str) -> None:
         """Set a new tag name."""
         # The name in the end tag should be replaced first because the spans
         # of the match object change after each replacement.
+        name = name.encode()
         span = self._match.span
         start, end = span('end_name')
         if start != -1:
@@ -262,7 +275,7 @@ class Tag(SubWikiTextWithAttrs):
         s, e = self._match.span('contents')
         if s == -1:
             return None
-        return self.string[s:e]
+        return self[s:e].decode()
 
     @contents.setter
     def contents(self, contents: str) -> None:
@@ -279,11 +292,11 @@ class Tag(SubWikiTextWithAttrs):
         match = self._match
         start, end = match.span('contents')
         if start != -1:
-            self[start:end] = contents
-        else:
-            # This is a self-closing tag.
-            s, e = match.span('self_closing')
-            self[s:e] = '>{0}</{1}>'.format(contents, match['name'])
+            self[start:end] = contents.encode()
+            return
+        # This is a self-closing tag.
+        s, e = match.span('self_closing')
+        self[s:e] = b'>%b</%b>' % (contents.encode(), match['name'])
 
     @property
     def parsed_contents(self) -> SubWikiText:
@@ -295,9 +308,13 @@ class Tag(SubWikiTextWithAttrs):
         return SubWikiText(self._bytearray, spans, index)
 
 
-def attrs_parser(attrs: str, pos=0, endpos=-1) -> Dict[str, str]:
+def attrs_parser(attrs: bytes, pos=0, endpos=-1) -> Dict[str, str]:
     """Return a dict of attribute names and values."""
     m = ATTRS_REGEX.match(attrs, pos=pos, endpos=endpos)
     if m:
         captures = m.captures
-        return dict(zip(captures('attr_name'), captures('attr_value')))
+        return {
+            an.decode(): av.decode() for an, av in
+            zip(captures('attr_name'), captures('attr_value'))
+        }
+        # return dict()

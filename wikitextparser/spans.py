@@ -281,7 +281,7 @@ def parse_to_spans(
             (group_startswith(b'<' + pte) for pte in PARSABLE_TAG_EXTENSIONS)
         ):
             parse_subbytes_to_spans(
-                bytearray(group[3:-3]),
+                byte_array[ms + 3:me - 3],
                 ms + 3,
                 wikilink_spans,
                 parameter_spans,
@@ -301,7 +301,7 @@ def parse_to_spans(
             mspan = match.span()
             wikilink_spans.append(mspan)
             ms, me = mspan
-            group = match.group()
+            group = byte_array[ms:me]
             parse_to_spans_innerloop(
                 group,
                 ms,
@@ -360,9 +360,9 @@ def parse_subbytes_to_spans(
             loop = True
             ms, me = match.span()
             wikilink_spans.append((index + ms, index + me))
-            group = match.group()
+            group = byte_array[ms:me]
             parse_to_spans_innerloop(
-                bytearray(group),
+                group,
                 index + ms,
                 parameter_spans,
                 parser_function_spans,

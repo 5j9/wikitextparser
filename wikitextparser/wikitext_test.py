@@ -64,18 +64,18 @@ class WikiText(unittest.TestCase):
 
     def test_insert(self):
         w = wtp.WikiText('c')
-        w.insert(0, 'a')
+        w.insert(0, b'a')
         self.assertEqual(w.string, 'ac')
         # Just to show that ``w.insert(i, s)`` is the same as ``w[i:i] = s``:
         v = wtp.WikiText('c')
         v[0:0] = b'a'
         self.assertEqual(w.string, v.string)
-        w.insert(-1, 'b')
+        w.insert(-1, b'b')
         self.assertEqual(w.string, 'abc')
         # Like list.insert, w.insert accepts out of range indexes.
-        w.insert(5, 'd')
+        w.insert(5, b'd')
         self.assertEqual(w.string, 'abcd')
-        w.insert(-5, 'z')
+        w.insert(-5, b'z')
         self.assertEqual(w.string, 'zabcd')
 
     def test_overwriting_template_args(self):
@@ -205,7 +205,7 @@ class ExternalLinks(unittest.TestCase):
         wt = wtp.WikiText('t [http://b.b b] t [http://c.c c] t')
         # calculate the links
         links1 = wt.external_links
-        wt.insert(0, 't [http://a.a a]')
+        wt.insert(0, b't [http://a.a a]')
         links2 = wt.external_links
         self.assertEqual(links1[1].string, '[http://c.c c]')
         self.assertEqual(links2[0].string, '[http://a.a a]')
@@ -361,7 +361,7 @@ class Table(unittest.TestCase):
         s = '{|\n| b\n|}\n'
         wt = wtp.parse(s)
         t = wt.tables[0]
-        t.insert(0, '{|\n| a\n|}\n')
+        t.insert(0, b'{|\n| a\n|}\n')
         tables = wt.tables
         self.assertEqual(tables[0].string, '{|\n| a\n|}')
         self.assertEqual(tables[1].string, '{|\n| b\n|}')
@@ -708,7 +708,6 @@ class PrettyPrint(unittest.TestCase):
 
     def test_pprint_inner_template(self):
         c, b, a = wtp.WikiText('{{a|{{b|{{c}}}}}}').templates
-        print(b.pprint())
         self.assertEqual(
             '{{b\n'
             '    | 1 = {{c}}\n'
@@ -753,12 +752,12 @@ class Sections(unittest.TestCase):
     def test_inseting_into_sections(self):
         wt = wtp.WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
-        s1.insert(0, 'c\n== s0 ==\nc\n')
+        s1.insert(0, b'c\n== s0 ==\nc\n')
         s0 = wt.sections[1]
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
         self.assertEqual('== s0 ==\nc\n', s0.string)
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
-        s1.insert(len(wt.string), '=== s2 ===\nc\n')
+        s1.insert(len(wt.string), b'=== s2 ===\nc\n')
         self.assertEqual(
             'c\n'
             '== s0 ==\n'

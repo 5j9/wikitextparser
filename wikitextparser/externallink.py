@@ -19,11 +19,14 @@ class ExternalLink(SubWikiText):
     def url(self, newurl: str) -> None:
         """Set a new url for the current ExternalLink."""
         if self.in_brackets:
-            url = self.url
-            self[1:len('[' + url)] = newurl
-        else:
-            url = self.url
-            self[0:len(url)] = newurl
+            bracket_url, space, text_bracket = self[:].partition(b' ')
+            if space:
+                self[1:len(bracket_url)] = newurl.encode()
+                return
+            self[1:-1] = newurl.encode()
+            return
+        # self is a bare URL
+        self[:] = newurl.encode()
 
     @property
     def text(self) -> str:
@@ -43,16 +46,18 @@ class ExternalLink(SubWikiText):
         Automatically puts the ExternalLink in brackets if it's not already.
         """
         if not self.in_brackets:
-            url = self.string
-            self.insert(len(url), ' ]')
-            self.insert(0, '[')
-            text = ''
-        else:
-            url = self.url
-            text = self.text
-        self[len('[' + url + ' '):len('[' + url + ' ' + text)] = newtext.encode()
+            # It's OK to overwrite pure URLs
+            self[:] = b'[' + self[:] + b' ' + newtext.encode() + b']'
+            return
+        url, space, text = self[:].partition(b' ')
+        if text:
+            self[len(url) + 1:-1] = newtext.encode()
+            return
+        # In brackets, with no text
+        self.insert(-1, newtext.encode())
 
     @property
     def in_brackets(self) -> bool:
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self.string.startswith('[')
+        s = self._span[0]
+        return self._bytearray[s] == 91  # ord('[')

@@ -1,13 +1,13 @@
 ﻿"""Define the Section class."""
 
 
-import re
+import regex
 from typing import Tuple, MutableSequence, Union, List, Dict
 
 from .wikitext import WikiText
 
 
-SECTION_LEVEL_TITLE = re.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
+SECTION_LEVEL_TITLE = regex.compile(r'^(={1,6})([^\n]+?)\1( *(?:\n|$))')
 
 
 class Section(WikiText):
@@ -47,10 +47,14 @@ class Section(WikiText):
     def level(self, newlevel: int) -> None:
         """Change level of this section."""
         old_level = self.level
-        title = self.title
-        new_equals = '=' * newlevel
-        self[0:old_level + len(title) + old_level] =\
-            new_equals + title + new_equals
+        if old_level == 0:
+            # Todo: what will happen?
+            eq_title_eq = b''
+        else:
+            eq_title_eq = self[:].partition(b'\n')[0].rstrip()
+        new_equals = b'=' * newlevel
+        self[len(eq_title_eq) - old_level: len(eq_title_eq)] = new_equals
+        self[:old_level] = new_equals
 
     @property
     def title(self) -> str:
@@ -69,8 +73,8 @@ class Section(WikiText):
                 "Can't set title for a lead section. "
                 "Try adding it to the contents."
             )
-        title = self.title
-        self[level:level + len(title)] = newtitle
+        title = self[:].partition(b'\n')[0].rstrip()[level:-level]
+        self[level:level + len(title)] = newtitle.encode()
 
     @property
     def contents(self) -> str:
@@ -83,10 +87,10 @@ class Section(WikiText):
     def contents(self, newcontents: str) -> None:
         """Set newcontents as the contents of this section."""
         level = self.level
-        contents = self.contents
         if level == 0:
-            self[0:len(contents)] = newcontents
-        else:
-            title = self.title
-            start = level + len(title) + level + 1
-            self[start:start + len(contents)] = newcontents
+            # No title, self is all contents
+            self[:] = newcontents.encode()
+            return
+        # Title already includes a newline
+        title, newline, contents = self[:].partition(b'\n')
+        self[len(title) + 1:] = newcontents.encode()
