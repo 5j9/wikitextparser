@@ -23,10 +23,10 @@ class Template(SubWikiText):
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        bar_spans = self._atomic_split_spans('|')[1:]
+        bar_spans = self._atomic_split_spans(b'|')[1:]
         arguments = []
         type_to_spans = self._type_to_spans
-        lststr = self._lststr
+        lststr = self._bytearray
         type_ = 'ta' + str(self._index)
         if type_ not in type_to_spans:
             type_to_spans[type_] = []

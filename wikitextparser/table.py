@@ -219,7 +219,7 @@ class Table(SubWikiTextWithAttrs):
                     spans.append(cell_span)
                 row_cells.append(
                     Cell(
-                        self._lststr,
+                        self._bytearray,
                         header,
                         type_to_spans,
                         index,

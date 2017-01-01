@@ -291,7 +291,7 @@ class Tag(SubWikiTextWithAttrs):
         spans = self._type_to_spans
         swt_spans = spans.setdefault('SubWikiText', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
-        return SubWikiText(self._lststr, spans, index)
+        return SubWikiText(self._bytearray, spans, index)
 
 
 def attrs_parser(attrs: str, pos=0, endpos=-1) -> Dict[str, str]:
