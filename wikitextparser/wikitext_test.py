@@ -21,61 +21,61 @@ class WikiText(unittest.TestCase):
     def test_getitem(self):
         s = '{{t1|{{t2}}}}'
         t2, t1 = wtp.WikiText(s).templates
-        self.assertEqual(t2[2], ord('t'))
-        self.assertEqual(t2[2:4], bytearray(b't2'))
-        self.assertEqual(t2[-4:-2], b't2')
-        self.assertEqual(t2[-3], ord('2'))
+        self.assertEqual(t2[2], 't')
+        self.assertEqual(t2[2:4], 't2')
+        self.assertEqual(t2[-4:-2], 't2')
+        self.assertEqual(t2[-3], '2')
 
     def test_setitem(self):
         s = '{{t1|{{t2}}}}'
         wt = wtp.WikiText(s)
         t2, t1 = wt.templates
-        t2[2] = b'a'
+        t2[2] = 'a'
         self.assertEqual(t2.string, '{{a2}}')
         self.assertEqual(t1.string, '{{t1|{{a2}}}}')
-        t2[2] = b'bb'
+        t2[2] = 'bb'
         self.assertEqual(t2.string, '{{bb2}}')
         self.assertEqual(t1.string, '{{t1|{{bb2}}}}')
-        t2[2:5] = b'ccc'
+        t2[2:5] = 'ccc'
         self.assertEqual(t2.string, '{{ccc}}')
         self.assertEqual(t1.string, '{{t1|{{ccc}}}}')
-        t2[-5:-2] = b'd'
+        t2[-5:-2] = 'd'
         self.assertEqual(wt.string, '{{t1|{{d}}}}')
-        t2[-3] = b'e'
+        t2[-3] = 'e'
         self.assertEqual(wt.string, '{{t1|{{e}}}}')
 
     def test_setitem_errors(self):
         w = wtp.WikiText('a')
-        self.assertRaises(IndexError, w.__setitem__, -2, b'b')
-        self.assertEqual(b'a', w[-9:9])
-        self.assertRaises(IndexError, w.__setitem__, 1, b'c')
+        self.assertRaises(IndexError, w.__setitem__, -2, 'b')
+        self.assertEqual('a', w[-9:9])
+        self.assertRaises(IndexError, w.__setitem__, 1, 'c')
         self.assertRaises(
-            NotImplementedError, w.__setitem__, slice(0, 1, 1), b'd'
+            NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd'
         )
-        self.assertEqual(b'a', w[-1:])
-        self.assertRaises(IndexError, w.__setitem__, slice(-2, None), b'e')
+        self.assertEqual('a', w[-1:])
+        self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
         # stop is out of range
-        self.assertRaises(IndexError, w.__setitem__, slice(0, -2), b'f')
-        w[0] = bytearray(b'gg')
-        w[1] = bytearray(b'hh')
+        self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
+        w[0] = 'gg'
+        w[1] = 'hh'
         self.assertEqual(w.string, 'ghh')
         # stop and start in range but stop is before start
-        self.assertRaises(IndexError, w.__setitem__, slice(1, 0), b'h')
+        self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
 
     def test_insert(self):
         w = wtp.WikiText('c')
-        w.insert(0, b'a')
+        w.insert(0, 'a')
         self.assertEqual(w.string, 'ac')
         # Just to show that ``w.insert(i, s)`` is the same as ``w[i:i] = s``:
         v = wtp.WikiText('c')
-        v[0:0] = b'a'
+        v[0:0] = 'a'
         self.assertEqual(w.string, v.string)
-        w.insert(-1, b'b')
+        w.insert(-1, 'b')
         self.assertEqual(w.string, 'abc')
         # Like list.insert, w.insert accepts out of range indexes.
-        w.insert(5, b'd')
+        w.insert(5, 'd')
         self.assertEqual(w.string, 'abcd')
-        w.insert(-5, b'z')
+        w.insert(-5, 'z')
         self.assertEqual(w.string, 'zabcd')
 
     def test_overwriting_template_args(self):
@@ -149,8 +149,7 @@ class ShrinkSpanUpdate(unittest.TestCase):
         wt = wtp.WikiText('{{t|<!--c-->}}')
         c = wt.comments[0]
         t = wt.templates[0]
-        # Todo: Also accept strings.
-        t[3:8] = b''
+        t[3:8] = ''
         self.assertEqual(c.string, 'c-->')
 
 
@@ -205,7 +204,7 @@ class ExternalLinks(unittest.TestCase):
         wt = wtp.WikiText('t [http://b.b b] t [http://c.c c] t')
         # calculate the links
         links1 = wt.external_links
-        wt.insert(0, b't [http://a.a a]')
+        wt.insert(0, 't [http://a.a a]')
         links2 = wt.external_links
         self.assertEqual(links1[1].string, '[http://c.c c]')
         self.assertEqual(links2[0].string, '[http://a.a a]')
@@ -288,11 +287,13 @@ class ExternalLinks(unittest.TestCase):
         self.assertEqual('{{t}}', str(wt.templates[0]))
 
     def test_dont_parse_source_tag(self):
-        wt = wtp.WikiText('<source>{{t}}</source>')
+        s = "<source>{{t}}</source>"
+        wt = wtp.WikiText(s)
         self.assertEqual(0, len(wt.templates))
 
     def test_comment_in_parserfunction_name(self):
-        wt = wtp.WikiText('{{<!--c\n}}-->#if:|a}}')
+        s = "{{<!--c\n}}-->#if:|a}}"
+        wt = wtp.WikiText(s)
         self.assertEqual(1, len(wt.parser_functions))
 
     def test_wikilink2externallink_fallback(self):
@@ -361,7 +362,7 @@ class Table(unittest.TestCase):
         s = '{|\n| b\n|}\n'
         wt = wtp.parse(s)
         t = wt.tables[0]
-        t.insert(0, b'{|\n| a\n|}\n')
+        t.insert(0, '{|\n| a\n|}\n')
         tables = wt.tables
         self.assertEqual(tables[0].string, '{|\n| a\n|}')
         self.assertEqual(tables[1].string, '{|\n| b\n|}')
@@ -752,12 +753,12 @@ class Sections(unittest.TestCase):
     def test_inseting_into_sections(self):
         wt = wtp.WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
-        s1.insert(0, b'c\n== s0 ==\nc\n')
+        s1.insert(0, 'c\n== s0 ==\nc\n')
         s0 = wt.sections[1]
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
         self.assertEqual('== s0 ==\nc\n', s0.string)
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
-        s1.insert(len(wt.string), b'=== s2 ===\nc\n')
+        s1.insert(len(wt.string), '=== s2 ===\nc\n')
         self.assertEqual(
             'c\n'
             '== s0 ==\n'

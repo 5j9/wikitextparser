@@ -10,7 +10,7 @@ from .tag import ATTRS_REGEX, SubWikiTextWithAttrs
 
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_REGEX = regex.compile(
-    rb"""
+    r"""
     # only for matching, not searching
     \s*
     (?P<sep>[|!](?![+}-]))
@@ -60,7 +60,7 @@ NEWLINE_CELL_REGEX = regex.compile(
 # See: https://github.com/wikimedia/mediawiki/blob/
 # 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
 INLINE_HAEDER_CELL_REGEX = regex.compile(
-    rb"""
+    r"""
     (?>
         \|!(?P<attrs>)! # immediate closure
         |
@@ -105,7 +105,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
 )
 # https://regex101.com/r/hW8aZ3/7
 INLINE_NONHAEDER_CELL_REGEX = regex.compile(
-    rb"""
+    r"""
     \|\| # catch the matching pipe (style holder).
     (?:
         # immediate closure
@@ -176,9 +176,9 @@ class Cell(SubWikiTextWithAttrs):
         if cached_match and cached_string == string:
             return self._cached_match
         shadow = self._shadow
-        if shadow.startswith(b'\n'):
+        if shadow.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(shadow)
-            self._header = m.group('sep') == b'!'
+            self._header = m.group('sep') == '!'
         elif self._header:
             m = INLINE_HAEDER_CELL_REGEX.match(shadow)
         else:
@@ -194,7 +194,7 @@ class Cell(SubWikiTextWithAttrs):
         m = self._match
         pos = m.start()
         s, e = m.span('data')
-        return self[s - pos:e - pos].decode()
+        return self[s - pos:e - pos]
 
     @value.setter
     def value(self, new_value: str) -> None:
@@ -203,9 +203,9 @@ class Cell(SubWikiTextWithAttrs):
         s, e = match.span('data')
         pos = match.start()
         if pos:
-            self[s - pos:e - pos] = new_value.encode()
+            self[s - pos:e - pos] = new_value
         else:
-            self[s:e] = new_value.encode()
+            self[s:e] = new_value
 
     @property
     def _attrs_match(self):
@@ -228,8 +228,6 @@ class Cell(SubWikiTextWithAttrs):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
-        attr_name = attr_name.encode()
-        attr_value = attr_value.encode()
         cell_match = self._match
         pos = cell_match.start()
         shadow = cell_match.string
@@ -239,46 +237,29 @@ class Cell(SubWikiTextWithAttrs):
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
-                    q = 1 if attrs_m.string[ve] in b'"\'' else 0
-                    self[vs - q - pos:ve + q - pos] = b'"%s"' % (
-                        attr_value.replace(b'"', b'&quot;')
+                    q = 1 if attrs_m.string[ve] in '"\'' else 0
+                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(
+                        attr_value.replace('"', '&quot;')
                     )
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs') - pos
-            if shadow[attr_end - 1] == 32:  # ord(' ')
-                self.insert(
-                    attr_end,
-                    b'%s="%s" ' % (
-                        attr_name, attr_value.replace(b'"', b'&#39;')
-                    ),
-                )
-                return
+            fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
             self.insert(
                 attr_end,
-                b' %s="%s"' % (
-                    attr_name, attr_value.replace(b'"', b'&#39;')
-                ),
+                fmt.format(attr_name, attr_value.replace('"', '&#39;')),
             )
             return
         # There is no attributes span in this cell. Create one.
-        if shadow.startswith(b'\n'):
-            if attr_value:
-                self.insert(
-                    cell_match.start('sep') + 1 - pos,
-                    b' %s="%s" |' %
-                    (attr_name, attr_value.replace(b'"', b'&quot;')),
-                )
-                return
+        fmt = ' {}="{}" |' if attr_value else ' {} |'
+        if shadow.startswith('\n'):
             self.insert(
-                cell_match.start('sep') + 1 - pos, b' %s |' % attr_name
+                cell_match.start('sep') + 1 - pos,
+                fmt.format(attr_name, attr_value.replace('"', '&quot;'))
             )
             return
         # An inline cell
-        if attr_value:
-            self.insert(
-                2, b' %s="%s" |' % (
-                attr_name, attr_value.replace(b'"', b'&quot;'))
-            )
-            return
-        self.insert(2, b' %s |' % attr_name)
+        self.insert(
+            2, fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+        )
+        return

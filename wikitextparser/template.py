@@ -23,10 +23,10 @@ class Template(SubWikiText):
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        bar_spans = self._atomic_split_spans(b'|')[1:]
+        bar_spans = self._atomic_split_spans('|')[1:]
         arguments = []
         type_to_spans = self._type_to_spans
-        lststr = self._bytearray
+        lststr = self._lststr
         type_ = 'ta' + str(self._index)
         if type_ not in type_to_spans:
             type_to_spans[type_] = []
@@ -50,21 +50,17 @@ class Template(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        h = self._atomic_partition(b'|')[0]
-        if len(h) == len(self):
-            return h[2:-2].decode()
+        h = self._atomic_partition('|')[0]
+        if len(h) == len(self.string):
+            return h[2:-2]
         else:
-            return h[2:].decode()
+            return h[2:]
 
     @name.setter
     def name(self, newname: str) -> None:
         """Set the new name for the template."""
-        h = self._atomic_partition(b'|')[0]
-        if len(h) == len(self):
-            name = h[2:-2]
-        else:
-            name = h[2:]
-        self[2:2 + len(name)] = newname.encode()
+        name = self.name
+        self[2:2 + len(name)] = newname
 
     def normal_name(
         self,
@@ -98,41 +94,36 @@ class Template(SubWikiText):
 
         """
         # Remove comments
-        h = self._atomic_partition(b'|')[0]
-        if len(h) == len(self):
-            name = h[2:-2]
-        else:
-            name = h[2:]
-        name = COMMENT_REGEX.sub(b'', name).strip()
+        name = COMMENT_REGEX.sub('', self.name).strip()
         # Remove code
         if code:
-            head, sep, tail = name.partition(b':')
+            head, sep, tail = name.partition(':')
             if not head and sep:
-                name = tail.strip(b' ')
-                head, sep, tail = name.partition(b':')
-            if code.lower().encode() == head.strip(b' ').lower():
-                name = tail.strip(b' ')
+                name = tail.strip(' ')
+                head, sep, tail = name.partition(':')
+            if code.lower() == head.strip(' ').lower():
+                name = tail.strip(' ')
         # Remove namespace
-        head, sep, tail = name.partition(b':')
+        head, sep, tail = name.partition(':')
         if not head and sep:
-            name = tail.strip(b' ')
-            head, sep, tail = name.partition(b':')
+            name = tail.strip(' ')
+            head, sep, tail = name.partition(':')
         if head:
-            ns = head.strip(b' ').lower()
-            for namespace in (ns.encode() for ns in rm_namespaces):
+            ns = head.strip(' ').lower()
+            for namespace in rm_namespaces:
                 if namespace.lower() == ns:
-                    name = tail.strip(b' ')
+                    name = tail.strip(' ')
                     break
         # Use space instead of underscore
-        name = name.replace(b'_', b' ')
+        name = name.replace('_', ' ')
         if capital_links:
             # Use uppercase for the first letter
-            n0 = name[:1]
+            n0 = name[0]
             if n0.islower():
                 name = n0.upper() + name[1:]
         # Remove #anchor
-        name, sep, tail = name.partition(b'#')
-        return b' '.join(name.split()).decode()
+        name, sep, tail = name.partition('#')
+        return ' '.join(name.split())
 
     def rm_first_of_dup_args(self) -> None:
         """Eliminate duplicate arguments by removing the first occurrences.
@@ -282,29 +273,28 @@ class Template(SubWikiText):
         # Place the addstring in the right position.
         if before:
             arg = get_arg(before, args)
-            arg.insert(0, addstring.encode())
-            return
-        if after:
+            arg.insert(0, addstring)
+        elif after:
             arg = get_arg(after, args)
-            arg.insert(len(arg.string), addstring.encode())
-            return
-        if args and not positional:
-            arg = args[0]
-            arg_string = arg.string
-            if preserve_spacing:
-                # Insert after the last argument.
-                # The addstring needs to be recalculated because we don't
-                # want to change the the whitespace before final braces.
-                arg[0:len(arg_string)] = (
-                    arg.string.rstrip() + after_value +
-                    addstring.rstrip() + after_values[0]
-                ).encode()
-                return
-            arg.insert(len(arg_string), addstring.encode())
-            return
-        # The template has no arguments or the new arg is
-        # positional AND is to be added at the end of the template.
-        self.insert(-2, addstring.encode())
+            arg.insert(len(arg.string), addstring)
+        else:
+            if args and not positional:
+                arg = args[0]
+                arg_string = arg.string
+                if preserve_spacing:
+                    # Insert after the last argument.
+                    # The addstring needs to be recalculated because we don't
+                    # want to change the the whitespace before final braces.
+                    arg[0:len(arg_string)] = (
+                        arg.string.rstrip() + after_value +
+                        addstring.rstrip() + after_values[0]
+                    )
+                else:
+                    arg.insert(len(arg_string), addstring)
+            else:
+                # The template has no arguments or the new arg is
+                # positional AND is to be added at the end of the template.
+                self.insert(-2, addstring)
 
     def get_arg(self, name: str) -> Optional[Argument]:
         """Return the last argument with the given name.

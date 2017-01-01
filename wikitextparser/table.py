@@ -16,7 +16,7 @@ from .cell import (
 
 
 CAPTION_REGEX = regex.compile(
-    rb"""
+    r"""
     # Everything until the caption line
     (?P<preattrs>
         # Start of table
@@ -59,11 +59,11 @@ class Table(SubWikiTextWithAttrs):
         """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
-        pos = shadow.find(b'\n')
+        pos = shadow.find('\n')
         lsp = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while shadow[lsp] not in b'!|':
-            nlp = shadow.find(b'\n', lsp)
+        while shadow[lsp] not in '!|':
+            nlp = shadow.find('\n', lsp)
             pos = nlp
             lsp = _lstrip_increase(shadow, pos)
         # Start of the first row
@@ -83,13 +83,13 @@ class Table(SubWikiTextWithAttrs):
                 match_row.append(m)
                 sep = m.group('sep')
                 pos = m.end()
-                if sep == b'|':
+                if sep == '|':
                     m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
                         match_row.append(m)
                         pos = m.end()
                         m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
-                elif sep == b'!':
+                elif sep == '!':
                     m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
                     while m:
                         match_row.append(m)
@@ -128,8 +128,7 @@ class Table(SubWikiTextWithAttrs):
 
         """
         match_table = self._match_table
-        s, e = self._span
-        self_bytes = self._bytearray[s:e]
+        string = self.string
         table_data = []
         if strip:
             for match_row in match_table:
@@ -138,16 +137,14 @@ class Table(SubWikiTextWithAttrs):
                 for m in match_row:
                     # Spaces after the first newline can be meaningful
                     s, e = m.span('data')
-                    row_data.append(
-                        self_bytes[s:e].lstrip(b' ').rstrip().decode()
-                    )
+                    row_data.append(string[s:e].lstrip(' ').rstrip())
         else:
             for match_row in match_table:
                 row_data = []
                 table_data.append(row_data)
                 for m in match_row:
                     s, e = m.span('data')
-                    row_data.append(self_bytes[s:e].decode())
+                    row_data.append(string[s:e])
         if table_data:
             if span:
                 table_attrs = []
@@ -156,7 +153,7 @@ class Table(SubWikiTextWithAttrs):
                     table_attrs.append(row_attrs)
                     for m in match_row:
                         s, e = m.span('attrs')
-                        row_attrs.append(attrs_parser(self_bytes, s, e))
+                        row_attrs.append(attrs_parser(string, s, e))
                 table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:
@@ -185,7 +182,7 @@ class Table(SubWikiTextWithAttrs):
         ss = self._span[0]
         match_table = self._match_table
         # Todo: maybe shadow is better than string? add tests.
-        shadow = self._shadow
+        string = self.string
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
         if type_ not in type_to_spans:
@@ -206,12 +203,11 @@ class Table(SubWikiTextWithAttrs):
                 if span:
                     s, e = m.span('attrs')
                     # NOte: ATTRS_REGEX always matches, even to empty strings.
-                    attrs_match = ATTRS_REGEX.match(shadow, s, e)
+                    attrs_match = ATTRS_REGEX.match(string, s, e)
                     captures = attrs_match.captures
-                    row_attrs_append({
-                        an.decode(): av.decode() for an, av in
-                        zip(captures('attr_name'), captures('attr_value'))
-                    })
+                    row_attrs_append(dict(zip(
+                        captures('attr_name'), captures('attr_value')
+                    )))
                 ms, me = m.span()
                 cell_span = (ss + ms, ss + me)
                 index = next(
@@ -223,7 +219,7 @@ class Table(SubWikiTextWithAttrs):
                     spans.append(cell_span)
                 row_cells.append(
                     Cell(
-                        self._bytearray,
+                        self._lststr,
                         header,
                         type_to_spans,
                         index,
@@ -261,27 +257,26 @@ class Table(SubWikiTextWithAttrs):
     @property
     def caption(self) -> Optional[str]:
         """Return caption of the table."""
-        s, e = self._span
-        m = CAPTION_REGEX.match(self._bytearray, s, e)
+        m = CAPTION_REGEX.match(self.string)
         if m:
-            return m.group('caption').decode()
+            return m.group('caption')
 
     @caption.setter
     def caption(self, newcaption: str) -> None:
         """Set a new caption."""
-        s, e = self._span
-        m = CAPTION_REGEX.match(self._bytearray, s, e)
+        m = CAPTION_REGEX.match(self.string)
         if m:
             preattrs = m.group('preattrs')
-            attrs = m.group('attrs') or b''
+            attrs = m.group('attrs') or ''
             oldcaption = m.group('caption')
-            self[len(preattrs + attrs):len(preattrs + attrs + oldcaption)] = \
-                newcaption.encode()
-            return
-        # There is no caption. Create one.
-        h, s, t = self[:].partition(b'\n')
-        # Insert caption after the first one.
-        self.insert(len(h + s), b'|+' + newcaption.encode() + b'\n')
+            self[len(preattrs + attrs):len(preattrs + attrs + oldcaption)] =\
+                newcaption
+        else:
+            # There is no caption. Create one.
+            string = self.string
+            h, s, t = string.partition('\n')
+            # Insert caption after the first one.
+            self.insert(len(h + s), '|+' + newcaption + '\n')
 
     @property
     def _attrs_match(self) -> Match:
@@ -289,7 +284,7 @@ class Table(SubWikiTextWithAttrs):
         cache = getattr(self, '_cached_attrs_match', None)
         if cache and cache.string == shadow:
             return cache
-        attrs_match = ATTRS_REGEX.match(shadow, 2, shadow.find(b'\n'))
+        attrs_match = ATTRS_REGEX.match(shadow, 2, shadow.find('\n'))
         self._cached_attrs_match = attrs_match
         return attrs_match
 
@@ -308,34 +303,30 @@ class Table(SubWikiTextWithAttrs):
     @table_attrs.setter
     def table_attrs(self, attrs: str) -> None:
         """Set new attributes for this table."""
-        h = self[2:].partition(b'\n')[0]
-        self[2:2 + len(h)] = attrs.encode()
+        h = self.string.partition('\n')[0]
+        self[2:2 + len(h[2:])] = attrs
 
     @property
     def caption_attrs(self) -> Optional[str]:
         """Return caption attributes."""
-        s, e = self._span
-        m = CAPTION_REGEX.match(self._bytearray, s, e)
+        m = CAPTION_REGEX.match(self.string)
         if m:
-            attrs = m.group('attrs')
-            if attrs:
-                return attrs.decode()
+            return m.group('attrs')
 
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
         """Set new caption attributes."""
-        s, e = self._span
-        _bytearray = self._bytearray[s:e]
-        h, s, t = _bytearray.partition(b'\n')
-        m = CAPTION_REGEX.match(_bytearray)
+        string = self.string
+        h, s, t = string.partition('\n')
+        m = CAPTION_REGEX.match(string)
         if not m:
             # There is no caption-line
-            self.insert(len(h + s), b'|+' + attrs.encode() + b'|\n')
+            self.insert(len(h + s), '|+' + attrs + '|\n')
         else:
             preattrs = m.group('preattrs')
-            oldattrs = m.group('attrs') or b''
+            oldattrs = m.group('attrs') or ''
             # Caption and attrs or Caption but no attrs
-            self[len(preattrs):len(preattrs + oldattrs)] = attrs.encode()
+            self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
 
 def _apply_attr_spans(
@@ -458,16 +449,15 @@ def _apply_attr_spans(
     return table
 
 
-def _lstrip_increase(shadow: bytearray, pos: int) -> int:
-    """Return the new position to lstrip the shadow."""
-    length = len(shadow)
-    # Todo: use regex or simplify
-    while pos < length and chr(shadow[pos]).isspace():
+def _lstrip_increase(string: str, pos: int) -> int:
+    """Return the new position to lstrip the string."""
+    length = len(string)
+    while pos < length and string[pos].isspace():
         pos += 1
     return pos
 
 
-def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
+def _semi_caption_increase(string: str, pos: int) -> int:
     """Return the position after the starting semi-caption.
 
     Captions are optional and only one should be placed between table-start
@@ -475,30 +465,30 @@ def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
     be ignored. We call these semi-captions.
 
     """
-    lsp = _lstrip_increase(shadow, pos)
-    while shadow.startswith(b'|+', lsp):
-        pos = shadow.find(b'\n', lsp + 2)
-        lsp = _lstrip_increase(shadow, pos)
-        while shadow[lsp] not in b'!|':
+    lsp = _lstrip_increase(string, pos)
+    while string.startswith('|+', lsp):
+        pos = string.find('\n', lsp + 2)
+        lsp = _lstrip_increase(string, pos)
+        while string[lsp] not in ('!', '|'):
             # This line is a continuation of semi-caption line.
-            nlp = shadow.find(b'\n', lsp + 1)
+            nlp = string.find('\n', lsp + 1)
             pos = nlp
-            lsp = _lstrip_increase(shadow, nlp)
+            lsp = _lstrip_increase(string, nlp)
     return pos
 
 
-def _row_separator_increase(shadow: bytearray, pos: int) -> int:
+def _row_separator_increase(string: str, pos: int) -> int:
     """Return the position after the starting row separator line.
 
     Also skips any semi-caption lines before and after the separator.
 
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    scp = _semi_caption_increase(shadow, pos)
-    lsp = _lstrip_increase(shadow, scp)
-    while shadow.startswith(b'|-', lsp):
+    scp = _semi_caption_increase(string, pos)
+    lsp = _lstrip_increase(string, scp)
+    while string.startswith('|-', lsp):
         # We are on a row separator line.
-        pos = shadow.find(b'\n', lsp + 2)
-        pos = _semi_caption_increase(shadow, pos)
-        lsp = _lstrip_increase(shadow, pos)
+        pos = string.find('\n', lsp + 2)
+        pos = _semi_caption_increase(string, pos)
+        lsp = _lstrip_increase(string, pos)
     return pos

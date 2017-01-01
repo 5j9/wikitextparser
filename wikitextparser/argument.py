@@ -21,16 +21,16 @@ class Argument(SubWikiText):
         For positional arguments return the position as a string.
 
         """
-        pipename, equal, value = self._atomic_partition(b'=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
-            return pipename[1:].decode()
+            return pipename[1:]
         # positional argument
         position = 1
-        _bytearray = self._bytearray
+        godstring = self._lststr[0]
         for ss, se in self._type_to_spans[self._type][:self._index]:
             # Make sure the span is not closed.
             if ss < se:
-                equal_index = _bytearray.find(61, ss, se)  # 61 == ord('=')
+                equal_index = godstring.find('=', ss, se)
                 if equal_index == -1:
                     # A preceding positional argument is detected.
                     position += 1
@@ -43,7 +43,7 @@ class Argument(SubWikiText):
                         break
                     # We don't care for this kind of equal sign.
                     # Look for the next one.
-                    equal_index = _bytearray.find(b'=', equal_index + 1, se)
+                    equal_index = godstring.find('=', equal_index + 1, se)
                 else:
                     # All the equal signs where inside a subspan.
                     position += 1
@@ -56,17 +56,16 @@ class Argument(SubWikiText):
         If this is a positional argument, convert it to keyword argument.
 
         """
-        oldname = self.name.encode()
+        oldname = self.name
         if self.positional:
-            self[0:1] = b'|' + newname.encode() + b'='
+            self[0:1] = '|' + newname + '='
         else:
-            # Todo: old name should be converted to bytes
-            self[1:1 + len(oldname)] = newname.encode()
+            self[1:1 + len(oldname)] = newname
 
     @property
     def positional(self) -> bool:
         """Return True if there is an equal sign in the argument else False."""
-        if self._atomic_partition(b'=')[1]:
+        if self._atomic_partition('=')[1]:
             return False
         else:
             return True
@@ -78,11 +77,11 @@ class Argument(SubWikiText):
         Raise ValueError if setting positional argument to keyword argument.
 
         """
-        pipename, equal, value = self._atomic_partition(b'=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             # Keyword argument
             if to_positional:
-                del self[1:len(pipename + b'=')]
+                del self[1:len(pipename + '=')]
             else:
                 return
         elif to_positional:
@@ -99,18 +98,18 @@ class Argument(SubWikiText):
     @property
     def value(self) -> str:
         """Return value of a keyword argument."""
-        pipename, equal, value = self._atomic_partition(b'=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
-            return value.decode()
+            return value
         # Anonymous parameter
-        return pipename[1:].decode()
+        return pipename[1:]
 
     @value.setter
     def value(self, newvalue: str) -> None:
         """Assign the newvalue to self."""
-        pipename, equal, value = self._atomic_partition(b'=')
+        pipename, equal, value = self._atomic_partition('=')
         if equal:
             pnel = len(pipename + equal)
-            self[pnel:pnel + len(value)] = newvalue.encode()
+            self[pnel:pnel + len(value)] = newvalue
         else:
-            self[1:len(pipename)] = newvalue.encode()
+            self[1:len(pipename)] = newvalue
