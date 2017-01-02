@@ -11,21 +11,41 @@ import regex
 INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 # Templates
 TEMPLATE_PATTERN = (
-    r'\{\{\s*'
-    r'[^' + INVALID_TITLE_CHARS_PATTERN + r']*'
-    r'\s*(\|[^{}]*?\}\}|\}\})'
+    r'''
+    \{\{
+    (?>\s*[^%1s]*\s*)
+    (?>
+        \|(?>[^{}]*)\}\}
+        |
+        \}\}
+    )
+    ''' % INVALID_TITLE_CHARS_PATTERN
 )
 INVALID_NAME_TEMPLATE_REGEX = regex.compile(
-    r'\{\{\s*'
-    r'[_\s]*'
-    r'\s*(\|[^{}]*?\}\}|\}\})'
+    r'''
+    \{\{
+    (?>[\s_]*)
+    (?>
+        \|(?>[^{}]*)\}\}
+        |
+        \}\}
+    )
+    ''',
+    regex.VERBOSE,
 )
 TEMPLATE_NOT_PARAM_REGEX = regex.compile(
-    TEMPLATE_PATTERN + r'(?!\})'
-    r'|(?<!{)' + TEMPLATE_PATTERN
+    r''' %s (?!\})  |  (?<!{) %s ''' % (TEMPLATE_PATTERN, TEMPLATE_PATTERN),
+    regex.VERBOSE,
 )
 # Parameters
-TEMPLATE_PARAMETER_REGEX = regex.compile(r'\{\{\{[^{}]*?\}\}\}')
+TEMPLATE_PARAMETER_REGEX = regex.compile(
+    r'''
+    \{\{\{
+    (?>[^{}]*)
+    \}\}\}
+    ''',
+    regex.VERBOSE,
+)
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
@@ -34,113 +54,88 @@ PARSER_FUNCTION_REGEX = regex.compile(
     r"""
     \{\{\s*
     (?:
-      \#[^{}\s]*?|
-      # Variables acting like parser functions
-      # Technical metadata
-      DISPLAYTITLE|
-      DEFAULT
-      (?:CATEGORYSORT|SORT|SORTKEY)|
-      # Statistics
-      # The following variables accept ":R" flag
-      NUM
-      (?:
-        BER
-        (?:
-          OF
-          (?:
-            PAGES|
-            ARTICLES|
-            FILES|
-            EDITS|
-            VIEWS|
-            USERS|
-            ADMINS|
-            ACTIVEUSERS
-          )|
-          INGROUP
+        \#[^{}\s]*?
+        |
+        # Variables acting like parser functions
+        # Technical metadata
+        DISPLAYTITLE|
+        DEFAULT(?>CATEGORYSORT|SORTKEY|SORT)|
+        # Statistics
+        # The following variables accept ":R" flag
+        NUM
+        (?>
+            BER
+            (?>
+                OF
+                (?>PAGES|ARTICLES|FILES|EDITS|VIEWS|USERS|ADMINS|ACTIVEUSERS)|
+                INGROUP
+            )|
+            INGROUP
         )|
-        INGROUP
-      )|
-      PAGESIN
-      (?:
-        CATEGORY|
-        CAT|
-        NS|
-        NAMESPACE
-      )|
-      # Page names
-      # These can all take a parameter, allowing
-      # specification of the page to be operated on
-      (?:
-        (?:FULL)?|
-        BASE|
-        SUB
-        (?:JECT)?|
-        ARTICLE|
-        TALK|
-        ROOT
-      )
-      PAGENAMEE?|
-      # Namespaces
-      # Can take a full-page-name parameter
-      (?:
-        NAME|
-        SUBJECT|
-        ARTICLE|
-        TALK
-      )
-      SPACEE?|
-      NAMESPACENUMBER|
-      # Parser functions
-      # Technical metadata of another page
-      PAGE
-      (?:ID|SIZE)|
-      PROTECTION(?:LEVEL|EXPIRY)|
-      CASCADINGSOURCES|
-      REVISION
-      (?:
-        ID|
-        DAY2?|
-        MONTH1?|
-        YEAR|
-        TIMESTAMP|
-        USER
-      )|
-      # URL data
-      (?:local|full|canonical)
-      url|
-      filepath|
-      (?:url|anchor)
-      encode|
-      # Namespaces
-      nse?|
-      # Formatting
-      formatnum|
-      [lu]c
-      (?:first)?|
-      pad
-      (?:left|right)|
-      # Localization
-      plural|
-      grammar|
-      gender|
-      int
+        PAGESIN
+        (?:CATEGORY|CAT|NS|NAMESPACE)|
+        # Page names
+        # These can all take a parameter, allowing
+        # specification of the page to be operated on
+        (?:
+            (?:FULL)?|
+            (?>
+                SUB(?:JECT)?|
+                BASE|
+                ARTICLE|
+                TALK|
+                ROOT
+            )
+        )
+        PAGENAMEE?|
+        # Namespaces
+        # Can take a full-page-name parameter
+        (?>
+            NAME|SUBJECT|ARTICLE|TALK
+        )SPACEE?|
+        NAMESPACENUMBER|
+        # Parser functions
+        # Technical metadata of another page
+        PAGE(?>ID|SIZE)|
+        PROTECTION(?>LEVEL|EXPIRY)|
+        CASCADINGSOURCES|
+        REVISION(?>ID|DAY2?|MONTH1?|YEAR|TIMESTAMP|USER)|
+        # URL data
+        (?>local|full|canonical)
+        url|
+        filepath|
+        (?>url|anchor)encode|
+        # Namespaces
+        nse?|
+        # Formatting
+        formatnum|
+        [lu]c(?:first)?|
+        pad(?>left|right)|
+        # Localization
+        plural|
+        grammar|
+        gender|
+        int
     )
     :[^{}]*?\}\}
     """,
     regex.VERBOSE
 )
 # External links
-VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*'
+VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
 VALID_EXTLINK_SCHEMES_PATTERN = (
-    r'('
-    r'bitcoin:|ftp://|ftps://|geo:|git://|gopher://|http://|https://|'
-    r'irc://|ircs://|magnet:|mailto:|mms://|news:|nntp://|redis://|'
-    r'sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|'
-    r'worldwind://|xmpp:|//'
-    r')'
+    r'''
+    (?:
+    http://|https://|ftp://|ftps://|bitcoin:|
+    irc://|ircs://|magnet:|mailto:|mms://|news:|
+    git://|geo:|gopher://|
+    nntp://|redis://|
+    sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|
+    worldwind://|xmpp:|//
+    )
+    '''
 )
 BARE_EXTERNALLINK_PATTERN = (
     VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
@@ -149,10 +144,25 @@ BARE_EXTERNALLINK_PATTERN = (
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_REGEX = regex.compile(
-    r'\[\[(?!' + BARE_EXTERNALLINK_PATTERN + r')' +
-    '[^' + INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '') + ']*'
-    r'(\]\]|\|(?:[\S\s](?!\[\[))*?\]\])',
-    regex.IGNORECASE,
+    r'''
+    \[\[
+    (?!%s)
+    (?>[^%s]*)
+    (
+        \]\]
+        |
+        \| # Text of the wikilink
+        (?>
+            # Any character that is not the start of another wikilink
+            (?!\[\[)[\S\s]
+        )*?
+        \]\]
+    )
+    ''' % (
+        BARE_EXTERNALLINK_PATTERN,
+        INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', '')
+    ),
+    regex.IGNORECASE | regex.VERBOSE,
 )
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
@@ -189,30 +199,28 @@ TAG_EXTENSIONS = [
     'graph',
     'indicator',
 ]
-# The idea of the following regex to detect innermost HTML tags is from
+# The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
+# Todo: Will this fail if the extension tag has a "<"?
 EXTENSION_TAGS_REGEX = regex.compile(
-    r'<(' + '|'.join(TAG_EXTENSIONS) +
-    r""")
-    \b[^>]*
-    (?<!/)
-    > # content
+    r"""
+    < ((?>%s)) \b (?>[^>]*) (?<!/)>
+    # content
     (?:
-      # no tags are nested inside
-      (?=
-        ([^<]+)
-      )
-      \2|
-      # the nested-tag is something else
-      <
-      (?!\1\b[^>]*>)|
-      # the nested tag closes itself
-      <\1\b[^>]*/>
+        # Contains no other tags
+        (?= ([^<]+) ) \2
+        |
+        # the nested-tag is something else
+        < (?! \1 \b (?>[^>]*) >)
+        |
+        # the nested tag closes itself
+        <\1\b[^>]*/>
     )*?
     # tag-end
-    </\1\s*>""",
+    </\1\s*>
+    """ % '|'.join(TAG_EXTENSIONS),
     regex.IGNORECASE | regex.VERBOSE,
 )
 # Contents of the some of the tags mentioned above can be parsed as wikitext.
@@ -238,7 +246,14 @@ COMMENT_REGEX = regex.compile(
     r'<!--.*?-->',
     regex.DOTALL,
 )
-SINGLE_BRACES_REGEX = regex.compile(r'(?<!{){(?=[^{])|(?<!})}(?=[^}])')
+SINGLE_BRACES_REGEX = regex.compile(
+    r'''
+    (?<!{) { (?=[^{])
+    |
+    (?<!}) } (?=[^}])
+    ''',
+    regex.VERBOSE,
+)
 
 
 def parse_to_spans(string: str) -> Dict[str, List[Tuple[int, int]]]:

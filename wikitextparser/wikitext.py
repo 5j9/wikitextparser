@@ -16,36 +16,39 @@ from .spans import (
     parse_to_spans,
     VALID_EXTLINK_CHARS_PATTERN,
     VALID_EXTLINK_SCHEMES_PATTERN,
-    BARE_EXTERNALLINK_PATTERN
+    BARE_EXTERNALLINK_PATTERN,
 )
 
 
 # HTML
+# Todo: Use the regex in .tag madule.
 HTML_TAG_REGEX = regex.compile(
-    r'<([A-Z][A-Z0-9]*)\b[^>]*>(.*?)</\1>',
-    regex.DOTALL | regex.IGNORECASE,
+    r'''
+    <([A-Z][A-Z0-9]*)\b[^>]*>
+    (.*?)
+    </\1>
+    ''',
+    regex.DOTALL | regex.IGNORECASE | regex.VERBOSE,
 )
 # External links
-BRACKET_EXTERNALLINK_PATTERN = (
-    r'\[' + VALID_EXTLINK_SCHEMES_PATTERN + VALID_EXTLINK_CHARS_PATTERN +
-    r' *[^\]\n]*\]'
+BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *[^\]\n]*\]' % (
+    VALID_EXTLINK_SCHEMES_PATTERN, VALID_EXTLINK_CHARS_PATTERN
 )
 EXTERNALLINK_REGEX = regex.compile(
-    r'(' + BARE_EXTERNALLINK_PATTERN + r'|' +
-    BRACKET_EXTERNALLINK_PATTERN + r')',
-    regex.IGNORECASE,
+    r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
+    regex.IGNORECASE | regex.VERBOSE,
 )
 # Todo: Perhaps the following regular expressions could be improved by using
 # the features of the regex module.
 # Sections
 SECTION_HEADER_REGEX = regex.compile(r'^=[^\n]+?= *$', regex.M)
 LEAD_SECTION_REGEX = regex.compile(
-    r'.*?(?=' + SECTION_HEADER_REGEX.pattern + r'|\Z)',
+    r'.*?(?=%s|\Z)' % SECTION_HEADER_REGEX.pattern,
     regex.DOTALL | regex.MULTILINE,
 )
 SECTION_REGEX = regex.compile(
-    SECTION_HEADER_REGEX.pattern + r'.*?\n*(?=' +
-    SECTION_HEADER_REGEX.pattern + '|\Z)',
+    r'%s.*?\n*(?=%s|\Z)'
+    % (SECTION_HEADER_REGEX.pattern, SECTION_HEADER_REGEX.pattern),
     regex.DOTALL | regex.MULTILINE,
 )
 # Tables
@@ -57,14 +60,13 @@ TABLE_REGEX = regex.compile(
     # Group the leading spaces or colons so that we can ignore them later.
     ([ :]*)
     {\| # Table contents
-    # Should not contain any other table-start
     (?:
-      (?!^\ *\{\|)
-      .
+        # Any character, as long as it is not indicating another table-start
+        (?!^\ *\{\|).
     )*?
     # Table-end
     \n\s*
-    (?:\|}|\Z)
+    (?> \|} | \Z )
     """,
     regex.DOTALL | regex.MULTILINE | regex.VERBOSE
 )
