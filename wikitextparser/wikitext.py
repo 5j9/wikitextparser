@@ -360,7 +360,7 @@ class WikiText:
         for type_spans in self._type_to_spans.values():
             for i, (s, e) in enumerate(type_spans):
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    type_spans[i] = (start, start)
+                    type_spans[i] = (-1, -1)
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.

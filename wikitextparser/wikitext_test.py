@@ -171,7 +171,7 @@ class ExpandSpanUpdate(unittest.TestCase):
         self.assertEqual('|{{#if:a|b|c}}', a.string)
         # Note that the old parser function is overwritten
         self.assertEqual('', pf.string)
-        pf = a.parser_functions[1]
+        pf = a.parser_functions[0]
         a.value = 'a'
         self.assertEqual('', pf.string)
 
