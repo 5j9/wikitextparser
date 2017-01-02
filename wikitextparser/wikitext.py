@@ -406,21 +406,21 @@ class WikiText:
         # Note: No span should be removed from _type_to_spans.
         ss, se = self._span
         for spans in self._type_to_spans.values():
-            for i, (spanstart, spanend) in enumerate(spans):
-                if estart < spanstart or (
+            for i, (s, e) in enumerate(spans):
+                if estart < s or (
                     # Not at the beginning of selfspan
-                    estart == spanstart and spanstart != ss and spanend != se
+                    estart == s != ss and e != se
                 ):
                     # Added part is before the span
-                    spans[i] = (spanstart + elength, spanend + elength)
-                elif spanstart < estart < spanend or (
+                    spans[i] = (s + elength, e + elength)
+                elif s < estart < e or (
                     # At the end of selfspan
-                    estart == spanstart and spanstart == ss and spanend == se
+                    estart == s == ss and e == se
                 ) or (
-                    estart == spanend and spanend == se and spanstart == ss
+                    estart == e == se and s == ss
                 ):
                     # Added part is inside the span
-                    spans[i] = (spanstart, spanend + elength)
+                    spans[i] = (s, e + elength)
 
     @property
     def _indent_level(self) -> int:
