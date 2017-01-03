@@ -312,11 +312,10 @@ def parse_to_spans(
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of the template should be the whole byte_array.
-    loop = True
-    while loop:
-        loop = False
+    match = True
+    while match:
+        match = False
         for match in WIKILINK_REGEX.finditer(byte_array):
-            loop = True
             mspan = match.span()
             wikilink_spans.append(mspan)
             ms, me = mspan
@@ -368,11 +367,10 @@ def parse_subbytes_to_spans(
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of the template should be the whole string.
-    loop = True
-    while loop:
-        loop = False
+    match = True
+    while match:
+        match = False
         for match in WIKILINK_REGEX.finditer(byte_array):
-            loop = True
             ms, me = match.span()
             wikilink_spans.append((index + ms, index + me))
             group = byte_array[ms:me]
@@ -420,48 +418,44 @@ def parse_to_spans_innerloop(
         for m in SINGLE_BRACES_REGEX.finditer(byte_array):
             byte_array[m.start()] = 95  # 95 = ord('_')
         # Also remove empty double braces
-        loop = True
-        while loop:
-            loop = False
+        match = True
+        while match:
+            match = False
             for match in INVALID_NAME_TEMPLATE_REGEX.finditer(byte_array):
-                loop = True
                 ms, me = match.span()
                 byte_array[ms:me] = (me - ms) * b'_'
         i = byte_array.rfind(125)  # 125 == ord('}')
         if i != -1:
             byte_array[i:] = byte_array[i:].replace(b'{', b'_')
-        i = byte_array.find(123)
+        i = byte_array.find(123)  # 125 == ord('{')
         if i != -1:
             byte_array[:i] = byte_array[:i].replace(b'}', b'_')
-        match = None
+        ms = None
         # Template parameters
-        loop = True
-        while loop:
-            loop = False
+        match = True
+        while match:
+            match = False
             for match in TEMPLATE_PARAMETER_REGEX.finditer(byte_array):
-                loop = True
                 ms, me = match.span()
                 parameter_spans.append((ms + index, me + index))
                 byte_array[ms:ms + 2] = b'__'
                 byte_array[me - 2:me] = b'__'
         # Templates
-        loop = True
-        while loop:
+        match = True
+        while match:
             # Parser functions
-            while loop:
-                loop = False
+            while match:
+                match = False
                 for match in PARSER_FUNCTION_REGEX.finditer(byte_array):
-                    loop = True
                     ms, me = match.span()
                     parser_function_spans.append((ms + index, me + index))
                     byte_array[ms:ms + 2] = b'__'
                     byte_array[me - 2:me] = b'__'
-            # loop is False at this point
+            # match is False at this point
             for match in TEMPLATE_NOT_PARAM_REGEX.finditer(byte_array):
-                loop = True
                 ms, me = match.span()
                 template_spans.append((ms + index, me + index))
                 byte_array[ms:ms + 2] = b'__'
                 byte_array[me - 2:me] = b'__'
-        if not match:
+        if ms is None:
             break
