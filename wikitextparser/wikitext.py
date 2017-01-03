@@ -1,6 +1,6 @@
 ﻿"""Define the Wikitext and SubWikiText classes."""
 
-# Todo: consider using a tree structure.
+# Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using seperate strings for each node.
 
 

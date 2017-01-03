@@ -339,9 +339,10 @@ class Table(unittest.TestCase):
     def test_two_tables(self):
         s = 'text1\n {|\n|a \n|}\ntext2\n{|\n|b\n|}\ntext3\n'
         p = wtp.parse(s)
-        self.assertEqual(2, len(p.tables))
-        self.assertEqual('{|\n|a \n|}', p.tables[0].string)
-        self.assertEqual('{|\n|b\n|}', p.tables[1].string)
+        tables = p.tables
+        self.assertEqual(2, len(tables))
+        self.assertEqual('{|\n|a \n|}', tables[0].string)
+        self.assertEqual('{|\n|b\n|}', tables[1].string)
 
     def test_nested_tables(self):
         s = (
