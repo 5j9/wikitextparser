@@ -163,7 +163,7 @@ WIKILINK_REGEX = regex.compile(
     )
     ''' % (
         BARE_EXTERNALLINK_PATTERN.encode(),
-        INVALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', b'')
+        INVALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'')
     ),
     regex.IGNORECASE | regex.VERBOSE,
 )
@@ -277,22 +277,28 @@ def parse_to_spans(
     """
     byte_array = bytearray(string.encode('ascii', 'replace'))
     comment_spans = []
+    comment_spans_append = comment_spans.append
     extension_tag_spans = []
+    extension_tag_spans_append = extension_tag_spans.append
     wikilink_spans = []
+    wikilink_spans_append = wikilink_spans.append
     parameter_spans = []
+    parameter_spans_append = parameter_spans.append
     parser_function_spans = []
+    parser_function_spans_append = parser_function_spans.append
     template_spans = []
+    template_spans_append = template_spans.append
     # HTML <!-- comments -->
     for match in COMMENT_REGEX.finditer(byte_array):
         # Todo: Parse comments?
         mspan = match.span()
-        comment_spans.append(mspan)
+        comment_spans_append(mspan)
         ms, me = mspan
         byte_array[ms:me] = b' ' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_REGEX.finditer(byte_array):
         mspan = match.span()
-        extension_tag_spans.append(mspan)
+        extension_tag_spans_append(mspan)
         ms, me = mspan
         group = match.group()
         group_startswith = group.startswith
@@ -302,10 +308,10 @@ def parse_to_spans(
             parse_subbytes_to_spans(
                 byte_array[ms + 3:me - 3],
                 ms + 3,
-                wikilink_spans,
-                parameter_spans,
-                parser_function_spans,
-                template_spans,
+                wikilink_spans_append,
+                parameter_spans_append,
+                parser_function_spans_append,
+                template_spans_append,
             )
         byte_array[ms:me] = b'_' * (me - ms)
     # Remove the braces inside WikiLinks.
@@ -317,15 +323,15 @@ def parse_to_spans(
         match = False
         for match in WIKILINK_REGEX.finditer(byte_array):
             mspan = match.span()
-            wikilink_spans.append(mspan)
+            wikilink_spans_append(mspan)
             ms, me = mspan
             group = byte_array[ms:me]
             parse_to_spans_innerloop(
                 group,
                 ms,
-                parameter_spans,
-                parser_function_spans,
-                template_spans,
+                parameter_spans_append,
+                parser_function_spans_append,
+                template_spans_append,
             )
             byte_array[ms:me] = (
                 b'_[' + group[2:-2].replace(b'{', b'_').replace(b'}', b'_') +
@@ -334,9 +340,9 @@ def parse_to_spans(
     parse_to_spans_innerloop(
         byte_array,
         0,
-        parameter_spans,
-        parser_function_spans,
-        template_spans,
+        parameter_spans_append,
+        parser_function_spans_append,
+        template_spans_append,
     )
     return {
         'Parameter': parameter_spans,
@@ -351,10 +357,10 @@ def parse_to_spans(
 def parse_subbytes_to_spans(
     byte_array: bytearray,
     index: int,
-    wikilink_spans: list,
-    parameter_spans: list,
-    parser_function_spans: list,
-    template_spans: list,
+    wikilink_spans_append: callable,
+    parameter_spans_append: callable,
+    pfunction_spans_append: callable,
+    template_spans_append: callable,
 ) -> None:
     """Parse the byte_array to spans.
 
@@ -372,14 +378,14 @@ def parse_subbytes_to_spans(
         match = False
         for match in WIKILINK_REGEX.finditer(byte_array):
             ms, me = match.span()
-            wikilink_spans.append((index + ms, index + me))
+            wikilink_spans_append((index + ms, index + me))
             group = byte_array[ms:me]
             parse_to_spans_innerloop(
                 group,
                 index + ms,
-                parameter_spans,
-                parser_function_spans,
-                template_spans,
+                parameter_spans_append,
+                pfunction_spans_append,
+                template_spans_append,
             )
             byte_array[ms:me] = (
                 b'_[' + group[2:-2].replace(b'{', b'_').replace(b'}', b'_') +
@@ -388,18 +394,18 @@ def parse_subbytes_to_spans(
     parse_to_spans_innerloop(
         byte_array,
         index,
-        parameter_spans,
-        parser_function_spans,
-        template_spans,
+        parameter_spans_append,
+        pfunction_spans_append,
+        template_spans_append,
     )
 
 
 def parse_to_spans_innerloop(
     byte_array: bytearray,
     index: int,
-    parameter_spans: list,
-    parser_function_spans: list,
-    template_spans: list,
+    parameter_spans_append: callable,
+    pfunction_spans_append: callable,
+    template_spans_append: callable,
 ) -> None:
     """Find the spans of parameters, parser functions, and templates.
 
@@ -437,7 +443,7 @@ def parse_to_spans_innerloop(
             match = False
             for match in TEMPLATE_PARAMETER_REGEX.finditer(byte_array):
                 ms, me = match.span()
-                parameter_spans.append((ms + index, me + index))
+                parameter_spans_append((ms + index, me + index))
                 byte_array[ms:ms + 2] = b'__'
                 byte_array[me - 2:me] = b'__'
         # Templates
@@ -448,13 +454,13 @@ def parse_to_spans_innerloop(
                 match = False
                 for match in PARSER_FUNCTION_REGEX.finditer(byte_array):
                     ms, me = match.span()
-                    parser_function_spans.append((ms + index, me + index))
+                    pfunction_spans_append((ms + index, me + index))
                     byte_array[ms:ms + 2] = b'__'
                     byte_array[me - 2:me] = b'__'
             # match is False at this point
             for match in TEMPLATE_NOT_PARAM_REGEX.finditer(byte_array):
                 ms, me = match.span()
-                template_spans.append((ms + index, me + index))
+                template_spans_append((ms + index, me + index))
                 byte_array[ms:ms + 2] = b'__'
                 byte_array[me - 2:me] = b'__'
         if ms is None:
