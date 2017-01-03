@@ -169,7 +169,7 @@ WIKILINK_REGEX = regex.compile(
 )
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
-# <templatedata> and <includeonly> were manually added to the  following list.
+# <templatedata> and <includeonly> were manually added to the  following lists.
 # A simple trick to find out if a tag should be listed here or not is as
 # follows:
 # Create the {{text}} template in your wiki (You can copy the source code from
@@ -180,29 +180,19 @@ WIKILINK_REGEX = regex.compile(
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
-    b'ref',
     b'math',
     b'source',
     b'syntaxhighlight',
     b'pre',
-    b'poem',
     b'hiero',
     b'score',
-    b'includeonly',
     b'timeline',
     b'nowiki',
-    b'categorytree',
     b'charinsert',
-    b'references',
-    b'imagemap',
-    b'inputbox',
-    b'section',
     b'templatedata',
-    b'gallery',
     b'graph',
-    b'indicator',
 ]
-# Contents of the some of the tags mentioned above can be parsed as wikitext.
+# Contents of the some of the extension tags can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
 #    <poem>{{text|Hi!}}</poem>
 # But not within math or source or ...
@@ -228,11 +218,13 @@ PARSABLE_TAG_EXTENSIONS = [
 # Todo: Will this fail if the extension tag has a "<"?
 EXTENSION_TAGS_REGEX = regex.compile(
     rb"""
-    < ((?>%s)) \b (?>[^>]*) (?<!/)>
+    # First group is the tag name
+    # Second groupd is indicator for PARSABLE_TAG_EXTENSIONS
+    < ((?>%s)|((?>%s))) \b (?>[^>]*) (?<!/)>
     # content
     (?:
         # Contains no other tags
-        (?= ([^<]+) ) \2
+        (?>[^<]+)
         |
         # the nested-tag is something else
         < (?! \1 \b (?>[^>]*) >)
@@ -242,7 +234,7 @@ EXTENSION_TAGS_REGEX = regex.compile(
     )*?
     # tag-end
     </\1\s*>
-    """ % b'|'.join(TAG_EXTENSIONS),
+    """ % (b'|'.join(TAG_EXTENSIONS), b'|'.join(PARSABLE_TAG_EXTENSIONS)),
     regex.IGNORECASE | regex.VERBOSE,
 )
 COMMENT_REGEX = regex.compile(
@@ -300,11 +292,7 @@ def parse_to_spans(
         mspan = match.span()
         extension_tag_spans_append(mspan)
         ms, me = mspan
-        group = match.group()
-        group_startswith = group.startswith
-        if any(
-            (group_startswith(b'<' + pte) for pte in PARSABLE_TAG_EXTENSIONS)
-        ):
+        if match[2]:  # parsable tag extension group
             parse_subbytes_to_spans(
                 byte_array[ms + 3:me - 3],
                 ms + 3,
@@ -325,19 +313,16 @@ def parse_to_spans(
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
-            # Todo: memoryview?
-            group = byte_array[ms:me]
+            group = byte_array[ms + 2:me - 2]
             parse_to_spans_innerloop(
                 group,
-                ms,
+                ms + 2,
                 parameter_spans_append,
                 parser_function_spans_append,
                 template_spans_append,
             )
             byte_array[ms:me] = (
-                b'_[' +
-                group[2:-2].translate(BRACES_TO_UNDERSCORE) +
-                b']_'
+                b'_[' + group.translate(BRACES_TO_UNDERSCORE) + b']_'
             )
     parse_to_spans_innerloop(
         byte_array,
@@ -390,11 +375,9 @@ def parse_subbytes_to_spans(
                 pfunction_spans_append,
                 template_spans_append,
             )
-            ms2 = ms + 2
-            byte_array[ms:ms2] = b'_['
-            me2 = me - 2
-            byte_array[me2:me] = b'_['
-            byte_array[ms2:me2] = group[2:-2].translate(BRACES_TO_UNDERSCORE)
+            byte_array[ms:me] = (
+                b'_[' + group[2:-2].translate(BRACES_TO_UNDERSCORE) + b'_['
+            )
     parse_to_spans_innerloop(
         byte_array,
         index,
@@ -449,8 +432,7 @@ def parse_to_spans_innerloop(
             for match in TEMPLATE_PARAMETER_REGEX.finditer(byte_array):
                 ms, me = match.span()
                 parameter_spans_append((ms + index, me + index))
-                byte_array[ms:ms + 2] = b'__'
-                byte_array[me - 2:me] = b'__'
+                byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
         # Templates
         match = True
         while match:
@@ -460,11 +442,9 @@ def parse_to_spans_innerloop(
                 for match in PARSER_FUNCTION_REGEX.finditer(byte_array):
                     ms, me = match.span()
                     pfunction_spans_append((ms + index, me + index))
-                    byte_array[ms:ms + 2] = b'__'
-                    byte_array[me - 2:me] = b'__'
+                    byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
             # match is False at this point
             for match in TEMPLATE_NOT_PARAM_REGEX.finditer(byte_array):
                 ms, me = match.span()
                 template_spans_append((ms + index, me + index))
-                byte_array[ms:ms + 2] = b'__'
-                byte_array[me - 2:me] = b'__'
+                byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
