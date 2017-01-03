@@ -247,7 +247,7 @@ class Template(SubWikiText):
             after_values = []
             for arg in args:
                 aname = arg.name
-                before_names.append(regex.match(r'\s*', aname).group())
+                before_names.append(regex.match(r'\s*', aname)[0])
                 name_lengths.append(len(aname))
                 bv, av = regex.match(r'(\s*).*(\s*)$', arg.value).groups()
                 before_values.append(bv)
@@ -255,8 +255,7 @@ class Template(SubWikiText):
             before_name = mode(before_names)
             name_length = mode(name_lengths)
             after_value = mode(
-                [regex.match(r'.*?(\s*)\|', self.string).group(1)] +
-                after_values[1:]
+                [regex.match(r'.*?(\s*)\|', self.string)[1]] + after_values[1:]
             )
             before_value = mode(before_values)
         else:

@@ -158,7 +158,7 @@ class Cell(SubWikiTextWithAttrs):
         self._cached_string = self.string if _match else None
         self._cached_attrs_match = (
             _attrs_match if _attrs_match is not None else
-            ATTRS_REGEX.match(_match.group('attrs')) if _match else None
+            ATTRS_REGEX.match(_match['attrs']) if _match else None
         )
 
     @property
@@ -178,7 +178,7 @@ class Cell(SubWikiTextWithAttrs):
         shadow = self._shadow
         if shadow.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(shadow)
-            self._header = m.group('sep') == '!'
+            self._header = m['sep'] == '!'
         elif self._header:
             m = INLINE_HAEDER_CELL_REGEX.match(shadow)
         else:

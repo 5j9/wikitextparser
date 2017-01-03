@@ -41,7 +41,7 @@ class Section(WikiText):
         m = SECTION_LEVEL_TITLE.match(selfstring)
         if not m:
             return 0
-        return len(m.group(1))
+        return len(m[1])
 
     @level.setter
     def level(self, newlevel: int) -> None:

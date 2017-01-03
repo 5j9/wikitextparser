@@ -901,8 +901,8 @@ class WikiText:
                 m = False
                 for m in TABLE_REGEX.finditer(shadow):
                     ms, me = m.span()
-                    # Ignore leading whitespace using len(m.group(1)).
-                    mspan = (ss + ms + len(m.group(1)), ss + me)
+                    # Ignore leading whitespace using len(m[1]).
+                    mspan = (ss + ms + len(m[1]), ss + me)
                     spans.append(mspan)
                     tables.append(Table(lststr, type_to_spans, index))
                     index += 1
@@ -918,8 +918,8 @@ class WikiText:
             m = False
             for m in TABLE_REGEX.finditer(shadow):
                 ms, me = m.span()
-                # Ignore leading whitespace using len(m.group(1)).
-                mspan = (ss + ms + len(m.group(1)), ss + me)
+                # Ignore leading whitespace using len(m[1]).
+                mspan = (ss + ms + len(m[1]), ss + me)
                 mindex = existing_span_to_index.get(mspan)
                 if mindex is None:
                     spans.append(mspan)

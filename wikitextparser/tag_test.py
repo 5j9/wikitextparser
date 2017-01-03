@@ -60,7 +60,7 @@ class Tag(unittest.TestCase):
     def test_content_cannot_contain_another_start(self):
         """Checking for such situations is not currently required."""
         self.assertEqual(
-            TAG_REGEX.search('<a><a>c</a></a>').group(),
+            TAG_REGEX.search('<a><a>c</a></a>')[0],
             '<a>c</a>'
         )
 

@@ -81,7 +81,7 @@ class Table(SubWikiTextWithAttrs):
                 match_table.append(match_row)
             while m:
                 match_row.append(m)
-                sep = m.group('sep')
+                sep = m['sep']
                 pos = m.end()
                 if sep == '|':
                     m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
@@ -194,7 +194,7 @@ class Table(SubWikiTextWithAttrs):
         for match_row in match_table:
             row_cells = []
             table_cells.append(row_cells)
-            header = match_row[0].group('sep') == '!'
+            header = match_row[0]['sep'] == '!'
             if span:
                 row_attrs = []
                 table_attrs.append(row_attrs)
@@ -259,16 +259,16 @@ class Table(SubWikiTextWithAttrs):
         """Return caption of the table."""
         m = CAPTION_REGEX.match(self.string)
         if m:
-            return m.group('caption')
+            return m['caption']
 
     @caption.setter
     def caption(self, newcaption: str) -> None:
         """Set a new caption."""
         m = CAPTION_REGEX.match(self.string)
         if m:
-            preattrs = m.group('preattrs')
-            attrs = m.group('attrs') or ''
-            oldcaption = m.group('caption')
+            preattrs = m['preattrs']
+            attrs = m['attrs'] or ''
+            oldcaption = m['caption']
             self[len(preattrs + attrs):len(preattrs + attrs + oldcaption)] =\
                 newcaption
         else:
@@ -311,7 +311,7 @@ class Table(SubWikiTextWithAttrs):
         """Return caption attributes."""
         m = CAPTION_REGEX.match(self.string)
         if m:
-            return m.group('attrs')
+            return m['attrs']
 
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
@@ -323,8 +323,8 @@ class Table(SubWikiTextWithAttrs):
             # There is no caption-line
             self.insert(len(h + s), '|+' + attrs + '|\n')
         else:
-            preattrs = m.group('preattrs')
-            oldattrs = m.group('attrs') or ''
+            preattrs = m['preattrs']
+            oldattrs = m['attrs'] or ''
             # Caption and attrs or Caption but no attrs
             self[len(preattrs):len(preattrs + oldattrs)] = attrs
 
