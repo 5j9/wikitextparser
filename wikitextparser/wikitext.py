@@ -38,7 +38,7 @@ EXTERNALLINK_REGEX = regex.compile(
     r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
     regex.IGNORECASE | regex.VERBOSE,
 )
-# Todo: Perhaps the following regular expressions could be improved by using
+# Todo: Perhaps the regular expressions for sections can be improved by using
 # the features of the regex module.
 # Sections
 SECTION_HEADER_REGEX = regex.compile(r'^=[^\n]+?= *$', regex.M)
@@ -487,7 +487,7 @@ class WikiText:
         # Todo: All tests still pass even if 'WikiLink' spans are not removed.
         # Todo: For certain parts of wikitext there may be no need to remove
         # certain sub-types. For example there is probably no need to remove
-        # WikiLinks while computing template name. (Template name cannot
+        # WikiLinks while computing template names. (Template name cannot
         # contain brackets or pipes and this is guaranteed by the parser.
         for spans in type_to_spans.values():
             for s, e in spans:
@@ -710,7 +710,7 @@ class WikiText:
             functions = parsed.parser_functions
         return parsed.string
 
-    # Todo: Isn't it better to use generators for the following properties?
+    # Todo: Isn't it better to add a generator for the following properties?
     @property
     def parameters(self) -> List['Parameter']:
         """Return a list of parameter objects."""
