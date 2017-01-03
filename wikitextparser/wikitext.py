@@ -280,12 +280,13 @@ class WikiText:
         self, char: str
     ) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic subspans."""
+        s, e = self._span
+        str0 = self._lststr[0]
         shadow = self._shadow
-        string = self.string
         index = shadow.find(char)
         if index == -1:
-            return string, '', ''
-        return string[:index], char, string[index + 1:]
+            return str0[s:e], '', ''
+        return str0[s:s + index], char, str0[s + index + 1:e]
 
     def _atomic_split_spans(
         self, char: str
@@ -445,36 +446,36 @@ class WikiText:
 
     @property
     def _shadow(self) -> str:
-        """Return a copy of self.string with specified subspans replaced.
+        """Return a copy of self.string with specific sub-spans replaced.
 
         Subspans are replaced by a block of spaces of the same size.
-        This function is called upon extracting tables or extracting the data
-        inside them.
 
         The replaced subspans are:
             ('Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',)
 
+        This function is called upon extracting tables or extracting the data
+        inside them.
+
         """
         ss, se = self._span
-        string = self.string
-        cached_string, cached_shadow = getattr(
+        string = self._lststr[0][ss:se]
+        cached_hash, cached_shadow = getattr(
             self, '_shadow_cache', (None, None)
         )
-        if cached_string == string:
+        if cached_hash == string:
             return cached_shadow
-        shadow = string
-        for type_ in (
-            'Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',
-            'Parameter'
+        shadow = bytearray(string.encode('ascii', 'replace'))
+        type_to_spans = self._type_to_spans
+        # Todo: All tests still pass even without 'WikiLink'.
+        for t in (
+            'Template', 'WikiLink', 'ParserFunction',
+            'ExtTag', 'Comment', 'Parameter',
         ):
-            for s, e in self._type_to_spans[type_]:
+            for s, e in type_to_spans[t]:
                 if s < ss or e > se or (s == ss and e == se):
                     continue
-                shadow = (
-                    shadow[:s - ss] +
-                    (e - s) * ' ' +
-                    shadow[e - ss:]
-                )
+                shadow[s - ss:e - ss] = (e - s) * b' '
+        shadow = shadow.decode()
         self._shadow_cache = (string, shadow)
         return shadow
 
