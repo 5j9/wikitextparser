@@ -1,14 +1,17 @@
 """"Define the Template class."""
 
 
-import re
+import regex
 from typing import List, Optional, TypeVar, Iterator
 
 from .wikitext import SubWikiText
 from .argument import Argument
-from .spans import COMMENT_REGEX
 
 
+COMMENT_REGEX = regex.compile(
+    r'<!--.*?-->',
+    regex.DOTALL,
+)
 T = TypeVar('T')
 
 
@@ -244,15 +247,15 @@ class Template(SubWikiText):
             after_values = []
             for arg in args:
                 aname = arg.name
-                before_names.append(re.match(r'\s*', aname).group())
+                before_names.append(regex.match(r'\s*', aname).group())
                 name_lengths.append(len(aname))
-                bv, av = re.match(r'(\s*).*(\s*)$', arg.value).groups()
+                bv, av = regex.match(r'(\s*).*(\s*)$', arg.value).groups()
                 before_values.append(bv)
                 after_values.append(av)
             before_name = mode(before_names)
             name_length = mode(name_lengths)
             after_value = mode(
-                [re.match(r'.*?(\s*)\|', self.string).group(1)] +
+                [regex.match(r'.*?(\s*)\|', self.string).group(1)] +
                 after_values[1:]
             )
             before_value = mode(before_values)
