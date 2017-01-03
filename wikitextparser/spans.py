@@ -180,27 +180,46 @@ WIKILINK_REGEX = regex.compile(
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
-    'ref',
-    'math',
-    'source',
-    'syntaxhighlight',
-    'pre',
-    'poem',
-    'hiero',
-    'score',
-    'includeonly',
-    'timeline',
-    'nowiki',
-    'categorytree',
-    'charinsert',
-    'references',
-    'imagemap',
-    'inputbox',
-    'section',
-    'templatedata',
-    'gallery',
-    'graph',
-    'indicator',
+    b'ref',
+    b'math',
+    b'source',
+    b'syntaxhighlight',
+    b'pre',
+    b'poem',
+    b'hiero',
+    b'score',
+    b'includeonly',
+    b'timeline',
+    b'nowiki',
+    b'categorytree',
+    b'charinsert',
+    b'references',
+    b'imagemap',
+    b'inputbox',
+    b'section',
+    b'templatedata',
+    b'gallery',
+    b'graph',
+    b'indicator',
+]
+# Contents of the some of the tags mentioned above can be parsed as wikitext.
+# For example, templates are valid inside the poem tag:
+#    <poem>{{text|Hi!}}</poem>
+# But not within math or source or ...
+# for more information about the <categorytree> tag see:
+# https://www.mediawiki.org/wiki/Extension:CategoryTree#
+#    The_.7B.7B.23categorytree.7D.7D_parser_function
+PARSABLE_TAG_EXTENSIONS = [
+    b'ref',
+    b'poem',
+    b'includeonly',
+    b'categorytree',
+    b'references',
+    b'imagemap',
+    b'inputbox',
+    b'section',
+    b'gallery',
+    b'indicator',
 ]
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
@@ -223,28 +242,9 @@ EXTENSION_TAGS_REGEX = regex.compile(
     )*?
     # tag-end
     </\1\s*>
-    """ % '|'.join(TAG_EXTENSIONS).encode(),
+    """ % b'|'.join(TAG_EXTENSIONS),
     regex.IGNORECASE | regex.VERBOSE,
 )
-# Contents of the some of the tags mentioned above can be parsed as wikitext.
-# For example, templates are valid inside the poem tag:
-#    <poem>{{text|Hi!}}</poem>
-# But not within math or source or ...
-# for more information about the <categorytree> tag see:
-# https://www.mediawiki.org/wiki/Extension:CategoryTree#
-#    The_.7B.7B.23categorytree.7D.7D_parser_function
-PARSABLE_TAG_EXTENSIONS = [
-    b'ref',
-    b'poem',
-    b'includeonly',
-    b'categorytree',
-    b'references',
-    b'imagemap',
-    b'inputbox',
-    b'section',
-    b'gallery',
-    b'indicator',
-]
 COMMENT_REGEX = regex.compile(
     rb'<!--.*?-->',
     regex.DOTALL,
@@ -257,10 +257,11 @@ SINGLE_BRACES_REGEX = regex.compile(
     ''',
     regex.VERBOSE,
 )
+BRACES_TO_UNDERSCORE = b''.maketrans(b'{}', b'__')
 
 
 def parse_to_spans(
-    string: str
+    byte_array: bytearray
 ) -> Dict[str, List[Tuple[int, int]]]:
     """Calculate and set self._type_to_spans.
 
@@ -275,7 +276,6 @@ def parse_to_spans(
     }
 
     """
-    byte_array = bytearray(string.encode('ascii', 'replace'))
     comment_spans = []
     comment_spans_append = comment_spans.append
     extension_tag_spans = []
@@ -325,6 +325,7 @@ def parse_to_spans(
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
+            # Todo: memoryview?
             group = byte_array[ms:me]
             parse_to_spans_innerloop(
                 group,
@@ -334,7 +335,8 @@ def parse_to_spans(
                 template_spans_append,
             )
             byte_array[ms:me] = (
-                b'_[' + group[2:-2].replace(b'{', b'_').replace(b'}', b'_') +
+                b'_[' +
+                group[2:-2].translate(BRACES_TO_UNDERSCORE) +
                 b']_'
             )
     parse_to_spans_innerloop(
@@ -365,8 +367,9 @@ def parse_subbytes_to_spans(
     """Parse the byte_array to spans.
 
     This function is basically the same as `parse_to_spans`, but accepts an
-    index that indicates the start of the byte_array. `byte_array`s are the
-    contents of PARSABLE_TAG_EXTENSIONS.
+    index that indicates the starting index of the given byte_array.
+    `byte_array`s that are passed to this function are the contents of
+    PARSABLE_TAG_EXTENSIONS.
 
     """
     # Remove the braces inside WikiLinks.
@@ -387,10 +390,11 @@ def parse_subbytes_to_spans(
                 pfunction_spans_append,
                 template_spans_append,
             )
-            byte_array[ms:me] = (
-                b'_[' + group[2:-2].replace(b'{', b'_').replace(b'}', b'_') +
-                b']_'
-            )
+            ms2 = ms + 2
+            byte_array[ms:ms2] = b'_['
+            me2 = me - 2
+            byte_array[me2:me] = b'_['
+            byte_array[ms2:me2] = group[2:-2].translate(BRACES_TO_UNDERSCORE)
     parse_to_spans_innerloop(
         byte_array,
         index,
@@ -418,7 +422,8 @@ def parse_to_spans_innerloop(
     and n times for each of the n WikiLinks.
 
     """
-    while True:
+    ms = True
+    while ms is not None:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
         for m in SINGLE_BRACES_REGEX.finditer(byte_array):
@@ -463,5 +468,3 @@ def parse_to_spans_innerloop(
                 template_spans_append((ms + index, me + index))
                 byte_array[ms:ms + 2] = b'__'
                 byte_array[me - 2:me] = b'__'
-        if ms is None:
-            break

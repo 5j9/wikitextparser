@@ -95,9 +95,15 @@ class WikiText:
         """
         lststr = string if isinstance(string, list) else [string]
         self._lststr = lststr
-        self._type_to_spans = (
-            _type_to_spans if _type_to_spans else parse_to_spans(lststr[0])
-        )
+        if _type_to_spans:
+            self._type_to_spans = _type_to_spans
+        else:
+            string = lststr[0]
+            byte_array = bytearray(string.encode('ascii', 'replace'))
+            self._type_to_spans = parse_to_spans(byte_array)
+            # Todo: Can we use parse_to_spans to generate a shadow?
+            # print(byte_array.decode())
+            # self._shadow_cache = (string, byte_array.decode())
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -202,7 +208,9 @@ class WikiText:
             )
         # Add the newly added spans contained in the value.
         spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(value).items():
+        for k, v in parse_to_spans(
+            bytearray(value.encode('ascii', 'replace'))
+        ).items():
             spans = spans_dict[k]
             for s, e in v:
                 spans.append((s + start, e + start))
@@ -255,7 +263,9 @@ class WikiText:
         )
         # Remember newly added spans by the string.
         spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(string).items():
+        for k, v in parse_to_spans(
+            bytearray(string.encode('ascii', 'replace'))
+        ).items():
             spans = spans_dict[k]
             for s, e in v:
                 spans.append((s + index, e + index))
@@ -464,17 +474,26 @@ class WikiText:
         )
         if cached_hash == string:
             return cached_shadow
+        # In the old method the existing spans were used to create the shadow.
+        # But it was slow because there can be thousands of spans and iterating
+        # over them to find the relevant sub-spans could take a significant
+        # amount of time. The new method tries to parse the self.string which
+        # is usually much more faster because there are usually far less
+        # sub-spans for individual objects.
+        length = se - ss
+        # Todo: Can parse_to_spans create shadow by mutation?
         shadow = bytearray(string.encode('ascii', 'replace'))
-        type_to_spans = self._type_to_spans
-        # Todo: All tests still pass even without 'WikiLink'.
-        for t in (
-            'Template', 'WikiLink', 'ParserFunction',
-            'ExtTag', 'Comment', 'Parameter',
-        ):
-            for s, e in type_to_spans[t]:
-                if s < ss or e > se or (s == ss and e == se):
+        type_to_spans = parse_to_spans(shadow[:])
+        # Todo: All tests still pass even if 'WikiLink' spans are not removed.
+        # Todo: For certain parts of wikitext there may be no need to remove
+        # certain sub-types. For example there is probably no need to remove
+        # WikiLinks while computing template name. (Template name cannot
+        # contain brackets or pipes and this is guaranteed by the parser.
+        for spans in type_to_spans.values():
+            for s, e in spans:
+                if s == 0 and e == length:
                     continue
-                shadow[s - ss:e - ss] = (e - s) * b' '
+                shadow[s:e] = (e - s) * b' '
         shadow = shadow.decode()
         self._shadow_cache = (string, shadow)
         return shadow
