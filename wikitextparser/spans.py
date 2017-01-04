@@ -8,10 +8,10 @@ import regex
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-INVALID_TITLE_CHARS_PATTERN = rb'\x00-\x1f\|\{\}\[\]<>\n'
+INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 # Templates
 TEMPLATE_PATTERN = (
-    rb'''
+    r'''
     \{\{
     (?>\s*[^%1s]*\s*)
     (?>
@@ -34,10 +34,10 @@ INVALID_NAME_TEMPLATE_REGEX = regex.compile(
     regex.VERBOSE,
 )
 TEMPLATE_NOT_PARAM_REGEX = regex.compile(
-    rb''' %s (?!\})  |  (?<!{) %s ''' % (
+    (r''' %s (?!\})  |  (?<!{) %s ''' % (
         TEMPLATE_PATTERN,
         TEMPLATE_PATTERN,
-    ),
+    )).encode(),
     regex.VERBOSE,
 )
 # Parameters
@@ -146,8 +146,8 @@ BARE_EXTERNALLINK_PATTERN = (
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_REGEX = regex.compile(
-    rb'''
+WIKILINK_REGEX = regex.compile((
+    r'''
     \[\[
     (?!%s)
     (?>[^%s]*)
@@ -162,9 +162,9 @@ WIKILINK_REGEX = regex.compile(
         \]\]
     )
     ''' % (
-        BARE_EXTERNALLINK_PATTERN.encode(),
-        INVALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'')
-    ),
+        BARE_EXTERNALLINK_PATTERN,
+        INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'')
+    )).encode(),
     regex.IGNORECASE | regex.VERBOSE,
 )
 # For a complete list of extension tags on your wiki, see the
@@ -180,17 +180,17 @@ WIKILINK_REGEX = regex.compile(
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
-    b'math',
-    b'source',
-    b'syntaxhighlight',
-    b'pre',
-    b'hiero',
-    b'score',
-    b'timeline',
-    b'nowiki',
-    b'charinsert',
-    b'templatedata',
-    b'graph',
+    'math',
+    'source',
+    'syntaxhighlight',
+    'pre',
+    'hiero',
+    'score',
+    'timeline',
+    'nowiki',
+    'charinsert',
+    'templatedata',
+    'graph',
 ]
 # Contents of the some of the extension tags can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
@@ -200,24 +200,24 @@ TAG_EXTENSIONS = [
 # https://www.mediawiki.org/wiki/Extension:CategoryTree#
 #    The_.7B.7B.23categorytree.7D.7D_parser_function
 PARSABLE_TAG_EXTENSIONS = [
-    b'ref',
-    b'poem',
-    b'includeonly',
-    b'categorytree',
-    b'references',
-    b'imagemap',
-    b'inputbox',
-    b'section',
-    b'gallery',
-    b'indicator',
+    'ref',
+    'poem',
+    'includeonly',
+    'categorytree',
+    'references',
+    'imagemap',
+    'inputbox',
+    'section',
+    'gallery',
+    'indicator',
 ]
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 # Todo: Will this fail if the extension tag has a "<"?
-EXTENSION_TAGS_REGEX = regex.compile(
-    rb"""
+EXTENSION_TAGS_REGEX = regex.compile((
+    r"""
     # First group is the tag name
     # Second groupd is indicator for PARSABLE_TAG_EXTENSIONS
     < ((?>%s)|((?>%s))) \b (?>[^>]*) (?<!/)>
@@ -234,7 +234,8 @@ EXTENSION_TAGS_REGEX = regex.compile(
     )*?
     # tag-end
     </\1\s*>
-    """ % (b'|'.join(TAG_EXTENSIONS), b'|'.join(PARSABLE_TAG_EXTENSIONS)),
+    """ % ('|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS))
+    ).encode(),
     regex.IGNORECASE | regex.VERBOSE,
 )
 COMMENT_REGEX = regex.compile(
