@@ -15,7 +15,7 @@ from .template import Template
 from .parser_function import ParserFunction
 from .tag import Tag
 from .wikilist import WikiList
-from .wikilist import LIST_PATTERN as _LIST_PATTERN
+from .wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT
 
 
 _regex.DEFAULT_VERSION = _regex.VERSION1
@@ -29,7 +29,7 @@ _wikitext.Parameter = Parameter
 _wikitext.Table = Table
 _wikitext.Section = Section
 _wikitext.WikiList = WikiList
-_wikitext.LIST_PATTERN = _LIST_PATTERN
+_wikitext.LIST_PATTERN_FORMAT = _LIST_PATTERN_FORMAT
 
 WikiText = _wikitext.WikiText
 parse = WikiText

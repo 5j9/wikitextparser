@@ -8,7 +8,7 @@ from .wikitext import SubWikiText
 
 
 SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
-LIST_PATTERN = (
+LIST_PATTERN_FORMAT = (
     r'''
     (?<fullitem>
         ^
@@ -25,7 +25,7 @@ LIST_PATTERN = (
     )+
     '''
     % (SUBLIST_PATTERN, SUBLIST_PATTERN)
-)
+).format
 
 
 class WikiList(SubWikiText):
@@ -47,7 +47,7 @@ class WikiList(SubWikiText):
             self._cached_match = _match
         else:
             self._cached_match = regex.fullmatch(
-                LIST_PATTERN.format(pattern=pattern),
+                LIST_PATTERN_FORMAT(pattern=pattern),
                 self._shadow,
                 regex.MULTILINE | regex.VERBOSE,
             )
@@ -61,7 +61,7 @@ class WikiList(SubWikiText):
         if s + len(shadow) == e and match.string.find(shadow) == s:
             return match
         match = regex.fullmatch(
-            LIST_PATTERN.format(pattern=self.pattern),
+            LIST_PATTERN_FORMAT(pattern=self.pattern),
             self._shadow,
             regex.MULTILINE | regex.VERBOSE,
         )

@@ -954,7 +954,7 @@ class WikiText:
         patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
         for pattern in patterns:
             list_regex = regex.compile(
-                LIST_PATTERN.format(pattern=pattern),
+                LIST_PATTERN_FORMAT(pattern=pattern),
                 regex.MULTILINE | regex.VERBOSE,
             )
             ss = self._span[0]

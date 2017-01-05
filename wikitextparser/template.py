@@ -8,10 +8,10 @@ from .wikitext import SubWikiText
 from .argument import Argument
 
 
-COMMENT_REGEX = regex.compile(
+COMMENT_SUB = regex.compile(
     r'<!--.*?-->',
     regex.DOTALL,
-)
+).sub
 T = TypeVar('T')
 
 
@@ -97,7 +97,7 @@ class Template(SubWikiText):
 
         """
         # Remove comments
-        name = COMMENT_REGEX.sub('', self.name).strip()
+        name = COMMENT_SUB('', self.name).strip()
         # Remove code
         if code:
             head, sep, tail = name.partition(':')

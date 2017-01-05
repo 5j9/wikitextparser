@@ -42,11 +42,11 @@ ATTR_VAL = (
 ).format(**locals())
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTR = r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
-ATTRS_REGEX = regex.compile(
+ATTRS_MATCH = regex.compile(
     # Leading space is not required at the start of the attribute string.
     r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'.format(**locals()),
     flags=regex.VERBOSE
-)
+).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
 #     'link', 'meta', 'param', 'source', 'track', 'wbr'
@@ -296,7 +296,7 @@ class Tag(SubWikiTextWithAttrs):
 
 def attrs_parser(attrs: str, pos=0, endpos=-1) -> Dict[str, str]:
     """Return a dict of attribute names and values."""
-    m = ATTRS_REGEX.match(attrs, pos=pos, endpos=endpos)
+    m = ATTRS_MATCH(attrs, pos=pos, endpos=endpos)
     if m:
         captures = m.captures
         return dict(zip(captures('attr_name'), captures('attr_value')))

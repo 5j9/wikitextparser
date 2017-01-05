@@ -5,7 +5,7 @@ from typing import Match, MutableSequence, Union, Dict, List, Tuple
 
 import regex
 
-from .tag import ATTRS_REGEX, SubWikiTextWithAttrs
+from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
 
 
 # https://regex101.com/r/hB4dX2/17
@@ -158,7 +158,7 @@ class Cell(SubWikiTextWithAttrs):
         self._cached_string = self.string if _match else None
         self._cached_attrs_match = (
             _attrs_match if _attrs_match is not None else
-            ATTRS_REGEX.match(_match['attrs']) if _match else None
+            ATTRS_MATCH(_match['attrs']) if _match else None
         )
 
     @property
@@ -215,7 +215,7 @@ class Cell(SubWikiTextWithAttrs):
         if cache is not None and self._cached_string == shadow:
             return cache
         s, e = self._match.span('attrs')
-        attrs_match = ATTRS_REGEX.match(shadow, s, e)
+        attrs_match = ATTRS_MATCH(shadow, s, e)
         self._cached_attrs_match = attrs_match
         return attrs_match
 
@@ -233,7 +233,7 @@ class Cell(SubWikiTextWithAttrs):
         shadow = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
-            attrs_m = ATTRS_REGEX.match(shadow, attrs_start, attrs_end)
+            attrs_m = ATTRS_MATCH(shadow, attrs_start, attrs_end)
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]

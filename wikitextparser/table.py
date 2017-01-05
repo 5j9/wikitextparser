@@ -6,7 +6,7 @@ from typing import List, Match, Union, Optional, TypeVar
 
 import regex
 
-from .tag import attrs_parser, ATTRS_REGEX, SubWikiTextWithAttrs
+from .tag import attrs_parser, ATTRS_MATCH, SubWikiTextWithAttrs
 from .cell import (
     Cell,
     NEWLINE_CELL_REGEX,
@@ -202,8 +202,8 @@ class Table(SubWikiTextWithAttrs):
             for m in match_row:
                 if span:
                     s, e = m.span('attrs')
-                    # NOte: ATTRS_REGEX always matches, even to empty strings.
-                    attrs_match = ATTRS_REGEX.match(string, s, e)
+                    # NOte: ATTRS_MATCH always matches, even to empty strings.
+                    attrs_match = ATTRS_MATCH(string, s, e)
                     captures = attrs_match.captures
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
@@ -284,7 +284,7 @@ class Table(SubWikiTextWithAttrs):
         cache = getattr(self, '_cached_attrs_match', None)
         if cache and cache.string == shadow:
             return cache
-        attrs_match = ATTRS_REGEX.match(shadow, 2, shadow.find('\n'))
+        attrs_match = ATTRS_MATCH(shadow, 2, shadow.find('\n'))
         self._cached_attrs_match = attrs_match
         return attrs_match
 
