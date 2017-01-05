@@ -20,39 +20,29 @@ from .spans import (
 )
 
 
-# HTML
-# Todo: Use the regex in .tag madule.
-HTML_TAG_REGEX = regex.compile(
-    r'''
-    <([A-Z][A-Z0-9]*)\b[^>]*>
-    (.*?)
-    </\1>
-    ''',
-    regex.DOTALL | regex.IGNORECASE | regex.VERBOSE,
-)
 # External links
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *[^\]\n]*\]' % (
     VALID_EXTLINK_SCHEMES_PATTERN, VALID_EXTLINK_CHARS_PATTERN
 )
-EXTERNALLINK_REGEX = regex.compile(
+EXTERNALLINK_FINDITER = regex.compile(
     r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
     regex.IGNORECASE | regex.VERBOSE,
-)
+).finditer
 # Todo: Perhaps the regular expressions for sections can be improved by using
 # the features of the regex module.
 # Sections
 SECTION_HEADER_REGEX = regex.compile(r'^=[^\n]+?= *$', regex.M)
-LEAD_SECTION_REGEX = regex.compile(
+LEAD_SECTION_MATCH = regex.compile(
     r'.*?(?=%s|\Z)' % SECTION_HEADER_REGEX.pattern,
     regex.DOTALL | regex.MULTILINE,
-)
-SECTION_REGEX = regex.compile(
+).match
+SECTION_FINDITER = regex.compile(
     r'%s.*?\n*(?=%s|\Z)'
     % (SECTION_HEADER_REGEX.pattern, SECTION_HEADER_REGEX.pattern),
     regex.DOTALL | regex.MULTILINE,
-)
+).finditer
 # Tables
-TABLE_REGEX = regex.compile(
+TABLE_FINDITER = regex.compile(
     r"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
@@ -69,7 +59,7 @@ TABLE_REGEX = regex.compile(
     (?> \|} | \Z )
     """,
     regex.DOTALL | regex.MULTILINE | regex.VERBOSE
-)
+).finditer
 
 
 class WikiText:
@@ -777,7 +767,7 @@ class WikiText:
             # All the added spans will be new.
             spans = type_to_spans['ExternalLink'] = []
             index = 0
-            for m in EXTERNALLINK_REGEX.finditer(self.string):
+            for m in EXTERNALLINK_FINDITER(self.string):
                 mspan = m.span()
                 mspan = (mspan[0] + ss, mspan[1] + ss)
                 spans.append(mspan)
@@ -791,7 +781,7 @@ class WikiText:
         spans = type_to_spans['ExternalLink']
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
-        for m in EXTERNALLINK_REGEX.finditer(self.string):
+        for m in EXTERNALLINK_FINDITER(self.string):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
             mindex = existing_span_to_index.get(mspan)
@@ -821,13 +811,13 @@ class WikiText:
             # All the added spans will be new.
             spans = type_to_spans['Section'] = []
             # Lead section
-            mspan = LEAD_SECTION_REGEX.match(selfstring).span()
+            mspan = LEAD_SECTION_MATCH(selfstring).span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
             spans.append(mspan)
             sections.append(Section(lststr, type_to_spans, 0))
             index = 1
             # Other sections
-            for m in SECTION_REGEX.finditer(selfstring):
+            for m in SECTION_FINDITER(selfstring):
                 mspan = m.span()
                 mspan = (mspan[0] + ss, mspan[1] + ss)
                 spans.append(mspan)
@@ -852,7 +842,7 @@ class WikiText:
         index = len(spans) - 1
         existing_span_to_index = {s: i for i, s in enumerate(spans)}
         # Lead section
-        mspan = LEAD_SECTION_REGEX.match(selfstring).span()
+        mspan = LEAD_SECTION_MATCH(selfstring).span()
         mspan = (mspan[0] + ss, mspan[1] + ss)
         mindex = existing_span_to_index.get(mspan)
         if mindex is None:
@@ -863,7 +853,7 @@ class WikiText:
             Section(lststr, type_to_spans, mindex)
         )
         # Adjust other sections
-        for m in SECTION_REGEX.finditer(selfstring):
+        for m in SECTION_FINDITER(selfstring):
             mspan = m.span()
             mspan = (mspan[0] + ss, mspan[1] + ss)
             mindex = existing_span_to_index.get(mspan)
@@ -899,7 +889,7 @@ class WikiText:
             m = True
             while m:
                 m = False
-                for m in TABLE_REGEX.finditer(shadow):
+                for m in TABLE_FINDITER(shadow):
                     ms, me = m.span()
                     # Ignore leading whitespace using len(m[1]).
                     mspan = (ss + ms + len(m[1]), ss + me)
@@ -916,7 +906,7 @@ class WikiText:
         m = True
         while m:
             m = False
-            for m in TABLE_REGEX.finditer(shadow):
+            for m in TABLE_FINDITER(shadow):
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
                 mspan = (ss + ms + len(m[1]), ss + me)

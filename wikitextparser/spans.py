@@ -21,7 +21,7 @@ TEMPLATE_PATTERN = (
     )
     ''' % INVALID_TITLE_CHARS_PATTERN
 )
-INVALID_NAME_TEMPLATE_REGEX = regex.compile(
+INVALID_NAME_TEMPLATE_FINDITER = regex.compile(
     rb'''
     \{\{
     (?>[\s_]*)
@@ -32,28 +32,28 @@ INVALID_NAME_TEMPLATE_REGEX = regex.compile(
     )
     ''',
     regex.VERBOSE,
-)
-TEMPLATE_NOT_PARAM_REGEX = regex.compile(
+).finditer
+TEMPLATE_NOT_PARAM_FINDITER = regex.compile(
     (r''' %s (?!\})  |  (?<!{) %s ''' % (
         TEMPLATE_PATTERN,
         TEMPLATE_PATTERN,
     )).encode(),
     regex.VERBOSE,
-)
+).finditer
 # Parameters
-TEMPLATE_PARAMETER_REGEX = regex.compile(
+TEMPLATE_PARAMETER_FINDITER = regex.compile(
     rb'''
     \{\{\{
     (?>[^{}]*)
     \}\}\}
     ''',
     regex.VERBOSE,
-)
+).finditer
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-PARSER_FUNCTION_REGEX = regex.compile(
+PARSER_FUNCTION_FINDITER = regex.compile(
     rb"""
     \{\{\s*
     (?:
@@ -123,7 +123,7 @@ PARSER_FUNCTION_REGEX = regex.compile(
     :[^{}]*?\}\}
     """,
     regex.VERBOSE
-)
+).finditer
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
 # See DefaultSettings.php on MediaWiki and
@@ -146,7 +146,7 @@ BARE_EXTERNALLINK_PATTERN = (
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_REGEX = regex.compile((
+WIKILINK_FINDITER = regex.compile((
     r'''
     \[\[
     (?!%s)
@@ -166,7 +166,7 @@ WIKILINK_REGEX = regex.compile((
         INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'')
     )).encode(),
     regex.IGNORECASE | regex.VERBOSE,
-)
+).finditer
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
 # <templatedata> and <includeonly> were manually added to the  following lists.
@@ -216,7 +216,7 @@ PARSABLE_TAG_EXTENSIONS = [
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 # Todo: Will this fail if the extension tag has a "<"?
-EXTENSION_TAGS_REGEX = regex.compile((
+EXTENSION_TAGS_FINDITER = regex.compile((
     r"""
     # First group is the tag name
     # Second groupd is indicator for PARSABLE_TAG_EXTENSIONS
@@ -237,19 +237,19 @@ EXTENSION_TAGS_REGEX = regex.compile((
     """ % ('|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS))
     ).encode(),
     regex.IGNORECASE | regex.VERBOSE,
-)
-COMMENT_REGEX = regex.compile(
+).finditer
+COMMENT_FINDITER = regex.compile(
     rb'<!--.*?-->',
     regex.DOTALL,
-)
-SINGLE_BRACES_REGEX = regex.compile(
+).finditer
+SINGLE_BRACES_FINDITER = regex.compile(
     rb'''
     (?<!{) { (?=[^{])
     |
     (?<!}) } (?=[^}])
     ''',
     regex.VERBOSE,
-)
+).finditer
 BRACES_TO_UNDERSCORE = b''.maketrans(b'{}', b'__')
 
 
@@ -282,14 +282,14 @@ def parse_to_spans(
     template_spans = []
     template_spans_append = template_spans.append
     # HTML <!-- comments -->
-    for match in COMMENT_REGEX.finditer(byte_array):
+    for match in COMMENT_FINDITER(byte_array):
         # Todo: Parse comments?
         mspan = match.span()
         comment_spans_append(mspan)
         ms, me = mspan
         byte_array[ms:me] = b' ' * (me - ms)
     # <extension tags>
-    for match in EXTENSION_TAGS_REGEX.finditer(byte_array):
+    for match in EXTENSION_TAGS_FINDITER(byte_array):
         mspan = match.span()
         extension_tag_spans_append(mspan)
         ms, me = mspan
@@ -310,7 +310,7 @@ def parse_to_spans(
     match = True
     while match:
         match = False
-        for match in WIKILINK_REGEX.finditer(byte_array):
+        for match in WIKILINK_FINDITER(byte_array):
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
@@ -365,7 +365,7 @@ def parse_subbytes_to_spans(
     match = True
     while match:
         match = False
-        for match in WIKILINK_REGEX.finditer(byte_array):
+        for match in WIKILINK_FINDITER(byte_array):
             ms, me = match.span()
             wikilink_spans_append((index + ms, index + me))
             group = byte_array[ms:me]
@@ -410,13 +410,13 @@ def parse_to_spans_innerloop(
     while ms is not None:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
-        for m in SINGLE_BRACES_REGEX.finditer(byte_array):
+        for m in SINGLE_BRACES_FINDITER(byte_array):
             byte_array[m.start()] = 95  # 95 = ord('_')
         # Also remove empty double braces
         match = True
         while match:
             match = False
-            for match in INVALID_NAME_TEMPLATE_REGEX.finditer(byte_array):
+            for match in INVALID_NAME_TEMPLATE_FINDITER(byte_array):
                 ms, me = match.span()
                 byte_array[ms:me] = (me - ms) * b'_'
         i = byte_array.rfind(125)  # 125 == ord('}')
@@ -430,7 +430,7 @@ def parse_to_spans_innerloop(
         match = True
         while match:
             match = False
-            for match in TEMPLATE_PARAMETER_REGEX.finditer(byte_array):
+            for match in TEMPLATE_PARAMETER_FINDITER(byte_array):
                 ms, me = match.span()
                 parameter_spans_append((ms + index, me + index))
                 byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
@@ -440,12 +440,12 @@ def parse_to_spans_innerloop(
             # Parser functions
             while match:
                 match = False
-                for match in PARSER_FUNCTION_REGEX.finditer(byte_array):
+                for match in PARSER_FUNCTION_FINDITER(byte_array):
                     ms, me = match.span()
                     pfunction_spans_append((ms + index, me + index))
                     byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
             # match is False at this point
-            for match in TEMPLATE_NOT_PARAM_REGEX.finditer(byte_array):
+            for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array):
                 ms, me = match.span()
                 template_spans_append((ms + index, me + index))
                 byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
