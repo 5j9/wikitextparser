@@ -230,7 +230,8 @@ class Cell(SubWikiTextWithAttrs):
         """
         # Note: The set_attr method of the parent class cannot be used instead
         # of this method because a cell could be without any attrs placeholder
-        # with means the appropriate piping should be added around attrs.
+        # which means the appropriate piping should be added around attrs by
+        # this method. Also ATTRS_MATCH does not have any 'start' group.
         cell_match = self._match
         pos = cell_match.start()
         shadow = cell_match.string
