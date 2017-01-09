@@ -75,6 +75,7 @@ END_TAG_REGEX = regex.compile(END_TAG)
 # Note that the following regex won't check for nested tags
 TAG_REGEX = regex.compile(
     r'''
+    # Note that the start group does not include the > character
     (?P<start>
         <{TAG_NAME}{ATTR}*
     )
