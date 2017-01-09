@@ -168,7 +168,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         # The attr_name is new, add a new attribute.
         fmt = ' {}="{}"' if attr_value else ' {}'
         self.insert(
-            match.span('start')[1],
+            match.end('start'),
             fmt.format(attr_name, attr_value.replace('"', '&quot;'))
         )
         return
