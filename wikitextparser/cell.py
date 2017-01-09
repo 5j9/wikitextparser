@@ -14,7 +14,7 @@ NEWLINE_CELL_REGEX = regex.compile(
     # only for matching, not searching
     \s*
     (?P<sep>[|!](?![+}-]))
-    (?:
+    (?>
         # catch the matching pipe (attrs limiter)
         # immediate closure
         (?P<attrs>)
@@ -62,11 +62,13 @@ NEWLINE_CELL_REGEX = regex.compile(
 INLINE_HAEDER_CELL_REGEX = regex.compile(
     r"""
     (?>
-        \|!(?P<attrs>)! # immediate closure
+        # immediate closure of attrs
+        \|!(?P<attrs>)!
         |
+        # attrs start is with a double ! or |
         (?>!{2}|\|{2})
-        (?:
-            # catch the matching pipe (style holder).
+        # find the matching pipe that ends attrs
+        (?>
             # immediate closure
             (?P<attrs>)
             \|
@@ -80,12 +82,10 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
                     [^|\n]
                 )*
             )
-            (?:
-                # attribute-data separator
-                \|
-                # make sure that it's not a cell separator (||)
-                (?!\|)
-            )
+            # attrs-data separator
+            \|
+            # make sure that it's not a cell separator (||)
+            (?!\|)
         )?
     )
     # optional := the 1st sep is a single ! or |.
@@ -107,7 +107,7 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
 INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     r"""
     \|\| # catch the matching pipe (style holder).
-    (?:
+    (?>
         # immediate closure
         (?P<attrs>)
         \|
