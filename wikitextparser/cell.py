@@ -219,7 +219,6 @@ class Cell(SubWikiTextWithAttrs):
         self._cached_attrs_match = attrs_match
         return attrs_match
 
-    # Todo: Where is set_attr?
     def set_attr(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
 
