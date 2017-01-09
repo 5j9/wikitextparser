@@ -220,7 +220,7 @@ class Cell(SubWikiTextWithAttrs):
         return attrs_match
 
     # Todo: Where is set_attr?
-    def set(self, attr_name: str, attr_value: str) -> None:
+    def set_attr(self, attr_name: str, attr_value: str) -> None:
         """Set the value for the given attribute name.
 
         If there are already multiple attributes with that name, only
@@ -228,6 +228,9 @@ class Cell(SubWikiTextWithAttrs):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
+        # Note: The set_attr method of the parent class cannot be used instead of this
+        # method because a cell could be without any attrs placeholder with means
+        # the appropriate piping should be added around attrs.
         cell_match = self._match
         pos = cell_match.start()
         shadow = cell_match.string
