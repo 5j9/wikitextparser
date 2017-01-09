@@ -161,15 +161,13 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
                 q = 1 if match.string[ve] in '"\'' else 0
-                self[vs - q:ve + q] = '"{}"'.format(
-                    attr_value.replace('"', '&quot;')
-                )
+                self[vs - q:ve + q] = '"{}"'.format(attr_value)
                 return
         # The attr_name is new, add a new attribute.
         fmt = ' {}="{}"' if attr_value else ' {}'
         self.insert(
             match.end('start'),
-            fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+            fmt.format(attr_name, attr_value)
         )
         return
 

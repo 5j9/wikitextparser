@@ -228,9 +228,9 @@ class Cell(SubWikiTextWithAttrs):
         If attr_value == '', use the implicit empty attribute syntax.
 
         """
-        # Note: The set_attr method of the parent class cannot be used instead of this
-        # method because a cell could be without any attrs placeholder with means
-        # the appropriate piping should be added around attrs.
+        # Note: The set_attr method of the parent class cannot be used instead
+        # of this method because a cell could be without any attrs placeholder
+        # with means the appropriate piping should be added around attrs.
         cell_match = self._match
         pos = cell_match.start()
         shadow = cell_match.string
@@ -241,28 +241,21 @@ class Cell(SubWikiTextWithAttrs):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
                     q = 1 if attrs_m.string[ve] in '"\'' else 0
-                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(
-                        attr_value.replace('"', '&quot;')
-                    )
+                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(attr_value)
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs') - pos
             fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
-            self.insert(
-                attr_end,
-                fmt.format(attr_name, attr_value.replace('"', '&#39;')),
-            )
+            self.insert(attr_end, fmt.format(attr_name, attr_value))
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
         if shadow.startswith('\n'):
             self.insert(
                 cell_match.start('sep') + 1 - pos,
-                fmt.format(attr_name, attr_value.replace('"', '&quot;'))
+                fmt.format(attr_name, attr_value)
             )
             return
         # An inline cell
-        self.insert(
-            2, fmt.format(attr_name, attr_value.replace('"', '&quot;'))
-        )
+        self.insert(2, fmt.format(attr_name, attr_value))
         return
