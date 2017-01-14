@@ -1,6 +1,6 @@
 ﻿"""Define the Tag class."""
 
-from typing import Dict, Optional, Match
+from typing import Dict, Optional, Match, Union
 from warnings import warn
 
 import regex
@@ -208,7 +208,7 @@ class Tag(SubWikiTextWithAttrs):
 
     def __init__(
         self,
-        string: str or list,
+        string: Union[str, list],
         _type_to_spans: list=None,
         _index: int=None,
         match: Match=None,
