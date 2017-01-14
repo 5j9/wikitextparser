@@ -527,7 +527,7 @@ class WikiText:
                 c.string = ''
         else:
             # Only remove comments that contain whitespace.
-            for c in parsed.comments:  # type: Comment
+            for c in parsed.comments:
                 if not c.contents.strip():
                     c.string = ''
         # First remove all current spacings.
