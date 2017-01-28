@@ -188,20 +188,15 @@ class Cell(SubWikiTextWithAttrs):
     def value(self) -> str:
         """Return cell's value."""
         m = self._match
-        pos = m.start()
         s, e = m.span('data')
-        return self[s - pos:e - pos]
+        return self[s:e]
 
     @value.setter
     def value(self, new_value: str) -> None:
         """Assign new_value to self."""
         match = self._match
         s, e = match.span('data')
-        pos = match.start()
-        if pos:
-            self[s - pos:e - pos] = new_value
-        else:
-            self[s:e] = new_value
+        self[s:e] = new_value
 
     @property
     def _attrs_match(self):
@@ -228,7 +223,6 @@ class Cell(SubWikiTextWithAttrs):
         # which means the appropriate piping should be added around attrs by
         # this method. Also ATTRS_MATCH does not have any 'start' group.
         cell_match = self._match
-        pos = cell_match.start()
         shadow = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
@@ -237,10 +231,10 @@ class Cell(SubWikiTextWithAttrs):
                 if n == attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
                     q = 1 if attrs_m.string[ve] in '"\'' else 0
-                    self[vs - q - pos:ve + q - pos] = '"{}"'.format(attr_value)
+                    self[vs - q:ve + q] = '"{}"'.format(attr_value)
                     return
             # We have some attributes, but none of them is attr_name
-            attr_end = cell_match.end('attrs') - pos
+            attr_end = cell_match.end('attrs')
             fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
             self.insert(attr_end, fmt.format(attr_name, attr_value))
             return
@@ -248,7 +242,7 @@ class Cell(SubWikiTextWithAttrs):
         fmt = ' {}="{}" |' if attr_value else ' {} |'
         if shadow.startswith('\n'):
             self.insert(
-                cell_match.start('sep') + 1 - pos,
+                cell_match.start('sep') + 1,
                 fmt.format(attr_name, attr_value)
             )
             return
