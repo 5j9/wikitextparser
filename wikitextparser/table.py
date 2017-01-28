@@ -9,9 +9,9 @@ import regex
 from .tag import attrs_parser, ATTRS_MATCH, SubWikiTextWithAttrs
 from .cell import (
     Cell,
-    NEWLINE_CELL_REGEX,
-    INLINE_HAEDER_CELL_REGEX,
-    INLINE_NONHAEDER_CELL_REGEX
+    NEWLINE_CELL_MATCH,
+    INLINE_HAEDER_CELL_MATCH,
+    INLINE_NONHAEDER_CELL_MATCH
 )
 
 
@@ -73,7 +73,7 @@ class Table(SubWikiTextWithAttrs):
         while pos != rsp:
             pos = rsp
             # We have a new row.
-            m = NEWLINE_CELL_REGEX.match(shadow, pos)
+            m = NEWLINE_CELL_MATCH(shadow, pos)
             # Don't add a row if there are no new cells.
             if m:
                 match_row = []
@@ -83,19 +83,19 @@ class Table(SubWikiTextWithAttrs):
                 sep = m['sep']
                 pos = m.end()
                 if sep == '|':
-                    m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
+                    m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
                     while m:
                         match_row.append(m)
                         pos = m.end()
-                        m = INLINE_NONHAEDER_CELL_REGEX.match(shadow, pos)
+                        m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
                 elif sep == '!':
-                    m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
+                    m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
                     while m:
                         match_row.append(m)
                         pos = m.end()
-                        m = INLINE_HAEDER_CELL_REGEX.match(shadow, pos)
+                        m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
                 pos = _semi_caption_increase(shadow, pos)
-                m = NEWLINE_CELL_REGEX.match(shadow, pos)
+                m = NEWLINE_CELL_MATCH(shadow, pos)
             rsp = _row_separator_increase(shadow, pos)
         return match_table
 

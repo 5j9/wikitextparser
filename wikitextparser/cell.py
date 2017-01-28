@@ -9,7 +9,7 @@ from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
 
 
 # https://regex101.com/r/hB4dX2/17
-NEWLINE_CELL_REGEX = regex.compile(
+NEWLINE_CELL_MATCH = regex.compile(
     r"""
     # only for matching, not searching
     \s*
@@ -54,12 +54,12 @@ NEWLINE_CELL_REGEX = regex.compile(
     )
     """,
     regex.VERBOSE
-)
+).match
 # https://regex101.com/r/qK1pJ8/5
 # In header rows, any "!!" is treated as "||".
 # See: https://github.com/wikimedia/mediawiki/blob/
 # 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
-INLINE_HAEDER_CELL_REGEX = regex.compile(
+INLINE_HAEDER_CELL_MATCH = regex.compile(
     r"""
     (?>
         # immediate closure of attrs
@@ -102,9 +102,9 @@ INLINE_HAEDER_CELL_REGEX = regex.compile(
     )
     """,
     regex.VERBOSE | regex.DOTALL
-)
+).match
 # https://regex101.com/r/hW8aZ3/7
-INLINE_NONHAEDER_CELL_REGEX = regex.compile(
+INLINE_NONHAEDER_CELL_MATCH = regex.compile(
     r"""
     \|\| # catch the matching pipe (style holder).
     (?>
@@ -134,7 +134,7 @@ INLINE_NONHAEDER_CELL_REGEX = regex.compile(
     )
     """,
     regex.VERBOSE
-)
+).match
 
 
 class Cell(SubWikiTextWithAttrs):
@@ -174,12 +174,12 @@ class Cell(SubWikiTextWithAttrs):
         if cached_match and cached_match.string == shadow:
             return cached_match
         if shadow.startswith('\n'):
-            m = NEWLINE_CELL_REGEX.match(shadow)
+            m = NEWLINE_CELL_MATCH(shadow)
             self._header = m['sep'] == '!'
         elif self._header:
-            m = INLINE_HAEDER_CELL_REGEX.match(shadow)
+            m = INLINE_HAEDER_CELL_MATCH(shadow)
         else:
-            m = INLINE_NONHAEDER_CELL_REGEX.match(shadow)
+            m = INLINE_NONHAEDER_CELL_MATCH(shadow)
         self._cached_match = m
         self._cached_attrs_match = None
         return m
