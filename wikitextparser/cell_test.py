@@ -3,6 +3,7 @@
 
 import unittest
 
+from wikitextparser import parse
 from wikitextparser.table import Table, Cell
 
 
@@ -83,16 +84,20 @@ class TableCell(unittest.TestCase):
         self.assertEqual(c.value, '{{text|t}}')
 
     def test_cached_attrs_expiry(self):
-        """_cached_attrs_match should expire when _cached_match is updated."""
+        """_cached_attrs should expire when _cached_match is updated."""
         c = Cell('\n!v', True)
-        # Fill _cached_attrs_match and _cached_match
+        # Fill _cached_attrs and _cached_match
         self.assertEqual(c.attrs, {})
         # Invalidate both caches
         c.insert(2, 'a|')
         # Update _cached_match
         self.assertEqual(c.value, 'v')
-        # _cached_attrs_match should not be valid
+        # _cached_attrs should not be valid
         self.assertEqual(c.attrs, {'a': ''})
+
+    def test_cell_attrs_using_table_match(self):
+        c = parse('text\n{|\n!a=b| c\n|}').tables[0].cells(0, 0)
+        self.assertEqual(c.attrs, {'a': 'b'})
 
 
 if __name__ == '__main__':

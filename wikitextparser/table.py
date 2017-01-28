@@ -199,16 +199,18 @@ class Table(SubWikiTextWithAttrs):
                 table_attrs.append(row_attrs)
                 row_attrs_append = row_attrs.append
             for m in match_row:
+                ms, me = m.span()
+                cell_span = (ss + ms, ss + me)
                 if span:
                     s, e = m.span('attrs')
-                    # NOte: ATTRS_MATCH always matches, even to empty strings.
-                    attrs_match = ATTRS_MATCH(string, s, e)
+                    # Note: ATTRS_MATCH always matches, even to empty strings.
+                    # Also ATTRS_MATCH should match against the cell string
+                    # so that it can be used easily as cache later in Cells.
+                    attrs_match = ATTRS_MATCH(string[ms:me], s - ms, e - ms)
                     captures = attrs_match.captures
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
                     )))
-                ms, me = m.span()
-                cell_span = (ss + ms, ss + me)
                 index = next(
                     (i for i, s in enumerate(spans) if s == cell_span),
                     None
@@ -280,7 +282,7 @@ class Table(SubWikiTextWithAttrs):
     @property
     def _attrs_match(self) -> Match:
         shadow = self._shadow
-        cache = getattr(self, '_cached_attrs_match', None)
+        cache = getattr(self, '_cached_attrs', None)
         if cache and cache.string == shadow:
             return cache
         attrs_match = ATTRS_MATCH(shadow, 2, shadow.find('\n'))
@@ -298,7 +300,7 @@ class Table(SubWikiTextWithAttrs):
         """
         warnings.warn(
             'Table.table_attrs is deprecated. '
-            'Use has_attr, get_attr, set_attr, and del_attr methods instead.',
+            'Use has_attr and get_attr methods instead.',
             DeprecationWarning,
         )
         return self.string.partition('\n')[0][2:]
@@ -306,6 +308,11 @@ class Table(SubWikiTextWithAttrs):
     @table_attrs.setter
     def table_attrs(self, attrs: str) -> None:
         """Set new attributes for this table."""
+        warnings.warn(
+            'Table.table_attrs is deprecated. '
+            'Use set_attr, and del_attr methods instead.',
+            DeprecationWarning,
+        )
         h = self.string.partition('\n')[0]
         self[2:2 + len(h[2:])] = attrs
 

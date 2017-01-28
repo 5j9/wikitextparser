@@ -183,7 +183,6 @@ class SubWikiTextWithAttrs(SubWikiText):
         Pass if the attr_name is not found in self.
 
         """
-        # Todo: Cell match may have an offset?
         match = self._attrs_match
         string = self.string
         # Must be done in reversed order because the spans
