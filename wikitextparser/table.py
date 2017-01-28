@@ -180,8 +180,7 @@ class Table(SubWikiTextWithAttrs):
         """
         ss = self._span[0]
         match_table = self._match_table
-        # Todo: maybe shadow is better than string? add tests.
-        string = self.string
+        shadow = self._shadow
         type_ = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
         if type_ not in type_to_spans:
@@ -206,7 +205,7 @@ class Table(SubWikiTextWithAttrs):
                     # Note: ATTRS_MATCH always matches, even to empty strings.
                     # Also ATTRS_MATCH should match against the cell string
                     # so that it can be used easily as cache later in Cells.
-                    attrs_match = ATTRS_MATCH(string[ms:me], s - ms, e - ms)
+                    attrs_match = ATTRS_MATCH(shadow[ms:me], s - ms, e - ms)
                     captures = attrs_match.captures
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
