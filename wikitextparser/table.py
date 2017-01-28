@@ -282,7 +282,7 @@ class Table(SubWikiTextWithAttrs):
     @property
     def _attrs_match(self) -> Match:
         shadow = self._shadow
-        cache = getattr(self, '_cached_attrs', None)
+        cache = getattr(self, '_cached_attrs_match', None)
         if cache and cache.string == shadow:
             return cache
         attrs_match = ATTRS_MATCH(shadow, 2, shadow.find('\n'))
