@@ -51,7 +51,6 @@ T = TypeVar('T')
 class Table(SubWikiTextWithAttrs):
 
     """Create a new Table object."""
-    # Todo: Define has, get, set, and delete methods.
     # They should provide the same API as in Tag and Cell classes.
 
     @property
@@ -297,7 +296,11 @@ class Table(SubWikiTextWithAttrs):
         See [[mw:Help:Tables#Attributes on tables]] for more info.
 
         """
-        # Todo: Use attrs, get, set, etc. and deprecate this function
+        warnings.warn(
+            'Table.table_attrs is deprecated. '
+            'Use has_attr, get_attr, set_attr, and del_attr methods instead.',
+            DeprecationWarning,
+        )
         return self.string.partition('\n')[0][2:]
 
     @table_attrs.setter
