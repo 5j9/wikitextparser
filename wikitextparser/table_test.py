@@ -477,6 +477,8 @@ class TableAttrs(unittest.TestCase):
         self.assertEqual(table.get_attr('class'), 'wikitable')
         table.set_attr('class', 'sortable')
         self.assertEqual(table.attrs, {'class': 'sortable'})
+        table.del_attr('class')
+        self.assertEqual(table.attrs, {})
 
     def test_attr_contains_template_newline_invalid_chars(self):
         t = wtp.parse(
