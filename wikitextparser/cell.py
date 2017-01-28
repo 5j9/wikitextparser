@@ -155,7 +155,6 @@ class Cell(SubWikiTextWithAttrs):
         super().__init__(string, _type_to_spans, _index, _type)
         self._header = header
         self._cached_match = _match
-        self._cached_string = self.string if _match else None
         self._cached_attrs_match = (
             _attrs_match if _attrs_match is not None else
             ATTRS_MATCH(_match['attrs']) if _match else None
@@ -170,12 +169,10 @@ class Cell(SubWikiTextWithAttrs):
         parent object (the initial value).
 
         """
-        cached_string = self._cached_string
-        cached_match = self._cached_match
-        string = self.string
-        if cached_match and cached_string == string:
-            return self._cached_match
         shadow = self._shadow
+        cached_match = self._cached_match
+        if cached_match and cached_match.string == shadow:
+            return cached_match
         if shadow.startswith('\n'):
             m = NEWLINE_CELL_REGEX.match(shadow)
             self._header = m['sep'] == '!'
@@ -184,7 +181,6 @@ class Cell(SubWikiTextWithAttrs):
         else:
             m = INLINE_NONHAEDER_CELL_REGEX.match(shadow)
         self._cached_match = m
-        self._cached_string = string
         self._cached_attrs_match = None
         return m
 
@@ -212,7 +208,7 @@ class Cell(SubWikiTextWithAttrs):
         """Return the match object for attributes."""
         shadow = self._shadow
         cache = self._cached_attrs_match
-        if cache is not None and self._cached_string == shadow:
+        if cache and cache.string == shadow:
             return cache
         s, e = self._match.span('attrs')
         attrs_match = ATTRS_MATCH(shadow, s, e)
