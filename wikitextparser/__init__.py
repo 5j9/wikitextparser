@@ -30,6 +30,7 @@ _wikitext.Table = Table
 _wikitext.Section = Section
 _wikitext.WikiList = WikiList
 _wikitext.LIST_PATTERN_FORMAT = _LIST_PATTERN_FORMAT
+_wikitext.Tag = Tag
 
 WikiText = _wikitext.WikiText
 parse = WikiText
