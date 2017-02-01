@@ -211,11 +211,7 @@ PARSABLE_TAG_EXTENSIONS = [
     'gallery',
     'indicator',
 ]
-# The idea of the following regex is to detect innermost HTML tags. From
-# http://blog.stevenlevithan.com/archives/match-innermost-html-element
-# But probably not bullet proof:
-# https://stackoverflow.com/questions/3076219/
-EXTENSION_TAGS_FINDITER = regex.compile((
+TAG_BY_NAME_PATTERN = (
     r"""
     # First group is the tag name
     # Second group is indicator for PARSABLE_TAG_EXTENSIONS
@@ -233,7 +229,16 @@ EXTENSION_TAGS_FINDITER = regex.compile((
     )*?
     # tag-end
     </\1\s*>
-    """ % ('|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS))
+    """
+)
+# The idea of the following regex is to detect innermost HTML tags. From
+# http://blog.stevenlevithan.com/archives/match-innermost-html-element
+# But probably not bullet proof:
+# https://stackoverflow.com/questions/3076219/
+EXTENSION_TAGS_FINDITER = regex.compile((
+    TAG_BY_NAME_PATTERN % (
+        '|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS)
+    )
     ).encode(),
     regex.IGNORECASE | regex.VERBOSE,
 ).finditer
