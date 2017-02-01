@@ -215,15 +215,14 @@ PARSABLE_TAG_EXTENSIONS = [
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-# Todo: Will this fail if the extension tag has a "<"?
 EXTENSION_TAGS_FINDITER = regex.compile((
     r"""
     # First group is the tag name
-    # Second groupd is indicator for PARSABLE_TAG_EXTENSIONS
+    # Second group is indicator for PARSABLE_TAG_EXTENSIONS
     < ((?>%s)|((?>%s))) \b (?>[^>]*) (?<!/)>
     # content
-    (?:
-        # Contains no other tags
+    (?>
+        # Contains no other tags or
         (?>[^<]+)
         |
         # the nested-tag is something else

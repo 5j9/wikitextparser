@@ -311,11 +311,11 @@ class Spans(unittest.TestCase):
         self.assertFalse(list(finditer(b'{{raw:xyz}}')))
 
     def test_wikilinks_inside_exttags(self):
-        wt = wtp.WikiText("<ref>[[w]]</ref>")
         self.assertEqual(
             [(5, 10)],
-            wt._type_to_spans['WikiLink'],
+            wtp.WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink'],
         )
+
 
 if __name__ == '__main__':
     unittest.main()
