@@ -1,6 +1,6 @@
 ﻿"""Define the Tag class."""
 
-from typing import Dict, Optional, Match, Union
+from typing import Dict, Optional, Match, Union, Tuple, List
 from warnings import warn
 
 import regex
@@ -57,23 +57,11 @@ ATTRS_MATCH = regex.compile(
 # yet. See
 # https://developer.mozilla.org/en/docs/Web/SVG/Namespaces_Crash_Course
 # for an overview.
-START_TAG = (
-    r'''
-    (?P<start>
-        <{TAG_NAME}(?:{ATTR})*
-        [{SPACE_CHARS}]*
-        (?:(?P<self_closing>/>)|>)
-    )
-    '''
-).format(**locals())
-START_TAG_REGEX = regex.compile(START_TAG, regex.VERBOSE)
-END_OF_START_TAG = (
+END_TAG = (
     r'(?P<end></(?P<end_name>(?P=name))[{SPACE_CHARS}]*>)'.format(**locals())
 )
-END_TAG = r'(?P<end></{TAG_NAME}[{SPACE_CHARS}]*>)'.format(**locals())
-END_TAG_REGEX = regex.compile(END_TAG)
 # Note that the following regex won't check for nested tags
-TAG_REGEX = regex.compile(
+TAG_FULLMATCH = regex.compile(
     r'''
     # Note that the start group does not include the > character
     (?P<start>
@@ -83,14 +71,14 @@ TAG_REGEX = regex.compile(
     # there may be one or more space characters. This is sometimes required but
     # ignored here.
     [{SPACE_CHARS}]*
-    (?:
+    (?>
         (?P<self_closing>/>)|
-        >(?P<contents>.*?){END_OF_START_TAG}|
+        >(?P<contents>.*?){END_TAG}|
         (?P<start_only>>)
     )
     '''.format(**locals()),
     flags=regex.DOTALL | regex.VERBOSE
-)
+).fullmatch
 
 
 class SubWikiTextWithAttrs(SubWikiText):
@@ -205,21 +193,19 @@ class Tag(SubWikiTextWithAttrs):
 
     """Create a new Tag object."""
 
+    # Todo: is the `_match` param needed?
     def __init__(
         self,
         string: Union[str, list],
-        _type_to_spans: list=None,
+        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
         _index: int=None,
-        match: Match=None,
+        _type: str='Tag',
+        _match: Match = None,
     ) -> None:
-        """Initialize the Tag object.
-
-        Run _common_init and set _type_to_spans['extlinks'].
-
-        """
-        super().__init__(string, _type_to_spans, _index, 'Tag')
+        """Initialize the Tag object."""
+        super().__init__(string, _type_to_spans, _index, _type)
         self._cached_match = (
-            TAG_REGEX.fullmatch(string) if match is None else match
+            TAG_FULLMATCH(string) if _match is None else _match
         )
 
     @property
@@ -229,7 +215,7 @@ class Tag(SubWikiTextWithAttrs):
         cached_match = self._cached_match
         if cached_match.string != shadow:
             # Compute the match
-            cached_match = TAG_REGEX.fullmatch(shadow)
+            cached_match = TAG_FULLMATCH(shadow)
             self._cached_match = cached_match
         return cached_match
 

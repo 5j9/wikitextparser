@@ -3,56 +3,73 @@
 
 import unittest
 
+from regex import VERBOSE
+from regex import compile as regex_compile
+
 import wikitextparser as wtp
-from wikitextparser.tag import START_TAG_REGEX, END_TAG_REGEX, TAG_REGEX
+from wikitextparser.tag import TAG_FULLMATCH, TAG_NAME, SPACE_CHARS, ATTR
+
+
+END_TAG = r'(?P<end></%1s[%2s]*>)' % (TAG_NAME, SPACE_CHARS)
+START_TAG = (
+    r'''
+    (?P<start>
+        <%1s(?:%2s)*
+        [%3s]*
+        (?:(?P<self_closing>/>)|>)
+    )
+    '''
+) % (TAG_NAME, ATTR, SPACE_CHARS)
 
 
 class Tag(unittest.TestCase):
 
     """Test the Tag module."""
 
-    def test_start_tag_regex(self):
+    def test_start_tag_patterns(self):
+        start_tag_match = regex_compile(START_TAG, VERBOSE).match
         self.assertEqual(
-            START_TAG_REGEX.match('<a>').groupdict(),
+            start_tag_match('<a>').groupdict(),
             {'name': 'a', 'attr': None, 'quote': None,
              'start': '<a>', 'attr_name': None,
              'self_closing': None, 'attr_value': None}
         )
         self.assertEqual(
-            START_TAG_REGEX.match('<a t>').groupdict(),
+            start_tag_match('<a t>').groupdict(),
             {'name': 'a', 'attr': ' t', 'quote': None,
              'start': '<a t>', 'attr_name': 't', 'attr_value': '',
              'self_closing': None}
         )
         self.assertEqual(
-            START_TAG_REGEX.match('<input value=yes>').groupdict(),
+            start_tag_match('<input value=yes>').groupdict(),
             {'name': 'input', 'attr': ' value=yes', 'quote': None,
              'start': '<input value=yes>', 'attr_name': 'value',
              'attr_value': 'yes', 'self_closing': None}
         )
         self.assertEqual(
-            START_TAG_REGEX.match("<input type='checkbox'>").groupdict(),
+            start_tag_match("<input type='checkbox'>").groupdict(),
             {'name': 'input', 'attr': " type='checkbox'", 'quote': "'",
              'start': "<input type='checkbox'>", 'attr_name': 'type',
              'attr_value': 'checkbox', 'self_closing': None}
         )
         # This is not standard HTML5, but could be useful to have.
         # self.assertEqual(
-        #     START_TAG_REGEX.match('<s style=>').groupdict(),
+        #     START_TAG_MATCH('<s style=>').groupdict(),
         #     {'name': 's', 'attr': 'style=', 'quote': None,
         #      'start': '<s style=>', 'attr_name': 'style', 'attr_value': ''
         #      'self_closing': None}
         # )
         self.assertEqual(
-            START_TAG_REGEX.match("<t a1=v1 a2=v2>").capturesdict(),
+            start_tag_match("<t a1=v1 a2=v2>").capturesdict(),
             {'attr_name': ['a1', 'a2'], 'start': ['<t a1=v1 a2=v2>'],
              'attr': [' a1=v1', ' a2=v2'], 'quote': [],
              'attr_value': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
         )
 
-    def test_end_tag_regex(self):
+    def test_end_tag_patterns(self):
+        end_tag_match = regex_compile(END_TAG).match
         self.assertEqual(
-            END_TAG_REGEX.match('</p>').groupdict(),
+            end_tag_match('</p>').groupdict(),
             {'name': 'p', 'end': '</p>'}
         )
 
@@ -60,7 +77,7 @@ class Tag(unittest.TestCase):
     def test_content_cannot_contain_another_start(self):
         """Checking for such situations is not currently required."""
         self.assertEqual(
-            TAG_REGEX.search('<a><a>c</a></a>')[0],
+            TAG_FULLMATCH.search('<a><a>c</a></a>')[0],
             '<a>c</a>'
         )
 
