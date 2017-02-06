@@ -46,5 +46,6 @@ coverage.xml
 docs/_build/
 # PyBuilder
 target/
-[.#]*
+.idea
+\!*
 README.html
