@@ -7,19 +7,9 @@ from regex import VERBOSE
 from regex import compile as regex_compile
 
 import wikitextparser as wtp
-from wikitextparser.tag import TAG_FULLMATCH, TAG_NAME, SPACE_CHARS, ATTR
-
-
-END_TAG = r'(?P<end></%1s[%2s]*>)' % (TAG_NAME, SPACE_CHARS)
-START_TAG = (
-    r'''
-    (?P<start>
-        <%1s(?:%2s)*
-        [%3s]*
-        (?:(?P<self_closing>/>)|>)
-    )
-    '''
-) % (TAG_NAME, ATTR, SPACE_CHARS)
+from wikitextparser.tag import (
+    TAG_FULLMATCH, START_TAG_FINDITER, END_TAG_PATTERN
+)
 
 
 class Tag(unittest.TestCase):
@@ -27,27 +17,26 @@ class Tag(unittest.TestCase):
     """Test the Tag module."""
 
     def test_start_tag_patterns(self):
-        start_tag_match = regex_compile(START_TAG, VERBOSE).match
         self.assertEqual(
-            start_tag_match('<a>').groupdict(),
+            start_tag_finder('<a>').groupdict(),
             {'name': 'a', 'attr': None, 'quote': None,
              'start': '<a>', 'attr_name': None,
              'self_closing': None, 'attr_value': None}
         )
         self.assertEqual(
-            start_tag_match('<a t>').groupdict(),
+            start_tag_finder('<a t>').groupdict(),
             {'name': 'a', 'attr': ' t', 'quote': None,
              'start': '<a t>', 'attr_name': 't', 'attr_value': '',
              'self_closing': None}
         )
         self.assertEqual(
-            start_tag_match('<input value=yes>').groupdict(),
+            start_tag_finder('<input value=yes>').groupdict(),
             {'name': 'input', 'attr': ' value=yes', 'quote': None,
              'start': '<input value=yes>', 'attr_name': 'value',
              'attr_value': 'yes', 'self_closing': None}
         )
         self.assertEqual(
-            start_tag_match("<input type='checkbox'>").groupdict(),
+            start_tag_finder("<input type='checkbox'>").groupdict(),
             {'name': 'input', 'attr': " type='checkbox'", 'quote': "'",
              'start': "<input type='checkbox'>", 'attr_name': 'type',
              'attr_value': 'checkbox', 'self_closing': None}
@@ -60,17 +49,18 @@ class Tag(unittest.TestCase):
         #      'self_closing': None}
         # )
         self.assertEqual(
-            start_tag_match("<t a1=v1 a2=v2>").capturesdict(),
+            start_tag_finder("<t a1=v1 a2=v2>").capturesdict(),
             {'attr_name': ['a1', 'a2'], 'start': ['<t a1=v1 a2=v2>'],
              'attr': [' a1=v1', ' a2=v2'], 'quote': [],
              'attr_value': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
         )
 
     def test_end_tag_patterns(self):
-        end_tag_match = regex_compile(END_TAG).match
         self.assertEqual(
-            end_tag_match('</p>').groupdict(),
-            {'name': 'p', 'end': '</p>'}
+            regex_compile(
+                END_TAG_PATTERN % {'name' :'p'}
+            ).search('</p>').groupdict(),
+            {'end': '</p>'},
         )
 
     @unittest.expectedFailure
@@ -149,3 +139,8 @@ class Tag(unittest.TestCase):
     def test_contents_contains_tl(self):
         t = wtp.Tag('<b>{{text|t}}</b>')
         self.assertEqual(t.contents, '{{text|t}}')
+
+
+def start_tag_finder(string):
+    """Return the first found match of START_TAG_FINDITER."""
+    return next(START_TAG_FINDITER(string))

@@ -1,9 +1,19 @@
-﻿"""Define the Tag class."""
+﻿"""Define the Tag class and tag-related regular expressions.
+
+Although MediaWiki has a very strict HTML restrictions by default, this regexes
+defined in this module don't follow those restrictions and allow most finding
+most HTML tags.
+
+For more info see:
+* https://www.mediawiki.org/wiki/HTML_restriction
+
+"""
 
 from typing import Dict, Optional, Match, Union, Tuple, List
 from warnings import warn
 
-import regex
+from regex import compile as regex_compile
+from regex import VERBOSE, DOTALL
 
 from .wikitext import SubWikiText
 
@@ -16,10 +26,10 @@ SPACE_CHARS = r' \t\n\u000C\r'
 # http://stackoverflow.com/a/93029/2705757
 # chrs = (chr(i) for i in range(sys.maxunicode))
 # control_chars = ''.join(c for c in chrs if unicodedata.category(c) == 'Cc')
-CONTROL_CHARACTERS = r'\x00-\x1f\x7f-\x9f'
+CONTROL_CHARS = r'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = (
-    r'(?P<attr_name>[^{SPACE_CHARS}{CONTROL_CHARACTERS}\u0000"\'>/=]+)'
+    r'(?P<attr_name>[^{SPACE_CHARS}{CONTROL_CHARS}\u0000"\'>/=]+)'
 ).format(**locals())
 WS_EQ_WS = r'[{SPACE_CHARS}]*=[{SPACE_CHARS}]*'.format(**locals())
 UNQUOTED_ATTR_VAL = (
@@ -41,11 +51,13 @@ ATTR_VAL = (
     '''
 ).format(**locals())
 # Ignore ambiguous ampersand for the sake of simplicity.
-ATTR = r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
-ATTRS_MATCH = regex.compile(
+ATTR_PATTERN = (
+    r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
+)
+ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
     r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'.format(**locals()),
-    flags=regex.VERBOSE
+    flags=VERBOSE
 ).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
@@ -57,15 +69,16 @@ ATTRS_MATCH = regex.compile(
 # yet. See
 # https://developer.mozilla.org/en/docs/Web/SVG/Namespaces_Crash_Course
 # for an overview.
-END_TAG = (
-    r'(?P<end></(?P<end_name>(?P=name))[{SPACE_CHARS}]*>)'.format(**locals())
-)
+END_TAG_PATTERN = r'(?P<end></%(name)s[{SPACE_CHARS}]*>)'.format(**locals())
+END_TAG = END_TAG_PATTERN % {'name': r'(?P<end_name>(?P=name))'}
+END_TAG_BYTES_PATTERN = END_TAG_PATTERN.encode()
+TAG_CONTENTS = r'(?P<contents>.*?)'
 # Note that the following regex won't check for nested tags
-TAG_FULLMATCH = regex.compile(
+TAG_FULLMATCH = regex_compile(
     r'''
     # Note that the start group does not include the > character
     (?P<start>
-        <{TAG_NAME}{ATTR}*
+        <{TAG_NAME}{ATTR_PATTERN}*
     )
     # After the attributes, or after the tag name if there are no attributes,
     # there may be one or more space characters. This is sometimes required but
@@ -73,12 +86,32 @@ TAG_FULLMATCH = regex.compile(
     [{SPACE_CHARS}]*
     (?>
         (?P<self_closing>/>)|
-        >(?P<contents>.*?){END_TAG}|
+        >{TAG_CONTENTS}{END_TAG}|
         (?P<start_only>>)
     )
     '''.format(**locals()),
-    flags=regex.DOTALL | regex.VERBOSE
+    flags=DOTALL | VERBOSE,
 ).fullmatch
+# Todo: can the tags method be implemented using a TAG_FINDITER?
+# TAG_FINDITER should not find any tag containing other tags.
+# TAG_CONTENTS = r'(?P<contents>(?>(?!{TAG}).)*?)'.format(
+#     TAG=TAG.format(**locals())
+# )
+# TAG_FINDITER = regex_compile(
+#     TAG.format(**locals()), flags=DOTALL | VERBOSE
+# ).finditer
+START_TAG_PATTERN = (
+    r'''
+    (?P<start>
+        <{name}(?:%1s)*
+        [%2s]*
+        (?:(?P<self_closing>/>)|>)
+    )
+    ''' % (ATTR_PATTERN, SPACE_CHARS)
+)
+START_TAG_FINDITER = regex_compile(
+    START_TAG_PATTERN.format(name=TAG_NAME), VERBOSE
+).finditer
 
 
 class SubWikiTextWithAttrs(SubWikiText):
@@ -205,7 +238,7 @@ class Tag(SubWikiTextWithAttrs):
         """Initialize the Tag object."""
         super().__init__(string, _type_to_spans, _index, _type)
         self._cached_match = (
-            TAG_FULLMATCH(string) if _match is None else _match
+            TAG_FULLMATCH(self.string) if _match is None else _match
         )
 
     @property

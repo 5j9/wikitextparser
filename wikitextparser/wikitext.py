@@ -1,15 +1,16 @@
 ﻿"""Define the Wikitext and SubWikiText classes."""
 
+
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using seperate strings for each node.
 
-
-import regex
 from copy import deepcopy
 from typing import (
     MutableSequence, Dict, List, Tuple, Union, Callable, Generator
 )
 
+from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
+from regex import compile as regex_compile
 from wcwidth import wcswidth
 
 from .spans import (
@@ -17,6 +18,8 @@ from .spans import (
     VALID_EXTLINK_CHARS_PATTERN,
     VALID_EXTLINK_SCHEMES_PATTERN,
     BARE_EXTERNALLINK_PATTERN,
+    TAG_EXTENSIONS,
+    PARSABLE_TAG_EXTENSIONS,
 )
 
 
@@ -24,25 +27,25 @@ from .spans import (
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *[^\]\n]*\]' % (
     VALID_EXTLINK_SCHEMES_PATTERN, VALID_EXTLINK_CHARS_PATTERN
 )
-EXTERNALLINK_FINDITER = regex.compile(
+EXTERNALLINK_FINDITER = regex_compile(
     r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
-    regex.IGNORECASE | regex.VERBOSE,
+    IGNORECASE | VERBOSE,
 ).finditer
 # Todo: Perhaps the regular expressions for sections can be improved by using
 # the features of the regex module.
 # Sections
-SECTION_HEADER_REGEX = regex.compile(r'^=[^\n]+?= *$', regex.M)
-LEAD_SECTION_MATCH = regex.compile(
+SECTION_HEADER_REGEX = regex_compile(r'^=[^\n]+?= *$', MULTILINE)
+LEAD_SECTION_MATCH = regex_compile(
     r'.*?(?=%s|\Z)' % SECTION_HEADER_REGEX.pattern,
-    regex.DOTALL | regex.MULTILINE,
+    DOTALL | MULTILINE,
 ).match
-SECTION_FINDITER = regex.compile(
+SECTION_FINDITER = regex_compile(
     r'%s.*?\n*(?=%s|\Z)'
     % (SECTION_HEADER_REGEX.pattern, SECTION_HEADER_REGEX.pattern),
-    regex.DOTALL | regex.MULTILINE,
+    DOTALL | MULTILINE,
 ).finditer
 # Tables
-TABLE_FINDITER = regex.compile(
+TABLE_FINDITER = regex_compile(
     r"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
@@ -58,8 +61,9 @@ TABLE_FINDITER = regex.compile(
     \n\s*
     (?> \|} | \Z )
     """,
-    regex.DOTALL | regex.MULTILINE | regex.VERBOSE
+    DOTALL | MULTILINE | VERBOSE
 ).finditer
+TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 
 
 class WikiText:
@@ -459,10 +463,10 @@ class WikiText:
         """
         ss, se = self._span
         string = self._lststr[0][ss:se]
-        cached_hash, cached_shadow = getattr(
+        cached_string, cached_shadow = getattr(
             self, '_shadow_cache', (None, None)
         )
-        if cached_hash == string:
+        if cached_string == string:
             return cached_shadow
         # In the old method the existing spans were used to create the shadow.
         # But it was slow because there can be thousands of spans and iterating
@@ -953,15 +957,17 @@ class WikiText:
         spans = type_to_spans.setdefault('WikiList', [])
         patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
         for pattern in patterns:
-            list_regex = regex.compile(
+            list_regex = regex_compile(
                 LIST_PATTERN_FORMAT(pattern=pattern),
-                regex.MULTILINE | regex.VERBOSE,
+                MULTILINE | VERBOSE,
             )
             ss = self._span[0]
             for index, m in enumerate(list_regex.finditer(self._shadow)):
                 ms, me = m.span()
                 span = ss + ms, ss + me
-                index = next((i for i, s in enumerate(spans) if s == span), None)
+                index = next(
+                    (i for i, s in enumerate(spans) if s == span), None
+                )
                 if index is None:
                     index = len(spans)
                     spans.append(span)
@@ -971,6 +977,71 @@ class WikiText:
                     )
                 )
         return lists
+
+    def tags(self, name=None):
+        """Return all tags with the given name."""
+        tags = []
+        tags_append = tags.append
+        lststr = self._lststr
+        type_to_spans = self._type_to_spans
+        if name in TAG_EXTENSIONS:
+            string = lststr[0]
+            tagstart = '<' + name
+            for i, (s, e) in enumerate(type_to_spans['ExtTag']):
+                if string.startswith(tagstart, s):
+                    tags_append(Tag(lststr, type_to_spans, i, 'ExtTag'))
+            return tags
+        # Get the left-most start tag, match it to right-most end tag
+        # and so on.
+        ss = self._span[0]
+        shadow = self._shadow
+        shadow_bytearray = bytearray(shadow.encode('ascii'))
+        if name:
+            # There is a name but it is not in TAG_EXTENSIONS.
+            name_pattern = r'(?P<name>' + name + ')'
+            reversed_start_matches = reversed([m for m in regex_compile(
+                START_TAG_PATTERN.format(name=name_pattern), VERBOSE
+            ).finditer(shadow)])
+            end_search = regex_compile(
+                END_TAG_BYTES_PATTERN % {b'name': name_pattern.encode()}
+            ).search
+        else:
+            reversed_start_matches = reversed(
+                [m for m in START_TAG_FINDITER(shadow)]
+            )
+        spans = type_to_spans.setdefault('Tag', [])
+        spans_append = spans.append
+        for start_match in reversed_start_matches:
+            if start_match['self_closing']:
+                # Don't look for the end tag
+                s, e = start_match.span()
+                span = ss + s, ss + e
+            else:
+                # look for the end-tag
+                if name:
+                    # the end_search is already available
+                    end_match = end_search(shadow_bytearray, start_match.end())
+                else:
+                    # build end_search according to start tag name
+                    end_match = search(
+                        END_TAG_BYTES_PATTERN
+                        % {b'name': start_match['name'].encode()},
+                        shadow_bytearray,
+                    )
+                if end_match:
+                    s, e = end_match.span()
+                    shadow_bytearray[s:e] = b'_' * (e - s)
+                    span = ss + start_match.start(), ss + e
+                else:
+                    # Assume start-only tag.
+                    s, e = start_match.span()
+                    span = ss + s, ss + e
+            index = next((i for i, s in enumerate(spans) if s == span), None)
+            if index is None:
+                index = len(spans)
+                spans_append(span)
+            tags_append(Tag(lststr, type_to_spans, index, 'Tag'))
+        return tags
 
 
 class SubWikiText(WikiText):
@@ -1029,3 +1100,19 @@ class SubWikiText(WikiText):
     def _span(self) -> Tuple[int, int]:
         """Return the span of self."""
         return self._type_to_spans[self._type][self._index]
+
+
+if __name__ == '__main__':
+    # To make PyCharm happy! http://stackoverflow.com/questions/41524090
+    from .tag import (
+        Tag, START_TAG_PATTERN, END_TAG_BYTES_PATTERN, START_TAG_FINDITER
+    )
+    from .parser_function import ParserFunction
+    from .template import Template
+    from .wikilink import WikiLink
+    from .comment import Comment
+    from .externallink import ExternalLink
+    from .section import Section
+    from .wikilist import WikiList
+    from .table import Table
+    from .parameter import Parameter
