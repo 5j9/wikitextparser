@@ -2,7 +2,7 @@
 
 
 # Todo: consider using a tree structure (interval or segment tree).
-# Todo: Consider using seperate strings for each node.
+# Todo: Consider using separate strings for each node.
 
 from copy import deepcopy
 from typing import (
@@ -346,8 +346,8 @@ class WikiText:
         # Todo: index_in_spans can be cached.
         def index_in_spans(index: int) -> bool:
             """Return True if the given index belongs to a sub-span."""
-            for ss, se in subspans:
-                if ss <= index < se:
+            for s, e in subspans:
+                if s <= index < e:
                     return True
             return False
 
