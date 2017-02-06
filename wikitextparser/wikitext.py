@@ -511,7 +511,7 @@ class WikiText:
                     # This line is actually covered in tests, but
                     # peephole optimization prevents it from being detected.
                     # See: http://bugs.python.org/issue2506
-                    continue
+                    continue  # pragma: no cover
                 newspans.append((s - ss, e - ss))
         return type_to_spans
 
