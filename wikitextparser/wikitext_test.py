@@ -798,21 +798,20 @@ class Tags(unittest.TestCase):
         self.assertEqual(ref2.string, '<ref name="نام۲" group="گ">یاد۲</ref>')
 
     def test_defferent_nested_tags(self):
-        parsed = wtp.parse('<s><b>striked-bold</b></s>')
+        parsed = wtp.parse('<s><b>strikethrough-bold</b></s>')
         b = parsed.tags('b')[0].string
-        self.assertEqual(b, '<b>striked-bold</b>')
+        self.assertEqual(b, '<b>strikethrough-bold</b>')
         s = parsed.tags('s')[0].string
-        self.assertEqual(s, '<s><b>striked-bold</b></s>')
+        self.assertEqual(s, '<s><b>strikethrough-bold</b></s>')
         refs = parsed.tags()
         self.assertEqual(refs[0].string, b)
         self.assertEqual(refs[1].string, s)
 
-    # @unittest.skip
     def test_same_nested_tags(self):
-        parsed = wtp.parse('<b><b>striked-bold</b></b>')
+        parsed = wtp.parse('<b><b>bold</b></b>')
         tags_by_name = parsed.tags('b')
-        self.assertEqual(tags_by_name[1].string, '<b><b>striked-bold</b></b>')
-        self.assertEqual(tags_by_name[0].string, '<b>striked-bold</b>')
+        self.assertEqual(tags_by_name[1].string, '<b><b>bold</b></b>')
+        self.assertEqual(tags_by_name[0].string, '<b>bold</b>')
         all_tags = parsed.tags()
         self.assertEqual(all_tags[0].string, tags_by_name[0].string)
         self.assertEqual(all_tags[1].string, tags_by_name[1].string)
