@@ -221,7 +221,7 @@ TAG_BY_NAME_PATTERN = (
         # Contains no other tags or
         (?>[^<]+)
         |
-        # the nested-tag is something else
+        # the nested-tag is something else or
         < (?! \1 \b (?>[^>]*) >)
         |
         # the nested tag closes itself
