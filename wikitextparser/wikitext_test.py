@@ -816,6 +816,25 @@ class Tags(unittest.TestCase):
         self.assertEqual(all_tags[0].string, tags_by_name[0].string)
         self.assertEqual(all_tags[1].string, tags_by_name[1].string)
 
+    def test_self_closing(self):
+        parsed = wtp.parse('<references />')
+        tags = parsed.tags()
+        self.assertEqual(tags[0].string, '<references />')
+
+    def test_start_only(self):
+        """Some elements' end tag may be omitted in certain conditions.
+
+        An li element’s end tag may be omitted if the li element is immediately
+        followed by another li element or if there is no more content in the
+        parent element.
+
+        See: https://www.w3.org/TR/html51/syntax.html#optional-tags
+
+        """
+        parsed = wtp.parse('<li>')
+        tags = parsed.tags()
+        self.assertEqual(tags[0].string, '<li>')
+
     # Todo: add a test for out of scope tags.
 
 
