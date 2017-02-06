@@ -92,7 +92,8 @@ TAG_FULLMATCH = regex_compile(
     '''.format(**locals()),
     flags=DOTALL | VERBOSE,
 ).fullmatch
-# Todo: can the tags method be implemented using a TAG_FINDITER?
+# Todo: can the tags method be implemented using a TAG_FINDITER? Will
+# that be more performant?
 # TAG_FINDITER should not find any tag containing other tags.
 # TAG_CONTENTS = r'(?P<contents>(?>(?!{TAG}).)*?)'.format(
 #     TAG=TAG.format(**locals())
@@ -226,31 +227,29 @@ class Tag(SubWikiTextWithAttrs):
 
     """Create a new Tag object."""
 
-    # Todo: is the `_match` param needed?
+    _cached_match = None
+
     def __init__(
         self,
         string: Union[str, list],
         _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
         _index: int=None,
         _type: str='Tag',
-        _match: Match = None,
     ) -> None:
         """Initialize the Tag object."""
         super().__init__(string, _type_to_spans, _index, _type)
-        self._cached_match = (
-            TAG_FULLMATCH(self.string) if _match is None else _match
-        )
 
     @property
     def _match(self) -> Match:
         """Return the match object for the current tag. Cache the result."""
+        _cached_match = self._cached_match
         shadow = self._shadow
-        cached_match = self._cached_match
-        if cached_match.string != shadow:
-            # Compute the match
-            cached_match = TAG_FULLMATCH(shadow)
-            self._cached_match = cached_match
-        return cached_match
+        if _cached_match is None or _cached_match.string != shadow:
+            _cached_match = TAG_FULLMATCH(shadow)
+            self._cached_match = _cached_match
+            return _cached_match
+        # _cached_match.string == shadow
+        return _cached_match
 
     _attrs_match = _match
 
