@@ -173,17 +173,18 @@ class Spans(unittest.TestCase):
             str(wt.sections)
         )
 
-    @unittest.skip
+    # Todo: Should be fixed?
+    @unittest.expectedFailure
     def test_section_title_may_contain_template_newline_etc(self):
         wt = wtp.WikiText('=== h3 {{text\n\n|text}}<!-- \nc -->'
                           '<nowiki>\nnw\n</nowiki> ===\nt3')
         sections = wt.sections
         self.assertEqual(2, len(sections))
-        self.assertEqual(
-            ' h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
-            sections[1].title
-        )
-        self.assertEqual('t3', sections[1].contents)
+        # self.assertEqual(
+        #     ' h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
+        #     sections[1].title
+        # )
+        # self.assertEqual('t3', sections[1].contents)
 
     def test_keyword_and_positional_args_removal(self):
         wt = wtp.WikiText("text{{t1|kw=a|1=|pa|kw2=a|pa2}}{{t2|a|1|1=}}text")
