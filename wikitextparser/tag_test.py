@@ -3,7 +3,6 @@
 
 import unittest
 
-from regex import VERBOSE
 from regex import compile as regex_compile
 
 import wikitextparser as wtp
@@ -58,7 +57,7 @@ class Tag(unittest.TestCase):
     def test_end_tag_patterns(self):
         self.assertEqual(
             regex_compile(
-                END_TAG_PATTERN % {'name' :'p'}
+                END_TAG_PATTERN % {'name': 'p'}
             ).search('</p>').groupdict(),
             {'end': '</p>'},
         )
@@ -98,19 +97,19 @@ class Tag(unittest.TestCase):
     def test_get_attr_value(self):
         t = wtp.Tag('<t n1=v1 n2=v2 n1=v3 n2=v4>c</t>')
         self.assertEqual(t.get('n1'), 'v3')
-        self.assertEqual(t.get('n2'), 'v4')
+        self.assertEqual(t.get_attr('n2'), 'v4')
         t = wtp.Tag('<t a>c</t>')
-        self.assertEqual(t.get('a'), '')
+        self.assertEqual(t.get_attr('a'), '')
 
     def test_set_attr_value(self):
         t = wtp.Tag('<t n1=v1 n2=v2 n1=\'v3\'>c</t>')
         t.set('n1', 'v4')
-        t.set('n2', 'v5')
+        t.set_attr('n2', 'v5')
         self.assertEqual(t.string, '<t n1=v1 n2="v5" n1="v4">c</t>')
-        t.set('id', '1')
+        t.set_attr('id', '1')
         self.assertEqual(t.string, '<t n1=v1 n2="v5" n1="v4" id="1">c</t>')
         t = wtp.Tag('<t>c</t>')
-        t.set('n', '')
+        t.set_attr('n', '')
         self.assertEqual(t.string, '<t n>c</t>')
 
     def test_attr_deletion(self):
@@ -121,7 +120,7 @@ class Tag(unittest.TestCase):
     def test_has_attr(self):
         t = wtp.Tag('<t n1=v1>c</t>')
         self.assertTrue(t.has('n1'))
-        self.assertFalse(t.has('n2'))
+        self.assertFalse(t.has_attr('n2'))
 
     def test_parsed_contents(self):
         t = wtp.Tag('<t>c [[w]]</t>')
