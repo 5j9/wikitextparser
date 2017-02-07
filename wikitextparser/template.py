@@ -56,8 +56,7 @@ class Template(SubWikiText):
         h = self._atomic_partition('|')[0]
         if len(h) == len(self.string):
             return h[2:-2]
-        else:
-            return h[2:]
+        return h[2:]
 
     @name.setter
     def name(self, newname: str) -> None:
@@ -322,15 +321,11 @@ class Template(SubWikiText):
                     if arg.positional:
                         if arg.value == value:
                             return True
-                        else:
-                            return False
-                    else:
-                        if arg.value.strip() == value.strip():
-                            return True
-                        else:
-                            return False
-                else:
-                    return True
+                        return False
+                    if arg.value.strip() == value.strip():
+                        return True
+                    return False
+                return True
         return False
 
 

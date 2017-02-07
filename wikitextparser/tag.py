@@ -256,8 +256,7 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def name(self) -> str:
         """Return tag name."""
-        s, e = self._match.span('name')
-        return self.string[s:e]
+        return self._match['name']
 
     @name.setter
     def name(self, name: str) -> None:

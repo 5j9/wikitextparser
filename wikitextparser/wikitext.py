@@ -764,38 +764,33 @@ class WikiText:
     def external_links(self) -> List['ExternalLink']:
         """Return a list of found external link objects."""
         external_links = []
+        external_links_append = external_links.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        if 'ExternalLink' not in type_to_spans:
+        spans = type_to_spans.setdefault('ExternalLink', [])
+        spans_append = spans.append
+        if not spans:
             # All the added spans will be new.
-            spans = type_to_spans['ExternalLink'] = []
-            index = 0
             for m in EXTERNALLINK_FINDITER(self.string):
-                mspan = m.span()
-                mspan = (mspan[0] + ss, mspan[1] + ss)
-                spans.append(mspan)
-                external_links.append(
-                    ExternalLink(lststr, type_to_spans, index)
+                span = m.span()
+                span = (span[0] + ss, span[1] + ss)
+                spans_append(span)
+                external_links_append(
+                    ExternalLink(lststr, type_to_spans, len(spans) - 1)
                 )
-                index += 1
             return external_links
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
-        spans = type_to_spans['ExternalLink']
-        index = len(spans) - 1
-        existing_span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index = {s: i for i, s in enumerate(spans)}
         for m in EXTERNALLINK_FINDITER(self.string):
-            mspan = m.span()
-            mspan = (mspan[0] + ss, mspan[1] + ss)
-            mindex = existing_span_to_index.get(mspan)
-            if mindex is None:
-                spans.append(mspan)
-                index += 1
-                mindex = index
-            external_links.append(
-                ExternalLink(lststr, type_to_spans, mindex)
-            )
+            span = m.span()
+            span = (span[0] + ss, span[1] + ss)
+            index = span_to_index.get(span)
+            if index is None:
+                spans_append(span)
+                index = len(spans) - 1
+            external_links_append(ExternalLink(lststr, type_to_spans, index))
         return external_links
 
     @property
@@ -807,26 +802,27 @@ class WikiText:
 
         """
         sections = []
+        sections_append = sections.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        selfstring = self.string
-        if 'Section' not in type_to_spans:
+        string = self.string
+        spans = type_to_spans.setdefault('Section', [])
+        spans_append = spans.append
+        if not spans:
             # All the added spans will be new.
-            spans = type_to_spans['Section'] = []
             # Lead section
-            mspan = LEAD_SECTION_MATCH(selfstring).span()
-            mspan = (mspan[0] + ss, mspan[1] + ss)
-            spans.append(mspan)
-            sections.append(Section(lststr, type_to_spans, 0))
-            index = 1
+            s, e = LEAD_SECTION_MATCH(string).span()
+            span = (ss + s, ss + e)
+            spans_append(span)
+            sections_append(Section(lststr, type_to_spans, 0))
             # Other sections
-            for m in SECTION_FINDITER(selfstring):
-                mspan = m.span()
-                mspan = (mspan[0] + ss, mspan[1] + ss)
-                spans.append(mspan)
+            for m in SECTION_FINDITER(string):
+                span = m.span()
+                span = (span[0] + ss, span[1] + ss)
+                spans_append(span)
                 current_section = Section(
-                    lststr, type_to_spans, index
+                    lststr, type_to_spans, len(spans) - 1
                 )
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
@@ -835,37 +831,32 @@ class WikiText:
                     section_level = section.level
                     if section_level < current_level:
                         si = section._index
-                        spans[si] = (spans[si][0], mspan[1])
+                        spans[si] = (spans[si][0], span[1])
                         current_level = section_level
-                sections.append(current_section)
-                index += 1
+                sections_append(current_section)
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        spans = type_to_spans['Section']
-        index = len(spans) - 1
-        existing_span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index = {s: i for i, s in enumerate(spans)}
         # Lead section
-        mspan = LEAD_SECTION_MATCH(selfstring).span()
-        mspan = (mspan[0] + ss, mspan[1] + ss)
-        mindex = existing_span_to_index.get(mspan)
-        if mindex is None:
-            spans.append(mspan)
-            index += 1
-            mindex = index
-        sections.append(
-            Section(lststr, type_to_spans, mindex)
+        s, e = LEAD_SECTION_MATCH(string).span()
+        span = s + ss, e + ss
+        index = span_to_index.get(span)
+        if index is None:
+            index = len(spans)
+            spans_append(span)
+        sections_append(
+            Section(lststr, type_to_spans, index)
         )
         # Adjust other sections
-        for m in SECTION_FINDITER(selfstring):
-            mspan = m.span()
-            mspan = (mspan[0] + ss, mspan[1] + ss)
-            mindex = existing_span_to_index.get(mspan)
-            if mindex is None:
-                spans.append(mspan)
-                index += 1
-                mindex = index
-            current_section = Section(lststr, type_to_spans, mindex)
+        for m in SECTION_FINDITER(string):
+            s, e = m.span()
+            span = s + ss, e + ss
+            index = span_to_index.get(span)
+            if index is None:
+                index = len(spans)
+                spans_append(span)
+            current_section = Section(lststr, type_to_spans, index)
             # Add text of the current_section to any parent section.
             # Note that section 0 is not a parent for any subsection.
             current_level = current_section.level
@@ -873,53 +864,49 @@ class WikiText:
                 section_level = section.level
                 if section_level < current_level:
                     si = section._index
-                    spans[si] = (spans[si][0], mspan[1])
+                    spans[si] = (spans[si][0], span[1])
                     current_level = section_level
-            sections.append(current_section)
+            sections_append(current_section)
         return sections
 
     @property
     def tables(self) -> List['Table']:
         """Return a list of found table objects."""
         tables = []
+        tables_append = tables.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow = self._shadow
         ss, se = self._span
-        if 'Table' not in type_to_spans:
+        spans = type_to_spans.setdefault('Table', [])
+        if not spans:
             # All the added spans will be new.
-            spans = type_to_spans['Table'] = []
-            index = 0
             m = True
             while m:
                 m = False
                 for m in TABLE_FINDITER(shadow):
                     ms, me = m.span()
                     # Ignore leading whitespace using len(m[1]).
-                    mspan = (ss + ms + len(m[1]), ss + me)
-                    spans.append(mspan)
-                    tables.append(Table(lststr, type_to_spans, index))
-                    index += 1
+                    span = ss + ms + len(m[1]), ss + me
+                    spans.append(span)
+                    tables_append(Table(lststr, type_to_spans, len(spans) - 1))
                     shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
-        spans = type_to_spans['Table']
-        index = len(spans) - 1
-        existing_span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index = {s: i for i, s in enumerate(spans)}
         m = True
         while m:
             m = False
             for m in TABLE_FINDITER(shadow):
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
-                mspan = (ss + ms + len(m[1]), ss + me)
-                mindex = existing_span_to_index.get(mspan)
-                if mindex is None:
-                    spans.append(mspan)
-                    index += 1
-                    mindex = index
-                tables.append(Table(lststr, type_to_spans, mindex))
+                span = (ss + ms + len(m[1]), ss + me)
+                index = span_to_index.get(span)
+                if index is None:
+                    index = len(spans)
+                    spans.append(span)
+                tables_append(Table(lststr, type_to_spans, index))
                 shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
         return tables
 
@@ -955,6 +942,8 @@ class WikiText:
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
+        spans_append = spans.append
+        span_to_index = {s: i for i, s in enumerate(spans)}
         patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
         for pattern in patterns:
             list_regex = regex_compile(
@@ -965,12 +954,10 @@ class WikiText:
             for index, m in enumerate(list_regex.finditer(self._shadow)):
                 ms, me = m.span()
                 span = ss + ms, ss + me
-                index = next(
-                    (i for i, s in enumerate(spans) if s == span), None
-                )
+                index = span_to_index.get(span)
                 if index is None:
                     index = len(spans)
-                    spans.append(span)
+                    spans_append(span)
                 lists.append(
                     WikiList(
                         lststr, pattern, m, type_to_spans, index, 'WikiList'
@@ -985,11 +972,10 @@ class WikiText:
         if name:
             if name in TAG_EXTENSIONS:
                 string = lststr[0]
-                tagstart = '<' + name
                 return [
                     Tag(lststr, type_to_spans, i, 'ExtTag')
                     for i, (s, e) in enumerate(type_to_spans['ExtTag'])
-                    if string.startswith(tagstart, s)
+                    if string.startswith('<' + name, s)
                 ]
             tags = []
             tags_append = tags.append
@@ -1012,13 +998,14 @@ class WikiText:
                 START_TAG_PATTERN.format(name=name_pattern), VERBOSE
             ).finditer(shadow)])
             end_search = regex_compile(END_TAG_BYTES_PATTERN .replace(
-                b'%(name)s', name_pattern.encode()
+                b'%(name)s', name.encode()
             )).search
         else:
             reversed_start_matches = reversed(
                 [m for m in START_TAG_FINDITER(shadow)]
             )
         spans = type_to_spans.setdefault('Tag', [])
+        span_to_index = {s: i for i, s in enumerate(spans)}
         spans_append = spans.append
         for start_match in reversed_start_matches:
             if start_match['self_closing']:
@@ -1046,7 +1033,7 @@ class WikiText:
                     # Assume start-only tag.
                     s, e = start_match.span()
                     span = ss + s, ss + e
-            index = next((i for i, s in enumerate(spans) if s == span), None)
+            index = span_to_index.get(span)
             if index is None:
                 index = len(spans)
                 spans_append(span)
