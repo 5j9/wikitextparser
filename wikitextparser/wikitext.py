@@ -980,17 +980,26 @@ class WikiText:
 
     def tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
-        tags = []
-        tags_append = tags.append
         lststr = self._lststr
         type_to_spans = self._type_to_spans
-        if name in TAG_EXTENSIONS:
-            string = lststr[0]
-            tagstart = '<' + name
-            for i, (s, e) in enumerate(type_to_spans['ExtTag']):
-                if string.startswith(tagstart, s):
-                    tags_append(Tag(lststr, type_to_spans, i, 'ExtTag'))
-            return tags
+        if name:
+            if name in TAG_EXTENSIONS:
+                string = lststr[0]
+                tagstart = '<' + name
+                return [
+                    Tag(lststr, type_to_spans, i, 'ExtTag')
+                    for i, (s, e) in enumerate(type_to_spans['ExtTag'])
+                    if string.startswith(tagstart, s)
+                ]
+            tags = []
+            tags_append = tags.append
+        else:
+            # There is no name, add all extension tags. Before using shadow.
+            tags = [
+                Tag(lststr, type_to_spans, i, 'ExtTag')
+                for i in range(len(type_to_spans['ExtTag']))
+            ]
+            tags_append = tags.append
         # Get the left-most start tag, match it to right-most end tag
         # and so on.
         ss = self._span[0]

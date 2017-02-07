@@ -842,6 +842,16 @@ class Tags(unittest.TestCase):
         b = s.tags()[0]
         self.assertEqual(b.string, '<b>sb</b>')
 
+    def test_extension_tags_are_not_lost_in_shadows(self):
+        parsed = wtp.parse(
+            'text<ref name="c">citation</ref>\n'
+            '<references/>'
+        )
+        ref, references = parsed.tags()
+        ref.set_attr('name', 'z')
+        self.assertEqual(ref.string, '<ref name="z">citation</ref>')
+        self.assertTrue(references.self_closing)
+
 
 if __name__ == '__main__':
     unittest.main()
