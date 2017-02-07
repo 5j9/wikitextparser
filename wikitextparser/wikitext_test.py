@@ -850,7 +850,7 @@ class Tags(unittest.TestCase):
         ref, references = parsed.tags()
         ref.set_attr('name', 'z')
         self.assertEqual(ref.string, '<ref name="z">citation</ref>')
-        self.assertTrue(references.self_closing)
+        self.assertEqual(references.string, '<references/>')
 
 
 if __name__ == '__main__':
