@@ -978,7 +978,7 @@ class WikiText:
                 )
         return lists
 
-    def tags(self, name=None):
+    def tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
         tags = []
         tags_append = tags.append
