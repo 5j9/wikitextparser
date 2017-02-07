@@ -835,7 +835,12 @@ class Tags(unittest.TestCase):
         tags = parsed.tags()
         self.assertEqual(tags[0].string, '<li>')
 
-    # Todo: add a test for out of scope tags.
+    def test_inner_tag(self):
+        parsed = wtp.parse('<br><s><b>sb</b></s>')
+        s = parsed.tags('s')[0]
+        self.assertEqual(s.string, '<s><b>sb</b></s>')
+        b = s.tags()[0]
+        self.assertEqual(b.string, '<b>sb</b>')
 
 
 if __name__ == '__main__':
