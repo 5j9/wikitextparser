@@ -1002,9 +1002,9 @@ class WikiText:
             reversed_start_matches = reversed([m for m in regex_compile(
                 START_TAG_PATTERN.format(name=name_pattern), VERBOSE
             ).finditer(shadow)])
-            end_search = regex_compile(
-                END_TAG_BYTES_PATTERN % {b'name': name_pattern.encode()}
-            ).search
+            end_search = regex_compile(END_TAG_BYTES_PATTERN .replace(
+                b'%(name)s', name_pattern.encode()
+            )).search
         else:
             reversed_start_matches = reversed(
                 [m for m in START_TAG_FINDITER(shadow)]
@@ -1024,8 +1024,9 @@ class WikiText:
                 else:
                     # build end_search according to start tag name
                     end_match = search(
-                        END_TAG_BYTES_PATTERN
-                        % {b'name': start_match['name'].encode()},
+                        END_TAG_BYTES_PATTERN.replace(
+                            b'%(name)s', start_match['name'].encode()
+                        ),
                         shadow_bytearray,
                     )
                 if end_match:
