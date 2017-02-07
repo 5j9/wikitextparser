@@ -244,7 +244,21 @@ Convert one type of list to another using the convert method. Specifying the sta
         #:continuing A1
         #A2
 
-Have a look at the test modules for more examples and probable pitfalls.
+Accessing HTML tags:
+
+.. code:: python
+
+        >>> p = wtp.parse('text<ref name="c">citation</ref>\n<references/>')
+        >>> ref, references = p.tags()
+        >>> ref.name = 'X'
+        >>> ref
+        Tag('<X name="c">citation</X>')
+        >>> references
+        Tag('<references/>')
+
+As illustrated above WikiTextParser is able to handle common usages of HTML and extension tags. However be aware that WikiTextParser is not a fully-fledged HTML parser, don't expect it to handle edge cases or malformed HTML input exactly as your browser does. If you encounter any bugs, please open an issue on github.
+
+You may want to have a look at the test modules for more examples and probable pitfalls.
 
 Compared with mwparserfromhell
 ==============================
@@ -254,13 +268,12 @@ But if you need to
 
 * use Python 2
 * parse style tags like `'''bold'''` and ''italics'' (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
-* extract `HTML tags <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.tag>`_ or `entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
+* extract `HTML entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
 
 then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under heavy development and the API may change drastically in the future versions.
 
-Adding some of the features above is planned for the future...
-
 Of-course `wikitextparser` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
 
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. I guess `wikitextparser` should be able to compete and even have some performance benefits in many situations. Note that `wikitextparser` does not try to create a complete parse tree, instead tries to figure things out as the user requests for them.
-However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. `wikitextparser` should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+
+If you have had a chance to compare these libraries in terms of performance please share your experience by opening an issue on github.
