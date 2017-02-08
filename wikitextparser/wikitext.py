@@ -385,28 +385,29 @@ class WikiText:
                 if e <= rmstart:
                     # s <= e <= rmstart <= rmstop
                     continue
-                elif rmstop <= s:
+                if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
                     spans[i] = (s - rmlength, e - rmlength)
-                elif rmstart <= s:
+                    continue
+                if rmstart <= s:
                     # s needs to be changed.
                     # We already know that rmstop is after the s,
                     # therefore the new s should be located at rmstart.
                     if rmstop >= e:
                         # rmstart <= s <= e < rmstop
-                        spans[i] = (rmstart, rmstart)
-                    else:
-                        # rmstart < s <= rmstop <= e
-                        spans[i] = (rmstart, e - rmlength)
+                        spans[i] = (-1, -1)
+                        continue
+                    # rmstart < s <= rmstop <= e
+                    spans[i] = (rmstart, e - rmlength)
+                    continue
+                # From the previous comparison we know that s is before
+                # the rmstart; so s needs no change.
+                if rmstop < e:
+                    # s <= rmstart <= rmstop <= e
+                    spans[i] = (s, e - rmlength)
                 else:
-                    # From the previous comparison we know that s is before
-                    # the rmstart; so s needs no change.
-                    if rmstop < e:
-                        # s <= rmstart <= rmstop <= e
-                        spans[i] = (s, e - rmlength)
-                    else:
-                        # s <= rmstart <= e < rmstop
-                        spans[i] = (s, rmstart)
+                    # s <= rmstart <= e < rmstop
+                    spans[i] = (s, rmstart)
 
     def _extend_span_update(self, estart: int, elength: int) -> None:
         """Update self._type_to_spans according to the added span."""
