@@ -26,27 +26,28 @@ class Argument(SubWikiText):
             return pipename[1:]
         # positional argument
         position = 1
-        godstring = self._lststr[0]
+        lststr0_find = self._lststr[0].find
         for ss, se in self._type_to_spans[self._type][:self._index]:
             # Make sure the span is not closed.
-            if ss < se:
-                equal_index = godstring.find('=', ss, se)
-                if equal_index == -1:
-                    # A preceding positional argument is detected.
-                    position += 1
-                    continue
-                # Todo: cache the results of the following code?
-                in_subspans = self._in_atomic_subspans_factory(ss, se)
-                while equal_index != -1:
-                    if not in_subspans(equal_index):
-                        # This is a keyword argument
-                        break
-                    # We don't care for this kind of equal sign.
-                    # Look for the next one.
-                    equal_index = godstring.find('=', equal_index + 1, se)
-                else:
-                    # All the equal signs where inside a subspan.
-                    position += 1
+            if ss == -1:
+                continue
+            equal_index = lststr0_find('=', ss, se)
+            if equal_index == -1:
+                # A preceding positional argument is detected.
+                position += 1
+                continue
+            # Todo: cache the results of the following code?
+            in_subspans = self._in_atomic_subspans_factory(ss, se)
+            while equal_index != -1:
+                if not in_subspans(equal_index):
+                    # This is a keyword argument
+                    break
+                # We don't care for this kind of equal sign.
+                # Look for the next one.
+                equal_index = lststr0_find('=', equal_index + 1, se)
+            else:
+                # All the equal signs where inside a subspan.
+                position += 1
         return str(position)
 
     @name.setter
@@ -67,8 +68,7 @@ class Argument(SubWikiText):
         """Return True if there is an equal sign in the argument else False."""
         if self._atomic_partition('=')[1]:
             return False
-        else:
-            return True
+        return True
 
     @positional.setter
     def positional(self, to_positional: bool) -> None:
@@ -84,16 +84,15 @@ class Argument(SubWikiText):
                 del self[1:len(pipename + '=')]
             else:
                 return
-        elif to_positional:
+        if to_positional:
             # Positional argument. to_positional is True.
             return
-        else:
-            # Positional argument. to_positional is False.
-            raise ValueError(
-                'Converting positional argument to keyword argument is not '
-                'possible without knowing the new name. '
-                'You can use `self.name = somename` instead.'
-            )
+        # Positional argument. to_positional is False.
+        raise ValueError(
+            'Converting positional argument to keyword argument is not '
+            'possible without knowing the new name. '
+            'You can use `self.name = somename` instead.'
+        )
 
     @property
     def value(self) -> str:
