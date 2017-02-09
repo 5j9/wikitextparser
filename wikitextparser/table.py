@@ -6,7 +6,7 @@ from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 import regex
 
-from .tag import attrs_parser, ATTRS_MATCH, SubWikiTextWithAttrs
+from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
 from .cell import (
     Cell,
     NEWLINE_CELL_MATCH,
@@ -150,9 +150,13 @@ class Table(SubWikiTextWithAttrs):
                 for match_row in match_table:
                     row_attrs = []  # type: List[Dict[str, str]]
                     table_attrs.append(row_attrs)
+                    row_attrs_append = row_attrs.append
                     for m in match_row:
                         s, e = m.span('attrs')
-                        row_attrs.append(attrs_parser(string, s, e))
+                        captures = ATTRS_MATCH(string, s, e).captures
+                        row_attrs_append(dict(zip(
+                            captures('attr_name'), captures('attr_value')
+                        )))
                 table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:

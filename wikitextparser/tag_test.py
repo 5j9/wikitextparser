@@ -100,6 +100,7 @@ class Tag(unittest.TestCase):
         self.assertEqual(t.get_attr('n2'), 'v4')
         t = wtp.Tag('<t a>c</t>')
         self.assertEqual(t.get_attr('a'), '')
+        self.assertEqual(t.get_attr('z'), None)
 
     def test_set_attr_value(self):
         t = wtp.Tag('<t n1=v1 n2=v2 n1=\'v3\'>c</t>')

@@ -166,7 +166,7 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 s, e = spans('attr_value')[-i - 1]
                 return string[s:e]
-        return None  # pragma: no cover
+        return None
 
     def get(self, attr_name: str) -> Optional[str]:
         """Deprecated alias for get_attr."""
@@ -310,12 +310,3 @@ class Tag(SubWikiTextWithAttrs):
         swt_spans = spans.setdefault('SubWikiText', [span])
         index = next((i for i, s in enumerate(swt_spans) if s == span))
         return SubWikiText(self._lststr, spans, index)
-
-
-def attrs_parser(attrs: str, pos=0, endpos=-1) -> Optional[Dict[str, str]]:
-    """Return a dict of attribute names and values."""
-    m = ATTRS_MATCH(attrs, pos=pos, endpos=endpos)
-    if m:
-        captures = m.captures
-        return dict(zip(captures('attr_name'), captures('attr_value')))
-    return None  # pragma: no cover
