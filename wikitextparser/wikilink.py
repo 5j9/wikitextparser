@@ -33,7 +33,7 @@ class WikiLink(SubWikiText):
         head, pipe, tail = self._atomic_partition('|')
         if pipe:
             return tail[:-2]
-        return None  # pragma: no cover
+        return None
 
     @text.setter
     def text(self, newtext: Optional[str]) -> None:

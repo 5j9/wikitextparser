@@ -44,6 +44,7 @@ class WikiLink(unittest.TestCase):
 
     def test_set_text_when_there_is_no_text(self):
         wl = wtp.WikiLink('[[ A ]]')
+        self.assertEqual(wl.text, None)
         wl.text = ' C '
         self.assertEqual('[[ A | C ]]', wl.string)
 
