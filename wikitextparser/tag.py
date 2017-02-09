@@ -9,7 +9,9 @@ For more info see:
 
 """
 
-from typing import Dict, Optional, Match, Union, Tuple, List
+from typing import (
+    Dict, Optional, Union, Tuple, List, MutableSequence, Any
+)
 from warnings import warn
 
 from regex import compile as regex_compile
@@ -125,7 +127,7 @@ class SubWikiTextWithAttrs(SubWikiText):
 
     """
 
-    _attrs_match = None  # type: Match
+    _attrs_match = None  # type: Any
 
     @property
     def attrs(self) -> Dict[str, str]:
@@ -164,6 +166,7 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 s, e = spans('attr_value')[-i - 1]
                 return string[s:e]
+        return None
 
     def get(self, attr_name: str) -> Optional[str]:
         """Deprecated alias for get_attr."""
@@ -197,7 +200,7 @@ class SubWikiTextWithAttrs(SubWikiText):
     def set(self, attr_name: str, attr_value: str) -> None:
         """Deprecated alias for set_attr."""
         warn('`set` is depracated, use `set_attr` instead', DeprecationWarning)
-        return self.set_attr(attr_name, attr_value)
+        self.set_attr(attr_name, attr_value)
 
     def del_attr(self, attr_name: str) -> None:
         """Delete all the attributes with the given name.
@@ -220,18 +223,18 @@ class SubWikiTextWithAttrs(SubWikiText):
             '`delete` is depracated, use `del_attr` instead',
             DeprecationWarning
         )
-        return self.del_attr(attr_name)
+        self.del_attr(attr_name)
 
 
 class Tag(SubWikiTextWithAttrs):
 
     """Create a new Tag object."""
 
-    _cached_match = None
+    _cached_match = None  # type: Any
 
     def __init__(
         self,
-        string: Union[str, list],
+        string: Union[str, MutableSequence[str]],
         _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
         _index: int=None,
         _type: str='Tag',
@@ -240,7 +243,7 @@ class Tag(SubWikiTextWithAttrs):
         super().__init__(string, _type_to_spans, _index, _type)
 
     @property
-    def _match(self) -> Match:
+    def _match(self) -> Any:
         """Return the match object for the current tag. Cache the result."""
         _cached_match = self._cached_match
         shadow = self._shadow
@@ -309,9 +312,10 @@ class Tag(SubWikiTextWithAttrs):
         return SubWikiText(self._lststr, spans, index)
 
 
-def attrs_parser(attrs: str, pos=0, endpos=-1) -> Dict[str, str]:
+def attrs_parser(attrs: str, pos=0, endpos=-1) -> Optional[Dict[str, str]]:
     """Return a dict of attribute names and values."""
     m = ATTRS_MATCH(attrs, pos=pos, endpos=endpos)
     if m:
         captures = m.captures
         return dict(zip(captures('attr_name'), captures('attr_value')))
+    return None

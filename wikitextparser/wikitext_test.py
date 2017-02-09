@@ -427,8 +427,7 @@ class PrettyPrint(unittest.TestCase):
     """Test the pprint method of the WikiText class."""
 
     def test_template_with_multi_args(self):
-        s = "{{a|b=b|c=c|d=d|e=e}}"
-        wt = wtp.WikiText(s)
+        wt = wtp.WikiText('{{a|b=b|c=c|d=d|e=e}}')
         self.assertEqual(
             '{{a\n    | b = b\n    | c = c\n    | d = d\n    | e = e\n}}',
             wt.pprint(),

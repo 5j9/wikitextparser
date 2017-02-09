@@ -2,7 +2,7 @@
 
 
 import warnings
-from typing import List, Match, Union, Optional, TypeVar
+from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 import regex
 
@@ -54,7 +54,7 @@ class Table(SubWikiTextWithAttrs):
     # They should provide the same API as in Tag and Cell classes.
 
     @property
-    def _match_table(self) -> List[List[Match]]:
+    def _match_table(self) -> List[List[Any]]:
         """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
@@ -76,7 +76,7 @@ class Table(SubWikiTextWithAttrs):
             m = NEWLINE_CELL_MATCH(shadow, pos)
             # Don't add a row if there are no new cells.
             if m:
-                match_row = []
+                match_row = []  # type: List[Any]
                 match_table.append(match_row)
             while m:
                 match_row.append(m)
@@ -128,10 +128,10 @@ class Table(SubWikiTextWithAttrs):
         """
         match_table = self._match_table
         string = self.string
-        table_data = []
+        table_data = []  # type: List[List[str]]
         if strip:
             for match_row in match_table:
-                row_data = []
+                row_data = []  # type: List[str]
                 table_data.append(row_data)
                 for m in match_row:
                     # Spaces after the first newline can be meaningful
@@ -146,9 +146,9 @@ class Table(SubWikiTextWithAttrs):
                     row_data.append(string[s:e])
         if table_data:
             if span:
-                table_attrs = []
+                table_attrs = []  # type: List[List[Dict[str, str]]]
                 for match_row in match_table:
-                    row_attrs = []
+                    row_attrs = []  # type: List[Dict[str, str]]
                     table_attrs.append(row_attrs)
                     for m in match_row:
                         s, e = m.span('attrs')
@@ -186,15 +186,15 @@ class Table(SubWikiTextWithAttrs):
         if type_ not in type_to_spans:
             type_to_spans[type_] = []
         spans = type_to_spans[type_]
-        table_cells = []
-        table_attrs = []
+        table_cells = []  # type: List[List[Cell]]
+        table_attrs = []  # type: List[List[Dict[str, str]]]
         attrs_match = None
         for match_row in match_table:
-            row_cells = []
+            row_cells = []  # type: List[Cell]
             table_cells.append(row_cells)
             header = match_row[0]['sep'] == '!'
             if span:
-                row_attrs = []
+                row_attrs = []  # type: List[Dict[str, str]]
                 table_attrs.append(row_attrs)
                 row_attrs_append = row_attrs.append
             for m in match_row:
@@ -260,6 +260,7 @@ class Table(SubWikiTextWithAttrs):
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m['caption']
+        return None
 
     @caption.setter
     def caption(self, newcaption: str) -> None:
@@ -279,7 +280,7 @@ class Table(SubWikiTextWithAttrs):
             self.insert(len(h + s), '|+' + newcaption + '\n')
 
     @property
-    def _attrs_match(self) -> Match:
+    def _attrs_match(self) -> Any:
         shadow = self._shadow
         cache = getattr(self, '_cached_attrs_match', None)
         if cache and cache.string == shadow:
@@ -321,6 +322,7 @@ class Table(SubWikiTextWithAttrs):
         m = CAPTION_REGEX.match(self.string)
         if m:
             return m['attrs']
+        return None
 
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
@@ -339,7 +341,7 @@ class Table(SubWikiTextWithAttrs):
 
 
 def _apply_attr_spans(
-    table_attrs: List[List[Match]], table_data: List[List[T]]
+    table_attrs: List[List[Dict[str, str]]], table_data: List[List[T]]
 ) -> List[List[T]]:
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
@@ -352,7 +354,7 @@ def _apply_attr_spans(
     # 4
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
-    table = []
+    table = []  # type: List[List[Optional[T]]]
     # Table.data won't call this function if table_data is empty.
     # 5
     # if not table_data:
@@ -360,7 +362,7 @@ def _apply_attr_spans(
     # 10
     ycurrent = 0
     # 11
-    downward_growing_cells = []
+    downward_growing_cells = []  # type: List[Tuple[Optional[T], int, int]]
     # 13, 18
     # Algorithm for processing rows
     for i, row in enumerate(table_data):

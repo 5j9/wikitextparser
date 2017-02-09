@@ -75,7 +75,7 @@ class WikiList(SubWikiText):
         Don't include subitems and the start pattern.
 
         """
-        items = []
+        items = []  # type: List[str]
         append = items.append
         string = self.string
         match = self._match
@@ -86,8 +86,8 @@ class WikiList(SubWikiText):
 
     @property
     def fullitems(self) -> List[str]:
-        """Return a list item strings including their start and sub-items."""
-        fullitems = []
+        """Return list of item strings. Includes their start and sub-items."""
+        fullitems = []  # type: List[str]
         append = fullitems.append
         string = self.string
         match = self._match
@@ -110,7 +110,7 @@ class WikiList(SubWikiText):
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 
-        :i: The index if the item which its sublists are desired.
+        :i: The index if the item which its sub-lists are desired.
             The performance is likely to be better if `i` is None.
 
         :pattern: The starting symbol for the desired sub-lists.
@@ -120,10 +120,11 @@ class WikiList(SubWikiText):
             the performance.
 
         """
-        patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
+        patterns = ('\#', '\*', '[:;]') if pattern is None \
+            else (pattern,)  # type: Tuple[str, ...]
         self_pattern = self.pattern
         lists = self.lists
-        sublists = []
+        sublists = []  # type: List['WikiList']
         sublists_append = sublists.append
         if i is None:
             # Any sublist is acceptable

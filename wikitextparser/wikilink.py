@@ -28,11 +28,12 @@ class WikiLink(SubWikiText):
         self[2:len(head)] = newtarget
 
     @property
-    def text(self) -> str:
+    def text(self) -> Optional[str]:
         """Return display text of this WikiLink."""
         head, pipe, tail = self._atomic_partition('|')
         if pipe:
             return tail[:-2]
+        return None
 
     @text.setter
     def text(self, newtext: Optional[str]) -> None:

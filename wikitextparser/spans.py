@@ -1,7 +1,7 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Callable, Match, Union, Any
 
 import regex
 
@@ -273,17 +273,17 @@ def parse_to_spans(
     }
 
     """
-    comment_spans = []
+    comment_spans = []  # type: List[Tuple[int, int]]
     comment_spans_append = comment_spans.append
-    extension_tag_spans = []
+    extension_tag_spans = []  # type: List[Tuple[int, int]]
     extension_tag_spans_append = extension_tag_spans.append
-    wikilink_spans = []
+    wikilink_spans = []  # type: List[Tuple[int, int]]
     wikilink_spans_append = wikilink_spans.append
-    parameter_spans = []
+    parameter_spans = []  # type: List[Tuple[int, int]]
     parameter_spans_append = parameter_spans.append
-    parser_function_spans = []
+    parser_function_spans = []  # type: List[Tuple[int, int]]
     parser_function_spans_append = parser_function_spans.append
-    template_spans = []
+    template_spans = []  # type: List[Tuple[int, int]]
     template_spans_append = template_spans.append
     # HTML <!-- comments -->
     for match in COMMENT_FINDITER(byte_array):
@@ -349,10 +349,10 @@ def parse_to_spans(
 def parse_subbytes_to_spans(
     byte_array: bytearray,
     index: int,
-    wikilink_spans_append: callable,
-    parameter_spans_append: callable,
-    pfunction_spans_append: callable,
-    template_spans_append: callable,
+    wikilink_spans_append: Callable,
+    parameter_spans_append: Callable,
+    pfunction_spans_append: Callable,
+    template_spans_append: Callable,
 ) -> None:
     """Parse the byte_array to spans.
 
@@ -366,7 +366,7 @@ def parse_subbytes_to_spans(
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of the template should be the whole string.
-    match = True
+    match = True  # type: Any
     while match:
         match = False
         for match in WIKILINK_FINDITER(byte_array):
@@ -381,7 +381,7 @@ def parse_subbytes_to_spans(
                 template_spans_append,
             )
             byte_array[ms:me] = (
-                b'_[' + group[2:-2].translate(BRACES_TO_UNDERSCORE) + b'_['
+                b'_[' + group[2:-2].translate(BRACES_TO_UNDERSCORE) + b'_]'
             )
     parse_to_spans_innerloop(
         byte_array,
@@ -395,9 +395,9 @@ def parse_subbytes_to_spans(
 def parse_to_spans_innerloop(
     byte_array: bytearray,
     index: int,
-    parameter_spans_append: callable,
-    pfunction_spans_append: callable,
-    template_spans_append: callable,
+    parameter_spans_append: Callable,
+    pfunction_spans_append: Callable,
+    template_spans_append: Callable,
 ) -> None:
     """Find the spans of parameters, parser functions, and templates.
 
@@ -417,7 +417,7 @@ def parse_to_spans_innerloop(
         for m in SINGLE_BRACES_FINDITER(byte_array):
             byte_array[m.start()] = 95  # 95 = ord('_')
         # Also remove empty double braces
-        match = True
+        match = True  # type: Any
         while match:
             match = False
             for match in INVALID_NAME_TEMPLATE_FINDITER(byte_array):

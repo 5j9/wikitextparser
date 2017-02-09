@@ -6,7 +6,7 @@
 
 from copy import deepcopy
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Callable, Generator
+    MutableSequence, Dict, List, Tuple, Union, Callable, Generator, Match, Any
 )
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
@@ -71,9 +71,9 @@ class WikiText:
     """The WikiText class."""
 
     def __init__(
-            self,
-            string: Union[str, MutableSequence[str]],
-            _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
+        self,
+        string: Union[MutableSequence[str], str],
+        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
     ) -> None:
         """Initialize the object.
 
@@ -87,17 +87,17 @@ class WikiText:
             again.
 
         """
-        lststr = string if isinstance(string, list) else [string]
-        self._lststr = lststr
         if _type_to_spans:
             self._type_to_spans = _type_to_spans
-        else:
-            string = lststr[0]
-            byte_array = bytearray(string.encode('ascii', 'replace'))
-            self._type_to_spans = parse_to_spans(byte_array)
-            # Todo: Can we use parse_to_spans to generate a shadow?
-            # print(byte_array.decode())
-            # self._shadow_cache = (string, byte_array.decode())
+            self._lststr = string  # type: MutableSequence[str]
+            return
+        self._lststr = [string]
+        # Todo: Can we use parse_to_spans to generate a shadow?
+        # print(byte_array.decode())
+        # self._shadow_cache = (string, byte_array.decode())
+        self._type_to_spans = parse_to_spans(
+            bytearray(string.encode('ascii', 'replace'))
+        )
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -477,7 +477,7 @@ class WikiText:
         # sub-spans for individual objects.
         length = se - ss
         # Todo: Can parse_to_spans create shadow by mutation?
-        shadow = bytearray(string.encode('ascii', 'replace'))
+        shadow = bytearray(string.encode('ascii', 'replace'))  # type: Any
         type_to_spans = parse_to_spans(shadow[:])
         # Todo: All tests still pass even if 'WikiLink' spans are not removed.
         # Todo: For certain parts of wikitext there may be no need to remove
@@ -504,7 +504,7 @@ class WikiText:
         ss, se = self._span
         if ss == 0 and se == len(self._lststr[0]):
             return deepcopy(self._type_to_spans)
-        type_to_spans = {}
+        type_to_spans = {}  # type: Dict[str, List[Tuple[int, int]]]
         for type_, spans in self._type_to_spans.items():
             newspans = type_to_spans[type_] = []
             for s, e in spans:
@@ -526,7 +526,7 @@ class WikiText:
 
         """
         # Do not try to do inplace pprint. It will overwrite on some spans.
-        parsed = WikiText(self.string, self._pp_type_to_spans())
+        parsed = WikiText([self.string], self._pp_type_to_spans())
         if remove_comments:
             for c in parsed.comments:
                 c.string = ''
@@ -764,7 +764,7 @@ class WikiText:
     @property
     def external_links(self) -> List['ExternalLink']:
         """Return a list of found external link objects."""
-        external_links = []
+        external_links = []  # type: List['ExternalLink']
         external_links_append = external_links.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -802,7 +802,7 @@ class WikiText:
         empty string.
 
         """
-        sections = []
+        sections = []  # type: List['Section']
         sections_append = sections.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -873,7 +873,7 @@ class WikiText:
     @property
     def tables(self) -> List['Table']:
         """Return a list of found table objects."""
-        tables = []
+        tables = []  # type: List['Table']
         tables_append = tables.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -882,7 +882,7 @@ class WikiText:
         spans = type_to_spans.setdefault('Table', [])
         if not spans:
             # All the added spans will be new.
-            m = True
+            m = True  # type: Any
             while m:
                 m = False
                 for m in TABLE_FINDITER(shadow):
@@ -945,7 +945,8 @@ class WikiText:
         spans = type_to_spans.setdefault('WikiList', [])
         spans_append = spans.append
         span_to_index = {s: i for i, s in enumerate(spans)}
-        patterns = ('\#', '\*', '[:;]') if pattern is None else (pattern,)
+        patterns = ('\#', '\*', '[:;]') if pattern is None \
+            else (pattern,)  # type: Tuple[str, ...]
         for pattern in patterns:
             list_regex = regex_compile(
                 LIST_PATTERN_FORMAT(pattern=pattern),
@@ -978,7 +979,7 @@ class WikiText:
                     for i, (s, e) in enumerate(type_to_spans['ExtTag'])
                     if string.startswith('<' + name, s)
                 ]
-            tags = []
+            tags = []  # type: List['Tag']
             tags_append = tags.append
         else:
             # There is no name, add all extension tags. Before using shadow.
@@ -1068,7 +1069,7 @@ class SubWikiText(WikiText):
 
         super().__init__(string, _type_to_spans)
 
-        # Note: _type_to_spans and _index are either both None or not None.
+        # _type_to_spans and _index are either both None or not None.
         if _type_to_spans is None and _type not in {
             'Parameter',
             'ParserFunction',
@@ -1111,6 +1112,6 @@ if __name__ == '__main__':
     from .comment import Comment
     from .externallink import ExternalLink
     from .section import Section
-    from .wikilist import WikiList
+    from .wikilist import WikiList, LIST_PATTERN_FORMAT
     from .table import Table
     from .parameter import Parameter

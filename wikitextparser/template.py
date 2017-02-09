@@ -2,7 +2,7 @@
 
 
 import regex
-from typing import List, Optional, TypeVar, Iterator
+from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
 from .wikitext import SubWikiText
 from .argument import Argument
@@ -137,13 +137,13 @@ class Template(SubWikiText):
         Also see `rm_dup_args_safe` function.
 
         """
-        names = []
+        names = set()  # type: set
         for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
                 del a[0:len(a.string)]
             else:
-                names.append(name)
+                names.add(name)
 
     def rm_dup_args_safe(self, tag: str=None) -> None:
         """Remove duplicate arguments in a safe manner.
@@ -165,7 +165,8 @@ class Template(SubWikiText):
         Also see `rm_first_of_dup_args` function.
 
         """
-        name_to_lastarg_vals = {}
+        name_to_lastarg_vals = {} \
+            # type: Dict[str, Tuple[Argument, List[str]]]
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         for arg in reversed(self.arguments):
@@ -348,7 +349,7 @@ def mode(list_: List[T]) -> T:
     return max(set(list_), key=list_.count)
 
 
-def get_arg(name: str, args: Iterator[Argument]) -> Optional[Argument]:
+def get_arg(name: str, args: Iterable[Argument]) -> Optional[Argument]:
     """Return the first argument in the args that has the given name.
 
     Return None if no such argument is found.
@@ -361,3 +362,4 @@ def get_arg(name: str, args: Iterator[Argument]) -> Optional[Argument]:
     for arg in args:
         if arg.name.strip() == name.strip():
             return arg
+    return None
