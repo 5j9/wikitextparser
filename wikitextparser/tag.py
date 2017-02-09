@@ -166,7 +166,7 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 s, e = spans('attr_value')[-i - 1]
                 return string[s:e]
-        return None
+        return None  # pragma: no cover
 
     def get(self, attr_name: str) -> Optional[str]:
         """Deprecated alias for get_attr."""
@@ -318,4 +318,4 @@ def attrs_parser(attrs: str, pos=0, endpos=-1) -> Optional[Dict[str, str]]:
     if m:
         captures = m.captures
         return dict(zip(captures('attr_name'), captures('attr_value')))
-    return None
+    return None  # pragma: no cover
