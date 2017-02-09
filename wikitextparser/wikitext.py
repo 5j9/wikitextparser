@@ -6,7 +6,7 @@
 
 from copy import deepcopy
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Callable, Generator, Match, Any
+    MutableSequence, Dict, List, Tuple, Union, Callable, Generator, Any
 )
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
