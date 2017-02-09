@@ -38,6 +38,7 @@ class Parameter(SubWikiText):
         name, pipe, default = self._atomic_partition('|')
         if pipe:
             return default[:-3]
+        return None
 
     @default.setter
     def default(self, newdefault: Optional[str]) -> None:
