@@ -783,11 +783,11 @@ class WikiText:
             return external_links
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
-        span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index_get = {s: i for i, s in enumerate(spans)}.get
         for m in EXTERNALLINK_FINDITER(self.string):
             span = m.span()
             span = (span[0] + ss, span[1] + ss)
-            index = span_to_index.get(span)
+            index = span_to_index_get(span)
             if index is None:
                 spans_append(span)
                 index = len(spans) - 1
@@ -838,11 +838,11 @@ class WikiText:
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index_get = {s: i for i, s in enumerate(spans)}.get
         # Lead section
         s, e = LEAD_SECTION_MATCH(string).span()
         span = s + ss, e + ss
-        index = span_to_index.get(span)
+        index = span_to_index_get(span)
         if index is None:
             index = len(spans)
             spans_append(span)
@@ -853,7 +853,7 @@ class WikiText:
         for m in SECTION_FINDITER(string):
             s, e = m.span()
             span = s + ss, e + ss
-            index = span_to_index.get(span)
+            index = span_to_index_get(span)
             if index is None:
                 index = len(spans)
                 spans_append(span)
@@ -895,7 +895,7 @@ class WikiText:
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
-        span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index_get = {s: i for i, s in enumerate(spans)}.get
         m = True
         while m:
             m = False
@@ -903,7 +903,7 @@ class WikiText:
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
                 span = (ss + ms + len(m[1]), ss + me)
-                index = span_to_index.get(span)
+                index = span_to_index_get(span)
                 if index is None:
                     index = len(spans)
                     spans.append(span)
@@ -944,7 +944,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
         spans_append = spans.append
-        span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index_get = {s: i for i, s in enumerate(spans)}.get
         patterns = ('\#', '\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         for pattern in patterns:
@@ -956,7 +956,7 @@ class WikiText:
             for index, m in enumerate(list_regex.finditer(self._shadow)):
                 ms, me = m.span()
                 span = ss + ms, ss + me
-                index = span_to_index.get(span)
+                index = span_to_index_get(span)
                 if index is None:
                     index = len(spans)
                     spans_append(span)
@@ -1007,7 +1007,7 @@ class WikiText:
                 [m for m in START_TAG_FINDITER(shadow)]
             )
         spans = type_to_spans.setdefault('Tag', [])
-        span_to_index = {s: i for i, s in enumerate(spans)}
+        span_to_index_get = {s: i for i, s in enumerate(spans)}.get
         spans_append = spans.append
         for start_match in reversed_start_matches:
             if start_match['self_closing']:
@@ -1035,7 +1035,7 @@ class WikiText:
                     # Assume start-only tag.
                     s, e = start_match.span()
                     span = ss + s, ss + e
-            index = span_to_index.get(span)
+            index = span_to_index_get(span)
             if index is None:
                 index = len(spans)
                 spans_append(span)
