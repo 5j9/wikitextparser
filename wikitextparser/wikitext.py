@@ -486,9 +486,8 @@ class WikiText:
         # contain brackets or pipes and this is guaranteed by the parser.
         for spans in type_to_spans.values():
             for s, e in spans:
-                if s == 0 and e == length:
-                    continue
-                shadow[s:e] = (e - s) * b' '
+                if s or e != length:
+                    shadow[s:e] = (e - s) * b' '
         shadow = shadow.decode()
         self._shadow_cache = (string, shadow)
         return shadow
