@@ -1,9 +1,10 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-from typing import Dict, List, Tuple, Callable, Match, Union, Any
+from typing import Dict, List, Tuple, Callable, Any, Optional
 
-import regex
+from regex import VERBOSE, DOTALL, IGNORECASE
+from regex import compile as regex_compile
 
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
@@ -21,7 +22,7 @@ TEMPLATE_PATTERN = (
     )
     ''' % INVALID_TITLE_CHARS_PATTERN
 )
-INVALID_NAME_TEMPLATE_FINDITER = regex.compile(
+INVALID_TL_NAME_FINDITER = regex_compile(
     rb'''
     \{\{
     (?>[\s_]*)
@@ -31,29 +32,29 @@ INVALID_NAME_TEMPLATE_FINDITER = regex.compile(
         \}\}
     )
     ''',
-    regex.VERBOSE,
+    VERBOSE,
 ).finditer
-TEMPLATE_NOT_PARAM_FINDITER = regex.compile(
+TEMPLATE_NOT_PARAM_FINDITER = regex_compile(
     (r''' %s (?!\})  |  (?<!{) %s ''' % (
         TEMPLATE_PATTERN,
         TEMPLATE_PATTERN,
     )).encode(),
-    regex.VERBOSE,
+    VERBOSE,
 ).finditer
 # Parameters
-TEMPLATE_PARAMETER_FINDITER = regex.compile(
+TEMPLATE_PARAMETER_FINDITER = regex_compile(
     rb'''
     \{\{\{
     (?>[^{}]*)
     \}\}\}
     ''',
-    regex.VERBOSE,
+    VERBOSE,
 ).finditer
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-PARSER_FUNCTION_FINDITER = regex.compile(
+PARSER_FUNCTION_FINDITER = regex_compile(
     rb"""
     \{\{\s*
     (?:
@@ -122,7 +123,7 @@ PARSER_FUNCTION_FINDITER = regex.compile(
     )
     :[^{}]*?\}\}
     """,
-    regex.VERBOSE
+    VERBOSE
 ).finditer
 # External links
 VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
@@ -146,7 +147,7 @@ BARE_EXTERNALLINK_PATTERN = (
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_FINDITER = regex.compile((
+WIKILINK_FINDITER = regex_compile((
     r'''
     \[\[
     (?!%s)
@@ -165,7 +166,7 @@ WIKILINK_FINDITER = regex.compile((
         BARE_EXTERNALLINK_PATTERN,
         INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'')
     )).encode(),
-    regex.IGNORECASE | regex.VERBOSE,
+    IGNORECASE | VERBOSE,
 ).finditer
 # For a complete list of extension tags on your wiki, see the
 # "Parser extension tags" section at the end of [[Special:Version]].
@@ -235,24 +236,21 @@ TAG_BY_NAME_PATTERN = (
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-EXTENSION_TAGS_FINDITER = regex.compile((
+EXTENSION_TAGS_FINDITER = regex_compile((
     TAG_BY_NAME_PATTERN % (
         '|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS)
     )
     ).encode(),
-    regex.IGNORECASE | regex.VERBOSE,
+    IGNORECASE | VERBOSE,
 ).finditer
-COMMENT_FINDITER = regex.compile(
-    rb'<!--.*?-->',
-    regex.DOTALL,
-).finditer
-SINGLE_BRACES_FINDITER = regex.compile(
+COMMENT_FINDITER = regex_compile(rb'<!--.*?-->', DOTALL).finditer
+SINGLE_BRACES_FINDITER = regex_compile(
     rb'''
     (?<!{) { (?=[^{])
     |
     (?<!}) } (?=[^}])
     ''',
-    regex.VERBOSE,
+    VERBOSE,
 ).finditer
 
 
