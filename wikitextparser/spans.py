@@ -296,8 +296,7 @@ def parse_to_spans(
         ms, me = mspan
         if match[2]:  # parsable tag extension group
             parse_subbytes_to_spans(
-                byte_array[ms + 3:me - 3],
-                ms + 3,
+                byte_array, ms, me,
                 wikilink_spans_append,
                 parameter_spans_append,
                 parser_function_spans_append,
@@ -315,18 +314,15 @@ def parse_to_spans(
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
-            group = byte_array[ms + 2:me - 2]
             parse_to_spans_innerloop(
-                group,
-                ms + 2,
+                byte_array, ms, me,
                 parameter_spans_append,
                 parser_function_spans_append,
                 template_spans_append,
             )
-            byte_array[ms:me] = b'_' * (len(group) + 4)
+            byte_array[ms:me] = b'_' * (me - ms)
     parse_to_spans_innerloop(
-        byte_array,
-        0,
+        byte_array, 0, None,
         parameter_spans_append,
         parser_function_spans_append,
         template_spans_append,
@@ -343,7 +339,8 @@ def parse_to_spans(
 
 def parse_subbytes_to_spans(
     byte_array: bytearray,
-    index: int,
+    start: int,
+    end: int,
     wikilink_spans_append: Callable,
     parameter_spans_append: Callable,
     pfunction_spans_append: Callable,
@@ -352,7 +349,7 @@ def parse_subbytes_to_spans(
     """Parse the byte_array to spans.
 
     This function is basically the same as `parse_to_spans`, but accepts an
-    index that indicates the starting index of the given byte_array.
+    start that indicates the starting start of the given byte_array.
     `byte_array`s that are passed to this function are the contents of
     PARSABLE_TAG_EXTENSIONS.
 
@@ -364,21 +361,21 @@ def parse_subbytes_to_spans(
     match = True  # type: Any
     while match:
         match = False
-        for match in WIKILINK_FINDITER(byte_array):
-            ms, me = match.span()
-            wikilink_spans_append((index + ms, index + me))
-            group = byte_array[ms:me]
+        for match in WIKILINK_FINDITER(byte_array, start, end):
+            mspan = match.span()
+            wikilink_spans_append(mspan)
+            ms, me = mspan
+            # Todo: the following call can be disabled without any test failure
+            # See if the other WIKILINK_FINDITER call can help.
             parse_to_spans_innerloop(
-                group,
-                index + ms,
+                byte_array, ms, me,
                 parameter_spans_append,
                 pfunction_spans_append,
                 template_spans_append,
             )
-            byte_array[ms:me] = len(group) * b'_'
+            byte_array[ms:me] = b'_' * (me - ms)
     parse_to_spans_innerloop(
-        byte_array,
-        index,
+        byte_array, start, end,
         parameter_spans_append,
         pfunction_spans_append,
         template_spans_append,
@@ -386,8 +383,7 @@ def parse_subbytes_to_spans(
 
 
 def parse_to_spans_innerloop(
-    byte_array: bytearray,
-    index: int,
+    byte_array: bytearray, start: int, end: Optional[int],
     parameter_spans_append: Callable,
     pfunction_spans_append: Callable,
     template_spans_append: Callable,
@@ -395,7 +391,7 @@ def parse_to_spans_innerloop(
     """Find the spans of parameters, parser functions, and templates.
 
     :byte_array: The byte_array or part of byte_array that is being parsed.
-    :index: Add to every returned index.
+    :start: Add to every returned start.
 
     This is the innermost loop of the parse_to_spans function.
     If the byte_array passed to parse_to_spans contains n WikiLinks, then
@@ -407,29 +403,32 @@ def parse_to_spans_innerloop(
     while ms is not None:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
-        for m in SINGLE_BRACES_FINDITER(byte_array):
+        for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
             byte_array[m.start()] = 95  # 95 = ord('_')
         # Also remove empty double braces
         match = True  # type: Any
         while match:
             match = False
-            for match in INVALID_NAME_TEMPLATE_FINDITER(byte_array):
+            for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 byte_array[ms:me] = (me - ms) * b'_'
-        i = byte_array.rfind(125)  # 125 == ord('}')
+        # Todo: tests won't fail if start and end are removed.
+        i = byte_array.rfind(125, start, end)  # 125 == ord('}')
         if i != -1:
-            byte_array[i:] = byte_array[i:].replace(b'{', b'_')
-        i = byte_array.find(123)  # 125 == ord('{')
+            byte_array[i:end] = byte_array[i:end].replace(b'{', b'_')
+        # Todo: tests won't fail if start and end are removed.
+        i = byte_array.find(123, start, end)  # 125 == ord('{')
         if i != -1:
-            byte_array[:i] = byte_array[:i].replace(b'}', b'_')
+            byte_array[start:i] = byte_array[start:i].replace(b'}', b'_')
         ms = None
         # Template parameters
         match = True
         while match:
             match = False
-            for match in TEMPLATE_PARAMETER_FINDITER(byte_array):
-                ms, me = match.span()
-                parameter_spans_append((ms + index, me + index))
+            for match in TEMPLATE_PARAMETER_FINDITER(byte_array, start, end):
+                mspan = match.span()
+                parameter_spans_append(mspan)
+                ms, me = mspan
                 byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
         # Templates
         match = True
@@ -437,12 +436,14 @@ def parse_to_spans_innerloop(
             # Parser functions
             while match:
                 match = False
-                for match in PARSER_FUNCTION_FINDITER(byte_array):
-                    ms, me = match.span()
-                    pfunction_spans_append((ms + index, me + index))
+                for match in PARSER_FUNCTION_FINDITER(byte_array, start, end):
+                    mspan = match.span()
+                    pfunction_spans_append(mspan)
+                    ms, me = mspan
                     byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
             # match is False at this point
-            for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array):
-                ms, me = match.span()
-                template_spans_append((ms + index, me + index))
+            for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array, start, end):
+                mspan = match.span()
+                template_spans_append(mspan)
+                ms, me = mspan
                 byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
