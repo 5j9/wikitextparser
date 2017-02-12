@@ -254,7 +254,6 @@ SINGLE_BRACES_FINDITER = regex.compile(
     ''',
     regex.VERBOSE,
 ).finditer
-BRACES_TO_UNDERSCORE = b''.maketrans(b'{}', b'__')
 
 
 def parse_to_spans(
@@ -326,9 +325,7 @@ def parse_to_spans(
                 parser_function_spans_append,
                 template_spans_append,
             )
-            byte_array[ms:me] = (
-                b'_[' + group.translate(BRACES_TO_UNDERSCORE) + b']_'
-            )
+            byte_array[ms:me] = b'_' * (len(group) + 4)
     parse_to_spans_innerloop(
         byte_array,
         0,
@@ -380,9 +377,7 @@ def parse_subbytes_to_spans(
                 pfunction_spans_append,
                 template_spans_append,
             )
-            byte_array[ms:me] = (
-                b'_[' + group[2:-2].translate(BRACES_TO_UNDERSCORE) + b'_]'
-            )
+            byte_array[ms:me] = len(group) * b'_'
     parse_to_spans_innerloop(
         byte_array,
         index,
