@@ -58,7 +58,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb"""
     \{\{\s*
     (?:
-        \#[^{}\s]*?
+        \#[^{}\s]*
         |
         # Variables acting like parser functions
         # Technical metadata
@@ -121,7 +121,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
         gender|
         int
     )
-    :[^{}]*?\}\}
+    :[^{}]*\}\}
     """,
     VERBOSE
 ).finditer
@@ -131,7 +131,7 @@ VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
 # https://www.mediawiki.org/wiki/Help:Links#External_links
 VALID_EXTLINK_SCHEMES_PATTERN = (
     r'''
-    (?:
+    (?>
     http://|https://|ftp://|ftps://|bitcoin:|
     irc://|ircs://|magnet:|mailto:|mms://|news:|
     git://|geo:|gopher://|
@@ -239,8 +239,7 @@ TAG_BY_NAME_PATTERN = (
 EXTENSION_TAGS_FINDITER = regex_compile((
     TAG_BY_NAME_PATTERN % (
         '|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS)
-    )
-    ).encode(),
+    )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
 COMMENT_FINDITER = regex_compile(rb'<!--.*?-->', DOTALL).finditer
