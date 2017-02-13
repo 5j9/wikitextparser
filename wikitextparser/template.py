@@ -31,9 +31,9 @@ class Template(SubWikiText):
         if bar_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            type_ = 'ta' + str(self._index)
+            _type = 'ta' + str(self._index)
             lststr = self._lststr
-            arg_spans = type_to_spans.setdefault(type_, [])
+            arg_spans = type_to_spans.setdefault(_type, [])
             arg_spans_append = arg_spans.append
             span_to_index_get = {s: i for i, s in enumerate(arg_spans)}.get
             # remove the final '}}' from the last argument.
@@ -45,7 +45,7 @@ class Template(SubWikiText):
                 if index is None:
                     index = len(arg_spans)
                     arg_spans_append(bar_span)
-                arguments_append(Argument(lststr, type_to_spans, index, type_))
+                arguments_append(Argument(lststr, type_to_spans, index, _type))
         return arguments
 
     @property

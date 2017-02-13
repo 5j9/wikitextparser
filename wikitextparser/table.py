@@ -185,11 +185,11 @@ class Table(SubWikiTextWithAttrs):
         ss = self._span[0]
         match_table = self._match_table
         shadow = self._shadow
-        type_ = 'tc' + str(self._index)
+        _type = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
-        if type_ not in type_to_spans:
-            type_to_spans[type_] = []
-        spans = type_to_spans[type_]
+        if _type not in type_to_spans:
+            type_to_spans[_type] = []
+        spans = type_to_spans[_type]
         table_cells = []  # type: List[List[Cell]]
         table_attrs = []  # type: List[List[Dict[str, str]]]
         attrs_match = None
@@ -227,7 +227,7 @@ class Table(SubWikiTextWithAttrs):
                         header,
                         type_to_spans,
                         index,
-                        type_,
+                        _type,
                         m,
                         attrs_match,
                     )
