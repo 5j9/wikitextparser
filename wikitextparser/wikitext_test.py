@@ -388,12 +388,10 @@ class Table(unittest.TestCase):
         wt = wtp.parse(s)
         self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
 
-    @unittest.expectedFailure
     def test_indentation_cannot_be_inside_nowiki(self):
-        """A very unusual case. It seems OK to have false positives here.
+        """A very unusual case. It would be OK to have false positives here.
 
-        Fixing it requires a lot of unnecessary coding. Also false positive
-        for tables are pretty much harmless.
+        Also false positive for tables are pretty much harmless here.
 
         The same thing may happen for tables which start right after a
         templates, parser functions, wiki links, comments, or

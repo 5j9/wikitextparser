@@ -65,10 +65,20 @@ TABLE_FINDITER = regex_compile(
 ).finditer
 TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 
+# Types which are detected by the
+SPAN_PARSER_TYPES = {
+    'Template', 'ParserFunction', 'WikiLink',
+    'Comment', 'Parameter', 'ExtTag',
+}
 
 class WikiText:
 
     """The WikiText class."""
+
+    # In subclasses of WikiText _type is used as the key for _type_to_spans
+    # Therefor [self._type][self._index] should return self._span.
+    # The following acts as a default value.
+    _type = 'WikiText'
 
     def __init__(
         self,
@@ -93,7 +103,6 @@ class WikiText:
             return
         self._lststr = [string]
         # Todo: Can we use parse_to_spans to generate a shadow?
-        # print(byte_array.decode())
         # self._shadow_cache = (string, byte_array.decode())
         self._type_to_spans = parse_to_spans(
             bytearray(string.encode('ascii', 'replace'))
@@ -473,19 +482,16 @@ class WikiText:
         # amount of time. The new method tries to parse the self.string which
         # is usually much more faster because there are usually far less
         # sub-spans for individual objects.
-        length = se - ss
-        # Todo: Can parse_to_spans create shadow by mutation?
-        shadow = bytearray(string.encode('ascii', 'replace'))  # type: Any
-        type_to_spans = parse_to_spans(shadow[:])
-        # Todo: All tests still pass even if 'WikiLink' spans are not removed.
-        # Todo: For certain parts of wikitext there may be no need to remove
-        # certain sub-types. For example there is probably no need to remove
-        # WikiLinks while computing template names. (Template name cannot
-        # contain brackets or pipes and this is guaranteed by the parser.
-        for spans in type_to_spans.values():
-            for s, e in spans:
-                if s or e != length:
-                    shadow[s:e] = (e - s) * b' '
+        shadow = bytearray(string.encode('ascii', 'replace'))
+        if self._type in SPAN_PARSER_TYPES:
+            start = shadow[:2]
+            end = shadow[-2:]
+            shadow[:2] = shadow[-2:] = b'__'
+            parse_to_spans(shadow)
+            shadow[:2] = start
+            shadow[-2:] = end
+        else:
+            parse_to_spans(shadow)
         shadow = shadow.decode()
         self._shadow_cache = (string, shadow)
         return shadow
@@ -1067,14 +1073,7 @@ class SubWikiText(WikiText):
         super().__init__(string, _type_to_spans)
 
         # _type_to_spans and _index are either both None or not None.
-        if _type_to_spans is None and _type not in {
-            'Parameter',
-            'ParserFunction',
-            'Template',
-            'WikiLink',
-            'Comment',
-            'ExtTag',
-        }:
+        if _type_to_spans is None and _type not in SPAN_PARSER_TYPES:
             self._type_to_spans[_type] = [(0, len(string))]
             self._index = 0
         else:
