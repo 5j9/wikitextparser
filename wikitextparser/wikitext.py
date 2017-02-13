@@ -103,10 +103,25 @@ class WikiText:
             return
         self._lststr = [string]
         # Todo: Can we use parse_to_spans to generate a shadow?
-        # self._shadow_cache = (string, byte_array.decode())
-        self._type_to_spans = parse_to_spans(
-            bytearray(string.encode('ascii', 'replace'))
-        )
+        byte_array = bytearray(string.encode('ascii', 'replace'))
+        if self._type not in SPAN_PARSER_TYPES:
+            self._type_to_spans = parse_to_spans(byte_array)
+            self._shadow_cache = (string, byte_array.decode())
+        else:
+            # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
+            # parser to generate the shadow because it will replace the whole
+            # string with '_'. OTH, we can't modifiy before passing because
+            # the generated _type_to_spans will lack self._span.
+            # As a workaround we can add the missed span after parsing.
+            head = byte_array[:2]
+            tail = byte_array[-2:]
+            byte_array[-2:] = byte_array[:2] = b'__'
+            type_to_spans = parse_to_spans(byte_array)
+            byte_array[:2] = head
+            byte_array[-2:] = tail
+            self._shadow_cache = (string, byte_array.decode())
+            type_to_spans[self._type].append((0, len(string)))
+            self._type_to_spans = type_to_spans
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -484,12 +499,12 @@ class WikiText:
         # sub-spans for individual objects.
         shadow = bytearray(string.encode('ascii', 'replace'))
         if self._type in SPAN_PARSER_TYPES:
-            start = shadow[:2]
-            end = shadow[-2:]
+            head = shadow[:2]
+            tail = shadow[-2:]
             shadow[:2] = shadow[-2:] = b'__'
             parse_to_spans(shadow)
-            shadow[:2] = start
-            shadow[-2:] = end
+            shadow[:2] = head
+            shadow[-2:] = tail
         else:
             parse_to_spans(shadow)
         shadow = shadow.decode()
