@@ -253,9 +253,7 @@ SINGLE_BRACES_FINDITER = regex_compile(
 ).finditer
 
 
-def parse_to_spans(
-    byte_array: bytearray
-) -> Dict[str, List[Tuple[int, int]]]:
+def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
     """Calculate and set self._type_to_spans.
 
     The result is a dictionary containing lists of spans:
@@ -428,7 +426,7 @@ def parse_to_spans_innerloop(
                 mspan = match.span()
                 parameter_spans_append(mspan)
                 ms, me = mspan
-                byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
+                byte_array[ms:me] = b'_' * (me - ms)
         # Templates
         match = True
         while match:
@@ -439,10 +437,10 @@ def parse_to_spans_innerloop(
                     mspan = match.span()
                     pfunction_spans_append(mspan)
                     ms, me = mspan
-                    byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
+                    byte_array[ms:me] = b'_' * (me - ms)
             # match is False at this point
             for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array, start, end):
                 mspan = match.span()
                 template_spans_append(mspan)
                 ms, me = mspan
-                byte_array[ms:ms + 2] = byte_array[me - 2:me] = b'__'
+                byte_array[ms:me] = b'_' * (me - ms)
