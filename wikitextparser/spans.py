@@ -245,9 +245,9 @@ EXTENSION_TAGS_FINDITER = regex_compile((
 COMMENT_FINDITER = regex_compile(rb'<!--.*?-->', DOTALL).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
     rb'''
-    (?<!{) { (?=[^{])
+    (?<!{) { (?=[^{|])
     |
-    (?<!}) } (?=[^}])
+    (?<![|}]) } (?=[^}])
     ''',
     VERBOSE,
 ).finditer
@@ -261,7 +261,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
         'Parameter': parameter_spans,
         'ParserFunction': parser_function_spans,
         'Template': template_spans,
-        'Wikilink': wikilink_spans,
+        'WikiLink': wikilink_spans,
         'Comment': comment_spans,
         'ExtTag': extension_tag_spans,
     }
@@ -414,7 +414,7 @@ def parse_to_spans_innerloop(
         if i != -1:
             byte_array[i:end] = byte_array[i:end].replace(b'{', b'_')
         # Todo: tests won't fail if start and end are removed.
-        i = byte_array.find(123, start, end)  # 125 == ord('{')
+        i = byte_array.find(123, start, end)  # 123 == ord('{')
         if i != -1:
             byte_array[start:i] = byte_array[start:i].replace(b'}', b'_')
         ms = None
