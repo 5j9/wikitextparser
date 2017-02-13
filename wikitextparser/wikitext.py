@@ -280,17 +280,14 @@ class WikiText:
         """Return self-span."""
         return 0, len(self._lststr[0])
 
-    def _atomic_partition(
-        self, char: str
-    ) -> Tuple[str, str, str]:
+    def _atomic_partition(self, char: str) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic subspans."""
         s, e = self._span
-        str0 = self._lststr[0]
-        shadow = self._shadow
-        index = shadow.find(char)
+        index = self._shadow.find(char)
         if index == -1:
-            return str0[s:e], '', ''
-        return str0[s:s + index], char, str0[s + index + 1:e]
+            return self._lststr[0][s:e], '', ''
+        lststr0 = self._lststr[0]
+        return lststr0[s:s + index], char, lststr0[s + index + 1:e]
 
     def _atomic_split_spans(
         self, char: str
@@ -299,13 +296,14 @@ class WikiText:
         shadow = self._shadow
         ss, se = self._span
         results = []
+        results_append = results.append
         findstart = 0
         while True:
             index = shadow.find(char, findstart)
             if index == -1:
-                results.append((ss + findstart, se))
+                results_append((ss + findstart, se))
                 return results
-            results.append((ss + findstart, ss + index))
+            results_append((ss + findstart, ss + index))
             findstart = index + 1
 
     def _in_atomic_subspans_factory(
