@@ -12,6 +12,14 @@ COMMENT_SUB = regex.compile(
     r'<!--.*?-->',
     regex.DOTALL,
 ).sub
+
+BAR_SPLITS_FULLMATCH = regex.compile(
+    r'{{'
+    r'[^|]*'  # name
+    r'(?<arg>\|[^|]*)*'
+    r'}}'
+).fullmatch
+
 T = TypeVar('T')
 
 
@@ -27,25 +35,23 @@ class Template(SubWikiText):
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         arguments = []
-        bar_spans = self._atomic_split_spans('|')[1:]
-        if bar_spans:
+        split_spans = BAR_SPLITS_FULLMATCH(self._shadow).spans('arg')
+        if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            _type = 'ta' + str(self._index)
+            type_ = 'ta' + str(self._index)
             lststr = self._lststr
-            arg_spans = type_to_spans.setdefault(_type, [])
+            arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
             span_to_index_get = {s: i for i, s in enumerate(arg_spans)}.get
-            # remove the final '}}' from the last argument.
-            bar_spans[-1] = (bar_spans[-1][0], bar_spans[-1][1] - 2)
-            for bar_span in bar_spans:
-                # include the the starting '|'
-                bar_span = (bar_span[0] + -1, bar_span[1])
-                index = span_to_index_get(bar_span)
+            ss = self._span[0]
+            for s, e in split_spans:
+                span = ss + s, ss + e
+                index = span_to_index_get(span)
                 if index is None:
                     index = len(arg_spans)
-                    arg_spans_append(bar_span)
-                arguments_append(Argument(lststr, type_to_spans, index, _type))
+                    arg_spans_append(span)
+                arguments_append(Argument(lststr, type_to_spans, index, type_))
         return arguments
 
     @property

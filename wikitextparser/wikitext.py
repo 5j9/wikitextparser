@@ -67,9 +67,9 @@ TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 
 # Types which are detected by the
 SPAN_PARSER_TYPES = {
-    'Template', 'ParserFunction', 'WikiLink',
-    'Comment', 'Parameter', 'ExtTag',
+    'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter', 'ExtTag'
 }
+
 
 class WikiText:
 
@@ -102,7 +102,6 @@ class WikiText:
             self._lststr = string  # type: MutableSequence[str]
             return
         self._lststr = [string]
-        # Todo: Can we use parse_to_spans to generate a shadow?
         byte_array = bytearray(string.encode('ascii', 'replace'))
         if self._type not in SPAN_PARSER_TYPES:
             self._type_to_spans = parse_to_spans(byte_array)
@@ -117,11 +116,11 @@ class WikiText:
             tail = byte_array[-2:]
             byte_array[-2:] = byte_array[:2] = b'__'
             type_to_spans = parse_to_spans(byte_array)
+            type_to_spans[self._type].append((0, len(string)))
+            self._type_to_spans = type_to_spans
             byte_array[:2] = head
             byte_array[-2:] = tail
             self._shadow_cache = (string, byte_array.decode())
-            type_to_spans[self._type].append((0, len(string)))
-            self._type_to_spans = type_to_spans
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -225,13 +224,13 @@ class WikiText:
                 rmstop=stop,  # old stop
             )
         # Add the newly added spans contained in the value.
-        spans_dict = self._type_to_spans
+        type_to_spans = self._type_to_spans
         for k, v in parse_to_spans(
             bytearray(value.encode('ascii', 'replace'))
         ).items():
-            spans = spans_dict[k]
+            spans_append = type_to_spans[k].append
             for s, e in v:
-                spans.append((s + start, e + start))
+                spans_append((s + start, e + start))
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
@@ -284,9 +283,9 @@ class WikiText:
         for k, v in parse_to_spans(
             bytearray(string.encode('ascii', 'replace'))
         ).items():
-            spans = spans_dict[k]
+            spans_append = spans_dict[k].append
             for s, e in v:
-                spans.append((s + index, e + index))
+                spans_append((s + index, e + index))
 
     @property
     def string(self) -> str:
@@ -297,7 +296,7 @@ class WikiText:
     @string.setter
     def string(self, newstring: str) -> None:
         """Set a new string for this object. Note the old data will be lost."""
-        self[0:] = newstring
+        self[:] = newstring
 
     @property
     def _span(self) -> Tuple[int, int]:
@@ -312,23 +311,6 @@ class WikiText:
             return self._lststr[0][s:e], '', ''
         lststr0 = self._lststr[0]
         return lststr0[s:s + index], char, lststr0[s + index + 1:e]
-
-    def _atomic_split_spans(
-        self, char: str
-    ) -> List[Tuple[int, int]]:
-        """Like _not_in_atomic_subspans_split but return spans."""
-        shadow = self._shadow
-        ss, se = self._span
-        results = []
-        results_append = results.append
-        findstart = 0
-        while True:
-            index = shadow.find(char, findstart)
-            if index == -1:
-                results_append((ss + findstart, se))
-                return results
-            results_append((ss + findstart, ss + index))
-            findstart = index + 1
 
     def _in_atomic_subspans_factory(
         self, ss: int, se: int
@@ -376,7 +358,7 @@ class WikiText:
         return index_in_spans
 
     def _gen_subspan_indices(self, type_: str):
-        """Yield all the subspan indices including self._span."""
+        """Yield all the sub-span indices including self._span."""
         s, e = self._span
         for i, (ss, ee) in enumerate(self._type_to_spans[type_]):
             # Include self._span

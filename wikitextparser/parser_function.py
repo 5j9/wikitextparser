@@ -3,8 +3,18 @@
 
 from typing import List
 
+import regex
+
 from .wikitext import SubWikiText
 from .argument import Argument
+
+
+BAR_SPLITS_FULLMATCH = regex.compile(
+    r'{{'
+    r'[^:|]*'  # name
+    r'(?<arg>:[^|]*)?(?<arg>\|[^|]*)*'
+    r'}}'
+).fullmatch
 
 
 class ParserFunction(SubWikiText):
@@ -14,34 +24,24 @@ class ParserFunction(SubWikiText):
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        barsplits = self._atomic_split_spans('|')
         arguments = []
-        spans = self._type_to_spans
-        lststr = self._lststr
-        typeindex = 'pfa' + str(self._index)
-        if typeindex not in spans:
-            spans[typeindex] = []
-        aspans = spans[typeindex]
-        # remove the final '}}' from the last argument.
-        barsplits[-1] = (barsplits[-1][0], barsplits[-1][1] - 2)
-        # first argument
-        aspan = barsplits.pop(0)
-        aspan = (aspan[0] + self.string.find(':'), aspan[1])
-        if aspan not in aspans:
-            aspans.append(aspan)
-        arguments.append(
-            Argument(lststr, spans, aspans.index(aspan), typeindex)
-        )
-        # the rest of the arguments (similar to templates)
-        if barsplits:
-            for aspan in barsplits:
-                # include the the starting '|'
-                aspan = (aspan[0] - 1, aspan[1])
-                if aspan not in aspans:
-                    aspans.append(aspan)
-                arguments.append(
-                    Argument(lststr, spans, aspans.index(aspan), typeindex)
-                )
+        split_spans = BAR_SPLITS_FULLMATCH(self._shadow).spans('arg')
+        if split_spans:
+            arguments_append = arguments.append
+            type_to_spans = self._type_to_spans
+            type_ = 'pfa' + str(self._index)
+            lststr = self._lststr
+            arg_spans = type_to_spans.setdefault(type_, [])
+            arg_spans_append = arg_spans.append
+            span_to_index_get = {s: i for i, s in enumerate(arg_spans)}.get
+            ss = self._span[0]
+            for s, e in split_spans:
+                span = ss + s, ss + e
+                index = span_to_index_get(span)
+                if index is None:
+                    index = len(arg_spans)
+                    arg_spans_append(span)
+                arguments_append(Argument(lststr, type_to_spans, index, type_))
         return arguments
 
     @property
