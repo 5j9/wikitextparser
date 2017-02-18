@@ -35,7 +35,7 @@ INVALID_TL_NAME_FINDITER = regex_compile(
     VERBOSE,
 ).finditer
 TEMPLATE_NOT_PARAM_FINDITER = regex_compile(
-    (r''' %s (?!\})  |  (?<!{) %s ''' % (
+    (r'%s (?!\})  |  (?<!{) %s' % (
         TEMPLATE_PATTERN,
         TEMPLATE_PATTERN,
     )).encode(),
@@ -409,14 +409,6 @@ def parse_to_spans_innerloop(
             for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 byte_array[ms:me] = (me - ms) * b'_'
-        # Todo: tests won't fail if start and end are removed.
-        i = byte_array.rfind(125, start, end)  # 125 == ord('}')
-        if i != -1:
-            byte_array[i:end] = byte_array[i:end].replace(b'{', b'_')
-        # Todo: tests won't fail if start and end are removed.
-        i = byte_array.find(123, start, end)  # 123 == ord('{')
-        if i != -1:
-            byte_array[start:i] = byte_array[start:i].replace(b'}', b'_')
         ms = None
         # Template parameters
         match = True
