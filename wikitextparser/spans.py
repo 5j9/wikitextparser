@@ -14,23 +14,17 @@ INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 TEMPLATE_PATTERN = (
     r'''
     \{\{
-    (?>\s*[^%1s]*\s*)
-    (?>
-        \|(?>[^{}]*)\}\}
-        |
-        \}\}
-    )
+    (?>\s*[^%1s]*\s*)  # name
+    (?>\|[^{}]*)?  # optional args
+    \}\}
     ''' % INVALID_TITLE_CHARS_PATTERN
 )
 INVALID_TL_NAME_FINDITER = regex_compile(
     rb'''
     \{\{
-    (?>[\s_]*)
-    (?>
-        \|(?>[^{}]*)\}\}
-        |
-        \}\}
-    )
+    (?>[\s_]*) # invalid name
+    (?>\|[^{}]*)?  # optional args
+    \}\}
     ''',
     VERBOSE,
 ).finditer
@@ -42,7 +36,7 @@ TEMPLATE_NOT_PARAM_FINDITER = regex_compile(
     VERBOSE,
 ).finditer
 # Parameters
-TEMPLATE_PARAMETER_FINDITER = regex_compile(
+PARAMETER_FINDITER = regex_compile(
     rb'''
     \{\{\{
     (?>[^{}]*)
@@ -414,7 +408,7 @@ def parse_to_spans_innerloop(
         match = True
         while match:
             match = False
-            for match in TEMPLATE_PARAMETER_FINDITER(byte_array, start, end):
+            for match in PARAMETER_FINDITER(byte_array, start, end):
                 mspan = match.span()
                 parameter_spans_append(mspan)
                 ms, me = mspan
