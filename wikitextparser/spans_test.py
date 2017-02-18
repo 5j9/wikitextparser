@@ -3,7 +3,7 @@
 
 import unittest
 
-import spans
+from wikitextparser.spans import PARSER_FUNCTION_FINDITER, parse_to_spans
 import wikitextparser as wtp
 
 
@@ -211,7 +211,7 @@ class Spans(unittest.TestCase):
         self.assertEqual('1', t2.arguments[0].name)
 
     def test_parser_function_regex(self):
-        finditer = spans.PARSER_FUNCTION_FINDITER
+        finditer = PARSER_FUNCTION_FINDITER
         parser_functions = (
             # Technical metadata variables
             b'{{PROTECTIONLEVEL:action}}',
@@ -315,6 +315,12 @@ class Spans(unittest.TestCase):
         self.assertEqual(
             [(5, 10)],
             wtp.WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink'],
+        )
+
+    def test_single_brace_in_tl(self):
+        self.assertEqual(
+            [(0, 12)],
+            parse_to_spans(bytearray(b'{{text|i}n}}'))['Template'],
         )
 
 
