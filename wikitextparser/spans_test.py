@@ -323,6 +323,12 @@ class Spans(unittest.TestCase):
             parse_to_spans(bytearray(b'{{text|i}n}}'))['Template'],
         )
 
+    def test_single_brace_after_first_tl_removal(self):
+        self.assertEqual(
+            [(7, 16), (0, 20)],
+            parse_to_spans(bytearray(b'{{text|{{text|}}} }}'))['Template'],
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
