@@ -329,6 +329,14 @@ class Spans(unittest.TestCase):
             parse_to_spans(bytearray(b'{{text|{{text|}}} }}'))['Template'],
         )
 
+    def test_parse_inner_contents_of_wikilink_inside_ref(self):
+        self.assertEqual(
+            [(7, 20)],
+            parse_to_spans(bytearray(
+                b'<ref>[[{{text|link}}]]</ref>'
+            ))['Template'],
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

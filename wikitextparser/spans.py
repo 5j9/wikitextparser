@@ -356,7 +356,6 @@ def parse_subbytes_to_spans(
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
-            # Todo: the following call can be disabled without any test failure
             # See if the other WIKILINK_FINDITER call can help.
             parse_to_spans_innerloop(
                 byte_array, ms, me,
