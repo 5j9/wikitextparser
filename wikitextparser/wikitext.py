@@ -34,14 +34,14 @@ EXTERNALLINK_FINDITER = regex_compile(
 # Todo: Perhaps the regular expressions for sections can be improved by using
 # the features of the regex module.
 # Sections
-SECTION_HEADER_REGEX = regex_compile(r'^=[^\n]+?= *$', MULTILINE)
+SECTION_HEADER_PATTERN = r'^=[^\n]+?= *$'
 LEAD_SECTION_MATCH = regex_compile(
-    r'.*?(?=%s|\Z)' % SECTION_HEADER_REGEX.pattern,
+    r'.*?(?=%s|\Z)' % SECTION_HEADER_PATTERN,
     DOTALL | MULTILINE,
 ).match
 SECTION_FINDITER = regex_compile(
     r'%s.*?\n*(?=%s|\Z)'
-    % (SECTION_HEADER_REGEX.pattern, SECTION_HEADER_REGEX.pattern),
+    % (SECTION_HEADER_PATTERN, SECTION_HEADER_PATTERN),
     DOTALL | MULTILINE,
 ).finditer
 # Tables
