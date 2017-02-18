@@ -390,19 +390,20 @@ def parse_to_spans_innerloop(
     and n times for each of the n WikiLinks.
 
     """
-    ms = True
+    # Remove empty double braces
+    match = True  # type: Any
+    while match:
+        match = False
+        for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
+            ms, me = match.span()
+            byte_array[ms:me] = (me - ms) * b'_'
+    else:
+        ms = True
     while ms is not None:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
         for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
             byte_array[m.start()] = 95  # 95 = ord('_')
-        # Also remove empty double braces
-        match = True  # type: Any
-        while match:
-            match = False
-            for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
-                ms, me = match.span()
-                byte_array[ms:me] = (me - ms) * b'_'
         ms = None
         # Template parameters
         match = True
@@ -413,7 +414,6 @@ def parse_to_spans_innerloop(
                 parameter_spans_append(mspan)
                 ms, me = mspan
                 byte_array[ms:me] = b'_' * (me - ms)
-        # Templates
         match = True
         while match:
             # Parser functions
@@ -424,6 +424,7 @@ def parse_to_spans_innerloop(
                     pfunction_spans_append(mspan)
                     ms, me = mspan
                     byte_array[ms:me] = b'_' * (me - ms)
+            # Templates
             # match is False at this point
             for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array, start, end):
                 mspan = match.span()
