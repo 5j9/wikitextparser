@@ -1,16 +1,16 @@
 """"Define the Template class."""
 
 
-import regex
+import re, regex
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
 from .wikitext import SubWikiText
 from .argument import Argument
 
 
-COMMENT_SUB = regex.compile(
+COMMENT_SUB = re.compile(
     r'<!--.*?-->',
-    regex.DOTALL,
+    re.DOTALL,
 ).sub
 
 BAR_SPLITS_FULLMATCH = regex.compile(

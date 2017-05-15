@@ -109,7 +109,7 @@ class WikiText:
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
-            # string with '_'. OTH, we can't modifiy before passing because
+            # string with '_'. OTH, we can't modify before passing because
             # the generated _type_to_spans will lack self._span.
             # As a workaround we can add the missed span after parsing.
             head = byte_array[:2]

@@ -5,6 +5,7 @@ from typing import Dict, List, Tuple, Callable, Any, Optional
 
 from regex import VERBOSE, DOTALL, IGNORECASE
 from regex import compile as regex_compile
+from re import compile as re_compile
 
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
@@ -236,7 +237,7 @@ EXTENSION_TAGS_FINDITER = regex_compile((
     )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
-COMMENT_FINDITER = regex_compile(rb'<!--.*?-->', DOTALL).finditer
+COMMENT_FINDITER = re_compile(rb'<!--.*?-->', DOTALL).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
     rb'''
     (?<!{) { (?=[^{|])
