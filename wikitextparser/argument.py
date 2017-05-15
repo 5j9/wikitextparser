@@ -2,6 +2,7 @@
 
 
 from .wikitext import SubWikiText
+from .spans import parse_to_spans
 
 
 class Argument(SubWikiText):
@@ -26,28 +27,22 @@ class Argument(SubWikiText):
             return pipename[1:]
         # positional argument
         position = 1
-        lststr0_find = self._lststr[0].find
+        lststr0 = self._lststr[0]
         for ss, se in self._type_to_spans[self._type][:self._index]:
-            # Make sure the span is not closed.
             if ss == -1:
+                # This argument span is closed.
                 continue
-            equal_index = lststr0_find('=', ss, se)
-            if equal_index == -1:
-                # A preceding positional argument is detected.
-                position += 1
-                continue
-            # Todo: cache the results of the following code?
-            in_subspans = self._in_atomic_subspans_factory(ss, se)
-            while equal_index != -1:
-                if not in_subspans(equal_index):
-                    # This is a keyword argument
-                    break
-                # We don't care for this kind of equal sign.
-                # Look for the next one.
-                equal_index = lststr0_find('=', equal_index + 1, se)
-            else:
-                # All the equal signs where inside a subspan.
-                position += 1
+            arg_str = lststr0[ss:se]
+            if '=' in arg_str:
+                # The argument may is still be positional if the equal sign is
+                # inside an atomic sub-spans.
+                byte_array = bytearray(arg_str.encode('ascii', 'replace'))
+                parse_to_spans(byte_array)  # Remove sub-spans from byte_array
+                if '=' in byte_array.decode():
+                    # This is a keyword argument.
+                    continue
+            # This is a preceding positional argument.
+            position += 1
         return str(position)
 
     @name.setter

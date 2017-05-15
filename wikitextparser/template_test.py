@@ -282,5 +282,6 @@ class SetArg(unittest.TestCase):
         t.set_arg(None, 'v')
         self.assertEqual('{{t|v}}', t.string)
 
+
 if __name__ == '__main__':
     unittest.main()

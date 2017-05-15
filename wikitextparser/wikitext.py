@@ -304,58 +304,13 @@ class WikiText:
         return 0, len(self._lststr[0])
 
     def _atomic_partition(self, char: str) -> Tuple[str, str, str]:
-        """Partition self.string where `char`'s not in atomic subspans."""
+        """Partition self.string where `char`'s not in atomic sub-spans."""
         s, e = self._span
         index = self._shadow.find(char)
         if index == -1:
             return self._lststr[0][s:e], '', ''
         lststr0 = self._lststr[0]
         return lststr0[s:s + index], char, lststr0[s + index + 1:e]
-
-    def _in_atomic_subspans_factory(
-        self, ss: int, se: int
-    ) -> Callable[[int], bool]:
-        """Return a function that can tell if an index is in atomic subspans.
-
-        Atomic sub-spans are those which are parsed separately. They currently
-        include the following:
-            (
-                'Template', 'Parameter', 'ParserFunction',
-                'Wikilink', 'Comment', 'ExtTag'
-            )
-
-        `ss` and `se` indicate the spanstart and spanend of the current span.
-            If not specified, use self._span.
-
-        The resultant function will mostly be used for splitting template
-        arguments with "|" or "=" as a separator.
-
-        The following functions depend on this function:
-            * _atomic_partition
-            * _not_in_atomic_subspans_split
-            * _atomic_split_spans
-
-        """
-        subspans = []
-        types_to_spans = self._type_to_spans
-        for key in (
-            'Template', 'Parameter', 'ParserFunction',
-            'WikiLink', 'Comment', 'ExtTag'
-        ):
-            for span in types_to_spans[key]:
-                if ss < span[0] and span[1] <= se:
-                    subspans.append(span)
-
-        # Define the function to be returned.
-        # Todo: index_in_spans can be cached.
-        def index_in_spans(index: int) -> bool:
-            """Return True if the given index belongs to a sub-span."""
-            for s, e in subspans:
-                if s <= index < e:
-                    return True
-            return False
-
-        return index_in_spans
 
     def _gen_subspan_indices(self, type_: str):
         """Yield all the sub-span indices including self._span."""
