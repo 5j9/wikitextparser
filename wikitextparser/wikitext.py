@@ -5,9 +5,7 @@
 # Todo: Consider using separate strings for each node.
 
 from copy import deepcopy
-from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Callable, Generator, Any
-)
+from typing import MutableSequence, Dict, List, Tuple, Union, Generator, Any
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
 from regex import compile as regex_compile
