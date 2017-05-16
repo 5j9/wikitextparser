@@ -287,7 +287,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
         extension_tag_spans_append(mspan)
         ms, me = mspan
         if match[2]:  # parsable tag extension group
-            parse_subbytes_to_spans(
+            parse_tag_extensions(
                 byte_array, ms, me,
                 wikilink_spans_append,
                 parameter_spans_append,
@@ -306,14 +306,14 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
             mspan = match.span()
             wikilink_spans_append(mspan)
             ms, me = mspan
-            parse_to_spans_innerloop(
+            parse_pm_tl_pf(
                 byte_array, ms, me,
                 parameter_spans_append,
                 parser_function_spans_append,
                 template_spans_append,
             )
             byte_array[ms:me] = b'_' * (me - ms)
-    parse_to_spans_innerloop(
+    parse_pm_tl_pf(
         byte_array, 0, None,
         parameter_spans_append,
         parser_function_spans_append,
@@ -329,7 +329,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
     }
 
 
-def parse_subbytes_to_spans(
+def parse_tag_extensions(
     byte_array: bytearray,
     start: int,
     end: int,
@@ -358,14 +358,14 @@ def parse_subbytes_to_spans(
             wikilink_spans_append(mspan)
             ms, me = mspan
             # See if the other WIKILINK_FINDITER call can help.
-            parse_to_spans_innerloop(
+            parse_pm_tl_pf(
                 byte_array, ms, me,
                 parameter_spans_append,
                 pfunction_spans_append,
                 template_spans_append,
             )
             byte_array[ms:me] = b'_' * (me - ms)
-    parse_to_spans_innerloop(
+    parse_pm_tl_pf(
         byte_array, start, end,
         parameter_spans_append,
         pfunction_spans_append,
@@ -373,7 +373,7 @@ def parse_subbytes_to_spans(
     )
 
 
-def parse_to_spans_innerloop(
+def parse_pm_tl_pf(
     byte_array: bytearray, start: int, end: Optional[int],
     parameter_spans_append: Callable,
     pfunction_spans_append: Callable,
