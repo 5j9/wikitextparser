@@ -38,7 +38,7 @@ class Argument(SubWikiText):
                 # inside an atomic sub-spans.
                 byte_array = bytearray(arg_str.encode('ascii', 'replace'))
                 parse_to_spans(byte_array)  # Remove sub-spans from byte_array
-                if '=' in byte_array.decode():
+                if b'=' in byte_array:
                     # This is a keyword argument.
                     continue
             # This is a preceding positional argument.
