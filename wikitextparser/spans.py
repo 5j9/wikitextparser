@@ -403,7 +403,7 @@ def parse_to_spans_innerloop(
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
         for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
-            byte_array[m.start()] = 95  # 95 = ord('_')
+            byte_array[m.start()] = 95  # 95 == ord('_')
         ms = None
         # Template parameters
         match = True

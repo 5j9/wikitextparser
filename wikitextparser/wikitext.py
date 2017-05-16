@@ -1036,7 +1036,7 @@ class SubWikiText(WikiText):
     def _gen_subspan_indices(
         self, _type: str=None
     ) -> Generator[int, None, None]:
-        """Yield all the subspan indices excluding self._span."""
+        """Yield all the sub-span indices excluding self._span."""
         s, e = self._span
         for i, (ss, ee) in enumerate(self._type_to_spans[_type]):
             # Do not yield self._span.
