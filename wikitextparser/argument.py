@@ -28,11 +28,16 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         lststr0 = self._lststr[0]
-        for ss, se in self._type_to_spans[self._type][:self._index]:
-            if ss == -1:
+        ss = self._span[0]
+        # Todo: if we had the index of self._span, we could only look-up
+        # the head of the self._type_to_spans.
+        for s, e in self._type_to_spans[self._type]:
+            if s == -1:
                 # This argument span is closed.
                 continue
-            arg_str = lststr0[ss:se]
+            elif ss <= s:
+                break
+            arg_str = lststr0[s:e]
             if '=' in arg_str:
                 # The argument may is still be positional if the equal sign is
                 # inside an atomic sub-spans.

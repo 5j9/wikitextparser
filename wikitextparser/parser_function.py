@@ -29,19 +29,21 @@ class ParserFunction(SubWikiText):
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            type_ = 'pfa' + str(self._index)
+            type_ = str(id(self))
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
-            span_to_index_get = {s: i for i, s in enumerate(arg_spans)}.get
-            ss = self._span[0]
+            strspan_to_span_get = {str(s): s for s in arg_spans}.get
+            parent_span = self._span
+            ss = parent_span[0]
             for s, e in split_spans:
-                span = ss + s, ss + e
-                index = span_to_index_get(span)
-                if index is None:
-                    index = len(arg_spans)
+                span = [ss + s, ss + e]
+                old_span = strspan_to_span_get(str(span))
+                if old_span is None:
                     arg_spans_append(span)
-                arguments_append(Argument(lststr, type_to_spans, index, type_))
+                else:
+                    span = old_span
+                arguments_append(Argument(lststr, type_to_spans, span, type_))
         return arguments
 
     @property

@@ -39,19 +39,22 @@ class Template(SubWikiText):
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            type_ = 'ta' + str(self._index)
+            type_ = str(id(self))
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
-            span_to_index_get = {s: i for i, s in enumerate(arg_spans)}.get
+            strspan_to_span_get = {str(s): s for s in arg_spans}.get
             ss = self._span[0]
             for s, e in split_spans:
-                span = ss + s, ss + e
-                index = span_to_index_get(span)
-                if index is None:
-                    index = len(arg_spans)
-                    arg_spans_append(span)
-                arguments_append(Argument(lststr, type_to_spans, index, type_))
+                arg_span = [ss + s, ss + e]
+                old_span = strspan_to_span_get(str(arg_span))
+                if old_span is None:
+                    arg_spans_append(arg_span)
+                else:
+                    arg_span = old_span
+                arguments_append(
+                    Argument(lststr, type_to_spans, arg_span, type_)
+                )
         return arguments
 
     @property
@@ -134,8 +137,8 @@ class Template(SubWikiText):
     def rm_first_of_dup_args(self) -> None:
         """Eliminate duplicate arguments by removing the first occurrences.
 
-        Remove first occurrences of duplicate arguments-- no matter what their
-        value is. Result of the rendered wikitext should remain the same.
+        Remove the first occurrences of duplicate arguments, regardless of
+        their value. Result of the rendered wikitext should remain the same.
         Warning: Some meaningful data may be removed from wikitext.
 
         Also see `rm_dup_args_safe` function.
@@ -145,7 +148,7 @@ class Template(SubWikiText):
         for a in reversed(self.arguments):
             name = a.name.strip()
             if name in names:
-                del a[0:len(a.string)]
+                del a[:len(a.string)]
             else:
                 names.add(name)
 

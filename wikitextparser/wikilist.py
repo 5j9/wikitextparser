@@ -37,11 +37,11 @@ class WikiList(SubWikiText):
         string: Union[str, MutableSequence[str]],
         pattern: str,
         _match: Match=None,
-        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
-        _index: int=None,
+        _type_to_spans: Dict[str, List[List[int]]]=None,
+        _span: List[int]=None,
         _type: str=None,
     ) -> None:
-        super().__init__(string, _type_to_spans, _index, _type)
+        super().__init__(string, _type_to_spans, _span, _type)
         self.pattern = pattern
         if _match:
             self._cached_match = _match

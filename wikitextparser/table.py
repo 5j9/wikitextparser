@@ -185,11 +185,9 @@ class Table(SubWikiTextWithAttrs):
         ss = self._span[0]
         match_table = self._match_table
         shadow = self._shadow
-        _type = 'tc' + str(self._index)
+        type_ = str(id(self))
         type_to_spans = self._type_to_spans
-        if _type not in type_to_spans:
-            type_to_spans[_type] = []
-        spans = type_to_spans[_type]
+        spans = type_to_spans.setdefault(type_, [])
         table_cells = []  # type: List[List[Cell]]
         table_attrs = []  # type: List[List[Dict[str, str]]]
         attrs_match = None
@@ -203,7 +201,7 @@ class Table(SubWikiTextWithAttrs):
                 row_attrs_append = row_attrs.append
             for m in match_row:
                 ms, me = m.span()
-                cell_span = (ss + ms, ss + me)
+                cell_span = [ss + ms, ss + me]
                 if span:
                     s, e = m.span('attrs')
                     # Note: ATTRS_MATCH always matches, even to empty strings.
@@ -214,20 +212,18 @@ class Table(SubWikiTextWithAttrs):
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
                     )))
-                index = next(
-                    (i for i, s in enumerate(spans) if s == cell_span),
-                    None
-                )
-                if index is None:
-                    index = len(spans)
+                old_span = next((s for s in spans if s == cell_span), None)
+                if old_span is None:
                     spans.append(cell_span)
+                else:
+                    cell_span = old_span
                 row_cells.append(
                     Cell(
                         self._lststr,
                         header,
                         type_to_spans,
-                        index,
-                        _type,
+                        cell_span,
+                        type_,
                         m,
                         attrs_match,
                     )

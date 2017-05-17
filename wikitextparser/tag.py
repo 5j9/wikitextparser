@@ -235,12 +235,13 @@ class Tag(SubWikiTextWithAttrs):
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
-        _index: int=None,
+        _type_to_spans: Dict[str, List[List[int]]]=None,
+        _span: List[int]=None,
         _type: str='Tag',
     ) -> None:
         """Initialize the Tag object."""
-        super().__init__(string, _type_to_spans, _index, _type)
+        # Todo: This method can be removed?
+        super().__init__(string, _type_to_spans, _span, _type)
 
     @property
     def _match(self) -> Any:
@@ -308,5 +309,6 @@ class Tag(SubWikiTextWithAttrs):
         span = self._match.span('contents')
         spans = self._type_to_spans
         swt_spans = spans.setdefault('SubWikiText', [span])
-        index = next((i for i, s in enumerate(swt_spans) if s == span))
-        return SubWikiText(self._lststr, spans, index)
+        return SubWikiText(
+            self._lststr, spans, next(s for s in swt_spans if s == span)
+        )
