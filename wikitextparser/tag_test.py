@@ -90,7 +90,7 @@ class Tag(unittest.TestCase):
         t.contents = 'n'
         self.assertEqual(t.string, '<t>n</t>')
         t = wtp.Tag('<t/>')
-        self.assertEqual(t.contents, None)
+        self.assertEqual(t.contents, '')
         t.contents = 'n'
         self.assertEqual(t.string, '<t>n</t>')
 

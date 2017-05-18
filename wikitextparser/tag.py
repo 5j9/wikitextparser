@@ -278,8 +278,6 @@ class Tag(SubWikiTextWithAttrs):
     def contents(self) -> Optional[str]:
         """Return tag contents."""
         s, e = self._match.span('contents')
-        if s == -1:
-            return None
         return self.string[s:e]
 
     @contents.setter
