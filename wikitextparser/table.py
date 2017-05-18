@@ -185,7 +185,7 @@ class Table(SubWikiTextWithAttrs):
         ss = self._span[0]
         match_table = self._match_table
         shadow = self._shadow
-        type_ = str(id(self))
+        type_ = id(self)
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault(type_, [])
         table_cells = []  # type: List[List[Cell]]

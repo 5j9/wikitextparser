@@ -39,7 +39,7 @@ class Template(SubWikiText):
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            type_ = str(id(self))
+            type_ = id(self)
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
