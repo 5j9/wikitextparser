@@ -312,7 +312,7 @@ class WikiText:
         lststr0 = self._lststr[0]
         return lststr0[s:s + index], char, lststr0[s + index + 1:e]
 
-    def _gen_subspans(self, type_: str) -> List[int]:
+    def _gen_subspans(self, type_: str) -> Generator[List[int], None, None]:
         """Yield all the sub-span including self._span."""
         s, e = self._span
         for span in self._type_to_spans[type_]:
@@ -1022,7 +1022,7 @@ class SubWikiText(WikiText):
         string: Union[str, MutableSequence[str]],
         _type_to_spans: Optional[Dict[str, List[List[int]]]]=None,
         _span: Optional[List[int]]=None,
-        _type: Optional[str]=None,
+        _type: Optional[Union[str, int]]=None,
     ) -> None:
         """Initialize the object.
 
@@ -1037,7 +1037,7 @@ class SubWikiText(WikiText):
 
         # _type_to_spans and _span are either both None or not None.
         if _type_to_spans is None and _type not in SPAN_PARSER_TYPES:
-            _type_to_spans= self._type_to_spans
+            _type_to_spans = self._type_to_spans
             span = [0, len(string)]
             _type_to_spans[_type] = [span]
             self._span = span
