@@ -187,9 +187,7 @@ class Table(SubWikiTextWithAttrs):
         shadow = self._shadow
         _type = 'tc' + str(self._index)
         type_to_spans = self._type_to_spans
-        if _type not in type_to_spans:
-            type_to_spans[_type] = []
-        spans = type_to_spans[_type]
+        spans = type_to_spans.setdefault(_type, [])
         table_cells = []  # type: List[List[Cell]]
         table_attrs = []  # type: List[List[Dict[str, str]]]
         attrs_match = None
