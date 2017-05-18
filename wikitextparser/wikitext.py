@@ -3,6 +3,7 @@
 
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using separate strings for each node.
+# Todo: Delete keys of type_to_spans upon object destruction.
 
 from copy import deepcopy
 from typing import (
@@ -324,11 +325,10 @@ class WikiText:
         """Close all subspans of (start, stop)."""
         ss, se = self._span
         for type_spans in self._type_to_spans.values():
-            for span in type_spans:
-                s, e = span
+            len_type_spans = len(type_spans)
+            for i, (s, e) in enumerate(reversed(type_spans)):
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    # Todo: Only one point needs to be -1.
-                    span[0] = span[1] = -1
+                    type_spans.pop(len_type_spans - i - 1)[:] = -1, -1
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -342,15 +342,15 @@ class WikiText:
         # Note: No span should be removed from _type_to_spans.
         rmlength = rmstop - rmstart
         for t, spans in self._type_to_spans.items():
-            for span in spans:
+            spans_len = len(spans)
+            for i, span in enumerate(reversed(spans)):
                 s, e = span
                 if e <= rmstart:
                     # s <= e <= rmstart <= rmstop
                     continue
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
-                    span[0] = s - rmlength
-                    span[1] = e - rmlength
+                    span[:] = s - rmlength, e - rmlength
                     continue
                 if rmstart <= s:
                     # s needs to be changed.
@@ -358,11 +358,10 @@ class WikiText:
                     # therefore the new s should be located at rmstart.
                     if rmstop >= e:
                         # rmstart <= s <= e < rmstop
-                        span[0] = span[1] = -1
+                        spans.pop(spans_len - 1 - i)[:] = -1, -1
                         continue
                     # rmstart < s <= rmstop <= e
-                    span[0] = rmstart
-                    span[1] = e - rmlength
+                    span[:] = rmstart, e - rmlength
                     continue
                 # From the previous comparison we know that s is before
                 # the rmstart; so s needs no change.
@@ -385,8 +384,7 @@ class WikiText:
                     estart == s != ss and e != se
                 ):
                     # Added part is before the span
-                    span[0] = s + elength
-                    span[1] = e + elength
+                    span[:] = s + elength, e + elength
                 elif s < estart < e or (
                     # At the end of selfspan
                     estart == s == ss and e == se

@@ -32,10 +32,7 @@ class Argument(SubWikiText):
         # Todo: if we had the index of self._span, we could only look-up
         # the head of the self._type_to_spans.
         for s, e in self._type_to_spans[self._type]:
-            if s == -1:
-                # This argument span is closed.
-                continue
-            elif ss <= s:
+            if s >= ss:
                 break
             arg_str = lststr0[s:e]
             if '=' in arg_str:
