@@ -747,11 +747,11 @@ class WikiText:
             return external_links
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
-        span_tuple_to_span_get = {tuple(s): s for s in spans}.get
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         for m in EXTERNALLINK_FINDITER(self.string):
             s, e = m.span()
             span = [s + ss, e + ss]
-            old_span = span_tuple_to_span_get(tuple(span))
+            old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)
             else:
@@ -800,11 +800,11 @@ class WikiText:
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        span_tuple_to_span_get = {tuple(s): s for s in section_spans}.get
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in section_spans}.get
         # Lead section
         s, e = LEAD_SECTION_MATCH(string).span()
         span = [s + ss, e + ss]
-        old_span = span_tuple_to_span_get(tuple(span))
+        old_span = span_tuple_to_span_get((span[0], span[1]))
         if old_span is None:
             spans_append(span)
         else:
@@ -816,7 +816,7 @@ class WikiText:
         for m in SECTION_FINDITER(string):
             s, e = m.span()
             span = [s + ss, e + ss]
-            old_span = span_tuple_to_span_get(tuple(span))
+            old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)
             else:
@@ -858,7 +858,7 @@ class WikiText:
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
-        span_tuple_to_span_get = {tuple(s): s for s in spans}.get
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         m = True
         while m:
             m = False
@@ -866,7 +866,7 @@ class WikiText:
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
                 span = [ss + ms + len(m[1]), ss + me]
-                old_span = span_tuple_to_span_get(tuple(span))
+                old_span = span_tuple_to_span_get((span[0], span[1]))
                 if old_span is None:
                     spans.append(span)
                 else:
@@ -908,7 +908,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
         spans_append = spans.append
-        span_tuple_to_span_get = {tuple(s): s for s in spans}.get
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         patterns = ('\#', '\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         for pattern in patterns:
@@ -920,7 +920,7 @@ class WikiText:
             for m in list_regex.finditer(self._shadow):
                 ms, me = m.span()
                 span = [ss + ms, ss + me]
-                old_span = span_tuple_to_span_get(tuple(span))
+                old_span = span_tuple_to_span_get((span[0], span[1]))
                 if old_span is None:
                     spans_append(span)
                 else:
@@ -972,7 +972,7 @@ class WikiText:
                 [m for m in START_TAG_FINDITER(shadow)]
             )
         spans = type_to_spans.setdefault('Tag', [])
-        span_tuple_to_span_get = {tuple(s): s for s in spans}.get
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         spans_append = spans.append
         for start_match in reversed_start_matches:
             if start_match['self_closing']:
@@ -1000,7 +1000,7 @@ class WikiText:
                     # Assume start-only tag.
                     s, e = start_match.span()
                     span = [ss + s, ss + e]
-            old_span = span_tuple_to_span_get(tuple(span))
+            old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)
             else:

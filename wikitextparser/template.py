@@ -43,11 +43,11 @@ class Template(SubWikiText):
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
-            span_tuple_to_span_get = {tuple(s): s for s in arg_spans}.get
+            span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
             ss = self._span[0]
             for s, e in split_spans:
                 arg_span = [ss + s, ss + e]
-                old_span = span_tuple_to_span_get(tuple(arg_span))
+                old_span = span_tuple_to_span_get((arg_span[0], arg_span[1]))
                 if old_span is None:
                     arg_spans_append(arg_span)
                 else:
