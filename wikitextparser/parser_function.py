@@ -33,12 +33,12 @@ class ParserFunction(SubWikiText):
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
-            strspan_to_span_get = {str(s): s for s in arg_spans}.get
+            span_tuple_to_span_get = {tuple(s): s for s in arg_spans}.get
             parent_span = self._span
             ss = parent_span[0]
             for s, e in split_spans:
                 span = [ss + s, ss + e]
-                old_span = strspan_to_span_get(str(span))
+                old_span = span_tuple_to_span_get(tuple(span))
                 if old_span is None:
                     arg_spans_append(span)
                 else:
