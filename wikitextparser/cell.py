@@ -1,7 +1,7 @@
 ﻿"""Define the Cell class."""
 
 
-from typing import Match, MutableSequence, Union, Dict, List, Tuple
+from typing import Match, MutableSequence, Union, Dict, List
 
 import regex
 
