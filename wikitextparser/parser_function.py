@@ -29,13 +29,13 @@ class ParserFunction(SubWikiText):
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            type_ = id(self)
+            pf_span = self._span
+            type_ = id(pf_span)
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
             span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
-            parent_span = self._span
-            ss = parent_span[0]
+            ss = pf_span[0]
             for s, e in split_spans:
                 span = [ss + s, ss + e]
                 old_span = span_tuple_to_span_get((span[0], span[1]))
