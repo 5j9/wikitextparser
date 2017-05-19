@@ -147,7 +147,7 @@ class Cell(SubWikiTextWithAttrs):
         header: bool=False,
         _type_to_spans: Dict[str, List[List[int]]]=None,
         _span: int=None,
-        _type: str=None,
+        _type: int=None,
         _match: Match=None,
         _attrs_match: Match=None,
     ) -> None:
