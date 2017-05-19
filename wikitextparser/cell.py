@@ -145,14 +145,14 @@ class Cell(SubWikiTextWithAttrs):
         self,
         string: Union[str, MutableSequence[str]],
         header: bool=False,
-        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
-        _index: int=None,
+        _type_to_spans: Dict[str, List[List[int]]]=None,
+        _span: int=None,
         _type: str=None,
         _match: Match=None,
         _attrs_match: Match=None,
     ) -> None:
         """Initialize the object."""
-        super().__init__(string, _type_to_spans, _index, _type)
+        super().__init__(string, _type_to_spans, _span, _type)
         self._header = header
         self._cached_match = _match
         self._cached_attrs_match = (

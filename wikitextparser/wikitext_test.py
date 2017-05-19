@@ -80,10 +80,10 @@ class WikiText(unittest.TestCase):
 
     def test_overwriting_template_args(self):
         t = wtp.Template('{{t|a|b|c}}')
-        a = t.arguments[-1]
-        self.assertEqual('|c', a.string)
+        c = t.arguments[-1]
+        self.assertEqual('|c', c.string)
         t.string = '{{t|0|a|b|c}}'
-        self.assertEqual('', a.string)
+        self.assertEqual('', c.string)
         self.assertEqual('0', t.get_arg('1').value)
         self.assertEqual('c', t.get_arg('4').value)
 
@@ -362,8 +362,8 @@ class Table(unittest.TestCase):
     def test_match_index_is_none(self):
         s = '{|\n| b\n|}\n'
         wt = wtp.parse(s)
-        t = wt.tables[0]
-        t.insert(0, '{|\n| a\n|}\n')
+        assert len(wt.tables) == 1
+        wt.insert(0, '{|\n| a\n|}\n')
         tables = wt.tables
         self.assertEqual(tables[0].string, '{|\n| a\n|}')
         self.assertEqual(tables[1].string, '{|\n| b\n|}')

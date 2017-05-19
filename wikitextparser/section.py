@@ -14,25 +14,18 @@ class Section(WikiText):
 
     """Create a new Section object."""
 
+    _type = 'Section'
+
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Dict[str, List[Tuple[int, int]]]=None,
-        _index: int=None,
+        _type_to_spans: Dict[str, List[List[int]]]=None,
+        _span: List[int]=None,
     ) -> None:
         """Initialize the Table object."""
         super().__init__(string, _type_to_spans)
-        self._type = 'Section'
-        if _type_to_spans is None:
-            self._type_to_spans['Section'] = [(0, len(string))]
-            self._index = 0
-        else:
-            self._index = _index
-
-    @property
-    def _span(self) -> Tuple[int, int]:
-        """Return the span of self."""
-        return self._type_to_spans[self._type][self._index]
+        if _span:
+            self._span = _span
 
     @property
     def level(self) -> int:
@@ -85,7 +78,7 @@ class Section(WikiText):
         level = self.level
         contents = self.contents
         if level == 0:
-            self[0:len(contents)] = newcontents
+            self[:len(contents)] = newcontents
         else:
             title = self.title
             start = level + len(title) + level + 1

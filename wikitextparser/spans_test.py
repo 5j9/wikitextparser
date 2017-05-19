@@ -23,9 +23,9 @@ class Spans(unittest.TestCase):
     def test_template_in_template(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
         template_spans = wt._type_to_spans['Template']
-        self.assertIn((7, 13), template_spans)
-        self.assertIn((14, 20), template_spans)
-        self.assertIn((0, 22), template_spans)
+        self.assertIn([7, 13], template_spans)
+        self.assertIn([14, 20], template_spans)
+        self.assertIn([0, 22], template_spans)
 
     def test_textmixed_multitemplate(self):
         wt = wtp.WikiText(
@@ -34,27 +34,27 @@ class Spans(unittest.TestCase):
         )
         self.assertEqual(
             wt._type_to_spans['Template'],
-            [(12, 18), (19, 25), (39, 45), (46, 52), (5, 27), (32, 54)],
+            [[12, 18], [19, 25], [39, 45], [46, 52], [5, 27], [32, 54]],
         )
 
     def test_multiline_mutitemplate(self):
         wt = wtp.WikiText("""{{cite\n    |{{t1}}\n    |{{t2}}}}""")
         self.assertEqual(
             wt._type_to_spans['Template'],
-            [(12, 18), (24, 30), (0, 32)],
+            [[12, 18], [24, 30], [0, 32]],
         )
 
     def test_lacks_ending_braces(self):
         wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}""")
         self.assertEqual(
-            [(7, 13), (14, 20)],
+            [[7, 13], [14, 20]],
             wt._type_to_spans['Template'],
         )
 
     def test_lacks_starting_braces(self):
         wt = wtp.WikiText("""cite|{{t1}}|{{t2}}}}""")
         self.assertEqual(
-            [(5, 11), (12, 18)],
+            [[5, 11], [12, 18]],
             wt._type_to_spans['Template'],
         )
 
@@ -68,22 +68,22 @@ class Spans(unittest.TestCase):
     def test_template_inside_parameter(self):
         wt = wtp.WikiText("""{{{1|{{colorbox|yellow|text1}}}}}""")
         self.assertEqual(
-            [(5, 30)],
+            [[5, 30]],
             wt._type_to_spans['Template'],
         )
         self.assertEqual(
-            [(0, 33)],
+            [[0, 33]],
             wt._type_to_spans['Parameter'],
         )
 
     def test_parameter_inside_template(self):
         wt = wtp.WikiText("""{{colorbox|yellow|{{{1|defualt_text}}}}}""")
         self.assertEqual(
-            [(0, 40)],
+            [[0, 40]],
             wt._type_to_spans['Template'],
         )
         self.assertEqual(
-            [(18, 38)],
+            [[18, 38]],
             wt._type_to_spans['Parameter'],
         )
 
@@ -97,7 +97,7 @@ class Spans(unittest.TestCase):
     def test_unicode_template(self):
         wt = wtp.WikiText('{{\nرنگ\n|متن}}')
         self.assertEqual(
-            [(0, 13)],
+            [[0, 13]],
             wt._type_to_spans['Template'],
         )
 
@@ -111,7 +111,7 @@ class Spans(unittest.TestCase):
             '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
         )
         self.assertEqual(
-            [(0, 25)],
+            [[0, 25]],
             wt._type_to_spans['Template'],
         )
 
@@ -125,14 +125,14 @@ class Spans(unittest.TestCase):
     def test_unicode_parser_function(self):
         wt = wtp.WikiText('{{#اگر:|فلان}}')
         self.assertEqual(
-            [(0, 14)],
+            [[0, 14]],
             wt._type_to_spans['ParserFunction'],
         )
 
     def test_unicode_parameters(self):
         wt = wtp.WikiText('{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')
         self.assertEqual(
-            [(9, 27), (0, 30)],
+            [[9, 27], [0, 30]],
             wt._type_to_spans['Parameter'],
         )
 
@@ -141,7 +141,7 @@ class Spans(unittest.TestCase):
             "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 [[Wikilink2]].]]"
         )
         self.assertEqual(
-            [(30, 43), (49, 62), (0, 65)],
+            [[30, 43], [49, 62], [0, 65]],
             parsed._type_to_spans['WikiLink'],
         )
 
@@ -313,25 +313,25 @@ class Spans(unittest.TestCase):
 
     def test_wikilinks_inside_exttags(self):
         self.assertEqual(
-            [(5, 10)],
+            [[5, 10]],
             wtp.WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink'],
         )
 
     def test_single_brace_in_tl(self):
         self.assertEqual(
-            [(0, 12)],
+            [[0, 12]],
             parse_to_spans(bytearray(b'{{text|i}n}}'))['Template'],
         )
 
     def test_single_brace_after_first_tl_removal(self):
         self.assertEqual(
-            [(7, 16), (0, 20)],
+            [[7, 16], [0, 20]],
             parse_to_spans(bytearray(b'{{text|{{text|}}} }}'))['Template'],
         )
 
     def test_parse_inner_contents_of_wikilink_inside_ref(self):
         self.assertEqual(
-            [(7, 20)],
+            [[7, 20]],
             parse_to_spans(bytearray(
                 b'<ref>[[{{text|link}}]]</ref>'
             ))['Template'],

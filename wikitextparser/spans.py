@@ -1,7 +1,7 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-from typing import Dict, List, Tuple, Callable, Any, Optional
+from typing import Dict, List, Callable, Any, Optional
 
 from regex import VERBOSE, DOTALL, IGNORECASE
 from regex import compile as regex_compile
@@ -248,7 +248,7 @@ SINGLE_BRACES_FINDITER = regex_compile(
 ).finditer
 
 
-def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
+def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     """Calculate and set self._type_to_spans.
 
     The result is a dictionary containing lists of spans:
@@ -262,30 +262,27 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
     }
 
     """
-    comment_spans = []  # type: List[Tuple[int, int]]
+    comment_spans = []  # type: List[List[int, int]]
     comment_spans_append = comment_spans.append
-    extension_tag_spans = []  # type: List[Tuple[int, int]]
+    extension_tag_spans = []  # type: List[List[int, int]]
     extension_tag_spans_append = extension_tag_spans.append
-    wikilink_spans = []  # type: List[Tuple[int, int]]
+    wikilink_spans = []  # type: List[List[int, int]]
     wikilink_spans_append = wikilink_spans.append
-    parameter_spans = []  # type: List[Tuple[int, int]]
+    parameter_spans = []  # type: List[List[int, int]]
     parameter_spans_append = parameter_spans.append
-    parser_function_spans = []  # type: List[Tuple[int, int]]
+    parser_function_spans = []  # type: List[List[int, int]]
     parser_function_spans_append = parser_function_spans.append
-    template_spans = []  # type: List[Tuple[int, int]]
+    template_spans = []  # type: List[List[int, int]]
     template_spans_append = template_spans.append
     # HTML <!-- comments -->
     for match in COMMENT_FINDITER(byte_array):
-        # Todo: Parse comments?
-        mspan = match.span()
-        comment_spans_append(mspan)
-        ms, me = mspan
+        ms, me = match.span()
+        comment_spans_append([ms, me])
         byte_array[ms:me] = b' ' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
-        mspan = match.span()
-        extension_tag_spans_append(mspan)
-        ms, me = mspan
+        ms, me = match.span()
+        extension_tag_spans_append([ms, me])
         if match[2]:  # parsable tag extension group
             parse_tag_extensions(
                 byte_array, ms, me,
@@ -303,9 +300,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[Tuple[int, int]]]:
     while match:
         match = False
         for match in WIKILINK_FINDITER(byte_array):
-            mspan = match.span()
-            wikilink_spans_append(mspan)
-            ms, me = mspan
+            ms, me = match.span()
+            wikilink_spans_append([ms, me])
             parse_pm_tl_pf(
                 byte_array, ms, me,
                 parameter_spans_append,
@@ -354,9 +350,8 @@ def parse_tag_extensions(
     while match:
         match = False
         for match in WIKILINK_FINDITER(byte_array, start, end):
-            mspan = match.span()
-            wikilink_spans_append(mspan)
-            ms, me = mspan
+            ms, me = match.span()
+            wikilink_spans_append([ms, me])
             # See if the other WIKILINK_FINDITER call can help.
             parse_pm_tl_pf(
                 byte_array, ms, me,
@@ -410,9 +405,8 @@ def parse_pm_tl_pf(
         while match:
             match = False
             for match in PARAMETER_FINDITER(byte_array, start, end):
-                mspan = match.span()
-                parameter_spans_append(mspan)
-                ms, me = mspan
+                ms, me = match.span()
+                parameter_spans_append([ms, me])
                 byte_array[ms:me] = b'_' * (me - ms)
         match = True
         while match:
@@ -420,14 +414,12 @@ def parse_pm_tl_pf(
             while match:
                 match = False
                 for match in PARSER_FUNCTION_FINDITER(byte_array, start, end):
-                    mspan = match.span()
-                    pfunction_spans_append(mspan)
-                    ms, me = mspan
+                    ms, me = match.span()
+                    pfunction_spans_append([ms, me])
                     byte_array[ms:me] = b'_' * (me - ms)
             # Templates
             # match is False at this point
             for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array, start, end):
-                mspan = match.span()
-                template_spans_append(mspan)
-                ms, me = mspan
+                ms, me = match.span()
+                template_spans_append([ms, me])
                 byte_array[ms:me] = b'_' * (me - ms)
