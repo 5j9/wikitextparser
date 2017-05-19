@@ -133,7 +133,7 @@ class WikiText:
 
     def __repr__(self) -> str:
         """Return the string representation of self."""
-        return '{0}({1})'.format(self.__class__.__name__, repr(self.string))
+        return '{0}({1})'.format(type(self).__name__, repr(self.string))
 
     def __contains__(self, value: Union[str, 'WikiText']) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
@@ -1024,13 +1024,8 @@ class SubWikiText(WikiText):
         _span: Optional[List[int]]=None,
         _type: Optional[Union[str, int]]=None,
     ) -> None:
-        """Initialize the object.
-
-        Run self._common_init.
-        Set self._span
-
-        """
-        _type = _type or self.__class__.__name__
+        """Initialize the object."""
+        _type = _type or type(self).__name__
         self._type = _type
 
         super().__init__(string, _type_to_spans)
