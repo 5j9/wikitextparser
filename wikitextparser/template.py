@@ -1,7 +1,7 @@
 """"Define the Template class."""
 
-
-import re, regex
+import re
+import regex
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
 from .wikitext import SubWikiText
