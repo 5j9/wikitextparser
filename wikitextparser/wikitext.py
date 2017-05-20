@@ -501,9 +501,11 @@ class WikiText:
                     c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
-            template_name = template.name.strip()
-            template.name = template_name
-            if ':' in template_name:
+            tl_name = template.name.strip()
+            template.name = (
+                ' ' + tl_name + ' ' if tl_name.startswith('{') else tl_name
+            )
+            if ':' in tl_name:
                 # Don't use False because we don't know for sure.
                 not_a_parser_function = None
             else:

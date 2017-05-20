@@ -420,7 +420,7 @@ class IndentLevel(unittest.TestCase):
         self.assertEqual(2, a._indent_level)
 
 
-class PrettyPrint(unittest.TestCase):
+class TestPrettyPrint(unittest.TestCase):
 
     """Test the pprint method of the WikiText class."""
 
@@ -440,11 +440,9 @@ class PrettyPrint(unittest.TestCase):
         )
 
     def test_remove_comments(self):
-        s = "{{a|<!--b=b|c=c|d=d|-->e=e}}"
-        wt = WikiText(s)
         self.assertEqual(
             '{{a\n  | e = e\n}}',
-            wt.pprint('  ', remove_comments=True),
+            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pprint('  ', True),
         )
 
     def test_first_arg_of_tag_is_whitespace_sensitive(self):
@@ -727,6 +725,14 @@ class PrettyPrint(unittest.TestCase):
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
             a.pprint(),
         )
+
+    def test_pprint_keep_separated(self):
+        """Test that `{{ {{t}} }}` is not converted to `{{{{t}}}}`.
+
+        `{{{{t}}}}` will be interpreted as a parameter with {} around it.
+
+        """
+        self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pprint())
 
 
 class Sections(unittest.TestCase):
