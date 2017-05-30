@@ -52,69 +52,68 @@ PARAMETER_FINDITER = regex_compile(
 PARSER_FUNCTION_FINDITER = regex_compile(
     rb"""
     \{\{\s*
-    (?:
-        \#[^{}\s]*
-        |
+    (?>
+        \#[^{}\s:]*
         # Variables acting like parser functions
         # Technical metadata
-        DISPLAYTITLE|
-        DEFAULT(?>CATEGORYSORT|SORTKEY|SORT)|
+        |DISPLAYTITLE
+        |DEFAULT(?>CATEGORYSORT|SORT(?:KEY)?)
         # Statistics
         # The following variables accept ":R" flag
-        NUM
+        |NUM
         (?>
             BER
             (?>
                 OF
-                (?>PAGES|ARTICLES|FILES|EDITS|VIEWS|USERS|ADMINS|ACTIVEUSERS)|
-                INGROUP
-            )|
-            INGROUP
-        )|
-        PAGESIN
-        (?:CATEGORY|CAT|NS|NAMESPACE)|
+                (?>PAGES|A(?>RTICLES|DMINS|CTIVEUSERS)|FILES|EDITS|VIEWS|USERS)
+                |INGROUP
+            )
+            |INGROUP
+        )
+        |PAGESIN
+        (?>CATEGORY|CAT|NS|NAMESPACE)
         # Page names
         # These can all take a parameter, allowing
         # specification of the page to be operated on
-        (?:
-            (?:FULL)?|
+        |(?>
             (?>
-                SUB(?:JECT)?|
-                BASE|
-                ARTICLE|
-                TALK|
-                ROOT
+                SUB(?:JECT)?
+                |BASE
+                |ARTICLE
+                |TALK
+                |ROOT
             )
+            |(?:FULL)?
         )
-        PAGENAMEE?|
+        PAGENAMEE?
         # Namespaces
         # Can take a full-page-name parameter
-        (?>
+        |NAMESPACENUMBER
+        |(?>
             NAME|SUBJECT|ARTICLE|TALK
-        )SPACEE?|
-        NAMESPACENUMBER|
+        )SPACEE?
         # Parser functions
         # Technical metadata of another page
-        PAGE(?>ID|SIZE)|
-        PROTECTION(?>LEVEL|EXPIRY)|
-        CASCADINGSOURCES|
-        REVISION(?>ID|DAY2?|MONTH1?|YEAR|TIMESTAMP|USER)|
+        |PAGE(?>ID|SIZE)
+        |PROTECTION(?>LEVEL|EXPIRY)
+        |CASCADINGSOURCES
+        |REVISION(?>ID|DAY2?|MONTH1?|YEAR|TIMESTAMP|USER)
         # URL data
-        (?>local|full|canonical)
-        url|
-        filepath|
-        (?>url|anchor)encode|
+        |(?>local|full|canonical)
+        url
+        |filepath
+        |(?>url|anchor)encode
         # Namespaces
-        nse?|
+        |nse?
         # Formatting
-        formatnum|
-        [lu]c(?:first)?|
-        pad(?>left|right)|
+        |formatnum
+        |[lu]c(?:first)?
+        |pad(?>left|right)
         # Localization
-        plural|
-        grammar|
-        gender|
-        int
+        |plural
+        |grammar
+        |gender
+        |int
     )
     :[^{}]*\}\}
     """,
