@@ -54,66 +54,77 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     \{\{\s*
     (?>
         \#[^{}\s:]*
-        # Variables acting like parser functions
-        # Technical metadata
-        |DISPLAYTITLE
-        |DEFAULT(?>CATEGORYSORT|SORT(?:KEY)?)
-        # Statistics
-        # The following variables accept ":R" flag
-        |NUM
-        (?>
-            BER
-            (?>
-                OF
-                (?>PAGES|A(?>RTICLES|DMINS|CTIVEUSERS)|FILES|EDITS|VIEWS|USERS)
+        |ARTICLE(?>PAGENAMEE?|SPACEE?)
+        |BASEPAGENAMEE?
+        |CASCADINGSOURCES
+        |D(?>
+            ISPLAYTITLE
+            |EFAULT(?>CATEGORYSORT|SORT(?:KEY)?)
+        )
+        |FULLPAGENAMEE?
+        |P(?>
+            AGE(?>
+                ID
+                |SI(?>
+                    ZE
+                    |N(?>
+                        CAT(?:EGORY)?
+                        |N(?>S|AMESPACE)
+                    )
+                )
+                |NAMEE?
+            )
+            |ROTECTION(?>LEVEL|EXPIRY)
+        )
+        |ROOTPAGENAMEE?
+        |N(?>
+            AMESPACE(?>NUMBER|E?)
+            |UM(?>
+                BER(?>
+                    OF(?>
+                        A(?>CTIVEUSERS|DMINS|RTICLES)
+                        |EDITS
+                        |FILES
+                        |PAGES
+                        |USERS
+                        |VIEWS
+                    )
+                    |INGROUP
+                )
                 |INGROUP
             )
-            |INGROUP
         )
-        |PAGESIN
-        (?>CATEGORY|CAT|NS|NAMESPACE)
-        # Page names
-        # These can all take a parameter, allowing
-        # specification of the page to be operated on
-        |(?>
-            (?>
-                SUB(?:JECT)?
-                |BASE
-                |ARTICLE
-                |TALK
-                |ROOT
-            )
-            |(?:FULL)?
+        |REVISION(?>DAY2?|ID|MONTH1?|TIMESTAMP|USER|YEAR)
+        |SUB(?>
+            JECT(?>SPACEE?|PAGENAMEE?)
+            |PAGENAMEE?
         )
-        PAGENAMEE?
-        # Namespaces
-        # Can take a full-page-name parameter
-        |NAMESPACENUMBER
-        |(?>
-            NAME|SUBJECT|ARTICLE|TALK
-        )SPACEE?
-        # Parser functions
-        # Technical metadata of another page
-        |PAGE(?>ID|SIZE)
-        |PROTECTION(?>LEVEL|EXPIRY)
-        |CASCADINGSOURCES
-        |REVISION(?>ID|DAY2?|MONTH1?|YEAR|TIMESTAMP|USER)
-        # URL data
-        |(?>local|full|canonical)
-        url
-        |filepath
-        |(?>url|anchor)encode
-        # Namespaces
-        |nse?
-        # Formatting
-        |formatnum
-        |[lu]c(?:first)?
-        |pad(?>left|right)
-        # Localization
-        |plural
-        |grammar
-        |gender
+        |TALK(?>PAGENAMEE?|SPACEE?)
+        |anchorencode
+        |canonicalurl
+        |f(?>
+            ilepath
+            |ormatnum
+            |ullurl
+        )
+        |g(?>
+            rammar
+            |ender
+        )
         |int
+        |l(?>
+            c(?:first)?
+            |ocalurl
+        )
+        |nse?
+        |p(?>
+            ad(?>left|right)
+            |lural
+        )
+        |u(?>
+            c(?:first)?
+            |rlencode
+        )
     )
     :[^{}]*\}\}
     """,
