@@ -134,18 +134,33 @@ PARSER_FUNCTION_FINDITER = regex_compile(
 VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
-VALID_EXTLINK_SCHEMES_PATTERN = (
-    r'''
+VALID_EXTLINK_SCHEMES_PATTERN = r'''
     (?>
-    http://|https://|ftp://|ftps://|bitcoin:|
-    irc://|ircs://|magnet:|mailto:|mms://|news:|
-    git://|geo:|gopher://|
-    nntp://|redis://|
-    sftp://|sip:|sips:|sms:|ssh://|svn://|tel:|telnet://|urn:|
-    worldwind://|xmpp:|//
+        //
+        |bitcoin:
+        |ftp(?>://|s://)
+        |g(?>eo:|it://|opher://)
+        |http(?>://|s://)
+        |irc(?>://|s://)
+        |m(?>
+            a(?>gnet:|ilto:)
+            |ms://
+        )
+        |n(?>ews:|ntp://)
+        |redis://
+        |s(?>
+            ftp://
+            |ip(?>:|s:)
+            |ms:
+            |sh://
+            |vn://
+        )
+        |tel(?>:||net://)
+        |urn:
+        |worldwind://
+        |xmpp:
     )
-    '''
-)
+'''
 BARE_EXTERNALLINK_PATTERN = (
     VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
     VALID_EXTLINK_CHARS_PATTERN
