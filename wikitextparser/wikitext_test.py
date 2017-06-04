@@ -316,6 +316,10 @@ class ExternalLinks(unittest.TestCase):
         self.assertEqual(1, len(p.wikilinks))
         self.assertEqual(0, len(p.external_links))
 
+    def test_bare_extlink_must_have_scheme(self):
+        """Bare external links must have scheme."""
+        self.assertEqual(len(parse('//mediawiki.org').external_links), 0)
+
 
 class Table(unittest.TestCase):
 

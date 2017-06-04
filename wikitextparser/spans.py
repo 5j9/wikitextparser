@@ -162,7 +162,7 @@ VALID_EXTLINK_SCHEMES_PATTERN = r'''
     )
 '''
 BARE_EXTERNALLINK_PATTERN = (
-    VALID_EXTLINK_SCHEMES_PATTERN.replace(r'|//', r'') +
+    VALID_EXTLINK_SCHEMES_PATTERN.replace('//\n        |', '') +
     VALID_EXTLINK_CHARS_PATTERN
 )
 # Wikilinks
