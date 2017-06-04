@@ -176,9 +176,91 @@ class ExpandSpanUpdate(unittest.TestCase):
         self.assertEqual('', pf.string)
 
 
+class Templates(unittest.TestCase):
+
+    """Test WikiText.templates."""
+
+    def test_template_inside_wikilink(self):
+        wt = WikiText("{{text |  [[ A | {{text|b}} ]] }}")
+        self.assertEqual(2, len(wt.templates))
+
+    def test_wikilink_in_template(self):
+        s1 = "{{text |[[A|}}]]}}"
+        wt = WikiText(s1)
+        self.assertEqual(s1, str(wt.templates[0]))
+
+    def test_wikilink_containing_closing_braces_in_template(self):
+        s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
+        wt = WikiText(s)
+        self.assertEqual(s, str(wt.templates[0]))
+
+    def test_ignore_comments(self):
+        s1 = "{{text |<!-- }} -->}}"
+        wt = WikiText(s1)
+        self.assertEqual(s1, str(wt.templates[0]))
+
+    def test_ignore_nowiki(self):
+        wt = WikiText("{{text |<nowiki>}} A </nowiki> }} B")
+        self.assertEqual(
+            "{{text |<nowiki>}} A </nowiki> }}",
+            str(wt.templates[0])
+        )
+
+    def test_template_inside_extension_tags(self):
+        s = "<includeonly>{{t}}</includeonly>"
+        wt = WikiText(s)
+        self.assertEqual('{{t}}', str(wt.templates[0]))
+
+    def test_dont_parse_source_tag(self):
+        s = "<source>{{t}}</source>"
+        wt = WikiText(s)
+        self.assertEqual(0, len(wt.templates))
+
+
+class ParserFunctions(unittest.TestCase):
+
+    """Test WikiText.parser_functions."""
+
+    def test_comment_in_parserfunction_name(self):
+        s = "{{<!--c\n}}-->#if:|a}}"
+        wt = WikiText(s)
+        self.assertEqual(1, len(wt.parser_functions))
+
+
+class WikiLinks(unittest.TestCase):
+
+    """Test WikiText.wikilinks."""
+
+    def test_wikilink_inside_parser_function(self):
+        wt = WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
+        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", wt.wikilinks[0].string)
+
+    def test_template_in_wikilink(self):
+        s = '[[A|{{text|text}}]]'
+        wt = WikiText(s)
+        self.assertEqual(s, str(wt.wikilinks[0]))
+
+    def test_wikilink_target_may_contain_newline(self):
+        s = '[[A | faf a\n\nfads]]'
+        wt = WikiText(s)
+        self.assertEqual(s, str(wt.wikilinks[0]))
+
+
+class Comments(unittest.TestCase):
+
+    """Test the WikiText.commonts."""
+
+    def test_getting_comment(self):
+        wt = WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
+        self.assertEqual(
+            "\n\ncomment\n{{A}}\n",
+            wt.comments[0].contents
+        )
+
+
 class ExternalLinks(unittest.TestCase):
 
-    """Test the WikiText class."""
+    """Test the WikiText.external_links."""
 
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
@@ -234,68 +316,6 @@ class ExternalLinks(unittest.TestCase):
             str(wt),
         )
 
-    def test_wikilink_inside_parser_function(self):
-        wt = WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
-        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", wt.wikilinks[0].string)
-
-    def test_template_inside_wikilink(self):
-        wt = WikiText("{{text |  [[ A | {{text|b}} ]] }}")
-        self.assertEqual(2, len(wt.templates))
-
-    def test_wikilink_in_template(self):
-        s1 = "{{text |[[A|}}]]}}"
-        wt = WikiText(s1)
-        self.assertEqual(s1, str(wt.templates[0]))
-
-    def test_wikilink_containing_closing_braces_in_template(self):
-        s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.templates[0]))
-
-    def test_ignore_comments(self):
-        s1 = "{{text |<!-- }} -->}}"
-        wt = WikiText(s1)
-        self.assertEqual(s1, str(wt.templates[0]))
-
-    def test_ignore_nowiki(self):
-        wt = WikiText("{{text |<nowiki>}} A </nowiki> }} B")
-        self.assertEqual(
-            "{{text |<nowiki>}} A </nowiki> }}",
-            str(wt.templates[0])
-        )
-
-    def test_getting_comment(self):
-        wt = WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
-        self.assertEqual(
-            "\n\ncomment\n{{A}}\n",
-            wt.comments[0].contents
-        )
-
-    def test_template_in_wikilink(self):
-        s = '[[A|{{text|text}}]]'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.wikilinks[0]))
-
-    def test_wikilink_target_may_contain_newline(self):
-        s = '[[A | faf a\n\nfads]]'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.wikilinks[0]))
-
-    def test_template_inside_extension_tags(self):
-        s = "<includeonly>{{t}}</includeonly>"
-        wt = WikiText(s)
-        self.assertEqual('{{t}}', str(wt.templates[0]))
-
-    def test_dont_parse_source_tag(self):
-        s = "<source>{{t}}</source>"
-        wt = WikiText(s)
-        self.assertEqual(0, len(wt.templates))
-
-    def test_comment_in_parserfunction_name(self):
-        s = "{{<!--c\n}}-->#if:|a}}"
-        wt = WikiText(s)
-        self.assertEqual(1, len(wt.parser_functions))
-
     def test_wikilink2externallink_fallback(self):
         p = parse('[[http://example.com foo bar]]')
         self.assertEqual(
@@ -319,6 +339,21 @@ class ExternalLinks(unittest.TestCase):
     def test_bare_extlink_must_have_scheme(self):
         """Bare external links must have scheme."""
         self.assertEqual(len(parse('//mediawiki.org').external_links), 0)
+
+    def test_external_link_with_template(self):
+        """External links may contain templates."""
+        self.assertEqual(
+            len(parse('http://example.com/{{text|foo}}').external_links),
+            1,
+        )
+
+    @unittest.expectedFailure
+    def test_external_link_may_not_contain_any_template(self):
+        """Some templates won't be parsed as part of the external link."""
+        self.assertEqual(
+            str(parse('http://example.com/{{dead link}}').external_links),
+            'http://example.com/'
+        )
 
 
 class Table(unittest.TestCase):
