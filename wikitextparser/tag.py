@@ -9,9 +9,7 @@ For more info see:
 
 """
 
-from typing import (
-    Dict, Optional, Union, Tuple, List, MutableSequence, Any
-)
+from typing import Dict, Optional, Union, List, MutableSequence, Any
 from warnings import warn
 
 from regex import compile as regex_compile
