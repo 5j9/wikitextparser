@@ -32,19 +32,19 @@ EXTERNALLINK_FINDITER = regex_compile(
     r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
     IGNORECASE | VERBOSE,
 ).finditer
-# Todo: Perhaps the regular expressions for sections can be improved by using
-# the features of the regex module.
+
 # Sections
-SECTION_HEADER_PATTERN = r'^=[^\n]+?= *$'
-LEAD_SECTION_MATCH = regex_compile(
-    r'.*?(?=%s|\Z)' % SECTION_HEADER_PATTERN,
-    DOTALL | MULTILINE,
-).match
-SECTION_FINDITER = regex_compile(
-    r'%s.*?\n*(?=%s|\Z)'
-    % (SECTION_HEADER_PATTERN, SECTION_HEADER_PATTERN),
-    DOTALL | MULTILINE,
-).finditer
+SECTIONS_FULLMATCH = regex_compile(
+    r'''
+    (?<section>.*?)
+    (?<section>
+        ^(?<eq>={1,6})[^\n]+?(?P=eq)\ *$  # header
+        .*?
+    )*
+    ''',
+    DOTALL | MULTILINE | VERBOSE,
+).fullmatch
+
 # Tables
 TABLE_FINDITER = regex_compile(
     r"""
@@ -64,6 +64,7 @@ TABLE_FINDITER = regex_compile(
     """,
     DOTALL | MULTILINE | VERBOSE
 ).finditer
+
 TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 
 # Types which are detected by the
@@ -671,7 +672,6 @@ class WikiText:
             functions = parsed.parser_functions
         return parsed.string
 
-    # Todo: Isn't it better to add a generator for the following properties?
     @property
     def parameters(self) -> List['Parameter']:
         """Return a list of parameter objects."""
@@ -774,63 +774,66 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        string = self.string
-        section_spans = type_to_spans.setdefault('Section', [])
-        spans_append = section_spans.append
-        if not section_spans:
-            # All the added spans will be new.
-            # Lead section
-            s, e = LEAD_SECTION_MATCH(string).span()
-            span = [ss + s, ss + e]
+        string = lststr[0]
+        known_spans = type_to_spans.setdefault('Section', [])
+        spans_append = known_spans.append
+        full_match = SECTIONS_FULLMATCH(string)
+        section_spans = full_match.spans('section')
+        levels = [len(eq) for eq in full_match.captures('eq')]
+        # Lead section
+        s, e = section_spans.pop(0)
+        s, e = s + ss, e + ss
+        if not known_spans:
+            # Continue lead section
+            span = [s, e]
             spans_append(span)
             sections_append(Section(lststr, type_to_spans, span))
             # Other sections
-            for m in SECTION_FINDITER(string):
-                s, e = m.span()
-                span = [s + ss, e + ss]
+            for i, (s, e) in enumerate(section_spans):
+                s, e = s + ss, e + ss
+                span = [s, e]
                 spans_append(span)
                 current_section = Section(lststr, type_to_spans, span)
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
-                current_level = current_section.level
-                for section in reversed(sections[1:]):
-                    section_level = section.level
+                current_level = levels[i]
+                for section, section_level in reversed(tuple(
+                    zip(sections[1:], levels)
+                )):
                     if section_level < current_level:
-                        section._span[1] = span[1]
+                        section._span[1] = e
                         current_level = section_level
                 sections_append(current_section)
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        span_tuple_to_span_get = {(s[0], s[1]): s for s in section_spans}.get
-        # Lead section
-        s, e = LEAD_SECTION_MATCH(string).span()
-        span = [s + ss, e + ss]
-        old_span = span_tuple_to_span_get((span[0], span[1]))
+        span_tuple_to_span = {(s[0], s[1]): s for s in known_spans}.get
+        # Continue lead section
+        old_span = span_tuple_to_span((s, e))
         if old_span is None:
+            span = [s, e]
             spans_append(span)
         else:
             span = old_span
-        sections_append(
-            Section(lststr, type_to_spans, span)
-        )
+        sections_append(Section(lststr, type_to_spans, span))
         # Adjust other sections
-        for m in SECTION_FINDITER(string):
-            s, e = m.span()
-            span = [s + ss, e + ss]
-            old_span = span_tuple_to_span_get((span[0], span[1]))
+        for i, (s, e) in enumerate(section_spans):
+            s, e = s + ss, e + ss
+            old_span = span_tuple_to_span((s, e))
             if old_span is None:
+                span = [s, e]
                 spans_append(span)
             else:
                 span = old_span
             current_section = Section(lststr, type_to_spans, span)
             # Add text of the current_section to any parent section.
             # Note that section 0 is not a parent for any subsection.
-            current_level = current_section.level
-            for section in reversed(sections[1:]):
-                section_level = section.level
+            current_level = levels[i]
+            for section, section_level in reversed(list(
+                zip(sections[1:], levels)
+            )):
                 if section_level < current_level:
-                    section._span[1] = span[1]
+                    section._span[1] = s
                     current_level = section_level
             sections_append(current_section)
         return sections
