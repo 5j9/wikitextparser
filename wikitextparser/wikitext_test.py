@@ -566,7 +566,7 @@ class TestPrettyPrint(unittest.TestCase):
             parse('{{t| a |b|c}}').pformat(),
         )
 
-    def test_commented_repprint(self):
+    def test_commented_repformat(self):
         s = '{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}'
         self.assertEqual(s, parse(s).pformat())
 
@@ -647,7 +647,7 @@ class TestPrettyPrint(unittest.TestCase):
             wt.pformat(),
         )
 
-    def test_pprint_tl_directly(self):
+    def test_pformat_tl_directly(self):
         self.assertEqual(
             '{{t\n'
             '    | 1 = a\n'
@@ -655,7 +655,7 @@ class TestPrettyPrint(unittest.TestCase):
             Template('{{t|a}}').pformat(),
         )
 
-    def test_pprint_pf_directly(self):
+    def test_pformat_pf_directly(self):
         self.assertEqual(
             '{{#iferror:\n'
             '    <t a="">\n'
@@ -695,7 +695,7 @@ class TestPrettyPrint(unittest.TestCase):
             p.pformat(),
         )
 
-    def test_pprint_first_arg_of_functions(self):
+    def test_pfromat_first_arg_of_functions(self):
         self.assertEqual(
             '{{#time:\n'
             '    {{#if:\n'
@@ -742,7 +742,7 @@ class TestPrettyPrint(unittest.TestCase):
             parse('{{#expr: 2  =   3}}').pformat(),
         )
 
-    def test_pprint_inner_template(self):
+    def test_pformat_inner_template(self):
         c, b, a = WikiText('{{a|{{b|{{c}}}}}}').templates
         self.assertEqual(
             '{{b\n'
@@ -751,7 +751,7 @@ class TestPrettyPrint(unittest.TestCase):
             b.pformat(),
         )
 
-    def test_repprint(self):
+    def test_repformat(self):
         """Make sure that pformat won't mutate self."""
         s = '{{a|{{b|{{c}}}}}}'
         c, b, a = WikiText(s).templates
@@ -765,13 +765,21 @@ class TestPrettyPrint(unittest.TestCase):
             a.pformat(),
         )
 
-    def test_pprint_keep_separated(self):
+    def test_pformat_keep_separated(self):
         """Test that `{{ {{t}} }}` is not converted to `{{{{t}}}}`.
 
         `{{{{t}}}}` will be interpreted as a parameter with {} around it.
 
         """
         self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pformat())
+
+    def test_depracated_pprint(self):
+        self.assertWarns(
+            DeprecationWarning,
+            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pprint,
+            '  ',
+            True,
+        )
 
 
 class Sections(unittest.TestCase):
