@@ -773,13 +773,8 @@ class TestPrettyPrint(unittest.TestCase):
         """
         self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pformat())
 
-    def test_depracated_pprint(self):
-        self.assertWarns(
-            DeprecationWarning,
-            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pprint,
-            '  ',
-            True,
-        )
+    def test_deprecated_pprint(self):
+        self.assertWarns(DeprecationWarning, WikiText('').pprint, '  ', True)
 
 
 class Sections(unittest.TestCase):
