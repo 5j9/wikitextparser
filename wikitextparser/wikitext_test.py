@@ -461,13 +461,13 @@ class IndentLevel(unittest.TestCase):
 
 class TestPrettyPrint(unittest.TestCase):
 
-    """Test the pprint method of the WikiText class."""
+    """Test the pformat method of the WikiText class."""
 
     def test_template_with_multi_args(self):
         wt = WikiText('{{a|b=b|c=c|d=d|e=e}}')
         self.assertEqual(
             '{{a\n    | b = b\n    | c = c\n    | d = d\n    | e = e\n}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_double_space_indent(self):
@@ -475,13 +475,13 @@ class TestPrettyPrint(unittest.TestCase):
         wt = WikiText(s)
         self.assertEqual(
             '{{a\n  | b = b\n  | c = c\n  | d = d\n  | e = e\n}}',
-            wt.pprint('  '),
+            wt.pformat('  '),
         )
 
     def test_remove_comments(self):
         self.assertEqual(
             '{{a\n  | e = e\n}}',
-            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pprint('  ', True),
+            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pformat('  ', True),
         )
 
     def test_first_arg_of_tag_is_whitespace_sensitive(self):
@@ -494,16 +494,16 @@ class TestPrettyPrint(unittest.TestCase):
         """
         s = '{{#tag:ref||name="n1"}}'
         wt = WikiText(s)
-        self.assertEqual(s, wt.pprint())
+        self.assertEqual(s, wt.pformat())
         s = '{{#tag:foo| }}'
         wt = WikiText(s)
-        self.assertEqual(s, wt.pprint())
+        self.assertEqual(s, wt.pformat())
 
     def test_invoke(self):
         """#invoke args are also whitespace-sensitive."""
         s = '{{#invoke:module|func|arg}}'
         wt = WikiText(s)
-        self.assertEqual(s, wt.pprint())
+        self.assertEqual(s, wt.pformat())
 
     def test_on_parserfunction(self):
         s = "{{#if:c|abcde = f| g=h}}"
@@ -514,7 +514,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    | abcde = f\n'
             '    | g=h\n'
             '}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_parserfunction_with_no_pos_arg(self):
@@ -526,13 +526,13 @@ class TestPrettyPrint(unittest.TestCase):
             '    | a\n'
             '    | b\n'
             '}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_convert_positional_to_keyword_if_possible(self):
         self.assertEqual(
             '{{t\n    | 1 = a\n    | 2 = b\n    | 3 = c\n}}',
-            parse('{{t|a|b|c}}').pprint(),
+            parse('{{t|a|b|c}}').pformat(),
         )
 
     def test_inconvertible_positionals(self):
@@ -555,7 +555,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    |a<!--\n'
             ' -->| b <!--\n'
             '-->}}',
-            parse('{{t|a| b }}').pprint(),
+            parse('{{t|a| b }}').pformat(),
         )
         self.assertEqual(
             '{{t\n'
@@ -563,12 +563,12 @@ class TestPrettyPrint(unittest.TestCase):
             ' -->| 2 = b\n'
             '    | 3 = c\n'
             '}}',
-            parse('{{t| a |b|c}}').pprint(),
+            parse('{{t| a |b|c}}').pformat(),
         )
 
     def test_commented_repprint(self):
         s = '{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}'
-        self.assertEqual(s, parse(s).pprint())
+        self.assertEqual(s, parse(s).pformat())
 
     def test_dont_treat_parser_function_arguments_as_kwargs(self):
         """The `=` is usually just a part of parameter value.
@@ -582,14 +582,14 @@ class TestPrettyPrint(unittest.TestCase):
             '}}',
             parse(
                 '{{#if:true|<span style="color:Blue;">text</span>}}'
-            ).pprint(),
+            ).pformat(),
         )
 
     def test_ignore_zwnj_for_alignment(self):
         self.assertEqual(
             '{{ا\n    | نیم\u200cفاصله       = ۱\n    |'
             ' بدون نیم فاصله = ۲\n}}',
-            parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pprint(),
+            parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pformat(),
         )
 
     def test_equal_sign_alignment(self):
@@ -598,7 +598,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    | long_argument_name = 1\n'
             '    | 2                  = 2\n'
             '}}',
-            parse('{{t|long_argument_name=1|2=2}}').pprint(),
+            parse('{{t|long_argument_name=1|2=2}}').pformat(),
         )
 
     def test_arabic_ligature_lam_with_alef(self):
@@ -610,7 +610,7 @@ class TestPrettyPrint(unittest.TestCase):
         """
         self.assertEqual(
             '{{ا\n    | الف = ۱\n    | لا   = ۲\n}}',
-            parse('{{ا|الف=۱|لا=۲}}').pprint(),
+            parse('{{ا|الف=۱|لا=۲}}').pformat(),
         )
 
     def test_pf_inside_t(self):
@@ -622,7 +622,7 @@ class TestPrettyPrint(unittest.TestCase):
             '        | I\n'
             '    }}\n'
             '}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_nested_pf_inside_tl(self):
@@ -633,7 +633,7 @@ class TestPrettyPrint(unittest.TestCase):
             '        a\n'
             '    }}\n'
             '}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_html_tag_equal(self):
@@ -644,7 +644,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    | yes\n'
             '    | no\n'
             '}}',
-            wt.pprint(),
+            wt.pformat(),
         )
 
     def test_pprint_tl_directly(self):
@@ -652,7 +652,7 @@ class TestPrettyPrint(unittest.TestCase):
             '{{t\n'
             '    | 1 = a\n'
             '}}',
-            Template('{{t|a}}').pprint(),
+            Template('{{t|a}}').pformat(),
         )
 
     def test_pprint_pf_directly(self):
@@ -662,7 +662,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    | yes\n'
             '    | no\n'
             '}}',
-            ParserFunction('{{#iferror:<t a="">|yes|no}}').pprint(),
+            ParserFunction('{{#iferror:<t a="">|yes|no}}').pformat(),
         )
 
     def test_function_inside_template(self):
@@ -676,7 +676,7 @@ class TestPrettyPrint(unittest.TestCase):
             '    }}\n'
             '    | 2 = a2\n'
             '}}',
-            p.pprint(),
+            p.pformat(),
         )
 
     def test_parser_template_parser(self):
@@ -692,7 +692,7 @@ class TestPrettyPrint(unittest.TestCase):
             '        }}\n'
             '    }}\n'
             '}}',
-            p.pprint(),
+            p.pformat(),
         )
 
     def test_pprint_first_arg_of_functions(self):
@@ -704,7 +704,7 @@ class TestPrettyPrint(unittest.TestCase):
             '        | \n'
             '    }}\n'
             '}}',
-            parse('{{#time:{{#if:1|y|}}}}').pprint(),
+            parse('{{#time:{{#if:1|y|}}}}').pformat(),
         )
 
     def test_colon_in_tl_name(self):
@@ -712,13 +712,13 @@ class TestPrettyPrint(unittest.TestCase):
             '{{en:text\n'
             '    |text<!--\n'
             '-->}}',
-            parse('{{en:text|text}}').pprint(),
+            parse('{{en:text|text}}').pformat(),
         )
         self.assertEqual(
             '{{en:text\n'
             '    | n=v <!--\n'
             '-->}}',
-            parse('{{en:text|n=v}}').pprint(),
+            parse('{{en:text|n=v}}').pformat(),
         )
 
     def test_parser_function_with_an_empty_argument(self):
@@ -731,7 +731,7 @@ class TestPrettyPrint(unittest.TestCase):
             '{{ #rel2abs:\n'
             '    \n'
             '}}',
-            parse('{{ #rel2abs: }}').pprint(),
+            parse('{{ #rel2abs: }}').pformat(),
         )
 
     def test_pf_one_kw_arg(self):
@@ -739,7 +739,7 @@ class TestPrettyPrint(unittest.TestCase):
             '{{#expr:\n'
             '    2  =   3\n'
             '}}',
-            parse('{{#expr: 2  =   3}}').pprint(),
+            parse('{{#expr: 2  =   3}}').pformat(),
         )
 
     def test_pprint_inner_template(self):
@@ -748,21 +748,21 @@ class TestPrettyPrint(unittest.TestCase):
             '{{b\n'
             '    | 1 = {{c}}\n'
             '}}',
-            b.pprint(),
+            b.pformat(),
         )
 
     def test_repprint(self):
-        """Make sure that pprint won't mutate self."""
+        """Make sure that pformat won't mutate self."""
         s = '{{a|{{b|{{c}}}}}}'
         c, b, a = WikiText(s).templates
         self.assertEqual(
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pprint(),
+            a.pformat(),
         )
         # Again:
         self.assertEqual(
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pprint(),
+            a.pformat(),
         )
 
     def test_pprint_keep_separated(self):
@@ -771,7 +771,7 @@ class TestPrettyPrint(unittest.TestCase):
         `{{{{t}}}}` will be interpreted as a parameter with {} around it.
 
         """
-        self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pprint())
+        self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pformat())
 
 
 class Sections(unittest.TestCase):

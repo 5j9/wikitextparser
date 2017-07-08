@@ -9,6 +9,7 @@ from copy import deepcopy
 from typing import (
     MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional
 )
+from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
 from regex import compile as regex_compile
@@ -397,7 +398,7 @@ class WikiText:
 
     @property
     def _indent_level(self) -> int:
-        """Calculate the indent level for self.pprint function.
+        """Calculate the indent level for self.pformat function.
 
         Minimum returned value for templates and parser functions is 1.
         Being part of any Template or ParserFunction increases the indent
@@ -455,7 +456,7 @@ class WikiText:
         return shadow
 
     def _pp_type_to_spans(self) -> dict:
-        """Create the arguments for the parse function used in pprint method.
+        """Create the arguments for the parse function used in pformat method.
 
 
         Only pass the spans of subspans and change the spans to fit the new
@@ -477,7 +478,15 @@ class WikiText:
                 newspans.append([s - ss, e - ss])
         return type_to_spans
 
-    def pprint(self, indent: str='    ', remove_comments=False) -> str:
+    def pprint(self, indent: str= '    ', remove_comments=False):
+        """Deprecated, use self.pformat instead."""
+        warn(
+            'pprint method is deprecated, use pformat instead.',
+            DeprecationWarning,
+        )
+        return self.pformat(indent, remove_comments)
+
+    def pformat(self, indent: str= '    ', remove_comments=False) -> str:
         """Return a pretty-print of self.string as string.
 
         Try to organize templates and parser functions by indenting, aligning
@@ -486,7 +495,7 @@ class WikiText:
         Note that this function will not mutate self.
 
         """
-        # Do not try to do inplace pprint. It will overwrite on some spans.
+        # Do not try to do inplace pformat. It will overwrite on some spans.
         string = self.string
         parsed = WikiText([string], self._pp_type_to_spans())
         span = [0, len(string)]

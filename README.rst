@@ -75,14 +75,14 @@ It provides easy-to-use properties so you can get or set names or values of temp
     >>> wt.wikilinks[0].text = 'X'
     >>> wt.wikilinks[0]
     WikiLink('[[Z|X]]')
-    >>> 
+    >>>
     >>> from pprint import pprint
     >>> pprint(wt.sections)
     [Section('\n'),
      Section('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n'),
      Section('=== h3 ===\nt3\n\n'),
      Section('== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')]
-    >>> 
+    >>>
     >>> wt.sections[1].title = 'newtitle'
     >>> print(wt)
 
@@ -100,18 +100,18 @@ It provides easy-to-use properties so you can get or set names or values of temp
     [[Z|X]]
 
 
-There is a pprint function that pretty-prints templates:
+The pformat method returns a pretty-print formatted string for templates:
 
 .. code:: python
 
     >>> p = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
     >>> t2, t1 = p.templates
-    >>> print(t2.pprint())
+    >>> print(t2.pformat())
     {{t2
         | e = e
         | f = f
     }}
-    >>> print(t1.pprint())
+    >>> print(t1.pformat())
     {{t1
         | b = b
         | c = c
