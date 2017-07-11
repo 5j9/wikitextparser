@@ -825,7 +825,6 @@ class Sections(unittest.TestCase):
         self.assertEqual(len(wt.templates), 1)
 
     def test_subsection(self):
-        print(parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections)
         a = parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections[1]
         self.assertEqual(
             '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a.string

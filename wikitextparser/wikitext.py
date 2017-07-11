@@ -783,17 +783,17 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        known_spans = type_to_spans.setdefault('Section', [])
-        spans_append = known_spans.append
+        type_spans = type_to_spans.setdefault('Section', [])
+        type_spans_append = type_spans.append
         full_match = SECTIONS_FULLMATCH(lststr[0][ss:se])
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('eq')]
         s, e = section_spans.pop(0)
         s, e = s + ss, e + ss
-        if not known_spans:
+        if not type_spans:
             # Lead section
             span = [s, e]
-            spans_append(span)
+            type_spans_append(span)
             lead_section = Section(lststr, type_to_spans, span)
             # Other sections
             for current_level, (s, e) in zip(
@@ -802,50 +802,57 @@ class WikiText:
                 s, e = s + ss, e + ss
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
-                for section, section_level in zip(
-                    reversed(sections), levels[-len(sections):]
+                for section, section_level, section_span in zip(
+                    reversed(sections),
+                    levels[-len(sections):],
+                    reversed(type_spans),
                 ):
                     if section_level > current_level:
-                        e = section._span[1]
+                        e = section_span[1]
                     else:
                         break
                 span = [s, e]
-                spans_append(span)  # Todo: needed?
+                type_spans_append(span)
                 sections_append(Section(lststr, type_to_spans, span))
             sections_append(lead_section)
             sections.reverse()
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        span_tuple_to_span = {(s[0], s[1]): s for s in known_spans}.get
+        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
         # Continue lead section
         old_span = span_tuple_to_span((s, e))
         if old_span is None:
             span = [s, e]
-            spans_append(span)
+            type_spans_append(span)
         else:
             span = old_span
         lead_section = Section(lststr, type_to_spans, span)
         # Adjust other sections
+        calced_spans = []
+        calced_spans_append = calced_spans.append
         for current_level, (s, e) in zip(
-                reversed(levels), reversed(section_spans)
-            ):
+            reversed(levels), reversed(section_spans)
+        ):
             s, e = s + ss, e + ss
             # Add text of the current_section to any parent section.
             # Note that section 0 is not a parent for any subsection.
-            for section, section_level in zip(
-                    reversed(sections), levels[-len(sections):]
+            for section, section_level, section_span in zip(
+                reversed(sections),
+                levels[-len(sections):],
+                reversed(calced_spans),
             ):
                 if section_level > current_level:
-                    e = section._span[1]
+                    e = section_span[1]
                 else:
                     break
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
                 span = [s, e]
-                spans_append(span)
+                type_spans_append(span)
             else:
                 span = old_span
+            calced_spans_append(span)
             sections_append(Section(lststr, type_to_spans, span))
         sections_append(lead_section)
         sections.reverse()
