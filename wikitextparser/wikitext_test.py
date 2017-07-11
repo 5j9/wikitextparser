@@ -796,7 +796,7 @@ class Sections(unittest.TestCase):
         p = parse(s)
         self.assertEqual('text\r\n', p.sections[0].string)
 
-    def test_inseting_into_sections(self):
+    def test_inserting_into_sections(self):
         wt = WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
         s1.insert(0, 'c\n== s0 ==\nc\n')
@@ -823,6 +823,27 @@ class Sections(unittest.TestCase):
         wt = WikiText('')
         wt.insert(0, '{{t}}')
         self.assertEqual(len(wt.templates), 1)
+
+    def test_subsection(self):
+        a = parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections[1]
+        self.assertEqual(
+            '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a.string
+        )
+        a_sections = a.sections
+        self.assertEqual('', a_sections[0].string)
+        self.assertEqual(
+            '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n',
+            a_sections[1].string,
+        )
+        b = a_sections[2]
+        self.assertEqual(
+            '=== b ===\n2\n==== c ====\n3\n',
+            b.string,
+        )
+        self.assertEqual(
+            '==== c ====\n3\n',
+            b.sections[2].string,
+        )
 
 
 class WikiList(unittest.TestCase):

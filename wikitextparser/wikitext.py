@@ -783,10 +783,9 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         ss, se = self._span
-        string = lststr[0]
         known_spans = type_to_spans.setdefault('Section', [])
         spans_append = known_spans.append
-        full_match = SECTIONS_FULLMATCH(string)
+        full_match = SECTIONS_FULLMATCH(lststr[0][ss:se])
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('eq')]
         # Lead section
@@ -842,7 +841,7 @@ class WikiText:
                 zip(sections[1:], levels)
             )):
                 if section_level < current_level:
-                    section._span[1] = s
+                    section._span[1] = e
                     current_level = section_level
             sections_append(current_section)
         return sections
