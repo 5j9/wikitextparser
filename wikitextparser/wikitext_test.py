@@ -825,6 +825,7 @@ class Sections(unittest.TestCase):
         self.assertEqual(len(wt.templates), 1)
 
     def test_subsection(self):
+        print(parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections)
         a = parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections[1]
         self.assertEqual(
             '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a.string
@@ -840,6 +841,8 @@ class Sections(unittest.TestCase):
             '=== b ===\n2\n==== c ====\n3\n',
             b.string,
         )
+        # Sections use the same span object
+        self.assertTrue(b.sections[1]._span is b._span)
         self.assertEqual(
             '==== c ====\n3\n',
             b.sections[2].string,

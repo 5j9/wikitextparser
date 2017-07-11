@@ -788,30 +788,32 @@ class WikiText:
         full_match = SECTIONS_FULLMATCH(lststr[0][ss:se])
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('eq')]
-        # Lead section
         s, e = section_spans.pop(0)
         s, e = s + ss, e + ss
         if not known_spans:
-            # Continue lead section
+            # Lead section
             span = [s, e]
             spans_append(span)
-            sections_append(Section(lststr, type_to_spans, span))
+            lead_section = Section(lststr, type_to_spans, span)
             # Other sections
-            for i, (s, e) in enumerate(section_spans):
+            for current_level, (s, e) in zip(
+                reversed(levels), reversed(section_spans)
+            ):
                 s, e = s + ss, e + ss
-                span = [s, e]
-                spans_append(span)
-                current_section = Section(lststr, type_to_spans, span)
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
-                current_level = levels[i]
-                for section, section_level in reversed(tuple(
-                    zip(sections[1:], levels)
-                )):
-                    if section_level < current_level:
-                        section._span[1] = e
-                        current_level = section_level
-                sections_append(current_section)
+                for section, section_level in zip(
+                    reversed(sections), levels[-len(sections):]
+                ):
+                    if section_level > current_level:
+                        e = section._span[1]
+                    else:
+                        break
+                span = [s, e]
+                spans_append(span)  # Todo: needed?
+                sections_append(Section(lststr, type_to_spans, span))
+            sections_append(lead_section)
+            sections.reverse()
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
@@ -823,27 +825,30 @@ class WikiText:
             spans_append(span)
         else:
             span = old_span
-        sections_append(Section(lststr, type_to_spans, span))
+        lead_section = Section(lststr, type_to_spans, span)
         # Adjust other sections
-        for i, (s, e) in enumerate(section_spans):
+        for current_level, (s, e) in zip(
+                reversed(levels), reversed(section_spans)
+            ):
             s, e = s + ss, e + ss
+            # Add text of the current_section to any parent section.
+            # Note that section 0 is not a parent for any subsection.
+            for section, section_level in zip(
+                    reversed(sections), levels[-len(sections):]
+            ):
+                if section_level > current_level:
+                    e = section._span[1]
+                else:
+                    break
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
                 span = [s, e]
                 spans_append(span)
             else:
                 span = old_span
-            current_section = Section(lststr, type_to_spans, span)
-            # Add text of the current_section to any parent section.
-            # Note that section 0 is not a parent for any subsection.
-            current_level = levels[i]
-            for section, section_level in reversed(list(
-                zip(sections[1:], levels)
-            )):
-                if section_level < current_level:
-                    section._span[1] = e
-                    current_level = section_level
-            sections_append(current_section)
+            sections_append(Section(lststr, type_to_spans, span))
+        sections_append(lead_section)
+        sections.reverse()
         return sections
 
     @property
