@@ -210,6 +210,7 @@ class Table(SubWikiTextWithAttrs):
                     # so that it can be used easily as cache later in Cells.
                     attrs_match = ATTRS_MATCH(shadow[ms:me], s - ms, e - ms)
                     captures = attrs_match.captures
+                    # noinspection PyUnboundLocalVariable
                     row_attrs_append(dict(zip(
                         captures('attr_name'), captures('attr_value')
                     )))
@@ -366,7 +367,7 @@ def _apply_attr_spans(
     downward_growing_cells = []  # type: List[Tuple[Optional[T], int, int]]
     # 13, 18
     # Algorithm for processing rows
-    for i, row in enumerate(table_data):
+    for attrs_row, row in zip(table_attrs, table_data):
         # 13.1 ycurrent is never greater than yheight
         if yheight == ycurrent:
             yheight += 1
@@ -381,8 +382,9 @@ def _apply_attr_spans(
                 r[x] = cell
         # 13.4 will be handled by the following for-loop.
         # 13.5, 13.16
-        for j, current_cell in enumerate(row):
+        for attrs, current_cell in zip(attrs_row, row):
             # 13.6
+            attrs_get = attrs.get
             while (
                 xcurrent < xwidth and
                 table[ycurrent][xcurrent] is not None
@@ -396,14 +398,14 @@ def _apply_attr_spans(
                     if xwidth > len(r):
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
-            colspan = int(table_attrs[i][j].get('colspan', 1))
+            colspan = int(attrs_get('colspan', 1))
             if colspan == 0:
                 # Note: colspan="0" tells the browser to span the cell to
                 # the last column of the column group (colgroup)
                 # http://www.w3schools.com/TAGS/att_td_colspan.asp
                 colspan = 1
             # 13.9
-            rowspan = int(table_attrs[i][j].get('rowspan', 1))
+            rowspan = int(attrs_get('rowspan', 1))
             # 13.10
             if rowspan == 0:
                 # Note: rowspan="0" tells the browser to span the cell to the

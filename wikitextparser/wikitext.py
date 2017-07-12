@@ -327,10 +327,10 @@ class WikiText:
         """Close all subspans of (start, stop)."""
         ss, se = self._span
         for type_spans in self._type_to_spans.values():
-            len_type_spans = len(type_spans)
+            max_i_type_spans = len(type_spans) - 1
             for i, (s, e) in enumerate(reversed(type_spans)):
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    type_spans.pop(len_type_spans - i - 1)[:] = -1, -1
+                    type_spans.pop(max_i_type_spans - i)[:] = -1, -1
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -527,9 +527,9 @@ class WikiText:
             arg_stripped_names = [a.name.strip() for a in args]
             arg_positionalities = [a.positional for a in args]
             arg_name_lengths = [
-                wcswidth(n.replace('لا', 'ل')) if
-                not arg_positionalities[i] else 0 for
-                i, n in enumerate(arg_stripped_names)
+                wcswidth(n.replace('لا', 'ل'))
+                if not p else 0
+                for n, p in zip(arg_stripped_names, arg_positionalities)
             ]
             max_name_len = max(arg_name_lengths)
             # Format template.name.
@@ -583,10 +583,12 @@ class WikiText:
             if not args:
                 continue
             comment_indent = '<!--\n' + indent * (level - 1) + ' -->'
-            for i, arg in enumerate(reversed(args)):
-                i = -i - 1
-                stripped_name = arg_stripped_names[i]
-                positional = arg_positionalities[i]
+            for arg, stripped_name, positional, arg_name_len in zip(
+                reversed(args),
+                reversed(arg_stripped_names),
+                reversed(arg_positionalities),
+                reversed(arg_name_lengths),
+            ):
                 value = arg.value
                 stripped_value = value.strip()
                 # Positional arguments of templates are sensitive to
@@ -597,7 +599,7 @@ class WikiText:
                         if not_a_parser_function:
                             arg.name = (
                                 ' ' + stripped_name + ' ' +
-                                ' ' * (max_name_len - arg_name_lengths[i])
+                                ' ' * (max_name_len - arg_name_len)
                             )
                             arg.value = (
                                 ' ' + stripped_value + newline_indent
