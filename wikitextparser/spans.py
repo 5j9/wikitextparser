@@ -417,8 +417,7 @@ def parse_pm_tl_pf(
         for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
             ms, me = match.span()
             byte_array[ms:me] = (me - ms) * b'_'
-    else:
-        ms = True
+    ms = True
     while ms is not None:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
