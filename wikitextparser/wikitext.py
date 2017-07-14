@@ -381,20 +381,12 @@ class WikiText:
         for spans in self._type_to_spans.values():
             for span in spans:
                 s, e = span
-                if estart < s or (
-                    # Not at the beginning of selfspan
-                    estart == s != ss and e != se
-                ):
-                    # Added part is before the span
+                # estart is before s, or at s but not on self_span
+                if estart < s or s == estart != ss:
                     span[:] = s + elength, e + elength
-                elif s < estart < e or (
-                    # At the end of selfspan
-                    estart == s == ss and e == se
-                ) or (
-                    estart == e == se and s == ss
-                ):
+                elif estart < e or e == estart == se:
                     # Added part is inside the span
-                    span[1] = e + elength
+                    span[1] += elength
 
     @property
     def _indent_level(self) -> int:
