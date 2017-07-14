@@ -527,51 +527,47 @@ class WikiText:
             # Format template.name.
             level = template._indent_level
             newline_indent = '\n' + indent * level
+            template.name += newline_indent
             if level == 1:
-                last_comment_indent = '<!--\n' + indent * (level - 1) + '-->'
+                last_comment_indent = '<!--\n-->'
             else:
                 last_comment_indent = '<!--\n' + indent * (level - 2) + ' -->'
-            template.name += newline_indent
             # Special formatting for the last argument.
             last_arg = args.pop()
             last_is_positional = arg_positionalities.pop()
-            last_arg_stripped_name = arg_stripped_names.pop()
-            last_arg_value = last_arg.value
-            last_arg_stripped_value = last_arg_value.strip()
-            if (
-                not last_is_positional or
-                last_arg_value == last_arg_stripped_value
-            ):
-                if not_a_parser_function:
-                    stop_conversion = False
-                    last_arg.name = (
-                        ' ' + last_arg_stripped_name + ' ' +
-                        ' ' * (max_name_len - arg_name_lengths.pop())
-                    )
-                    last_arg.value = (
-                        ' ' + last_arg_stripped_value + '\n' +
-                        indent * (level - 1)
-                    )
-                else:
-                    stop_conversion = True
-                    if last_is_positional:
-                        # Can't strip or adjust the position of the value
-                        # because this could be a positional argument in a
-                        # template.
-                        last_arg.value = (
-                            last_arg_value + last_comment_indent
-                        )
-                    else:
-                        # This is either a parser function or a keyword
-                        # argument in a template. In both cases the name
-                        # can be lstripped and the value can be rstripped.
-                        last_arg.name = ' ' + last_arg.name.lstrip()
-                        last_arg.value = (
-                            last_arg_value.rstrip() + ' ' + last_comment_indent
-                        )
-            else:
+            last_value = last_arg.value
+            last_stripped_value = last_value.strip()
+            if last_is_positional and last_value != last_stripped_value:
                 stop_conversion = True
-                last_arg.value += last_comment_indent
+                if not last_value.endswith('\n' + indent * (level - 1)):
+                    last_arg.value = last_value + last_comment_indent
+            elif not_a_parser_function:
+                stop_conversion = False
+                last_arg.name = (
+                    ' ' + arg_stripped_names.pop() + ' ' +
+                    ' ' * (max_name_len - arg_name_lengths.pop())
+                )
+                last_arg.value = (
+                    ' ' + last_stripped_value + '\n' +
+                    indent * (level - 1)
+                )
+            elif last_is_positional:
+                # (last_value == last_stripped_value
+                # and not_a_parser_function is not True)
+                stop_conversion = True  # Todo: Tests don't fail without it
+                # Can't strip or adjust the position of the value
+                # because this could be a positional argument in a template.
+                last_arg.value = last_value + last_comment_indent
+            else:
+                stop_conversion = True  # Todo: Tests don't fail without it
+                # This is either a parser function or a keyword
+                # argument in a template. In both cases the name
+                # can be lstripped and the value can be rstripped.
+                last_arg.name = ' ' + last_arg.name.lstrip()
+                if not last_value.endswith('\n' + indent * (level - 1)):
+                    last_arg.value = (
+                        last_value.rstrip() + ' ' + last_comment_indent
+                    )
             if not args:
                 continue
             comment_indent = '<!--\n' + indent * (level - 1) + ' -->'
@@ -586,21 +582,19 @@ class WikiText:
                 # Positional arguments of templates are sensitive to
                 # whitespace. See:
                 # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
-                if not stop_conversion:
-                    if not positional or value == stripped_value:
-                        if not_a_parser_function:
-                            arg.name = (
-                                ' ' + stripped_name + ' ' +
-                                ' ' * (max_name_len - arg_name_len)
-                            )
-                            arg.value = (
-                                ' ' + stripped_value + newline_indent
-                            )
-                    else:
-                        stop_conversion = True
+                if stop_conversion:
+                    if not value.endswith(newline_indent):
                         arg.value += comment_indent
-                else:
-                    arg.value += comment_indent
+                elif positional and value != stripped_value:
+                        stop_conversion = True
+                        if not value.endswith(newline_indent):
+                            arg.value += comment_indent
+                elif not_a_parser_function:
+                    arg.name = (
+                        ' ' + stripped_name + ' ' +
+                        ' ' * (max_name_len - arg_name_len)
+                    )
+                    arg.value = ' ' + stripped_value + newline_indent
         i = 0
         functions = parsed.parser_functions
         while i < len(functions):

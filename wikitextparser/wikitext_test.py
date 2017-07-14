@@ -475,7 +475,7 @@ class IndentLevel(unittest.TestCase):
         self.assertEqual(2, a._indent_level)
 
 
-class TestPrettyPrint(unittest.TestCase):
+class TestPformat(unittest.TestCase):
 
     """Test the pformat method of the WikiText class."""
 
@@ -791,6 +791,48 @@ class TestPrettyPrint(unittest.TestCase):
 
     def test_deprecated_pprint(self):
         self.assertWarns(DeprecationWarning, WikiText('').pprint, '  ', True)
+
+    def test_last_arg_last_char_is_newline(self):
+        """Do not add comment_indent when it has no effect."""
+        self.assertEqual(
+            '{{text\n    |{{#if:\n        \n    }}\n}}',
+            WikiText('{{text|{{#if:}}\n}}').pformat(),
+        )
+        self.assertEqual(
+            '{{text\n'
+            '    |{{text\n'
+            '        |{{#if:\n'
+            '            \n'
+            '        }}\n'
+            '<!--\n'
+            ' -->}}\n'
+            '}}',
+            WikiText('{{text|{{text|{{#if:}}\n}}\n}}').pformat(),
+        )
+        self.assertEqual(
+            '{{text\n'
+            '    |{{text\n'
+            '        |{{#if:\n'
+            '            \n'
+            '        }}\n'
+            '    }}\n'
+            '}}',
+            WikiText('{{text|{{text|{{#if:}}\n    }}\n}}').pformat(),
+        )
+        self.assertEqual(
+            '{{text\n    |a\n    |b\n}}',
+            WikiText('{{text|a\n    |b\n}}').pformat(),
+        )
+        self.assertEqual(
+            '{{text\n    |a\n    | 2 = b\n}}',
+            WikiText('{{text|a\n    |2=b\n}}').pformat(),
+        )
+        self.assertEqual(
+            '{{en:text\n'
+            '    | n=v\n'
+            '}}',
+            parse('{{en:text|n=v\n}}').pformat(),
+        )
 
 
 class Sections(unittest.TestCase):
