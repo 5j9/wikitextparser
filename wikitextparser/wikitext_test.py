@@ -153,6 +153,22 @@ class ShrinkSpanUpdate(unittest.TestCase):
         self.assertEqual(c.string, 'c-->')
 
 
+class CloseSubSpans(unittest.TestCase):
+
+    """Test the _close_subspans method."""
+
+    def test_spans_are_closed_properly(self):
+        # Real example:
+        # self.assertEqual(
+        #     '{{text\n    | 1 = {{#if:\n        \n        | \n    }}\n}}',
+        #     WikiText('{{text|1={{#if:|}}\n\n}}').pformat(),
+        # )
+        wt = WikiText('')
+        wt._type_to_spans = {'ParserFunction': [[16, 25]]}
+        wt._close_subspans(16, 27)
+        self.assertFalse(wt._type_to_spans['ParserFunction'])
+
+
 class ExpandSpanUpdate(unittest.TestCase):
 
     """Test the _expand_span_update method."""
