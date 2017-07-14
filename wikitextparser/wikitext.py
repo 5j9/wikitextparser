@@ -327,10 +327,11 @@ class WikiText:
         """Close all subspans of (start, stop)."""
         ss, se = self._span
         for type_spans in self._type_to_spans.values():
-            max_i_type_spans = len(type_spans) - 1
-            for i, (s, e) in enumerate(reversed(type_spans)):
+            i = len(type_spans)
+            for s, e in reversed(type_spans):
+                i -= 1
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    type_spans.pop(max_i_type_spans - i)[:] = -1, -1
+                    type_spans.pop(i)[:] = -1, -1
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -343,7 +344,7 @@ class WikiText:
         """
         # Note: No span should be removed from _type_to_spans.
         rmlength = rmstop - rmstart
-        for t, spans in self._type_to_spans.items():
+        for spans in self._type_to_spans.values():
             spans_len = len(spans)
             for i, span in enumerate(reversed(spans)):
                 s, e = span
@@ -369,7 +370,7 @@ class WikiText:
                 # the rmstart; so s needs no change.
                 if rmstop < e:
                     # s <= rmstart <= rmstop <= e
-                    span[1] = e - rmlength
+                    span[1] -= rmlength
                 else:
                     # s <= rmstart <= e < rmstop
                     span[1] = rmstart
@@ -399,10 +400,11 @@ class WikiText:
         """
         ss, se = self._span
         level = 1  # a template is always found in itself
-        for s, e in self._type_to_spans['Template']:
+        _type_to_spans = self._type_to_spans
+        for s, e in _type_to_spans['Template']:
             if s < ss and se < e:
                 level += 1
-        for s, e in self._type_to_spans['ParserFunction']:
+        for s, e in _type_to_spans['ParserFunction']:
             if s < ss and se < e:
                 level += 1
         return level
