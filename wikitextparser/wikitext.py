@@ -548,18 +548,17 @@ class WikiText:
                     ' ' * (max_name_len - arg_name_lengths.pop())
                 )
                 last_arg.value = (
-                    ' ' + last_stripped_value + '\n' +
-                    indent * (level - 1)
+                    ' ' + last_stripped_value + '\n' + indent * (level - 1)
                 )
             elif last_is_positional:
                 # (last_value == last_stripped_value
                 # and not_a_parser_function is not True)
-                stop_conversion = True  # Todo: Tests don't fail without it
+                stop_conversion = True
                 # Can't strip or adjust the position of the value
                 # because this could be a positional argument in a template.
                 last_arg.value = last_value + last_comment_indent
             else:
-                stop_conversion = True  # Todo: Tests don't fail without it
+                stop_conversion = True
                 # This is either a parser function or a keyword
                 # argument in a template. In both cases the name
                 # can be lstripped and the value can be rstripped.

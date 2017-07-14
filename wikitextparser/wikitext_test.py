@@ -732,9 +732,17 @@ class TestPformat(unittest.TestCase):
         )
         self.assertEqual(
             '{{en:text\n'
-            '    | n=v <!--\n'
+            '    |1<!--\n'
+            ' -->|2<!--\n'
             '-->}}',
-            parse('{{en:text|n=v}}').pformat(),
+            parse('{{en:text|1|2}}').pformat(),
+        )
+        self.assertEqual(
+            '{{en:text\n'
+            '    |1<!--\n'
+            ' -->| 2=v <!--\n'
+            '-->}}',
+            parse('{{en:text|1|2=v}}').pformat(),
         )
 
     def test_parser_function_with_an_empty_argument(self):
