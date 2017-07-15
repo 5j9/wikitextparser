@@ -618,55 +618,44 @@ class WikiText:
             # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
             #    Stripping_whitespace
             level = func._indent_level
-            newline_indent = '\n' + indent * level
+            short_indent = '\n' + indent * (level - 1)
+            newline_indent = short_indent + indent
             if len(args) == 1:
                 arg = args[0]
                 # The first arg is both the first and last argument.
                 if arg.positional:
                     arg.value = (
-                        newline_indent + arg.value.strip() +
-                        newline_indent.replace(indent, '', 1)
+                        newline_indent + arg.value.strip() + short_indent
                     )
                 else:
                     # Note that we don't add spaces before and after the
                     # '=' in parser functions because it could be part of
                     # an ordinary string.
                     arg.name = newline_indent + arg.name.lstrip()
-                    arg.value = (
-                        arg.value.rstrip() +
-                        newline_indent.replace(indent, '', 1)
-                    )
+                    arg.value = arg.value.rstrip() + short_indent
+                functions = parsed.parser_functions
+                continue
+            # Special formatting for the first argument
+            arg = args[0]
+            if arg.positional:
+                arg.value = newline_indent + arg.value.strip() + newline_indent
             else:
-                # Special formatting for the first argument
-                arg = args[0]
+                arg.name = newline_indent + arg.name.lstrip()
+                arg.value = arg.value.rstrip() + newline_indent
+            # Formatting the middle arguments
+            for arg in args[1:-1]:
                 if arg.positional:
-                    arg.value = (
-                        newline_indent + arg.value.strip() + newline_indent
-                    )
-                else:
-                    arg.name = newline_indent + arg.name.lstrip()
-                    arg.value = arg.value.rstrip() + newline_indent
-                # Formatting the middle arguments
-                for arg in args[1:-1]:
-                    if arg.positional:
-                        arg.value = (
-                            ' ' + arg.value.strip() + newline_indent
-                        )
-                    else:
-                        arg.name = ' ' + arg.name.lstrip()
-                        arg.value = (
-                            arg.value.rstrip() + newline_indent
-                        )
-                # Special formatting for the last argument
-                arg = args[-1]
-                newline_indent = newline_indent.replace(indent, '', 1)
-                if arg.positional:
-                    arg.value = (
-                        ' ' + arg.value.strip() + newline_indent
-                    )
+                    arg.value = ' ' + arg.value.strip() + newline_indent
                 else:
                     arg.name = ' ' + arg.name.lstrip()
                     arg.value = arg.value.rstrip() + newline_indent
+            # Special formatting for the last argument
+            arg = args[-1]
+            if arg.positional:
+                arg.value = ' ' + arg.value.strip() + short_indent
+            else:
+                arg.name = ' ' + arg.name.lstrip()
+                arg.value = arg.value.rstrip() + short_indent
             functions = parsed.parser_functions
         return parsed.string
 
@@ -1054,9 +1043,7 @@ class SubWikiText(WikiText):
             self._span = \
                 self._type_to_spans[_type][-1] if _span is None else _span
 
-    def _gen_subspans(
-        self, _type: str=None
-    ) -> Generator[int, None, None]:
+    def _gen_subspans(self, _type: str) -> Generator[int, None, None]:
         """Yield all the sub-span indices excluding self._span."""
         s, e = self._span
         for span in self._type_to_spans[_type]:
