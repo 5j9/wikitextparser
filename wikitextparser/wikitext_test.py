@@ -723,6 +723,38 @@ class TestPformat(unittest.TestCase):
             parse('{{#time:{{#if:1|y|}}}}').pformat(),
         )
 
+    def test_pformat_whitespace(self):
+        self.assertEqual(
+            '{{#if:\n'
+            '    a\n'
+            '}}',
+            parse('{{#if: a}}').pformat(),
+        )
+        self.assertEqual(
+            '{{#if:\n'
+            '    a\n'
+            '}}',
+            parse('{{#if:a }}').pformat(),
+        )
+        self.assertEqual(
+            '{{#if:\n'
+            '    a\n'
+            '}}',
+            parse('{{#if: a }}').pformat(),
+        )
+        self.assertEqual(
+            '{{#if:\n'
+            '    a= b\n'
+            '}}',
+            parse('{{#if: a= b }}').pformat(),
+        )
+        self.assertEqual(
+            '{{#if:\n'
+            '    a = b\n'
+            '}}',
+            parse('{{#if:a = b }}').pformat(),
+        )
+
     def test_colon_in_tl_name(self):
         self.assertEqual(
             '{{en:text\n'

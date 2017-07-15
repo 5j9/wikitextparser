@@ -620,20 +620,71 @@ class WikiText:
             level = func._indent_level
             short_indent = '\n' + indent * (level - 1)
             newline_indent = short_indent + indent
+            # Todo: When all conversions are done through ws change, we can
+            # remove re-fetching of functions.
             if len(args) == 1:
                 arg = args[0]
-                # The first arg is both the first and last argument.
+                value = arg.value
+                value_len = len(value)
+                rs_value = value.rstrip()
+                # the first arg is both the first and last argument
                 if arg.positional:
-                    arg.value = (
-                        newline_indent + arg.value.strip() + short_indent
-                    )
+                    if rs_value:
+                        # value is not empty
+                        rs_value_len = len(rs_value)
+                        rws_start = rs_value_len - value_len
+                        if rws_start:
+                            # value ends with whitespace; remove rws
+                            arg[rws_start:] = short_indent
+                            # remove lws
+                            lws_end = rs_value_len - len(rs_value.lstrip())
+                            if lws_end:
+                                # replace lws with newline_indent
+                                arg[1:1 + lws_end] = newline_indent
+                            else:
+                                # no lws, only add newline_indent
+                                arg.insert(1, newline_indent)
+                        else:
+                            # there is a value, but without rws
+                            # add right indent
+                            arg.insert(1 + value_len, short_indent)
+                            # remove lws
+                            lws_end = rs_value_len - len(rs_value.lstrip())
+                            if lws_end:
+                                # replace lws with newline_indent
+                                arg[1:1+ lws_end] = newline_indent
+                            else:
+                                # no lws, only add newline_indent
+                                arg.insert(1, newline_indent)
+                    else:
+                        # value is empty
+                        arg[1:] = newline_indent + short_indent
                 else:
-                    # Note that we don't add spaces before and after the
+                    # this is a kwarg
+                    # note that we don't add spaces before or after the
                     # '=' in parser functions because it could be part of
                     # an ordinary string.
-                    arg.name = newline_indent + arg.name.lstrip()
-                    arg.value = arg.value.rstrip() + short_indent
-                functions = parsed.parser_functions
+                    # rstrip and indent value
+                    name = arg.name
+                    if rs_value:
+                        # value is not empty
+                        rs_value_len = len(rs_value)
+                        rws_start = rs_value_len - value_len
+                        if rws_start:
+                            # value ends with whitespace; remove rws
+                            arg[rws_start:] = short_indent
+                        else:
+                            # there is a value, but without rws
+                            # add right indent
+                            arg.insert(2 + len(name) + value_len, short_indent)
+                    # lstrip and indent name
+                    lws_end = len(name) - len(name.lstrip())
+                    if lws_end:
+                        # replace lws with newline_indent
+                        arg[1:1 + lws_end] = newline_indent
+                    else:
+                        # no lws, only add newline_indent
+                        arg.insert(1, newline_indent)
                 continue
             # Special formatting for the first argument
             arg = args[0]
