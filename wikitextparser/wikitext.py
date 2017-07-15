@@ -621,8 +621,6 @@ class WikiText:
             level = func._indent_level
             short_indent = '\n' + indent * (level - 1)
             newline_indent = short_indent + indent
-            # Todo: When all conversions are done through ws change, we can
-            # remove re-fetching of functions.
             if len(args) == 1:
                 arg = args[0]
                 value = arg.value
@@ -709,6 +707,8 @@ class WikiText:
             else:
                 arg.name = ' ' + arg.name.lstrip(ws)
                 arg.value = arg.value.rstrip(ws) + short_indent
+            # Todo: When all conversions are done through ws change, we can
+            # remove re-fetching of functions.
             functions = parsed.parser_functions
         return parsed.string
 
