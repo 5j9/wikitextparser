@@ -12,6 +12,8 @@ HEADER_MATCH = re_compile(
     MULTILINE,
 ).match
 
+WS = '\r\n\t '
+
 
 class Section(WikiText):
 
@@ -53,7 +55,7 @@ class Section(WikiText):
         level = self.level
         if level == 0:
             return ''
-        return self.string.partition('\n')[0].rstrip()[level:-level]
+        return self.string.partition('\n')[0].rstrip(WS)[level:-level]
 
     @title.setter
     def title(self, value: str) -> None:

@@ -6,6 +6,9 @@ import unittest
 from wikitextparser import WikiText, parse, Template, ParserFunction
 
 
+WS = '\r\n\t '
+
+
 class TestWikiText(unittest.TestCase):
 
     """Test basic functionalities of the WikiText class."""
@@ -135,14 +138,14 @@ class ShrinkSpanUpdate(unittest.TestCase):
     def test_stripping_template_name_should_update_its_arg_spans(self):
         t = Template('{{ t\n |1=2}}')
         a = t.arguments[0]
-        t.name = t.name.strip()
+        t.name = t.name.strip(WS)
         self.assertEqual('|1=2', a.string)
 
     def test_opcodes_in_spans_should_be_referenced_based_on_self_lststr0(self):
         wt = WikiText('{{a}}{{ b\n|d=}}')
         template = wt.templates[1]
         arg = template.arguments[0]
-        template.name = template.name.strip()
+        template.name = template.name.strip(WS)
         self.assertEqual('|d=', arg.string)
 
     def test_rmstart_s__rmstop__e(self):
@@ -384,7 +387,7 @@ class Table(unittest.TestCase):
     def test_table_start_after_space(self):
         s = '   {|class=wikitable\n|a \n|}'
         p = parse(s)
-        self.assertEqual(s.strip(), p.tables[0].string)
+        self.assertEqual(s.strip(WS), p.tables[0].string)
 
     def test_ignore_comments_before_extracting_tables(self):
         s = '{|class=wikitable\n|a \n<!-- \n|} \n-->\n|b\n|}'
@@ -753,6 +756,14 @@ class TestPformat(unittest.TestCase):
             '    a = b\n'
             '}}',
             parse('{{#if:a = b }}').pformat(),
+        )
+
+    def test_zwnj_is_not_whitespace(self):
+        self.assertEqual(
+            '{{#if:\n'
+            '    \u200c\n'
+            '}}',
+            parse('{{#if:\u200c}}').pformat(),
         )
 
     def test_colon_in_tl_name(self):

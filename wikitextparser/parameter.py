@@ -6,6 +6,9 @@ from typing import Optional
 from .wikitext import SubWikiText
 
 
+WS = '\r\n\t '
+
+
 class Parameter(SubWikiText):
 
     """Create a new {{{parameters}}} object."""
@@ -69,8 +72,8 @@ class Parameter(SubWikiText):
             >>> p
             Parameter("'{{{p1|{{{p2|{{{p3|}}}}}}}}}'")
         """
-        stripped_default_name = new_default_name.strip()
-        if stripped_default_name == self.name.strip():
+        stripped_default_name = new_default_name.strip(WS)
+        if stripped_default_name == self.name.strip(WS):
             return
         dig = True
         innermost_param = self
@@ -79,7 +82,7 @@ class Parameter(SubWikiText):
             default = innermost_param.default
             for p in innermost_param.parameters:
                 if p.string == default:
-                    if stripped_default_name == p.name.strip():
+                    if stripped_default_name == p.name.strip(WS):
                         return
                     innermost_param = p
                     dig = True

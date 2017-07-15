@@ -22,6 +22,8 @@ BAR_SPLITS_FULLMATCH = regex.compile(
 
 T = TypeVar('T')
 
+WS = '\r\n\t '
+
 
 class Template(SubWikiText):
 
@@ -104,7 +106,7 @@ class Template(SubWikiText):
 
         """
         # Remove comments
-        name = COMMENT_SUB('', self.name).strip()
+        name = COMMENT_SUB('', self.name).strip(WS)
         # Remove code
         if code:
             head, sep, tail = name.partition(':')
@@ -147,7 +149,7 @@ class Template(SubWikiText):
         """
         names = set()  # type: set
         for a in reversed(self.arguments):
-            name = a.name.strip()
+            name = a.name.strip(WS)
             if name in names:
                 del a[:len(a.string)]
             else:
@@ -178,13 +180,13 @@ class Template(SubWikiText):
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         for arg in reversed(self.arguments):
-            name = arg.name.strip()
+            name = arg.name.strip(WS)
             if arg.positional:
                 # Value of keyword arguments is automatically stripped by MW.
                 val = arg.value
             else:
                 # But it's not OK to strip whitespace in positional arguments.
-                val = arg.value.strip()
+                val = arg.value.strip(WS)
             if name in name_to_lastarg_vals:
                 # This is a duplicate argument.
                 if not val:
@@ -240,7 +242,7 @@ class Template(SubWikiText):
                 arg.positional = positional
             if preserve_spacing:
                 val = arg.value
-                arg.value = val.replace(val.strip(), value)
+                arg.value = val.replace(val.strip(WS), value)
             else:
                 arg.value = value
             return
@@ -275,7 +277,7 @@ class Template(SubWikiText):
         else:
             if preserve_spacing:
                 addstring = (
-                    '|' + (before_name + name.strip()).ljust(name_length) +
+                    '|' + (before_name + name.strip(WS)).ljust(name_length) +
                     '=' + before_value + value + after_value
                 )
             else:
@@ -296,8 +298,8 @@ class Template(SubWikiText):
                     # The addstring needs to be recalculated because we don't
                     # want to change the the whitespace before final braces.
                     arg[0:len(arg_string)] = (
-                        arg.string.rstrip() + after_value +
-                        addstring.rstrip() + after_values[0]
+                        arg.string.rstrip(WS) + after_value +
+                        addstring.rstrip(WS) + after_values[0]
                     )
                 else:
                     arg.insert(len(arg_string), addstring)
@@ -325,13 +327,13 @@ class Template(SubWikiText):
 
         """
         for arg in reversed(self.arguments):
-            if arg.name.strip() == name.strip():
+            if arg.name.strip(WS) == name.strip(WS):
                 if value:
                     if arg.positional:
                         if arg.value == value:
                             return True
                         return False
-                    if arg.value.strip() == value.strip():
+                    if arg.value.strip(WS) == value.strip(WS):
                         return True
                     return False
                 return True
@@ -368,6 +370,6 @@ def get_arg(name: str, args: Iterable[Argument]) -> Optional[Argument]:
 
     """
     for arg in args:
-        if arg.name.strip() == name.strip():
+        if arg.name.strip(WS) == name.strip(WS):
             return arg
     return None

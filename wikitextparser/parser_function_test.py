@@ -6,6 +6,9 @@ import unittest
 from wikitextparser import ParserFunction, WikiText
 
 
+WS = '\r\n\t '
+
+
 class TestParserFunction(unittest.TestCase):
 
     """Test the ParserFunction class."""
@@ -24,7 +27,7 @@ class TestParserFunction(unittest.TestCase):
 
     def test_set_name(self):
         pf = ParserFunction('{{   #if: test | true | false }}')
-        pf.name = pf.name.strip()
+        pf.name = pf.name.strip(WS)
         self.assertEqual('{{#if: test | true | false }}', pf.string)
 
     def test_pipes_inside_params_or_templates(self):

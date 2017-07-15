@@ -489,6 +489,7 @@ class WikiText:
         Note that this function will not mutate self.
 
         """
+        ws = '\r\n\t '
         # Do not try to do inplace pformat. It will overwrite on some spans.
         string = self.string
         parsed = WikiText([string], self._pp_type_to_spans())
@@ -501,11 +502,11 @@ class WikiText:
         else:
             # Only remove comments that contain whitespace.
             for c in parsed.comments:
-                if not c.contents.strip():
+                if not c.contents.strip(ws):
                     c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
-            tl_name = template.name.strip()
+            tl_name = template.name.strip(ws)
             template.name = (
                 ' ' + tl_name + ' ' if tl_name.startswith('{') else tl_name
             )
@@ -518,7 +519,7 @@ class WikiText:
             if not args:
                 continue
             # Required for alignment
-            arg_stripped_names = [a.name.strip() for a in args]
+            arg_stripped_names = [a.name.strip(ws) for a in args]
             arg_positionalities = [a.positional for a in args]
             arg_name_lengths = [
                 wcswidth(n.replace('لا', 'ل'))
@@ -538,7 +539,7 @@ class WikiText:
             last_arg = args.pop()
             last_is_positional = arg_positionalities.pop()
             last_value = last_arg.value
-            last_stripped_value = last_value.strip()
+            last_stripped_value = last_value.strip(ws)
             if last_is_positional and last_value != last_stripped_value:
                 stop_conversion = True
                 if not last_value.endswith('\n' + indent * (level - 1)):
@@ -564,10 +565,10 @@ class WikiText:
                 # This is either a parser function or a keyword
                 # argument in a template. In both cases the name
                 # can be lstripped and the value can be rstripped.
-                last_arg.name = ' ' + last_arg.name.lstrip()
+                last_arg.name = ' ' + last_arg.name.lstrip(ws)
                 if not last_value.endswith('\n' + indent * (level - 1)):
                     last_arg.value = (
-                        last_value.rstrip() + ' ' + last_comment_indent
+                        last_value.rstrip(ws) + ' ' + last_comment_indent
                     )
             if not args:
                 continue
@@ -579,7 +580,7 @@ class WikiText:
                 reversed(arg_name_lengths),
             ):
                 value = arg.value
-                stripped_value = value.strip()
+                stripped_value = value.strip(ws)
                 # Positional arguments of templates are sensitive to
                 # whitespace. See:
                 # https://meta.wikimedia.org/wiki/Help:Newlines_and_spaces
@@ -601,7 +602,7 @@ class WikiText:
         while i < len(functions):
             func = functions[i]
             i += 1
-            name = func.name.lstrip()
+            name = func.name.lstrip(ws)
             if name.lower() in ('#tag', '#invoke', ''):
                 # The 2nd argument of `tag` parser function is an exception
                 # and cannot be stripped.
@@ -626,7 +627,7 @@ class WikiText:
                 arg = args[0]
                 value = arg.value
                 value_len = len(value)
-                rs_value = value.rstrip()
+                rs_value = value.rstrip(ws)
                 # the first arg is both the first and last argument
                 if arg.positional:
                     if rs_value:
@@ -637,7 +638,7 @@ class WikiText:
                             # value ends with whitespace; remove rws
                             arg[rws_start:] = short_indent
                             # remove lws
-                            lws_end = rs_value_len - len(rs_value.lstrip())
+                            lws_end = rs_value_len - len(rs_value.lstrip(ws))
                             if lws_end:
                                 # replace lws with newline_indent
                                 arg[1:1 + lws_end] = newline_indent
@@ -649,10 +650,10 @@ class WikiText:
                             # add right indent
                             arg.insert(1 + value_len, short_indent)
                             # remove lws
-                            lws_end = rs_value_len - len(rs_value.lstrip())
+                            lws_end = rs_value_len - len(rs_value.lstrip(ws))
                             if lws_end:
                                 # replace lws with newline_indent
-                                arg[1:1+ lws_end] = newline_indent
+                                arg[1:1 + lws_end] = newline_indent
                             else:
                                 # no lws, only add newline_indent
                                 arg.insert(1, newline_indent)
@@ -678,7 +679,7 @@ class WikiText:
                             # add right indent
                             arg.insert(2 + len(name) + value_len, short_indent)
                     # lstrip and indent name
-                    lws_end = len(name) - len(name.lstrip())
+                    lws_end = len(name) - len(name.lstrip(ws))
                     if lws_end:
                         # replace lws with newline_indent
                         arg[1:1 + lws_end] = newline_indent
@@ -689,24 +690,25 @@ class WikiText:
             # Special formatting for the first argument
             arg = args[0]
             if arg.positional:
-                arg.value = newline_indent + arg.value.strip() + newline_indent
+                arg.value = \
+                    newline_indent + arg.value.strip(ws) + newline_indent
             else:
-                arg.name = newline_indent + arg.name.lstrip()
-                arg.value = arg.value.rstrip() + newline_indent
+                arg.name = newline_indent + arg.name.lstrip(ws)
+                arg.value = arg.value.rstrip(ws) + newline_indent
             # Formatting the middle arguments
             for arg in args[1:-1]:
                 if arg.positional:
-                    arg.value = ' ' + arg.value.strip() + newline_indent
+                    arg.value = ' ' + arg.value.strip(ws) + newline_indent
                 else:
-                    arg.name = ' ' + arg.name.lstrip()
-                    arg.value = arg.value.rstrip() + newline_indent
+                    arg.name = ' ' + arg.name.lstrip(ws)
+                    arg.value = arg.value.rstrip(ws) + newline_indent
             # Special formatting for the last argument
             arg = args[-1]
             if arg.positional:
-                arg.value = ' ' + arg.value.strip() + short_indent
+                arg.value = ' ' + arg.value.strip(ws) + short_indent
             else:
-                arg.name = ' ' + arg.name.lstrip()
-                arg.value = arg.value.rstrip() + short_indent
+                arg.name = ' ' + arg.name.lstrip(ws)
+                arg.value = arg.value.rstrip(ws) + short_indent
             functions = parsed.parser_functions
         return parsed.string
 

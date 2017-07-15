@@ -47,6 +47,8 @@ CAPTION_REGEX = regex.compile(
 )
 T = TypeVar('T')
 
+WS = '\r\n\t '
+
 
 class Table(SubWikiTextWithAttrs):
 
@@ -136,7 +138,7 @@ class Table(SubWikiTextWithAttrs):
                 for m in match_row:
                     # Spaces after the first newline can be meaningful
                     s, e = m.span('data')
-                    row_data.append(string[s:e].lstrip(' ').rstrip())
+                    row_data.append(string[s:e].lstrip(' ').rstrip(WS))
         else:
             for match_row in match_table:
                 row_data = []
