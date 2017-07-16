@@ -133,7 +133,7 @@ class Contains(unittest.TestCase):
 
 class ShrinkSpanUpdate(unittest.TestCase):
 
-    """Test the _shrink_span_update method."""
+    """Test the _shrink_spans method."""
 
     def test_stripping_template_name_should_update_its_arg_spans(self):
         t = Template('{{ t\n |1=2}}')
@@ -158,7 +158,7 @@ class ShrinkSpanUpdate(unittest.TestCase):
 
 class CloseSubSpans(unittest.TestCase):
 
-    """Test the _close_subspans method."""
+    """Test the _rm_subspans method."""
 
     def test_spans_are_closed_properly(self):
         # Real example:
@@ -168,7 +168,7 @@ class CloseSubSpans(unittest.TestCase):
         # )
         wt = WikiText('')
         wt._type_to_spans = {'ParserFunction': [[16, 25]]}
-        wt._close_subspans(16, 27)
+        wt._rm_subspans(16, 27)
         self.assertFalse(wt._type_to_spans['ParserFunction'])
 
 
