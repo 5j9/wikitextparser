@@ -514,18 +514,19 @@ class WikiText:
                     c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
-            tl_name = template.name.strip(ws)
+            s_tl_name = template.name.strip(ws)
             template.name = (
-                ' ' + tl_name + ' ' if tl_name.startswith('{') else tl_name
+                ' ' + s_tl_name + ' '
+                if s_tl_name.startswith('{') else s_tl_name
             )
-            if ':' in tl_name:
+            args = template.arguments
+            if not args:
+                continue
+            if ':' in s_tl_name:
                 # Don't use False because we don't know for sure.
                 not_a_parser_function = None
             else:
                 not_a_parser_function = True
-            args = template.arguments
-            if not args:
-                continue
             # Required for alignment
             arg_stripped_names = [a.name.strip(ws) for a in args]
             arg_positionalities = [a.positional for a in args]
@@ -606,6 +607,7 @@ class WikiText:
                     )
                     arg.value = ' ' + stripped_value + newline_indent
         for func in parsed.parser_functions:
+            # Todo: Strip func.name?
             name = func.name.lstrip(ws)
             if name.lower() in ('#tag', '#invoke', ''):
                 # The 2nd argument of `tag` parser function is an exception
