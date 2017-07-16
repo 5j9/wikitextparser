@@ -605,11 +605,7 @@ class WikiText:
                         ' ' * (max_name_len - arg_name_len)
                     )
                     arg.value = ' ' + stripped_value + newline_indent
-        i = 0
-        functions = parsed.parser_functions
-        while i < len(functions):
-            func = functions[i]
-            i += 1
+        for func in parsed.parser_functions:
             name = func.name.lstrip(ws)
             if name.lower() in ('#tag', '#invoke', ''):
                 # The 2nd argument of `tag` parser function is an exception
