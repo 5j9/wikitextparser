@@ -726,7 +726,7 @@ class TestPformat(unittest.TestCase):
             parse('{{#time:{{#if:1|y|}}}}').pformat(),
         )
 
-    def test_pformat_whitespace(self):
+    def test_pformat_pf_whitespace(self):
         self.assertEqual(
             '{{#if:\n'
             '    a\n'
@@ -756,6 +756,18 @@ class TestPformat(unittest.TestCase):
             '    a = b\n'
             '}}',
             parse('{{#if:a = b }}').pformat(),
+        )
+
+    def test_pformat_tl_whitespace(self):
+        self.assertEqual(
+            '{{t}}',
+            parse('{{ t }}').pformat(),
+        )
+        self.assertEqual(
+            '{{ {{t}} \n'
+            '    | a = b\n'
+            '}}',
+            parse('{{ {{t}}|a=b}}').pformat(),
         )
 
     def test_zwnj_is_not_whitespace(self):

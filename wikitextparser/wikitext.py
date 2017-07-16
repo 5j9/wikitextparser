@@ -514,15 +514,28 @@ class WikiText:
                     c.string = ''
         # First remove all current spacings.
         for template in parsed.templates:
-            s_tl_name = template.name.strip(ws)
-            template.name = (
-                ' ' + s_tl_name + ' '
-                if s_tl_name.startswith('{') else s_tl_name
-            )
+            # strip template.name
+            tl_name = template.name
+            rs_name = tl_name.rstrip(ws)
+            rs_name_len = len(rs_name)
+            name_len = len(tl_name)
+            ls_rs_name = rs_name.lstrip(ws)
+            lws = rs_name_len - len(ls_rs_name)
             args = template.arguments
+            setitem = template.__setitem__
             if not args:
+                if ls_rs_name[0] == '{':
+                    setitem(
+                        slice(2 + rs_name_len, 2 + name_len), ' ', False, False
+                    )
+                    setitem(slice(2, 2 + lws), ' ', False, False)
+                else:
+                    if name_len - rs_name_len:
+                        del template[2 + rs_name_len:2 + name_len]
+                    if lws:
+                        del template[2:2 + lws]
                 continue
-            if ':' in s_tl_name:
+            if ':' in ls_rs_name:
                 # Don't use False because we don't know for sure.
                 not_a_parser_function = None
             else:
@@ -531,7 +544,7 @@ class WikiText:
             arg_stripped_names = [a.name.strip(ws) for a in args]
             arg_positionalities = [a.positional for a in args]
             arg_name_lengths = [
-                wcswidth(n.replace('لا', 'ل'))
+                wcswidth(n.replace('لا', '?'))
                 if not p else 0
                 for n, p in zip(arg_stripped_names, arg_positionalities)
             ]
@@ -539,7 +552,19 @@ class WikiText:
             # Format template.name.
             level = template._indent_level
             newline_indent = '\n' + indent * level
-            template.name += newline_indent
+            # Add indent to tl_name and also finish stripping it
+            if ls_rs_name[0] == '{':
+                setitem(
+                    slice(2 + rs_name_len, 2 + name_len),
+                    ' ' + newline_indent, False, False,
+                )
+                setitem(slice(2, 2 + lws), ' ', False, False)
+            else:
+                setitem(
+                    slice(2 + rs_name_len, 2 + name_len),
+                    newline_indent, False, False
+                )
+                del template[2:2 + lws]
             if level == 1:
                 last_comment_indent = '<!--\n-->'
             else:
