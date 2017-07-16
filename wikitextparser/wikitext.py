@@ -202,7 +202,13 @@ class WikiText:
             )
         return start + ss, stop + ss
 
-    def __setitem__(self, key: Union[slice, int], value: str) -> None:
+    def __setitem__(
+        self,
+        key: Union[slice, int],
+        value: str,
+        parse: bool = True,
+        close_subpans: bool=True,
+    ) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -218,7 +224,8 @@ class WikiText:
         lststr[0] = lststr0[:start] + value + lststr0[stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
-        self._close_subspans(start, stop)
+        if close_subpans:
+            self._close_subspans(start, stop)
         # Update the other spans according to the new length.
         len_change = len(value) + start - stop
         if len_change > 0:
@@ -231,14 +238,15 @@ class WikiText:
                 rmstart=stop + len_change,  # new stop
                 rmstop=stop,  # old stop
             )
-        # Add the newly added spans contained in the value.
-        type_to_spans = self._type_to_spans
-        for type_, spans in parse_to_spans(
-            bytearray(value.encode('ascii', 'replace'))
-        ).items():
-            spans_append = type_to_spans[type_].append
-            for s, e in spans:
-                spans_append([s + start, e + start])
+        if parse:
+            # Add the newly added spans contained in the value.
+            type_to_spans = self._type_to_spans
+            for type_, spans in parse_to_spans(
+                bytearray(value.encode('ascii', 'replace'))
+            ).items():
+                spans_append = type_to_spans[type_].append
+                for s, e in spans:
+                    spans_append([s + start, e + start])
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
@@ -254,19 +262,18 @@ class WikiText:
         # Update lststr
         lststr[0] = lststr0[:start] + lststr0[stop:]
         # Update spans
-        self._shrink_span_update(
-            rmstart=start,
-            rmstop=stop,
-        )
+        self._shrink_span_update(start, stop)
 
     # Todo: def __add__(self, other) and __radd__(self, other)
 
-    def insert(self, index: int, string: str) -> None:
+    def insert(self, index: int, string: str, parse: bool=True) -> None:
         """Insert the given string before the specified index.
 
         This method has the same effect as ``self[index:index] = string``;
         it only avoids some condition checks as it rules out the possibility
         of the key being an slice, or the need to shrink any of the sub-spans.
+
+        If parse is False, don't parse the inserted string.
 
         """
         ss, se = self._span
@@ -287,14 +294,15 @@ class WikiText:
             estart=index,
             elength=string_len,
         )
-        # Remember newly added spans by the string.
-        spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(
-            bytearray(string.encode('ascii', 'replace'))
-        ).items():
-            spans_append = spans_dict[k].append
-            for s, e in v:
-                spans_append([s + index, e + index])
+        if parse:
+            # Remember newly added spans by the string.
+            spans_dict = self._type_to_spans
+            for k, v in parse_to_spans(
+                bytearray(string.encode('ascii', 'replace'))
+            ).items():
+                spans_append = spans_dict[k].append
+                for s, e in v:
+                    spans_append([s + index, e + index])
 
     @property
     def string(self) -> str:
@@ -1081,30 +1089,36 @@ def _pformat_pf_arg(
         rws_start = rs_value_len - value_len
         if rws_start:
             # value ends with whitespace; remove rws
-            arg[rws_start:] = right_indent
+            arg.__setitem__(slice(rws_start, None), right_indent, False, False)
             # remove lws
             lws_end = rs_value_len - len(rs_value.lstrip(WS))
             if lws_end:
                 # replace lws with left_indent
-                arg[1:1 + lws_end] = left_indent
+                arg.__setitem__(
+                    slice(1, 1 + lws_end), left_indent, False, False,
+                )
             else:
                 # no lws, only add left_indent
-                arg.insert(1, left_indent)
+                arg.insert(1, left_indent, False)
         else:
             # there is a value, but without rws
             # add right indent
-            arg.insert(1 + value_len, right_indent)
+            arg.insert(1 + value_len, right_indent, False)
             # remove lws
             lws_end = rs_value_len - len(rs_value.lstrip(WS))
             if lws_end:
                 # replace lws with left_indent
-                arg[1:1 + lws_end] = left_indent
+                arg.__setitem__(
+                    slice(1, 1 + lws_end), left_indent, False, False,
+                )
             else:
                 # no lws, only add left_indent
-                arg.insert(1, left_indent)
+                arg.insert(1, left_indent, False)
     else:
         # value is empty
-        arg[1:] = left_indent + right_indent
+        arg.__setitem__(
+            slice(1, None), left_indent + right_indent, False, False,
+        )
 
 
 def _pformat_pf_kwarg(
@@ -1126,19 +1140,19 @@ def _pformat_pf_kwarg(
         rws_start = len(rs_value) - value_len
         if rws_start:
             # value ends with whitespace; remove rws
-            arg[rws_start:] = right_indent
+            arg.__setitem__(slice(rws_start, None), right_indent, False, False)
         else:
             # there is a value, but without rws
             # add right indent
-            arg.insert(2 + len(name) + value_len, right_indent)
+            arg.insert(2 + len(name) + value_len, right_indent, False)
     # lstrip and indent name
     lws_end = len(name) - len(name.lstrip(WS))
     if lws_end:
         # replace lws with left_indent
-        arg[1:1 + lws_end] = left_indent
+        arg.__setitem__(slice(1, 1 + lws_end), left_indent, False, False)
     else:
         # no lws, only add left_indent
-        arg.insert(1, left_indent)
+        arg.insert(1, left_indent, False)
 
 
 if __name__ == '__main__':
