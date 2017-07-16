@@ -7,7 +7,7 @@
 
 from copy import deepcopy
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional
+    MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional,
 )
 from warnings import warn
 
@@ -72,6 +72,8 @@ TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter', 'ExtTag'
 }
+
+WS = '\r\n\t '
 
 
 class WikiText:
@@ -324,14 +326,14 @@ class WikiText:
                 yield span
 
     def _close_subspans(self, start: int, stop: int) -> None:
-        """Close all subspans of (start, stop)."""
+        """Close all sub-spans of (start, stop)."""
         ss, se = self._span
-        for type_spans in self._type_to_spans.values():
-            i = len(type_spans)
-            for s, e in reversed(type_spans):
+        for spans in self._type_to_spans.values():
+            i = len(spans)
+            for s, e in reversed(spans):
                 i -= 1
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    type_spans.pop(i)[:] = -1, -1
+                    spans.pop(i)[:] = -1, -1
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -377,17 +379,15 @@ class WikiText:
 
     def _extend_span_update(self, estart: int, elength: int) -> None:
         """Update self._type_to_spans according to the added span."""
-        # Note: No span should be removed from _type_to_spans.
         ss, se = self._span
         for spans in self._type_to_spans.values():
             for span in spans:
-                s, e = span
-                # estart is before s, or at s but not on self_span
-                if estart < s or s == estart != ss:
-                    span[:] = s + elength, e + elength
-                elif estart < e or e == estart == se:
+                if estart < span[1] or span[1] == estart == se:
                     # Added part is inside the span
                     span[1] += elength
+                    # estart is before s, or at s but not on self_span
+                    if estart < span[0] or span[0] == estart != ss:
+                        span[0] += elength
 
     @property
     def _indent_level(self) -> int:
@@ -489,7 +489,7 @@ class WikiText:
         Note that this function will not mutate self.
 
         """
-        ws = '\r\n\t '
+        ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
         string = self.string
         parsed = WikiText([string], self._pp_type_to_spans())
@@ -628,88 +628,49 @@ class WikiText:
                 rs_value = value.rstrip(ws)
                 # the first arg is both the first and last argument
                 if arg.positional:
-                    if rs_value:
-                        # value is not empty
-                        rs_value_len = len(rs_value)
-                        rws_start = rs_value_len - value_len
-                        if rws_start:
-                            # value ends with whitespace; remove rws
-                            arg[rws_start:] = short_indent
-                            # remove lws
-                            lws_end = rs_value_len - len(rs_value.lstrip(ws))
-                            if lws_end:
-                                # replace lws with newline_indent
-                                arg[1:1 + lws_end] = newline_indent
-                            else:
-                                # no lws, only add newline_indent
-                                arg.insert(1, newline_indent)
-                        else:
-                            # there is a value, but without rws
-                            # add right indent
-                            arg.insert(1 + value_len, short_indent)
-                            # remove lws
-                            lws_end = rs_value_len - len(rs_value.lstrip(ws))
-                            if lws_end:
-                                # replace lws with newline_indent
-                                arg[1:1 + lws_end] = newline_indent
-                            else:
-                                # no lws, only add newline_indent
-                                arg.insert(1, newline_indent)
-                    else:
-                        # value is empty
-                        arg[1:] = newline_indent + short_indent
+                    _pformat_pf_arg(
+                        arg, newline_indent, short_indent, rs_value, value_len,
+                    )
                 else:
-                    # this is a kwarg
-                    # note that we don't add spaces before or after the
-                    # '=' in parser functions because it could be part of
-                    # an ordinary string.
-                    # rstrip and indent value
-                    name = arg.name
-                    if rs_value:
-                        # value is not empty
-                        rs_value_len = len(rs_value)
-                        rws_start = rs_value_len - value_len
-                        if rws_start:
-                            # value ends with whitespace; remove rws
-                            arg[rws_start:] = short_indent
-                        else:
-                            # there is a value, but without rws
-                            # add right indent
-                            arg.insert(2 + len(name) + value_len, short_indent)
-                    # lstrip and indent name
-                    lws_end = len(name) - len(name.lstrip(ws))
-                    if lws_end:
-                        # replace lws with newline_indent
-                        arg[1:1 + lws_end] = newline_indent
-                    else:
-                        # no lws, only add newline_indent
-                        arg.insert(1, newline_indent)
+                    _pformat_pf_kwarg(
+                        arg, newline_indent, short_indent, rs_value, value_len,
+                    )
                 continue
             # Special formatting for the first argument
             arg = args[0]
+            value = arg.value
+            value_len = len(value)
+            rs_value = value.rstrip(ws)
             if arg.positional:
-                arg.value = \
-                    newline_indent + arg.value.strip(ws) + newline_indent
+                _pformat_pf_arg(
+                    arg, newline_indent, newline_indent, rs_value, value_len,
+                )
             else:
-                arg.name = newline_indent + arg.name.lstrip(ws)
-                arg.value = arg.value.rstrip(ws) + newline_indent
+                _pformat_pf_kwarg(
+                    arg, newline_indent, newline_indent, rs_value, value_len,
+                )
             # Formatting the middle arguments
             for arg in args[1:-1]:
+                value = arg.value
+                value_len = len(value)
+                rs_value = value.rstrip(ws)
                 if arg.positional:
-                    arg.value = ' ' + arg.value.strip(ws) + newline_indent
+                    _pformat_pf_arg(
+                        arg, ' ', newline_indent, rs_value, value_len,
+                    )
                 else:
-                    arg.name = ' ' + arg.name.lstrip(ws)
-                    arg.value = arg.value.rstrip(ws) + newline_indent
+                    _pformat_pf_kwarg(
+                        arg, ' ', newline_indent, rs_value, value_len,
+                    )
             # Special formatting for the last argument
             arg = args[-1]
+            value = arg.value
+            value_len = len(value)
+            rs_value = value.rstrip(ws)
             if arg.positional:
-                arg.value = ' ' + arg.value.strip(ws) + short_indent
+                _pformat_pf_arg(arg, ' ', short_indent, rs_value, value_len)
             else:
-                arg.name = ' ' + arg.name.lstrip(ws)
-                arg.value = arg.value.rstrip(ws) + short_indent
-            # Todo: When all conversions are done through ws change, we can
-            # remove re-fetching of functions.
-            functions = parsed.parser_functions
+                _pformat_pf_kwarg(arg, ' ', short_indent, rs_value, value_len)
         return parsed.string
 
     @property
@@ -1106,11 +1067,86 @@ class SubWikiText(WikiText):
                 yield span
 
 
+def _pformat_pf_arg(
+    arg: 'Argument',
+    left_indent: str,
+    right_indent: str,
+    rs_value: str,
+    value_len: int,
+) -> None:
+    """pformat the given positional argument of a parser function."""
+    if rs_value:
+        # value is not empty
+        rs_value_len = len(rs_value)
+        rws_start = rs_value_len - value_len
+        if rws_start:
+            # value ends with whitespace; remove rws
+            arg[rws_start:] = right_indent
+            # remove lws
+            lws_end = rs_value_len - len(rs_value.lstrip(WS))
+            if lws_end:
+                # replace lws with left_indent
+                arg[1:1 + lws_end] = left_indent
+            else:
+                # no lws, only add left_indent
+                arg.insert(1, left_indent)
+        else:
+            # there is a value, but without rws
+            # add right indent
+            arg.insert(1 + value_len, right_indent)
+            # remove lws
+            lws_end = rs_value_len - len(rs_value.lstrip(WS))
+            if lws_end:
+                # replace lws with left_indent
+                arg[1:1 + lws_end] = left_indent
+            else:
+                # no lws, only add left_indent
+                arg.insert(1, left_indent)
+    else:
+        # value is empty
+        arg[1:] = left_indent + right_indent
+
+
+def _pformat_pf_kwarg(
+    arg: 'Argument',
+    left_indent: str,
+    right_indent: str,
+    rs_value: str,
+    value_len: int,
+):
+    """"""
+    # this is a kwarg
+    # note that we don't add spaces before or after the
+    # '=' in parser functions because it could be part of
+    # an ordinary string.
+    # rstrip and indent value
+    name = arg.name
+    if rs_value:
+        # value is not empty
+        rws_start = len(rs_value) - value_len
+        if rws_start:
+            # value ends with whitespace; remove rws
+            arg[rws_start:] = right_indent
+        else:
+            # there is a value, but without rws
+            # add right indent
+            arg.insert(2 + len(name) + value_len, right_indent)
+    # lstrip and indent name
+    lws_end = len(name) - len(name.lstrip(WS))
+    if lws_end:
+        # replace lws with left_indent
+        arg[1:1 + lws_end] = left_indent
+    else:
+        # no lws, only add left_indent
+        arg.insert(1, left_indent)
+
+
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
     from .tag import (
         Tag, START_TAG_PATTERN, END_TAG_BYTES_PATTERN, START_TAG_FINDITER
     )
+    from .argument import Argument
     from .parser_function import ParserFunction
     from .template import Template
     from .wikilink import WikiLink
