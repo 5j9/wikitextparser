@@ -213,7 +213,7 @@ class WikiText:
 
         Use this method instead of calling `insert` and `del` consecutively.
         By doing so only one of the `_extend_span_update` and
-        `_shrink_spans` functions will be called and the performance
+        `_shrink_span_update` functions will be called and the performance
         will improve.
 
         """
@@ -222,30 +222,22 @@ class WikiText:
         lststr = self._lststr
         lststr0 = lststr[0]
         lststr[0] = lststr0[:start] + value + lststr0[stop:]
-        len_change = len(value) + start - stop
-        # Set the length of all sub-spans to zero because
+        # Set the length of all subspans to zero because
         # they are all being replaced.
         if close_subpans:
-            # Update the other spans according to the new length.
-            if len_change > 0:
-                self._extend_rm_subspans(start, stop, len_change)
-            elif len_change < 0:
-                self._rm_subspans(start, stop)
-                self._shrink_spans(
-                    rmstart=stop + len_change,  # new stop
-                    rmstop=stop,  # old stop
-                )
-            else:
-                self._rm_subspans(start, stop)
-        else:
-            # Update the other spans according to the new length.
-            if len_change > 0:
-                self._extend_span_update(start, len_change)
-            elif len_change < 0:
-                self._shrink_spans(
-                    rmstart=stop + len_change,  # new stop
-                    rmstop=stop,  # old stop
-                )
+            self._close_subspans(start, stop)
+        # Update the other spans according to the new length.
+        len_change = len(value) + start - stop
+        if len_change > 0:
+            self._extend_span_update(
+                estart=start,
+                elength=len_change,
+            )
+        elif len_change < 0:
+            self._shrink_span_update(
+                rmstart=stop + len_change,  # new stop
+                rmstop=stop,  # old stop
+            )
         if parse:
             # Add the newly added spans contained in the value.
             type_to_spans = self._type_to_spans
@@ -270,7 +262,7 @@ class WikiText:
         # Update lststr
         lststr[0] = lststr0[:start] + lststr0[stop:]
         # Update spans
-        self._shrink_spans(start, stop)
+        self._shrink_span_update(start, stop)
 
     # Todo: def __add__(self, other) and __radd__(self, other)
 
@@ -341,7 +333,7 @@ class WikiText:
             if s <= ss and se <= e:
                 yield span
 
-    def _rm_subspans(self, start: int, stop: int) -> None:
+    def _close_subspans(self, start: int, stop: int) -> None:
         """Close all sub-spans of (start, stop)."""
         ss, se = self._span
         for spans in self._type_to_spans.values():
@@ -351,53 +343,12 @@ class WikiText:
                 if (start <= s and e <= stop) and (ss != s or se != e):
                     spans.pop(i)[:] = -1, -1
 
-    def _extend_rm_subspans(
-        self, start: int, stop: int, length: int
-    ) -> None:
-        """Remove sub-spans and extend other spans if needed.
-
-        This method is combination of self._rm_subspans and
-        self._extend_span_update.
-
-        """
-        ss, se = self._span
-        for spans in self._type_to_spans.values():
-            i = len(spans)
-            for span in reversed(spans):
-                s, e = span
-                i -= 1
-                if start < e:
-                    if (start <= s and e <= stop) and (ss != s or se != e):
-                        spans.pop(i)[:] = -1, -1
-                        continue
-                    # not a subspan, but part of extend
-                    span[1] += length
-                    if start < s or s == start != ss:
-                        span[0] += length
-                    continue
-                if e == start == se:
-                    span[1] += length
-                    if start < s or s == start != ss:
-                        span[0] += length
-
-    def _extend_span_update(self, estart: int, elength: int) -> None:
-        """Update self._type_to_spans according to the added span."""
-        ss, se = self._span
-        for spans in self._type_to_spans.values():
-            for span in spans:
-                if estart < span[1] or span[1] == estart == se:
-                    # Added part is inside the span
-                    span[1] += elength
-                    # estart is before s, or at s but not on self_span
-                    if estart < span[0] or span[0] == estart != ss:
-                        span[0] += elength
-
-    def _shrink_spans(self, rmstart: int, rmstop: int) -> None:
+    def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
 
-        Warning: If an operation involves both _shrink_spans and
+        Warning: If an operation involves both _shrink_span_update and
         _extend_span_update, you might wanna consider doing the
-        _extend_span_update before the _shrink_spans as this function
+        _extend_span_update before the _shrink_span_update as this function
         can cause data loss in self._type_to_spans.
 
         """
@@ -433,6 +384,18 @@ class WikiText:
                 else:
                     # s <= rmstart <= e < rmstop
                     span[1] = rmstart
+
+    def _extend_span_update(self, estart: int, elength: int) -> None:
+        """Update self._type_to_spans according to the added span."""
+        ss, se = self._span
+        for spans in self._type_to_spans.values():
+            for span in spans:
+                if estart < span[1] or span[1] == estart == se:
+                    # Added part is inside the span
+                    span[1] += elength
+                    # estart is before s, or at s but not on self_span
+                    if estart < span[0] or span[0] == estart != ss:
+                        span[0] += elength
 
     @property
     def _indent_level(self) -> int:
