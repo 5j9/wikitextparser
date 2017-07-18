@@ -1,4 +1,4 @@
-﻿"""Define the Wikitext and SubWikiText classes."""
+﻿"""Define the WikiText and SubWikiText classes."""
 
 
 # Todo: consider using a tree structure (interval or segment tree).
@@ -462,7 +462,7 @@ class WikiText:
         ss, se = self._span
         if ss == 0 and se == len(self._lststr[0]):
             return deepcopy(self._type_to_spans)
-        type_to_spans = {}  # type: Dict[str, List[List[int, int]]]
+        type_to_spans = {}  # type: Dict[str, List[List[int]]]
         for type_, spans in self._type_to_spans.items():
             newspans = type_to_spans[type_] = []
             for s, e in spans:

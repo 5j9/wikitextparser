@@ -287,17 +287,17 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     }
 
     """
-    comment_spans = []  # type: List[List[int, int]]
+    comment_spans = []  # type: List[List[int]]
     comment_spans_append = comment_spans.append
-    extension_tag_spans = []  # type: List[List[int, int]]
+    extension_tag_spans = []  # type: List[List[int]]
     extension_tag_spans_append = extension_tag_spans.append
-    wikilink_spans = []  # type: List[List[int, int]]
+    wikilink_spans = []  # type: List[List[int]]
     wikilink_spans_append = wikilink_spans.append
-    parameter_spans = []  # type: List[List[int, int]]
+    parameter_spans = []  # type: List[List[int]]
     parameter_spans_append = parameter_spans.append
-    parser_function_spans = []  # type: List[List[int, int]]
+    parser_function_spans = []  # type: List[List[int]]
     parser_function_spans_append = parser_function_spans.append
-    template_spans = []  # type: List[List[int, int]]
+    template_spans = []  # type: List[List[int]]
     template_spans_append = template_spans.append
     # HTML <!-- comments -->
     for match in COMMENT_FINDITER(byte_array):
