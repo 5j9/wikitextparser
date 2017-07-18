@@ -672,8 +672,8 @@ class WikiText:
             Parameter(
                 self._lststr,
                 self._type_to_spans,
-                index,
-            ) for index in self._gen_subspans('Parameter')
+                span,
+            ) for span in self._gen_subspans('Parameter')
         ]
 
     @property
@@ -683,8 +683,8 @@ class WikiText:
             ParserFunction(
                 self._lststr,
                 self._type_to_spans,
-                index,
-            ) for index in self._gen_subspans('ParserFunction')
+                span,
+            ) for span in self._gen_subspans('ParserFunction')
         ]
 
     @property
