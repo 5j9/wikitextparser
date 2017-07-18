@@ -3,7 +3,6 @@
 
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using separate strings for each node.
-# Todo: Delete keys of type_to_spans upon object destruction.
 
 from copy import deepcopy
 from typing import (
@@ -992,6 +991,7 @@ class WikiText:
                 # look for the end-tag
                 if name:
                     # the end_search is already available
+                    # noinspection PyUnboundLocalVariable
                     end_match = end_search(shadow_bytearray, start_match.end())
                 else:
                     # build end_search according to start tag name
