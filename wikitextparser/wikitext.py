@@ -331,11 +331,11 @@ class WikiText:
         """Close all sub-spans of (start, stop)."""
         ss, se = self._span
         for spans in self._type_to_spans.values():
-            i = len(spans)
-            for s, e in reversed(spans):
-                i -= 1
+            p = 0
+            for i, (s, e) in enumerate(reversed(spans)):
                 if (start <= s and e <= stop) and (ss != s or se != e):
-                    spans.pop(i)[:] = -1, -1
+                    spans.pop(len(spans) + p - i - 1)[:] = -1, -1
+                    p += 1
 
     def _shrink_span_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -347,9 +347,8 @@ class WikiText:
 
         """
         # Note: No span should be removed from _type_to_spans.
-        rmlength = rmstop - rmstart
         for spans in self._type_to_spans.values():
-            spans_len = len(spans)
+            p = 0
             for i, span in enumerate(reversed(spans)):
                 s, e = span
                 if e <= rmstart:
@@ -357,6 +356,7 @@ class WikiText:
                     continue
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
+                    rmlength = rmstop - rmstart
                     span[:] = s - rmlength, e - rmlength
                     continue
                 if rmstart <= s:
@@ -365,16 +365,17 @@ class WikiText:
                     # therefore the new s should be located at rmstart.
                     if rmstop >= e:
                         # rmstart <= s <= e < rmstop
-                        spans.pop(spans_len - 1 - i)[:] = -1, -1
+                        spans.pop(len(spans) + p - 1 - i)[:] = -1, -1
+                        p += 1
                         continue
                     # rmstart < s <= rmstop <= e
-                    span[:] = rmstart, e - rmlength
+                    span[:] = rmstart, e + rmstart - rmstop
                     continue
                 # From the previous comparison we know that s is before
                 # the rmstart; so s needs no change.
                 if rmstop < e:
                     # s <= rmstart <= rmstop <= e
-                    span[1] -= rmlength
+                    span[1] -= rmstop - rmstart
                 else:
                     # s <= rmstart <= e < rmstop
                     span[1] = rmstart
@@ -383,6 +384,7 @@ class WikiText:
         """Update self._type_to_spans according to the added span."""
         ss, se = self._span
         for spans in self._type_to_spans.values():
+            # Todo: spans.sort() causes a test failure. Why?
             for span in spans:
                 if estart < span[1] or span[1] == estart == se:
                     # Added part is inside the span
