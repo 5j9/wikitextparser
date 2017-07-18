@@ -155,6 +155,15 @@ class ShrinkSpanUpdate(unittest.TestCase):
         t[3:8] = ''
         self.assertEqual(c.string, 'c-->')
 
+    def test_shrink_more_than_one_subspan(self):
+        wt = WikiText('{{p|[[c1]][[c2]][[c3]]}}')
+        wls = wt.wikilinks
+        t = wt.templates[0]
+        del t[:]
+        self.assertEqual(wls[0].string, '')
+        self.assertEqual(wls[1].string, '')
+        self.assertEqual(wls[2].string, '')
+
 
 class CloseSubSpans(unittest.TestCase):
 
