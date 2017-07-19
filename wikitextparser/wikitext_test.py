@@ -11,7 +11,7 @@ WS = '\r\n\t '
 
 class TestWikiText(unittest.TestCase):
 
-    """Test basic functionalities of the WikiText class."""
+    """Test the basics  of the WikiText class."""
 
     def test_len(self):
         t2, t1 = WikiText('{{t1|{{t2}}}}').templates
@@ -99,6 +99,9 @@ class TestWikiText(unittest.TestCase):
         del wt[5:10]
         self.assertEqual(t1.string, '{{t1|}}')
         self.assertEqual(t2.string, '')
+
+    def test_span(self):
+        self.assertEqual(WikiText('').span, (0, 0))
 
 
 class Contains(unittest.TestCase):

@@ -299,6 +299,11 @@ class WikiText:
                 spans_append([s + index, e + index])
 
     @property
+    def span(self) -> tuple:
+        """Return the span of self.string according to the root node."""
+        return tuple(self._span)
+
+    @property
     def string(self) -> str:
         """Return str(self)."""
         start, end = self._span
