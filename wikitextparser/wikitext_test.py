@@ -816,7 +816,7 @@ class TestPformat(unittest.TestCase):
 
         """
         self.assertEqual(
-            '{{ #rel2abs:\n'
+            '{{#rel2abs:\n'
             '    \n'
             '}}',
             parse('{{ #rel2abs: }}').pformat(),

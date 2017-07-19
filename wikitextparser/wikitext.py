@@ -605,8 +605,12 @@ class WikiText:
         while i < len(functions):
             func = functions[i]
             i += 1
-            name = func.name.lstrip(ws)
-            if name.lower() in ('#tag', '#invoke', ''):
+            name = func.name
+            ls_name = name.lstrip(ws)
+            lws = len(name) - len(ls_name)
+            if lws:
+                del func[2:lws + 2]
+            if ls_name.lower() in ('#tag', '#invoke', ''):
                 # The 2nd argument of `tag` parser function is an exception
                 # and cannot be stripped.
                 # So in `{{#tag:tagname|arg1|...}}`, no whitespace should be
