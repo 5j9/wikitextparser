@@ -398,21 +398,20 @@ class WikiText:
 
     @property
     def nesting_level(self) -> int:
-        """Calculate the indent level for self.pformat function.
+        """Return the nesting level of self.
 
-        Minimum returned value for templates and parser functions is 1.
-        Being part of any Template or ParserFunction increases the indent
-        level by one.
+        The minimum nesting_level is 0. Being part of any Template or
+        ParserFunction increases the level by one.
 
         """
         ss, se = self._span
-        level = 1  # a template is always found in itself
-        _type_to_spans = self._type_to_spans
-        for s, e in _type_to_spans['Template']:
-            if s < ss and se < e:
+        level = 0
+        type_to_spans = self._type_to_spans
+        for s, e in type_to_spans['Template']:
+            if s <= ss and se <= e:
                 level += 1
-        for s, e in _type_to_spans['ParserFunction']:
-            if s < ss and se < e:
+        for s, e in type_to_spans['ParserFunction']:
+            if s <= ss and se <= e:
                 level += 1
         return level
 
