@@ -511,7 +511,7 @@ class WikiText:
             s_tl_name = template.name.strip(ws)
             template.name = (
                 ' ' + s_tl_name + ' '
-                if s_tl_name.startswith('{') else s_tl_name
+                if s_tl_name[0] == '{' else s_tl_name
             )
             args = template.arguments
             if not args:

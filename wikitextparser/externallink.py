@@ -42,8 +42,9 @@ class ExternalLink(SubWikiText):
 
         Automatically puts the ExternalLink in brackets if it's not already.
         """
-        if not self.in_brackets:
-            url = self.string
+        string = self.string
+        if not string[0] == '[':
+            url = string
             self.insert(len(url), ' ]')
             self.insert(0, '[')
             text = ''
@@ -55,4 +56,4 @@ class ExternalLink(SubWikiText):
     @property
     def in_brackets(self) -> bool:
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self.string.startswith('[')
+        return self.string[0] == '['

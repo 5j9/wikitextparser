@@ -173,7 +173,7 @@ class Cell(SubWikiTextWithAttrs):
         cached_match = self._cached_match
         if cached_match and cached_match.string == shadow:
             return cached_match
-        if shadow.startswith('\n'):
+        if shadow[0] == '\n':
             m = NEWLINE_CELL_MATCH(shadow)
             self._header = m['sep'] == '!'
         elif self._header:
@@ -240,7 +240,7 @@ class Cell(SubWikiTextWithAttrs):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if shadow.startswith('\n'):
+        if shadow[0] == '\n':
             self.insert(
                 cell_match.start('sep') + 1,
                 fmt.format(attr_name, attr_value)

@@ -482,7 +482,7 @@ def _semi_caption_increase(string: str, pos: int) -> int:
 
     """
     lsp = _lstrip_increase(string, pos)
-    while string.startswith('|+', lsp):
+    while string[lsp:lsp + 2] == '|+':
         pos = string.find('\n', lsp + 2)
         lsp = _lstrip_increase(string, pos)
         while string[lsp] not in ('!', '|'):
@@ -502,7 +502,7 @@ def _row_separator_increase(string: str, pos: int) -> int:
     # General format of row separators: r'\|-[^\n]*\n'
     scp = _semi_caption_increase(string, pos)
     lsp = _lstrip_increase(string, scp)
-    while string.startswith('|-', lsp):
+    while string[lsp:lsp + 2] == '|-':
         # We are on a row separator line.
         pos = string.find('\n', lsp + 2)
         pos = _semi_caption_increase(string, pos)
