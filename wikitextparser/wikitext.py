@@ -500,12 +500,12 @@ class WikiText:
         parsed._type_to_spans['WikiText'] = [span]
         if remove_comments:
             for c in parsed.comments:
-                c.string = ''
+                del c[:]
         else:
             # Only remove comments that contain whitespace.
             for c in parsed.comments:
                 if not c.contents.strip(ws):
-                    c.string = ''
+                    del c[:]
         # First remove all current spacings.
         for template in parsed.templates:
             s_tl_name = template.name.strip(ws)
