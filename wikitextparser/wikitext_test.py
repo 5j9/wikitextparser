@@ -478,13 +478,13 @@ class Table(unittest.TestCase):
 
 class IndentLevel(unittest.TestCase):
 
-    """Test the _indent_level method of the WikiText class."""
+    """Test the nesting_level method of the WikiText class."""
 
     def test_a_in_b(self):
         s = '{{b|{{a}}}}'
         a, b = WikiText(s).templates
-        self.assertEqual(1, b._indent_level)
-        self.assertEqual(2, a._indent_level)
+        self.assertEqual(1, b.nesting_level)
+        self.assertEqual(2, a.nesting_level)
 
 
 class TestPformat(unittest.TestCase):

@@ -392,7 +392,7 @@ class WikiText:
                         span[0] += elength
 
     @property
-    def _indent_level(self) -> int:
+    def nesting_level(self) -> int:
         """Calculate the indent level for self.pformat function.
 
         Minimum returned value for templates and parser functions is 1.
@@ -531,7 +531,7 @@ class WikiText:
             ]
             max_name_len = max(arg_name_lengths)
             # Format template.name.
-            level = template._indent_level
+            level = template.nesting_level
             newline_indent = '\n' + indent * level
             template.name += newline_indent
             if level == 1:
@@ -625,7 +625,7 @@ class WikiText:
             # parser functions. See:
             # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
             #    Stripping_whitespace
-            level = func._indent_level
+            level = func.nesting_level  # Todo: expose indent level?
             short_indent = '\n' + indent * (level - 1)
             newline_indent = short_indent + indent
             if len(args) == 1:
