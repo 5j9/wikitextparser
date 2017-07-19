@@ -384,10 +384,8 @@ class WikiText:
         """Update self._type_to_spans according to the added span."""
         ss, se = self._span
         for spans in self._type_to_spans.values():
-            # Todo: spans.sort() causes a test failure. Why?
             for span in spans:
                 if estart < span[1] or span[1] == estart == se:
-                    # Added part is inside the span
                     span[1] += elength
                     # estart is before s, or at s but not on self_span
                     if estart < span[0] or span[0] == estart != ss:
