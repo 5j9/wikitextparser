@@ -262,6 +262,7 @@ You may want to have a look at the test modules for more examples and probable p
 
 Compared with mwparserfromhell
 ==============================
+
 `mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as `wikitextparser`. The main reason leading me to create `wikitextparser` was that `mwparserfromhell` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation `wikitextparser` may be able to give you more acceptable results.
 
 But if you need to
@@ -274,6 +275,17 @@ then `mwparserfromhell` or maybe other libraries will be the way to go. Also not
 
 Of-course `wikitextparser` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
 
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage, but in my limited experience, `wikitextparser` has a decent performance even though some critical parts of `mwparserfromhell` (the tokenizer) are written in C. `wikitextparser` should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+The tokenizer in `mwparserfromhell` is written in C. Tokenization in `wikitextparser` is mostly done using the `regex` library which is also in C.
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, `wikitextparser` has a decent performance and should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
 
 If you have had a chance to compare these libraries in terms of performance please share your experience by opening an issue on github.
+
+
+Known issues and limitations
+============================
+
+* Syntax elements produced by a template transclusion cannot be detected by offline parsers.
+* Templates adjacent to external links, as in `http://example.com{{foo}}`, are NOT considered part of the link. In reality, this would depend on the contents of the template. This might change in the future.
+* Localized namespace names are unknown, so for example `[[File:...]]` links are treated as normal links. `mwparserfromhell` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
+* The `tags` method returns anything that looks like an HTML tag while MediaWiki recognizes only a finite number of tags and they are extension-dependent. A configuration option might be added in the future to address this issue.
+* `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supproted by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. A configuration option might be added in the future to address this issue.
