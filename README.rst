@@ -11,7 +11,7 @@ A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.o
 
 The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, lists, etc. found in wikitexts.
 
-WikiTextParser currently only supports Python 3.3+
+WikiTextParser supports Python 3.3+
 
 Installation
 ============
