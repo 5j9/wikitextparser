@@ -21,7 +21,7 @@ class Spans(unittest.TestCase):
         self.assertEqual(len(wt._type_to_spans['Template']), 0)
 
     def test_template_in_template(self):
-        wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}}}""")
+        wt = wtp.WikiText('{{cite|{{t1}}|{{t2}}}}')
         template_spans = wt._type_to_spans['Template']
         self.assertIn([7, 13], template_spans)
         self.assertIn([14, 20], template_spans)
@@ -29,8 +29,8 @@ class Spans(unittest.TestCase):
 
     def test_textmixed_multitemplate(self):
         wt = wtp.WikiText(
-            "text1{{cite|{{t1}}|{{t2}}}}"
-            "text2{{cite|{{t3}}|{{t4}}}}text3"
+            'text1{{cite|{{t1}}|{{t2}}}}'
+            'text2{{cite|{{t3}}|{{t4}}}}text3'
         )
         self.assertEqual(
             wt._type_to_spans['Template'],
@@ -38,35 +38,35 @@ class Spans(unittest.TestCase):
         )
 
     def test_multiline_mutitemplate(self):
-        wt = wtp.WikiText("""{{cite\n    |{{t1}}\n    |{{t2}}}}""")
+        wt = wtp.WikiText('{{cite\n    |{{t1}}\n    |{{t2}}}}')
         self.assertEqual(
             wt._type_to_spans['Template'],
             [[12, 18], [24, 30], [0, 32]],
         )
 
     def test_lacks_ending_braces(self):
-        wt = wtp.WikiText("""{{cite|{{t1}}|{{t2}}""")
+        wt = wtp.WikiText('{{cite|{{t1}}|{{t2}}')
         self.assertEqual(
             [[7, 13], [14, 20]],
             wt._type_to_spans['Template'],
         )
 
     def test_lacks_starting_braces(self):
-        wt = wtp.WikiText("""cite|{{t1}}|{{t2}}}}""")
+        wt = wtp.WikiText('cite|{{t1}}|{{t2}}}}')
         self.assertEqual(
             [[5, 11], [12, 18]],
             wt._type_to_spans['Template'],
         )
 
     def test_no_template_for_braces_around_wikilink(self):
-        wt = wtp.WikiText("{{[[a]]}}")
+        wt = wtp.WikiText('{{[[a]]}}')
         self.assertEqual(
             [],
             wt._type_to_spans['Template'],
         )
 
     def test_template_inside_parameter(self):
-        wt = wtp.WikiText("""{{{1|{{colorbox|yellow|text1}}}}}""")
+        wt = wtp.WikiText('{{{1|{{colorbox|yellow|text1}}}}}')
         self.assertEqual(
             [[5, 30]],
             wt._type_to_spans['Template'],
@@ -77,7 +77,7 @@ class Spans(unittest.TestCase):
         )
 
     def test_parameter_inside_template(self):
-        wt = wtp.WikiText("""{{colorbox|yellow|{{{1|defualt_text}}}}}""")
+        wt = wtp.WikiText('{{colorbox|yellow|{{{1|defualt_text}}}}}')
         self.assertEqual(
             [[0, 40]],
             wt._type_to_spans['Template'],
