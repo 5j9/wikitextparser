@@ -337,6 +337,14 @@ class Spans(unittest.TestCase):
             ))['Template'],
         )
 
+    def test_nested_param_semiparser(self):
+        self.assertEqual(
+            [[1, 14]],
+            parse_to_spans(bytearray(
+                b'{{{#if:v|y|n}}}'
+            ))['ParserFunction'],
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
