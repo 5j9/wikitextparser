@@ -30,7 +30,7 @@ INVALID_TL_NAME_FINDITER = regex_compile(
     VERBOSE,
 ).finditer
 TEMPLATE_NOT_PARAM_FINDITER = regex_compile(
-    (r'%s (?!\})  |  (?<!{) %s' % (
+    (r'%s (?!})  |  (?<!{) %s' % (
         TEMPLATE_PATTERN,
         TEMPLATE_PATTERN,
     )).encode(),
@@ -53,7 +53,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb"""
     \{\{\s*
     (?>
-        \#[^{}\s:]*
+        \#[^{}\s:]+
         |ARTICLE(?>PAGENAMEE?|SPACEE?)
         |BASEPAGENAMEE?
         |CASCADINGSOURCES
@@ -126,7 +126,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
             |rlencode
         )
     )
-    :[^{}]*\}\}
+    :(?>[^{}]*)\}\}
     """,
     VERBOSE
 ).finditer
