@@ -176,9 +176,13 @@ WIKILINK_FINDITER = regex_compile((
         \]\]
         |
         \| # Text of the wikilink
-        (?>
-            # Any character that is not the start of another wikilink
-            (?!\[\[)[\S\s]
+        (?> # Any character that is not the start of another wikilink
+            [^[\]]+
+            |
+            \[(?!\[)
+            |
+            # this group is lazy, therefore \] is not followed by another \]
+            \]
         )*?
         \]\]
     )
