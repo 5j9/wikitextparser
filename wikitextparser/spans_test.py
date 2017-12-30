@@ -345,6 +345,18 @@ class Spans(unittest.TestCase):
             ))['ParserFunction'],
         )
 
+    def test_single_brace_after_pf_remove(self):
+        self.assertEqual(
+            {
+                'Parameter': [], 'ParserFunction': [[4, 17]],
+                'Template': [[1, 21]], 'WikiLink': [], 'Comment': [],
+                'ExtTag': []
+            },
+            parse_to_spans(bytearray(
+                b'{{{ {{#if:v|y|n}}} }}'
+            ))
+        )
+
 
 if __name__ == '__main__':
     unittest.main()
