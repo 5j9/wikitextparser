@@ -12,14 +12,15 @@ from re import compile as re_compile
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 # Templates
-TEMPLATE_PATTERN = (
-    r'''
+TEMPLATE_FINDITER = regex_compile(
+    rb'''
     \{\{
     (?>\s*[^%1s]*\s*)  # name
     (?>\|[^{}]*)?  # optional args
     \}\}
-    ''' % INVALID_TITLE_CHARS_PATTERN
-)
+    ''' % INVALID_TITLE_CHARS_PATTERN.encode(),
+    VERBOSE,
+).finditer
 INVALID_TL_NAME_FINDITER = regex_compile(
     rb'''
     \{\{
@@ -27,13 +28,6 @@ INVALID_TL_NAME_FINDITER = regex_compile(
     (?>\|[^{}]*)?  # optional args
     \}\}
     ''',
-    VERBOSE,
-).finditer
-TEMPLATE_NOT_PARAM_FINDITER = regex_compile(
-    (r'%s (?!})  |  (?<!{) %s' % (
-        TEMPLATE_PATTERN,
-        TEMPLATE_PATTERN,
-    )).encode(),
     VERBOSE,
 ).finditer
 # Parameters
@@ -446,7 +440,7 @@ def parse_pm_tl_pf(
                 byte_array[ms:me] = b'_' * (me - ms)
         # Templates
         # match is False at this point
-        for match in TEMPLATE_NOT_PARAM_FINDITER(byte_array, start, end):
+        for match in TEMPLATE_FINDITER(byte_array, start, end):
             ms, me = match.span()
             template_spans_append([ms, me])
             byte_array[ms:me] = b'_' * (me - ms)
