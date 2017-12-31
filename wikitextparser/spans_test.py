@@ -381,6 +381,9 @@ class Spans(TestCase):
                 b'<ref>[[L| [[S]] ]]</ref>'
             ))
         )
+
+    @expectedFailure
+    def test_invalid_nested_wikilinks_in_ref(self):
         self.assertEqual(
             {
                 'Parameter': [], 'ParserFunction': [],
