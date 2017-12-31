@@ -13,12 +13,14 @@ from re import compile as re_compile
 INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
 # Templates
 TEMPLATE_FINDITER = regex_compile(
-    rb'''
-    \{\{
-    (?>\s*[^%1s]*\s*)  # name
-    (?>\|[^{}]*)?  # optional args
-    \}\}
-    ''' % INVALID_TITLE_CHARS_PATTERN.encode(),
+    (
+        r'''
+        \{\{
+        (?>\s*[^%1s]*\s*)  # name
+        (?>\|[^{}]*)?  # optional args
+        \}\}
+        ''' % INVALID_TITLE_CHARS_PATTERN
+    ).encode(),
     VERBOSE,
 ).finditer
 INVALID_TL_NAME_FINDITER = regex_compile(
