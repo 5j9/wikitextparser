@@ -1,13 +1,13 @@
 ﻿"""Test the functionalities of spans.py."""
 
 
-import unittest
+from unittest import expectedFailure, main, TestCase
 
 from wikitextparser.spans import PARSER_FUNCTION_FINDITER, parse_to_spans
 import wikitextparser as wtp
 
 
-class Spans(unittest.TestCase):
+class Spans(TestCase):
     """Test the spans."""
 
     def test_template_name_cannot_be_empty(self):
@@ -174,7 +174,7 @@ class Spans(unittest.TestCase):
         )
 
     # Todo: Should be fixed?
-    @unittest.expectedFailure
+    @expectedFailure
     def test_section_title_may_contain_template_newline_etc(self):
         wt = wtp.WikiText('=== h3 {{text\n\n|text}}<!-- \nc -->'
                           '<nowiki>\nnw\n</nowiki> ===\nt3')
@@ -357,6 +357,41 @@ class Spans(unittest.TestCase):
             ))
         )
 
+    def test_nested_wikilinks_in_ref(self):
+        self.assertEqual(
+            {
+                'Parameter': [], 'ParserFunction': [],
+                'Template': [], 'WikiLink': [[30, 38], [5, 40]], 'Comment': [],
+                'ExtTag': [[0, 46]]
+            },
+            parse_to_spans(bytearray(
+                b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>'
+            ))
+        )
+
+    @expectedFailure
+    def test_invalid_nested_wikilinks(self):
+        self.assertEqual(
+            {
+                'Parameter': [], 'ParserFunction': [],
+                'Template': [], 'WikiLink': [[10, 15]], 'Comment': [],
+                'ExtTag': [[0, 24]]
+            },
+            parse_to_spans(bytearray(
+                b'<ref>[[L| [[S]] ]]</ref>'
+            ))
+        )
+        self.assertEqual(
+            {
+                'Parameter': [], 'ParserFunction': [],
+                'Template': [], 'WikiLink': [[0, 13]], 'Comment': [],
+                'ExtTag': []
+            },
+            parse_to_spans(bytearray(
+                b'[[L| [[S]] ]]'
+            ))
+        )
+
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
