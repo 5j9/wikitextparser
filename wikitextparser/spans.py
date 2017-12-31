@@ -365,10 +365,6 @@ def parse_tag_extensions(
     PARSABLE_TAG_EXTENSIONS.
 
     """
-    # Remove the braces inside WikiLinks.
-    # WikiLinks may contain braces that interfere with
-    # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
-    # the span of the template should be the whole string.
     match = True  # type: Any
     while match:
         match = False
