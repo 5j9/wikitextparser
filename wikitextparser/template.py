@@ -15,8 +15,8 @@ COMMENT_SUB = re.compile(
 
 BAR_SPLITS_FULLMATCH = regex.compile(
     r'{{'
-    r'[^|]*'  # name
-    r'(?<arg>\|[^|]*)*'
+    r'[^|}]*+'  # name
+    r'(?<arg>\|[^|}]*+)*+'
     r'}}'
 ).fullmatch
 

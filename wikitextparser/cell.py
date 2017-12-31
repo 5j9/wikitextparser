@@ -11,8 +11,8 @@ from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_MATCH = regex.compile(
     r"""
-    # only for matching, not searching
-    \s*
+    # only for matching, not search
+    \s*+
     (?P<sep>[|!](?![+}-]))
     (?>
         # catch the matching pipe (attrs limiter)
@@ -29,7 +29,7 @@ NEWLINE_CELL_MATCH = regex.compile(
                     # attrs end with `|`; or `!!` if sep is `!`
                     (?P=sep){2}|\|\|
                 )
-            )*
+            )*  # Todo: why can't be made possessive?
         )
         # attribute-data separator
         \|
@@ -39,7 +39,7 @@ NEWLINE_CELL_MATCH = regex.compile(
             # start of a new cell
             \!\!
         )
-    )?
+    )?+
     # optional := the 1st sep is a single ! or |.
     (?P<data>[\s\S]*?)
     (?=
@@ -48,7 +48,7 @@ NEWLINE_CELL_MATCH = regex.compile(
         (?P=sep){2}|
         \|!!|
         # start of the next newline-cell
-        \n\s*[!|]|
+        \n\s*+[!|]|
         # end of cell-string
         $
     )
@@ -80,19 +80,19 @@ INLINE_HAEDER_CELL_MATCH = regex.compile(
                     # inline header attrs end with `|` (above) or `!!` (below)
                     (?!!{2})
                     [^|\n]
-                )*
+                )*+
             )
             # attrs-data separator
             \|
             # make sure that it's not a cell separator (||)
             (?!\|)
-        )?
+        )?+
     )
     # optional := the 1st sep is a single ! or |.
     (?P<data>.*?)
     (?=
         # start of the next newline-cell
-        \n\s*[!|]|
+        \n\s*+[!|]|
         # start of the next inline-cell
         \|\||
         !!|
@@ -123,12 +123,12 @@ INLINE_NONHAEDER_CELL_MATCH = regex.compile(
         (?!\|)
     )
     # optional := the 1st sep is a single ! or |.
-    ?
+    ?+
     (?P<data>
         [^|]*?
         (?=
             \|\|| # start of the next inline-cell
-            \n\s*[!|]| # start of the next newline-cell
+            \n\s*+[!|]| # start of the next newline-cell
             $ # end of cell-string
         )
     )

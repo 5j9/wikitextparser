@@ -38,9 +38,9 @@ SECTIONS_FULLMATCH = regex_compile(
     r'''
     (?<section>.*?)
     (?<section>
-        ^(?<eq>={1,6})[^\n]+?(?P=eq)\ *$  # header
+        ^(?<eq>={1,6})[^\n]+?(?P=eq)\ *+$  # header
         .*?
-    )*
+    )*  # todo: why can't be made possessive?
     ''',
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
@@ -52,14 +52,14 @@ TABLE_FINDITER = regex_compile(
     # Always starts on a new line with optional leading spaces or indentation.
     ^
     # Group the leading spaces or colons so that we can ignore them later.
-    ([ :]*)
+    ([ :]*+)
     {\| # Table contents
     (?:
         # Any character, as long as it is not indicating another table-start
-        (?!^\ *\{\|).
+        (?!^\ *+\{\|).
     )*?
     # Table-end
-    \n\s*
+    \n\s*+
     (?> \|} | \Z )
     """,
     DOTALL | MULTILINE | VERBOSE

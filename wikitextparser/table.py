@@ -23,16 +23,16 @@ CAPTION_REGEX = regex.compile(
         {\|
         (?:
             (?:
-                (?!\n\s*\|)
+                (?!\n\s*+\|)
                 [\s\S]
             )*?
         )
         # Start of caption line
-        \n\s*\|\+
+        \n\s*+\|\+
     )
     # Optional caption attrs
     (?:
-        (?P<attrs>[^\n|]*)
+        (?P<attrs>[^\n|]*+)
         (?:\|)
         (?!\|)
     )?

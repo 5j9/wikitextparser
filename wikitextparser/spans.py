@@ -16,8 +16,8 @@ TEMPLATE_FINDITER = regex_compile(
     (
         r'''
         \{\{
-        (?>\s*[^%1s]*\s*)  # name
-        (?>\|[^{}]*)?  # optional args
+        \s*+[^%1s]*+\s*+  # name
+        (?>\|[^{}]*+)?+  # optional args
         \}\}
         ''' % INVALID_TITLE_CHARS_PATTERN
     ).encode(),
@@ -26,8 +26,8 @@ TEMPLATE_FINDITER = regex_compile(
 INVALID_TL_NAME_FINDITER = regex_compile(
     rb'''
     \{\{
-    (?>[\s_]*) # invalid name
-    (?>\|[^{}]*)?  # optional args
+    [\s_]*+ # invalid name
+    (?>\|[^{}]*)?+  # optional args
     \}\}
     ''',
     VERBOSE,
@@ -36,7 +36,7 @@ INVALID_TL_NAME_FINDITER = regex_compile(
 PARAMETER_FINDITER = regex_compile(
     rb'''
     \{\{\{
-    (?>[^{}]*)
+    [^{}]*+
     \}\}\}
     ''',
     VERBOSE,
@@ -47,34 +47,34 @@ PARAMETER_FINDITER = regex_compile(
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARSER_FUNCTION_FINDITER = regex_compile(
     rb"""
-    \{\{\s*
+    \{\{\s*+
     (?>
-        \#[^{}\s:]+
-        |ARTICLE(?>PAGENAMEE?|SPACEE?)
-        |BASEPAGENAMEE?
+        \#[^{}\s:]++
+        |ARTICLE(?>PAGENAMEE?+|SPACEE?+)
+        |BASEPAGENAMEE?+
         |CASCADINGSOURCES
         |D(?>
             ISPLAYTITLE
-            |EFAULT(?>CATEGORYSORT|SORT(?:KEY)?)
+            |EFAULT(?>CATEGORYSORT|SORT(?:KEY)?+)
         )
-        |FULLPAGENAMEE?
+        |FULLPAGENAMEE?+
         |P(?>
             AGE(?>
                 ID
                 |SI(?>
                     ZE
                     |N(?>
-                        CAT(?:EGORY)?
+                        CAT(?:EGORY)?+
                         |N(?>S|AMESPACE)
                     )
                 )
-                |NAMEE?
+                |NAMEE?+
             )
             |ROTECTION(?>LEVEL|EXPIRY)
         )
-        |ROOTPAGENAMEE?
+        |ROOTPAGENAMEE?+
         |N(?>
-            AMESPACE(?>NUMBER|E?)
+            AMESPACE(?>NUMBER|E?+)
             |UM(?>
                 BER(?>
                     OF(?>
@@ -90,12 +90,12 @@ PARSER_FUNCTION_FINDITER = regex_compile(
                 |INGROUP
             )
         )
-        |REVISION(?>DAY2?|ID|MONTH1?|TIMESTAMP|USER|YEAR)
+        |REVISION(?>DAY2?+|ID|MONTH1?+|TIMESTAMP|USER|YEAR)
         |SUB(?>
-            JECT(?>SPACEE?|PAGENAMEE?)
+            JECT(?>SPACEE?+|PAGENAMEE?+)
             |PAGENAMEE?
         )
-        |TALK(?>PAGENAMEE?|SPACEE?)
+        |TALK(?>PAGENAMEE?+|SPACEE?+)
         |anchorencode
         |canonicalurl
         |f(?>
@@ -109,25 +109,26 @@ PARSER_FUNCTION_FINDITER = regex_compile(
         )
         |int
         |l(?>
-            c(?:first)?
+            c(?:first)?+
             |ocalurl
         )
-        |nse?
+        |nse?+
         |p(?>
             ad(?>left|right)
             |lural
         )
         |u(?>
-            c(?:first)?
+            c(?:first)?+
             |rlencode
         )
     )
-    :(?>[^{}]*)\}\}
+    :[^{}]*+
+    \}\}
     """,
     VERBOSE
 ).finditer
 # External links
-VALID_EXTLINK_CHARS_PATTERN = r'(?>[^ \\^`#<>\[\]\"\t\n{|}]*)'
+VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*+'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
 VALID_EXTLINK_SCHEMES_PATTERN = r'''
@@ -151,7 +152,7 @@ VALID_EXTLINK_SCHEMES_PATTERN = r'''
             |sh://
             |vn://
         )
-        |tel(?>:||net://)
+        |tel(?>:|net://)
         |urn:
         |worldwind://
         |xmpp:
@@ -167,7 +168,7 @@ WIKILINK_FINDITER = regex_compile((
     r'''
     \[\[
     (?!%s)
-    (?>[^%s]*)
+    [^%s]*+
     (
         \]\]
         |
@@ -236,20 +237,20 @@ TAG_BY_NAME_PATTERN = (
     r"""
     # First group is the tag name
     # Second group is indicator for PARSABLE_TAG_EXTENSIONS
-    < ((?>%s)|((?>%s))) \b (?>[^>]*) (?<!/)>
+    < ((?>%s)|((?>%s))) \b [^>]*+ (?<!/)>
     # content
     (?>
         # Contains no other tags or
-        (?>[^<]+)
+        [^<]++
         |
         # the nested-tag is something else or
-        < (?! \1 \b (?>[^>]*) >)
+        < (?! \1 \b [^>]*+ >)
         |
         # the nested tag closes itself
         <\1\b[^>]*/>
     )*?
     # tag-end
-    </\1\s*>
+    </\1\s*+>
     """
 )
 # The idea of the following regex is to detect innermost HTML tags. From

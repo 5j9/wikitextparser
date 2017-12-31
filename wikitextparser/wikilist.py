@@ -7,22 +7,22 @@ import regex
 from .wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*(?>\n|\Z))*'
+SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*+(?>\n|\Z))*+'
 LIST_PATTERN_FORMAT = (
     r'''
     (?<fullitem>
         ^
         (?<pattern>{pattern})
-        (?(?<=;\s*)
+        (?(?<=;\s*+)
             # mark inline definition as an item
-            (?<item>[^:\n]*)(?<fullitem>:(?<item>.*))?
+            (?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+
             (?>\n|\Z)%s
             |
             # non-definition
-            (?<item>.*)
+            (?<item>.*+)
             (?>\n|\Z)%s
         )
-    )+
+    )++
     '''
     % (SUBLIST_PATTERN, SUBLIST_PATTERN)
 ).format

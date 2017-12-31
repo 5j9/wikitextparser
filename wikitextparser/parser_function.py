@@ -11,8 +11,8 @@ from .argument import Argument
 
 BAR_SPLITS_FULLMATCH = regex.compile(
     r'{{'
-    r'[^:|]*'  # name
-    r'(?<arg>:[^|]*)?(?<arg>\|[^|]*)*'
+    r'[^:|}]*+'  # name
+    r'(?<arg>:[^|}]*+)?+(?<arg>\|[^|}]*+)*+'
     r'}}'
 ).fullmatch
 

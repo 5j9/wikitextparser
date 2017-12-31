@@ -20,7 +20,7 @@ from .wikitext import SubWikiText
 
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
-TAG_NAME = r'(?P<name>[A-Za-z0-9]+)'
+TAG_NAME = r'(?P<name>[A-Za-z0-9]++)'
 # https://www.w3.org/TR/html5/infrastructure.html#space-character
 SPACE_CHARS = r' \t\n\u000C\r'
 # http://stackoverflow.com/a/93029/2705757
@@ -29,11 +29,11 @@ SPACE_CHARS = r' \t\n\u000C\r'
 CONTROL_CHARS = r'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = (
-    r'(?P<attr_name>[^{SPACE_CHARS}{CONTROL_CHARS}\u0000"\'>/=]+)'
+    r'(?P<attr_name>[^{SPACE_CHARS}{CONTROL_CHARS}\u0000"\'>/=]++)'
 ).format(**locals())
-WS_EQ_WS = r'[{SPACE_CHARS}]*=[{SPACE_CHARS}]*'.format(**locals())
+WS_EQ_WS = r'[{SPACE_CHARS}]*+=[{SPACE_CHARS}]*+'.format(**locals())
 UNQUOTED_ATTR_VAL = (
-    r'(?P<attr_value>[^{SPACE_CHARS}"\'=<>`]+)'
+    r'(?P<attr_value>[^{SPACE_CHARS}"\'=<>`]++)'
 ).format(**locals())
 QUOTED_ATTR_VAL = r'(?P<quote>[\'"])(?P<attr_value>.+?)(?P=quote)'
 # May include character references, but for now, ignore the fact that they
@@ -44,19 +44,19 @@ ATTR_VAL = (
         # If an empty attribute is to be followed by the optional
         # "/" character, then there must be a space character separating
         # the two. This rule is ignored here.
-        {WS_EQ_WS}{UNQUOTED_ATTR_VAL}[{SPACE_CHARS}]*|
-        {WS_EQ_WS}{QUOTED_ATTR_VAL}[{SPACE_CHARS}]*|
-        [{SPACE_CHARS}]*(?P<attr_value>) # empty attribute
+        {WS_EQ_WS}{UNQUOTED_ATTR_VAL}[{SPACE_CHARS}]*|  # Todo: possessive?
+        {WS_EQ_WS}{QUOTED_ATTR_VAL}[{SPACE_CHARS}]*|  # Todo: possessive?
+        [{SPACE_CHARS}]*+(?P<attr_value>) # empty attribute
     )
     '''
 ).format(**locals())
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTR_PATTERN = (
-    r'(?P<attr>[{SPACE_CHARS}]+{ATTR_NAME}{ATTR_VAL})'.format(**locals())
+    r'(?P<attr>[{SPACE_CHARS}]++{ATTR_NAME}{ATTR_VAL})'.format(**locals())
 )
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
-    r'(?P<attr>[{SPACE_CHARS}]*{ATTR_NAME}{ATTR_VAL})*'.format(**locals()),
+    r'(?P<attr>[{SPACE_CHARS}]*+{ATTR_NAME}{ATTR_VAL})*+'.format(**locals()),
     flags=VERBOSE
 ).match
 # VOID_ELEMENTS = (
@@ -69,7 +69,7 @@ ATTRS_MATCH = regex_compile(
 # yet. See
 # https://developer.mozilla.org/en/docs/Web/SVG/Namespaces_Crash_Course
 # for an overview.
-END_TAG_PATTERN = r'(?P<end></%(name)s[{SPACE_CHARS}]*>)'.format(**locals())
+END_TAG_PATTERN = r'(?P<end></%(name)s[{SPACE_CHARS}]*+>)'.format(**locals())
 END_TAG = END_TAG_PATTERN % {'name': r'(?P<end_name>(?P=name))'}
 END_TAG_BYTES_PATTERN = END_TAG_PATTERN.encode()
 TAG_CONTENTS = r'(?P<contents>.*?)'
@@ -78,12 +78,12 @@ TAG_FULLMATCH = regex_compile(
     r'''
     # Note that the start group does not include the > character
     (?P<start>
-        <{TAG_NAME}{ATTR_PATTERN}*
+        <{TAG_NAME}{ATTR_PATTERN}*  # Todo: Possessive?
     )
     # After the attributes, or after the tag name if there are no attributes,
     # there may be one or more space characters. This is sometimes required but
     # ignored here.
-    [{SPACE_CHARS}]*
+    [{SPACE_CHARS}]*+
     (?>
         (?P<self_closing>/>)|
         >{TAG_CONTENTS}{END_TAG}|
@@ -104,8 +104,8 @@ TAG_FULLMATCH = regex_compile(
 START_TAG_PATTERN = (
     r'''
     (?P<start>
-        <{name}(?:%1s)*
-        [%2s]*
+        <{name}(?:%1s)*  # Todo: Why can't be made possessive?
+        [%2s]*+
         (?:(?P<self_closing>/>)|>)
     )
     ''' % (ATTR_PATTERN, SPACE_CHARS)
