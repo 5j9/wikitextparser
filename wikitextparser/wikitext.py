@@ -25,7 +25,7 @@ from .spans import (
 
 
 # External links
-BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *[^\]\n]*\]' % (
+BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
     VALID_EXTLINK_SCHEMES_PATTERN, VALID_EXTLINK_CHARS_PATTERN
 )
 EXTERNALLINK_FINDITER = regex_compile(
