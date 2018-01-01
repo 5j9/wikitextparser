@@ -3,15 +3,9 @@
 
 from setuptools import setup, find_packages
 from os import path
-from sys import version_info
 
 
 here = path.abspath(path.dirname(__file__))
-
-install_requires = ['regex', 'wcwidth']
-if version_info < (3, 5):
-    # Require typing in source distribution
-    install_requires.append('typing')
 
 setup(
     name='wikitextparser',
@@ -24,9 +18,11 @@ setup(
     author_email='5j9@users.noreply.github.com',
     license='GNU General Public License v3 (GPLv3)',
     packages=find_packages(),
-    install_requires=install_requires,
-    # Require 'typing' in python wheel
-    extras_require={'python_version < 3.5': ['typing']},
+    install_requires=[
+        'regex',
+        'wcwidth',
+        'typing;python_version<"3.5"',
+    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
