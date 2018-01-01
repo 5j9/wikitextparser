@@ -10,16 +10,16 @@ from re import compile as re_compile
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-INVALID_TITLE_CHARS_PATTERN = r'\x00-\x1f\|\{\}\[\]<>\n'
+VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 # Templates
 TEMPLATE_FINDITER = regex_compile(
     (
         r'''
         \{\{
-        \s*+[^%1s]*+\s*+  # name
+        \s*+%1s\s*+  # name
         (?>\|[^{}]*+)?+  # optional args
         \}\}
-        ''' % INVALID_TITLE_CHARS_PATTERN
+        ''' % VALID_TITLE_CHARS_PATTERN
     ).encode(),
     VERBOSE,
 ).finditer
@@ -167,8 +167,7 @@ BARE_EXTERNALLINK_PATTERN = (
 WIKILINK_FINDITER = regex_compile((
     r'''
     \[\[
-    (?!%s)
-    [^%s]*+
+    (?!%s)%s
     (
         \]\]
         |
@@ -185,7 +184,7 @@ WIKILINK_FINDITER = regex_compile((
     )
     ''' % (
         BARE_EXTERNALLINK_PATTERN,
-        INVALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'')
+        VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r''),
     )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
