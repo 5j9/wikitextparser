@@ -3,10 +3,7 @@
 
 from typing import Optional
 
-from .wikitext import SubWikiText
-
-
-WS = '\r\n\t '
+from .wikitext import SubWikiText, WS
 
 
 class Parameter(SubWikiText):

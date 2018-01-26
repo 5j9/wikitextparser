@@ -4,9 +4,7 @@
 import unittest
 
 from wikitextparser import WikiText, parse, Template, ParserFunction
-
-
-WS = '\r\n\t '
+from wikitextparser.wikitext import WS
 
 
 class TestWikiText(unittest.TestCase):

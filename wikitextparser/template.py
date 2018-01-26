@@ -4,7 +4,7 @@ import re
 import regex
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
-from .wikitext import SubWikiText
+from .wikitext import SubWikiText, WS
 from .argument import Argument
 
 
@@ -21,8 +21,6 @@ BAR_SPLITS_FULLMATCH = regex.compile(
 ).fullmatch
 
 T = TypeVar('T')
-
-WS = '\r\n\t '
 
 
 class Template(SubWikiText):

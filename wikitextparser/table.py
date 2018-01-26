@@ -6,13 +6,14 @@ from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 import regex
 
-from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
 from .cell import (
     Cell,
     NEWLINE_CELL_MATCH,
     INLINE_HAEDER_CELL_MATCH,
     INLINE_NONHAEDER_CELL_MATCH
 )
+from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
+from .wikitext import WS
 
 
 CAPTION_REGEX = regex.compile(
@@ -46,8 +47,6 @@ CAPTION_REGEX = regex.compile(
     regex.VERBOSE
 )
 T = TypeVar('T')
-
-WS = '\r\n\t '
 
 
 class Table(SubWikiTextWithAttrs):

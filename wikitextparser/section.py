@@ -4,15 +4,13 @@
 from re import compile as re_compile, MULTILINE
 from typing import MutableSequence, Union, List, Dict
 
-from .wikitext import WikiText
+from .wikitext import WikiText, WS
 
 
 HEADER_MATCH = re_compile(
     r'(={1,6})[^\n]+?\1[ \t]*$',
     MULTILINE,
 ).match
-
-WS = '\r\n\t '
 
 
 class Section(WikiText):
