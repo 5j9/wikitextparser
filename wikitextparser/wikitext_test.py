@@ -980,6 +980,11 @@ class Sections(unittest.TestCase):
             b.sections[2].string,
         )
 
+    def test_tabs_in_heading(self):
+        """Test that insert parses the inserted part."""
+        t = '=\tt\t=\t'
+        self.assertEqual(str(parse(t).sections[1]), t)
+
 
 class WikiList(unittest.TestCase):
 

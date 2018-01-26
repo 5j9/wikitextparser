@@ -8,7 +8,7 @@ from .wikitext import WikiText
 
 
 HEADER_MATCH = re_compile(
-    r'(={1,6})[^\n]+?\1 *$',
+    r'(={1,6})[^\n]+?\1[ \t]*$',
     MULTILINE,
 ).match
 

@@ -38,7 +38,7 @@ SECTIONS_FULLMATCH = regex_compile(
     r'''
     (?<section>.*?)
     (?<section>
-        ^(?<eq>={1,6})[^\n]+?(?P=eq)\ *+$  # header
+        ^(?<eq>={1,6})[^\n]+?(?P=eq)[ \t]*+$  # header
         .*?
     )*  # todo: why can't be made possessive?
     ''',
