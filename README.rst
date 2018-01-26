@@ -284,8 +284,8 @@ If you have had a chance to compare these libraries in terms of performance plea
 Known issues and limitations
 ============================
 
-* Syntax elements produced by a template transclusion cannot be detected by offline parsers.
-* Templates adjacent to external links, as in `http://example.com{{foo}}`, are NOT considered part of the link. In reality, this would depend on the contents of the template. This might change in the future.
-* Localized namespace names are unknown, so for example `[[File:...]]` links are treated as normal links. `mwparserfromhell` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
+* Syntax elements produced by a template transclusion cannot be detected by offline parsers. If required, such templates should be expanded manually. (``template_object.string = 'expanded_template'``)
+* Localized namespace names are unknown, so for example `[[File:...]]` links are treated as normal wikilinks. `mwparserfromhell` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
+* `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it should be trivial to compute a WikiLink's linktrail.
+* Templates adjacent to *bare* external links, as in `http://example.com{{dead link}}`, are *not* considered part of the link. In reality, this would depend on the contents of the template.
 * The `tags` method returns anything that looks like an HTML tag while MediaWiki recognizes only a finite number of tags and they are extension-dependent. A configuration option might be added in the future to address this issue.
-* `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supproted by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. A configuration option might be added in the future to address this issue.
