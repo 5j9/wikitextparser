@@ -1,13 +1,13 @@
 ﻿"""Test the functions of wikitext.py module."""
 
 
-import unittest
+from unittest import expectedFailure, main, TestCase
 
 from wikitextparser import WikiText, parse, Template, ParserFunction
 from wikitextparser.wikitext import WS
 
 
-class TestWikiText(unittest.TestCase):
+class TestWikiText(TestCase):
 
     """Test the basics  of the WikiText class."""
 
@@ -102,7 +102,7 @@ class TestWikiText(unittest.TestCase):
         self.assertEqual(WikiText('').span, (0, 0))
 
 
-class Contains(unittest.TestCase):
+class Contains(TestCase):
 
     """Test the __contains__ method of the WikiText class."""
 
@@ -132,7 +132,7 @@ class Contains(unittest.TestCase):
         self.assertFalse('{{c}}' in b2)
 
 
-class ShrinkSpanUpdate(unittest.TestCase):
+class ShrinkSpanUpdate(TestCase):
 
     """Test the _shrink_span_update method."""
 
@@ -166,7 +166,7 @@ class ShrinkSpanUpdate(unittest.TestCase):
         self.assertEqual(wls[2].string, '')
 
 
-class CloseSubSpans(unittest.TestCase):
+class CloseSubSpans(TestCase):
 
     """Test the _close_subspans method."""
 
@@ -182,7 +182,7 @@ class CloseSubSpans(unittest.TestCase):
         self.assertFalse(wt._type_to_spans['ParserFunction'])
 
 
-class ExpandSpanUpdate(unittest.TestCase):
+class ExpandSpanUpdate(TestCase):
 
     """Test the _expand_span_update method."""
 
@@ -205,7 +205,7 @@ class ExpandSpanUpdate(unittest.TestCase):
         self.assertEqual('', pf.string)
 
 
-class Templates(unittest.TestCase):
+class Templates(TestCase):
 
     """Test WikiText.templates."""
 
@@ -246,7 +246,7 @@ class Templates(unittest.TestCase):
         self.assertEqual(0, len(wt.templates))
 
 
-class ParserFunctions(unittest.TestCase):
+class ParserFunctions(TestCase):
 
     """Test WikiText.parser_functions."""
 
@@ -256,7 +256,7 @@ class ParserFunctions(unittest.TestCase):
         self.assertEqual(1, len(wt.parser_functions))
 
 
-class WikiLinks(unittest.TestCase):
+class WikiLinks(TestCase):
 
     """Test WikiText.wikilinks."""
 
@@ -275,7 +275,7 @@ class WikiLinks(unittest.TestCase):
         self.assertEqual(s, str(wt.wikilinks[0]))
 
 
-class Comments(unittest.TestCase):
+class Comments(TestCase):
 
     """Test the WikiText.commonts."""
 
@@ -287,7 +287,7 @@ class Comments(unittest.TestCase):
         )
 
 
-class ExternalLinks(unittest.TestCase):
+class ExternalLinks(TestCase):
 
     """Test the WikiText.external_links."""
 
@@ -353,7 +353,36 @@ class ExternalLinks(unittest.TestCase):
         )
         self.assertEqual(0, len(p.wikilinks))
 
-    @unittest.expectedFailure
+    def test_template_in_link(self):
+        # According to README.rst
+        self.assertEqual(  # expected
+            parse('http://example.com{{dead link}}').external_links[0].url,
+            'http://example.com',
+        )
+        self.assertEqual(  # unexpected
+            parse('http://example.com/foo{{!}}bar').external_links[0].url,
+            'http://example.com/foo',
+        )
+        self.assertEqual(  # depends on {{foo}} contents
+            parse('[http://example.com{{foo}}text]').external_links[0].url,
+            'http://example.com{{foo}}text',
+        )
+        self.assertEqual(  # depends on {{foo bar}} contents
+            parse('[http://example.com{{foo bar}} t]').external_links[0].url,
+            'http://example.com{{foo bar}}',
+        )
+
+    @expectedFailure
+    def test_comment_in_external_link(self):
+        # This probably can be fixed, but who uses comments within urls?
+        self.assertEqual(
+            parse(
+                '[http://example.com/foo<!-- comment -->bar]'
+            ).external_links[0].url,
+            'http://example.com/foo<!-- comment -->bar',
+        )
+
+    @expectedFailure
     def test_no_bare_externallink_within_wikilinks(self):
         """Based on how Mediawiki behaves.
 
@@ -376,7 +405,7 @@ class ExternalLinks(unittest.TestCase):
             1,
         )
 
-    @unittest.expectedFailure
+    @expectedFailure
     def test_external_link_may_not_contain_any_template(self):
         """Some templates won't be parsed as part of the external link."""
         self.assertEqual(
@@ -385,7 +414,7 @@ class ExternalLinks(unittest.TestCase):
         )
 
 
-class Table(unittest.TestCase):
+class Tables(TestCase):
 
     """Test the tables property."""
 
@@ -477,7 +506,7 @@ class Table(unittest.TestCase):
         self.assertEqual([['a']], p.tables[0].data())
 
 
-class IndentLevel(unittest.TestCase):
+class IndentLevel(TestCase):
 
     """Test the nesting_level method of the WikiText class."""
 
@@ -488,7 +517,7 @@ class IndentLevel(unittest.TestCase):
         self.assertEqual(2, a.nesting_level)
 
 
-class TestPformat(unittest.TestCase):
+class TestPformat(TestCase):
 
     """Test the pformat method of the WikiText class."""
 
@@ -908,7 +937,7 @@ class TestPformat(unittest.TestCase):
         )
 
 
-class Sections(unittest.TestCase):
+class Sections(TestCase):
 
     """Test the sections method of the WikiText class."""
 
@@ -921,7 +950,7 @@ class Sections(unittest.TestCase):
         self.assertEqual('== s ==\nc\n', wt.sections[1].string)
 
     # Todo: Parser should also work with windows line endings.
-    @unittest.expectedFailure
+    @expectedFailure
     def test_multiline_with_carriage_return(self):
         s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
         p = parse(s)
@@ -984,7 +1013,7 @@ class Sections(unittest.TestCase):
         self.assertEqual(str(parse(t).sections[1]), t)
 
 
-class WikiList(unittest.TestCase):
+class WikiList(TestCase):
 
     def test_get_lists_with_no_pattern(self):
         wikitext = '*a\n#b\n;c:d'
@@ -994,7 +1023,7 @@ class WikiList(unittest.TestCase):
         self.assertEqual(lists[2].items, ['c', 'd'])
 
 
-class Tags(unittest.TestCase):
+class Tags(TestCase):
 
     def test_unicode_attr_values(self):
         wikitext = (
@@ -1064,4 +1093,4 @@ class Tags(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

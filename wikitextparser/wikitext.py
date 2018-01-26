@@ -16,17 +16,20 @@ from wcwidth import wcswidth
 
 from .spans import (
     parse_to_spans,
-    VALID_EXTLINK_CHARS_PATTERN,
-    VALID_EXTLINK_SCHEMES_PATTERN,
-    BARE_EXTERNALLINK_PATTERN,
+    VALID_EXTLINK_CHARS,
+    BARE_EXTLINK_SCHEME,
     TAG_EXTENSIONS,
     PARSABLE_TAG_EXTENSIONS,
 )
 
 
-# External links
+# External links (comment inclusive)
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
-    VALID_EXTLINK_SCHEMES_PATTERN, VALID_EXTLINK_CHARS_PATTERN
+    '(?>//|' + BARE_EXTLINK_SCHEME + ')',
+    VALID_EXTLINK_CHARS,
+)
+BARE_EXTERNALLINK_PATTERN = (
+    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
 )
 EXTERNALLINK_FINDITER = regex_compile(
     r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
@@ -419,7 +422,8 @@ class WikiText:
     def _shadow(self) -> str:
         """Return a copy of self.string with specific sub-spans replaced.
 
-        Subspans are replaced by a block of spaces of the same size.
+        Comments blocks are replaced by spaces. Other sub-spans are replaced
+        by underscores.
 
         The replaced subspans are:
             ('Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',)
@@ -729,7 +733,25 @@ class WikiText:
 
     @property
     def external_links(self) -> List['ExternalLink']:
-        """Return a list of found external link objects."""
+        """Return a list of found external link objects.
+
+        Note:
+            Templates adjacent to *bare* external links, are *not* considered
+            part of the link. In reality, this depends on the contents of the
+            template:
+
+            >>> WikiText(
+            ...    'http://example.com{{dead link}}'
+            ...).external_links[0].url
+            'http://example.com'
+
+            But if the external link is in brackets, everything until the
+            first space is treated as the url:
+            >>> WikiText(
+            ...    '[http://example.com{{space template}} text]'
+            ...).external_links[0].url
+            'http://example.com{{space template}}'
+        """
         external_links = []  # type: List['ExternalLink']
         external_links_append = external_links.append
         type_to_spans = self._type_to_spans

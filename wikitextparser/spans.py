@@ -128,39 +128,35 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     VERBOSE
 ).finditer
 # External links
-VALID_EXTLINK_CHARS_PATTERN = r'[^ \\^`#<>\[\]\"\t\n{|}]*+'
+VALID_EXTLINK_CHARS = r'[^ \\^`#<>\[\]\"\t\n{|}]++'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
-VALID_EXTLINK_SCHEMES_PATTERN = r'''
-    (?>
-        //
-        |bitcoin:
-        |ftp(?>://|s://)
-        |g(?>eo:|it://|opher://)
-        |http(?>://|s://)
-        |irc(?>://|s://)
-        |m(?>
-            a(?>gnet:|ilto:)
-            |ms://
-        )
-        |n(?>ews:|ntp://)
-        |redis://
-        |s(?>
-            ftp://
-            |ip(?>:|s:)
-            |ms:
-            |sh://
-            |vn://
-        )
-        |tel(?>:|net://)
-        |urn:
-        |worldwind://
-        |xmpp:
+BARE_EXTLINK_SCHEME = r'''
+    bitcoin:
+    |ftp(?>://|s://)
+    |g(?>eo:|it://|opher://)
+    |http(?>://|s://)
+    |irc(?>://|s://)
+    |m(?>
+        a(?>gnet:|ilto:)
+        |ms://
     )
+    |n(?>ews:|ntp://)
+    |redis://
+    |s(?>
+        ftp://
+        |ip(?>:|s:)
+        |ms:
+        |sh://
+        |vn://
+    )
+    |tel(?>:|net://)
+    |urn:
+    |worldwind://
+    |xmpp:
 '''
 BARE_EXTERNALLINK_PATTERN = (
-    VALID_EXTLINK_SCHEMES_PATTERN.replace('//\n        |', '') +
-    VALID_EXTLINK_CHARS_PATTERN
+    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
@@ -184,7 +180,7 @@ WIKILINK_FINDITER = regex_compile((
     )
     ''' % (
         BARE_EXTERNALLINK_PATTERN,
-        VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r''),
+        VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'', 1),
     )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
