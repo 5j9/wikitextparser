@@ -8,8 +8,7 @@ from .wikitext import SubWikiText
 
 class WikiLink(SubWikiText):
 
-    """Create a new WikiLink object."""
-
+    """Define a class to represent WikiLinks."""
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""
@@ -29,7 +28,7 @@ class WikiLink(SubWikiText):
 
     @property
     def text(self) -> Optional[str]:
-        """Return display text of this WikiLink."""
+        """Return the text of this WikiLink. Do not include linktrail."""
         head, pipe, tail = self._atomic_partition('|')
         if pipe:
             return tail[:-2]
@@ -37,7 +36,10 @@ class WikiLink(SubWikiText):
 
     @text.setter
     def text(self, newtext: Optional[str]) -> None:
-        """Set self.text to newtext. Remove the text if newtext is None."""
+        """Set self.text to newtext. Remove it if newtext is None.
+
+        Do not change the linktrail.
+        """
         head, pipe, tail = self._atomic_partition('|')
         if pipe:
             if newtext is None:
