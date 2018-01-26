@@ -258,7 +258,8 @@ EXTENSION_TAGS_FINDITER = regex_compile((
     )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
-COMMENT_FINDITER = re_compile(rb'<!--.*?-->', DOTALL).finditer
+COMMENT_PATTERN = r'<!--.*?-->'
+COMMENT_FINDITER = re_compile(COMMENT_PATTERN.encode(), DOTALL).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
     rb'''
     (?<!{) { (?=[^{|])

@@ -372,14 +372,16 @@ class ExternalLinks(TestCase):
             'http://example.com{{foo bar}}',
         )
 
-    @expectedFailure
     def test_comment_in_external_link(self):
         # This probably can be fixed, but who uses comments within urls?
+        el = parse(
+            '[http://example.com/foo<!-- comment -->bar]'
+        ).external_links[0]
+        self.assertIsNone(el.text)
+        self.assertEqual(el.url, 'http://example.com/foo<!-- comment -->bar')
         self.assertEqual(
-            parse(
-                '[http://example.com/foo<!-- comment -->bar]'
-            ).external_links[0].url,
-            'http://example.com/foo<!-- comment -->bar',
+            parse('[http://example.com<!-- c --> t]').external_links[0].url,
+            'http://example.com<!-- c -->',
         )
 
     @expectedFailure

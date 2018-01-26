@@ -15,6 +15,7 @@ from regex import compile as regex_compile
 from wcwidth import wcswidth
 
 from .spans import (
+    COMMENT_PATTERN,
     parse_to_spans,
     VALID_EXTLINK_CHARS,
     BARE_EXTLINK_SCHEME,
@@ -24,6 +25,9 @@ from .spans import (
 
 
 # External links (comment inclusive)
+VALID_EXTLINK_CHARS = (
+    '(?>' + VALID_EXTLINK_CHARS + '|' + COMMENT_PATTERN + ')++'
+)
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
     '(?>//|' + BARE_EXTLINK_SCHEME + ')',
     VALID_EXTLINK_CHARS,
@@ -32,7 +36,7 @@ BARE_EXTERNALLINK_PATTERN = (
     '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
 )
 EXTERNALLINK_FINDITER = regex_compile(
-    r'(%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
+    r'(?:%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
     IGNORECASE | VERBOSE,
 ).finditer
 

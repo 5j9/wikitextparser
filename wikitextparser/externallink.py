@@ -2,12 +2,35 @@
 
 from typing import Optional
 
+from .spans import parse_to_spans
 from .wikitext import SubWikiText
 
 
 class ExternalLink(SubWikiText):
 
     """Create a new ExternalLink object."""
+
+    @property
+    def _shadow(self):
+        """Replace main span types with underscores.
+
+        Override the _shadow of SubWikiText to replace comments with
+        underscores. This helps to keep them part of the external link.
+        """
+        ss, se = self._span
+        string = self._lststr[0][ss:se]
+        cached_string, cached_shadow = getattr(
+            self, '_shadow_cache', (None, None)
+        )
+        if cached_string == string:
+            return cached_shadow
+        shadow = bytearray(string.encode('ascii', 'replace'))
+        spans = parse_to_spans(shadow)
+        for s, e in spans['Comment']:
+            shadow[s:e] = b'_' * (e - s)
+        shadow = shadow.decode()
+        self._shadow_cache = (string, shadow)
+        return shadow
 
     @property
     def url(self) -> str:
