@@ -4,14 +4,12 @@ import re
 import regex
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
-from .wikitext import SubWikiText, WS
 from .argument import Argument
+from .spans import COMMENT_PATTERN
+from .wikitext import SubWikiText, WS
 
 
-COMMENT_SUB = re.compile(
-    r'<!--.*?-->',
-    re.DOTALL,
-).sub
+COMMENT_SUB = re.compile(COMMENT_PATTERN, re.DOTALL).sub
 
 BAR_SPLITS_FULLMATCH = regex.compile(
     r'{{'
