@@ -1,5 +1,6 @@
 ﻿"""Define the ExternalLink class."""
 
+from typing import Optional
 
 from .wikitext import SubWikiText
 
@@ -26,16 +27,16 @@ class ExternalLink(SubWikiText):
             self[0:len(url)] = newurl
 
     @property
-    def text(self) -> str:
+    def text(self) -> Optional[str]:
         """Return the display text of the external link.
 
         Return self.string if this is a bare link.
-        Return
+        Return None if external link is in brackets but has no link text.
         """
         if self[0] == '[':
             s = self._shadow.find(' ')
             if s == -1:
-                return ''
+                return None
             return self[s + 1:-1]
         return self.string
 
@@ -48,7 +49,10 @@ class ExternalLink(SubWikiText):
         string = self.string
         if string[0] == '[':
             text = self.text
-            self[-len(text) - 1:-1] = newtext
+            if text:
+                self[-len(text) - 1:-1] = newtext
+                return
+            self.insert(-1, ' ' + newtext)
             return
         self.insert(len(string), ' ' + newtext + ']')
         self.insert(0, '[')

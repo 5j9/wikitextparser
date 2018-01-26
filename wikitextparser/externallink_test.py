@@ -13,7 +13,7 @@ class TestExternalLink(unittest.TestCase):
         el = ExternalLink('HTTP://mediawiki.org')
         self.assertEqual(repr(el), "ExternalLink('HTTP://mediawiki.org')")
 
-    def test_numberedmailto(self):
+    def test_numberedmailto_change_none_to_empty(self):
         s = (
             '[mailto:'
             'info@example.org?Subject=URL%20Encoded%20Subject&body='
@@ -21,8 +21,10 @@ class TestExternalLink(unittest.TestCase):
         )
         el = ExternalLink(s)
         self.assertEqual(s[1:-1], el.url)
-        self.assertEqual('', el.text)
+        self.assertEqual(None, el.text)
         self.assertEqual(True, el.in_brackets)
+        el.text = ''
+        self.assertEqual(el.string, s[:-1] + ' ]')
 
     def test_bare_link(self):
         el = ExternalLink('HTTP://mediawiki.org')
