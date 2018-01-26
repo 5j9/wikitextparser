@@ -21,7 +21,7 @@ class TestExternalLink(unittest.TestCase):
         )
         el = ExternalLink(s)
         self.assertEqual(s[1:-1], el.url)
-        self.assertEqual(None, el.text)
+        self.assertIsNone(el.text)
         self.assertEqual(True, el.in_brackets)
         el.text = ''
         self.assertEqual(el.string, s[:-1] + ' ]')
@@ -29,7 +29,7 @@ class TestExternalLink(unittest.TestCase):
     def test_bare_link(self):
         el = ExternalLink('HTTP://mediawiki.org')
         self.assertEqual('HTTP://mediawiki.org', el.url)
-        self.assertEqual('HTTP://mediawiki.org', el.text)
+        self.assertIsNone(el.text)
         self.assertEqual(False, el.in_brackets)
 
     def test_inbracket_with_text(self):

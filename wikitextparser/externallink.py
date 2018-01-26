@@ -12,7 +12,7 @@ class ExternalLink(SubWikiText):
 
     @property
     def _shadow(self):
-        """Replace main span types with underscores.
+        """Replace SPAN_PARSER_TYPES with underscores.
 
         Override the _shadow of SubWikiText to replace comments with
         underscores. This helps to keep them part of the external link.
@@ -25,47 +25,42 @@ class ExternalLink(SubWikiText):
         if cached_string == string:
             return cached_shadow
         shadow = bytearray(string.encode('ascii', 'replace'))
-        spans = parse_to_spans(shadow)
-        for s, e in spans['Comment']:
+        for s, e in parse_to_spans(shadow)['Comment']:
             shadow[s:e] = b'_' * (e - s)
         shadow = shadow.decode()
-        self._shadow_cache = (string, shadow)
+        self._shadow_cache = string, shadow
         return shadow
 
     @property
     def url(self) -> str:
-        """Return the url part of the ExternalLink."""
+        """Return the url."""
         if self[0] == '[':
             return self[1:self._shadow.find(' ')]
         return self.string
 
     @url.setter
     def url(self, newurl: str) -> None:
-        """Set a new url for the current ExternalLink."""
+        """Set a new url."""
         if self[0] == '[':
-            url = self.url
-            self[1:len('[' + url)] = newurl
+            self[1:len('[' + self.url)] = newurl
         else:
-            url = self.url
-            self[0:len(url)] = newurl
+            self[0:len(self.url)] = newurl
 
     @property
     def text(self) -> Optional[str]:
-        """Return the display text of the external link.
+        """Return the text part. (the part after the first space)
 
-        Return self.string if this is a bare link.
-        Return None if external link is in brackets but has no link text.
+        Return None if this is a bare link or has no associated text.
         """
         if self[0] == '[':
             s = self._shadow.find(' ')
             if s == -1:
                 return None
             return self[s + 1:-1]
-        return self.string
 
     @text.setter
     def text(self, newtext: str) -> None:
-        """Set a new text for the current ExternalLink.
+        """Set a new text.
 
         Automatically put the ExternalLink in brackets if it's not already.
         """
@@ -83,10 +78,4 @@ class ExternalLink(SubWikiText):
     @property
     def in_brackets(self) -> bool:
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        # Todo: Deprecate?
-        # warn(
-        #     'ExternalLink.in_brackets is deprecated. '
-        #     'Use external_link[0] == "[" instead',
-        #     DeprecationWarning,
-        # )
         return self[0] == '['
