@@ -11,6 +11,8 @@ A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.o
 
 The purpose is to allow users easily extract and/or manipulate templates, template parameters, parser functions, tables, external links, wikilinks, lists, etc. found in wikitexts.
 
+.. contents:: Table of Contents
+
 Installation
 ============
 
@@ -21,91 +23,34 @@ Installation
 Usage
 =====
 
-Here is a short demo of some of the functionalities:
-
 .. code:: python
 
     >>> import wikitextparser as wtp
 
-WikiTextParser can detect sections, parserfunctions, templates, wikilinks, external links, arguments, tables, wiki-lists, and HTML comments in your wikitext:
+WikiTextParser can detect sections, parser functions, templates, wiki links, external links, arguments, tables, wiki lists, and comments in your wikitext. The following sections are quick of some of these functionalities.
+
+You may also want to have a look at the test modules for more examples and probable pitfalls (expected failures).
+
+Templates
+---------
 
 .. code:: python
 
-    >>> wt = wtp.parse("""
-    == h2 ==
-    t2
-
-    === h3 ===
-    t3
-
-    == h22 ==
-    t22
-
-    {{text|value1{{text|value2}}}}
-
-    [[A|B]]""")
-    >>> 
-    >>> wt.templates
+    >>> parsed = wtp.parse("{{text|value1{{text|value2}}}}")
+    >>> parsed.templates
     [Template('{{text|value2}}'), Template('{{text|value1{{text|value2}}}}')]
-    >>> wt.templates[1].arguments
+    >>> parsed.templates[1].arguments
     [Argument("|value1{{text|value2}}")]
-    >>> wt.templates[1].arguments[0].value = 'value3'
-    >>> print(wt)
-
-    == h2 ==
-    t2
-
-    === h3 ===
-    t3
-
-    == h22 ==
-    t22
-
+    >>> parsed.templates[1].arguments[0].value = 'value3'
+    >>> print(parsed)
     {{text|value3}}
 
-    [[A|B]]
-
-It provides easy-to-use properties so you can get or set names or values of templates, arguments, wikilinks, etc.:
+The ``pformat`` method returns a pretty-print formatted string for templates:
 
 .. code:: python
 
-    >>> wt.wikilinks
-    [WikiLink("[[A|B]]")]
-    >>> wt.wikilinks[0].target = 'Z'
-    >>> wt.wikilinks[0].text = 'X'
-    >>> wt.wikilinks[0]
-    WikiLink('[[Z|X]]')
-    >>>
-    >>> from pprint import pprint
-    >>> pprint(wt.sections)
-    [Section('\n'),
-     Section('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n'),
-     Section('=== h3 ===\nt3\n\n'),
-     Section('== h22 ==\nt22\n\n{{text|value3}}\n\n[[Z|X]]')]
-    >>>
-    >>> wt.sections[1].title = 'newtitle'
-    >>> print(wt)
-
-    ==newtitle==
-    t2
-
-    === h3 ===
-    t3
-
-    == h22 ==
-    t22
-
-    {{text|value3}}
-
-    [[Z|X]]
-
-
-The pformat method returns a pretty-print formatted string for templates:
-
-.. code:: python
-
-    >>> p = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
-    >>> t2, t1 = p.templates
+    >>> parsed = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
+    >>> t2, t1 = parsed.templates
     >>> print(t2.pformat())
     {{t2
         | e = e
@@ -120,8 +65,8 @@ The pformat method returns a pretty-print formatted string for templates:
             | f = f
         }}
     }}
-    
-If you are dealing with `[[Category:Pages using duplicate arguments in template calls]] <https://en.wikipedia.org/wiki/Category:Pages_using_duplicate_arguments_in_template_calls>`_ there are two functions that may be helpful:
+
+``Template.rm_dup_args_safe`` and ``Template.rm_first_of_dup_args`` methods can be used to clean-up `pages using duplicate arguments in template calls <https://en.wikipedia.org/wiki/Category:Pages_using_duplicate_arguments_in_template_calls>`_:
 
 .. code:: python
 
@@ -134,7 +79,75 @@ If you are dealing with `[[Category:Pages using duplicate arguments in template 
     >>> t
     Template('{{t|a=a}}')
 
-Extracting cell values of a table is easy:
+Template parameters:
+
+.. code:: python
+
+    >>> param = wtp.parse('{{{a|b}}}').parameters[0]
+    >>> param.name
+    'a'
+    >>> param.default
+    'b'
+    >>> param.default = 'c'
+    >>> param
+    Parameter('{{{a|c}}}')
+    >>> param.append_default('d')
+    Parameter('{{{a|{{{d|c}}}}}}')
+
+
+WikiLinks
+---------
+
+.. code:: python
+
+    >>> wt.wikilinks
+    [WikiLink("[[A|B]]")]
+    >>> wt.wikilinks[0].target = 'Z'
+    >>> wt.wikilinks[0].text = 'X'
+    >>> wt.wikilinks[0]
+    WikiLink('[[Z|X]]')
+
+Sections
+--------
+
+.. code:: python
+
+    >>> parsed = wtp.parse("""
+    ... == h2 ==
+    ... t2
+    ... === h3 ===
+    ... t3
+    ... === h3 ===
+    ... t3
+    ... == h22 ==
+    ... t22
+    ... {{text|value3}}
+    ... [[Z|X]]
+    ... """)
+    >>> parsed.sections
+    [Section('\n'),
+     Section('== h2 ==\nt2\n=== h3 ===\nt3\n=== h3 ===\nt3\n'),
+     Section('=== h3 ===\nt3\n'),
+     Section('=== h3 ===\nt3\n'),
+     Section('== h22 ==\nt22\n{{text|value3}}\n[[Z|X]]\n')]
+    >>> parsed.sections[1].title = 'newtitle'
+    >>> print(parsed)
+
+    ==newtitle==
+    t2
+    === h3 ===
+    t3
+    === h3 ===
+    t3
+    == h22 ==
+    t22
+    {{text|value3}}
+    [[Z|X]]
+
+Tables
+------
+
+Extracting cell values of a table:
 
 .. code:: python
 
@@ -145,26 +158,28 @@ Extracting cell values of a table is easy:
     |-
     |   Butter   || Ice cream ||  and more
     |}""")
-    >>> pprint(p.tables[0].data())
+    >>> p.tables[0].data()
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
      ['Butter', 'Ice cream', 'and more']]
 
-And values are rearranged according to colspan and rowspan attributes (by default):
+By default, values are arranged according to ``colspan`` and ``rowspan`` attributes:
 
 .. code:: python
 
     >>> t = wtp.Table("""{| class="wikitable sortable"
-    |-
-    ! a !! b !! c
-    |-
-    !colspan = "2" | d || e
-    |-
-    |}""")
-    >>> t.data(span=True)
+    ... |-
+    ... ! a !! b !! c
+    ... |-
+    ... !colspan = "2" | d || e
+    ... |-
+    ... |}""")
+    >>> t.data()
     [['a', 'b', 'c'], ['d', 'd', 'e']]
+    >>> t.data(span=False)
+    [['a', 'b', 'c'], ['d', 'e']]
 
-By calling the ``cells`` method of a ``Table``, you can access table cells as ``Cell`` objects which provide methods for getting or setting each cell's attributes and values individually.
+Calling the ``cells`` method of a ``Table`` returns table cells as ``Cell`` objects. Cell objects provide methods for getting or setting each cell's attributes or values individually:
 
 .. code:: python
 
@@ -172,7 +187,7 @@ By calling the ``cells`` method of a ``Table``, you can access table cells as ``
     >>> cell.attrs
     {'colspan': '2'}
     >>> cell.set('colspan', '3')
-    >>> print(t.string)
+    >>> print(t)
     {| class="wikitable sortable"
     |-
     ! a !! b !! c
@@ -181,9 +196,11 @@ By calling the ``cells`` method of a ``Table``, you can access table cells as ``
     |-
     |}
 
-Access HTML attributes of Tag, Table, and Cell instances using
+HTML attributes of Table, Cell, and Tag objects are accessible via
 `get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
 
+Lists
+-----
 
 The `lists` method provides access to lists within the wikitext.
 
@@ -202,7 +219,7 @@ The `lists` method provides access to lists within the wikitext.
     >>> wikilist.items
     [' list item a', ' list item b', ' list item c']
 
-The `sublists` method can be used to get all sublists of the current list or just sublists of specific items:
+The `sublists` method can be used to get all sub-lists of the current list or just sub-lists of specific items:
 
 .. code:: python
 
@@ -244,6 +261,9 @@ Convert one type of list to another using the convert method. Specifying the sta
         #:continuing A1
         #A2
 
+Tags
+----
+
 Accessing HTML tags:
 
 .. code:: python
@@ -256,9 +276,7 @@ Accessing HTML tags:
         >>> references
         Tag('<references/>')
 
-As illustrated above WikiTextParser is able to handle common usages of HTML and extension tags. However be aware that WikiTextParser is not a fully-fledged HTML parser, don't expect it to handle edge cases or malformed HTML input exactly as your browser does. If you encounter any bugs, please open an issue on github.
-
-You may want to have a look at the test modules for more examples and probable pitfalls.
+WikiTextParser is able to handle common usages of HTML and extension tags. However it is not a fully-fledged HTML parser and may fail on edge cases or malformed HTML input. Please open an issue on github if you encounter bugs.
 
 Compared with mwparserfromhell
 ==============================
@@ -288,5 +306,5 @@ Known issues and limitations
 * Localized namespace names are unknown, so for example `[[File:...]]` links are treated as normal wikilinks. `mwparserfromhell` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
 * `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it should be trivial to compute a WikiLink's linktrail.
 * Templates adjacent to *bare* external links, are *not* considered part of the link. In reality, this depends on the contents of the template. Example: ``parse('http://example.com{{dead link}}').external_links[0].url == 'http://example.com'``
-* If the external link is in brackets, everything until the first space is treated as the url. Example: ``parse('[http://example.com{{space template}} text]').external_links[0].url == 'http://example.com{{space template}}'``
-* The `tags` method returns anything that looks like an HTML tag while MediaWiki recognizes only a finite number of tags and they are extension-dependent. A configuration option might be added in the future to address this issue.
+* If an external link is in brackets, everything until the first space is treated as the url. Example: ``parse('[http://example.com{{space template}} text]').external_links[0].url == 'http://example.com{{space template}}'``
+* While MediaWiki recognizes only a finite number of tags and they are extension-dependent, the ``tags`` method returns anything that looks like an HTML tag. A configuration option might be added in the future to address this issue.
