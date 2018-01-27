@@ -385,18 +385,18 @@ class ExternalLinks(TestCase):
         )
 
     @expectedFailure
-    def test_no_bare_externallink_within_wikilinks(self):
-        """Based on how Mediawiki behaves.
+    def test_no_bare_external_link_within_wiki_links(self):
+        """A wikilink's target may not be an external link.
 
-        There is a rather simple solution for this (move the detection of
-        external links to spans.py) but maybe the current implementation
+        One possible solution for this is to move the detection of
+        external links to spans.py. But maybe the current implementation
         is even more useful? Also it should be faster.
         """
         p = parse('[[ https://en.wikipedia.org/]]')
-        self.assertEqual(1, len(p.wikilinks))
-        self.assertEqual(0, len(p.external_links))
+        self.assertEqual(1, len(p.external_links))  # passes
+        self.assertEqual(0, len(p.wikilinks))  # fails
 
-    def test_bare_extlink_must_have_scheme(self):
+    def test_bare_external_link_must_have_scheme(self):
         """Bare external links must have scheme."""
         self.assertEqual(len(parse('//mediawiki.org').external_links), 0)
 
@@ -407,11 +407,10 @@ class ExternalLinks(TestCase):
             1,
         )
 
-    @expectedFailure
-    def test_external_link_may_not_contain_any_template(self):
-        """Some templates won't be parsed as part of the external link."""
+    def test_bare_external_link_may_not_contain_any_template(self):
+        """Some templates won't be parsed as part of bare the external link."""
         self.assertEqual(
-            str(parse('http://example.com/{{dead link}}').external_links),
+            str(parse('http://example.com/{{dead link}}').external_links[0]),
             'http://example.com/'
         )
 
