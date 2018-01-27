@@ -57,6 +57,11 @@ class TestExternalLink(unittest.TestCase):
         el.url = 'https://www.mediawiki.org/'
         self.assertEqual('[https://www.mediawiki.org/]', el.string)
 
+    def test_ending_with_less_than_sign(self):
+        el = ExternalLink('[https://www.google.<com]')
+        self.assertEqual(el.url, 'https://www.google.')
+        self.assertEqual(el.text, '<com')
+
 
 if __name__ == '__main__':
     unittest.main()

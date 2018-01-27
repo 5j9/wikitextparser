@@ -127,7 +127,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     VERBOSE
 ).finditer
 # External links
-VALID_EXTLINK_CHARS = r'[^ \\^`#<>\[\]\"\t\n{|}]++'
+INVALID_EXTLINK_CHARS = r' \t\n<>\[\]"'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
 BARE_EXTLINK_SCHEME = r'''
@@ -155,7 +155,7 @@ BARE_EXTLINK_SCHEME = r'''
     |xmpp:
 '''
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
+    '(?>' + BARE_EXTLINK_SCHEME + ')[^' + INVALID_EXTLINK_CHARS + ']'
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
@@ -196,17 +196,17 @@ WIKILINK_FINDITER = regex_compile((
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # probably an extension tag (e.g.: <pre>).
 TAG_EXTENSIONS = [
+    'charinsert',
+    'graph',
+    'hiero',
     'math',
+    'nowiki',
+    'pre',
+    'score',
     'source',
     'syntaxhighlight',
-    'pre',
-    'hiero',
-    'score',
-    'timeline',
-    'nowiki',
-    'charinsert',
     'templatedata',
-    'graph',
+    'timeline',
 ]
 # Contents of the some of the extension tags can be parsed as wikitext.
 # For example, templates are valid inside the poem tag:
@@ -216,16 +216,16 @@ TAG_EXTENSIONS = [
 # https://www.mediawiki.org/wiki/Extension:CategoryTree#
 #    The_.7B.7B.23categorytree.7D.7D_parser_function
 PARSABLE_TAG_EXTENSIONS = [
-    'ref',
-    'poem',
-    'includeonly',
     'categorytree',
-    'references',
-    'imagemap',
-    'inputbox',
-    'section',
     'gallery',
+    'imagemap',
+    'includeonly',
     'indicator',
+    'inputbox',
+    'poem',
+    'ref',
+    'references',
+    'section',
 ]
 TAG_BY_NAME_PATTERN = (
     r"""

@@ -301,15 +301,9 @@ class ExternalLinks(TestCase):
 
     def test_with_lable(self):
         s = 'text1 [http://mediawiki.org MediaWiki] text2'
-        wt = WikiText(s)
-        self.assertEqual(
-            'http://mediawiki.org',
-            wt.external_links[0].url
-        )
-        self.assertEqual(
-            'MediaWiki',
-            wt.external_links[0].text
-        )
+        el = WikiText(s).external_links[0]
+        self.assertEqual('http://mediawiki.org', el.url)
+        self.assertEqual('MediaWiki', el.text)
 
     def test_external_link_match_is_not_in_spans(self):
         wt = WikiText('t [http://b.b b] t [http://c.c c] t')
@@ -413,6 +407,18 @@ class ExternalLinks(TestCase):
             str(parse('http://example.com/{{dead link}}').external_links[0]),
             'http://example.com/'
         )
+
+    def test_external_link_containing_parser_function(self):
+        """Some templates won't be parsed as part of bare the external link."""
+        s = '[https://www.google.<includeonly>com </includeonly>a]'
+        el = parse(s).external_links[0]
+        self.assertEqual(str(el), s)
+        self.assertEqual(
+            el.url, 'https://www.google.<includeonly>com </includeonly>a')
+        s = '[https://www.google.<noinclude>com </noinclude>a]'
+        el = parse(s).external_links[0]
+        self.assertEqual(str(el), s)
+        self.assertEqual(el.url, 'https://www.google.')
 
 
 class Tables(TestCase):

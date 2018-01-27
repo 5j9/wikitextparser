@@ -2,8 +2,13 @@
 
 from typing import Optional
 
-from .spans import parse_to_spans
+from regex import compile as regex_compile
+
+from .spans import parse_to_spans, INVALID_EXTLINK_CHARS
 from .wikitext import SubWikiText
+
+
+URL_MATCH = regex_compile('[^' + INVALID_EXTLINK_CHARS + ']++').match
 
 
 class ExternalLink(SubWikiText):
@@ -35,7 +40,7 @@ class ExternalLink(SubWikiText):
     def url(self) -> str:
         """Return the url."""
         if self[0] == '[':
-            return self[1:self._shadow.find(' ')]
+            return self[1:URL_MATCH(self._shadow, 1).end()]
         return self.string
 
     @url.setter
@@ -52,11 +57,16 @@ class ExternalLink(SubWikiText):
 
         Return None if this is a bare link or has no associated text.
         """
-        if self[0] == '[':
-            s = self._shadow.find(' ')
-            if s == -1:
+        string = self.string
+        if string[0] == '[':
+            end_match = URL_MATCH(self._shadow, 1)
+            url_end = end_match.end()
+            end_char = string[url_end]
+            if end_char == ']':
                 return None
-            return self[s + 1:-1]
+            if end_char == ' ':
+                return string[url_end + 1:-1]
+            return string[url_end:-1]
 
     @text.setter
     def text(self, newtext: str) -> None:

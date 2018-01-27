@@ -17,7 +17,7 @@ from wcwidth import wcswidth
 from .spans import (
     COMMENT_PATTERN,
     parse_to_spans,
-    VALID_EXTLINK_CHARS,
+    INVALID_EXTLINK_CHARS,
     BARE_EXTLINK_SCHEME,
     TAG_EXTENSIONS,
     PARSABLE_TAG_EXTENSIONS,
@@ -26,7 +26,8 @@ from .spans import (
 
 # External links (comment inclusive)
 VALID_EXTLINK_CHARS = (
-    '(?>' + VALID_EXTLINK_CHARS + '|' + COMMENT_PATTERN + ')++'
+    # {} are not allowed to prevent inclusion of templates
+    '(?>[^' + INVALID_EXTLINK_CHARS + '{}]++|' + COMMENT_PATTERN + ')++'
 )
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
     '(?>//|' + BARE_EXTLINK_SCHEME + ')',
