@@ -1,7 +1,6 @@
 """"Define the Template class."""
 
-import re
-import regex
+from regex import compile as regex_compile, REVERSE
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
 from .argument import Argument
@@ -9,14 +8,17 @@ from .spans import COMMENT_PATTERN
 from .wikitext import SubWikiText, WS
 
 
-COMMENT_SUB = re.compile(COMMENT_PATTERN, re.DOTALL).sub
+COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
 
-BAR_SPLITS_FULLMATCH = regex.compile(
+BAR_SPLITS_FULLMATCH = regex_compile(
     r'{{'
     r'[^|}]*+'  # name
     r'(?<arg>\|[^|}]*+)*+'
     r'}}'
 ).fullmatch
+STARTING_WS_MATCH = regex_compile(r'\s*+').match
+ENDING_WS_MATCH = regex_compile(r'(?>\n[ \t]*)*+', REVERSE).match
+SPACE_AFTER_SEARCH = regex_compile(r'\s*+(?=\|)').search
 
 T = TypeVar('T')
 
@@ -220,15 +222,14 @@ class Template(SubWikiText):
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
-        Use `positional`, `before` and `after` keyword arguments only when
-            adding a new argument.
-        If `before` is passed, ignore `after`.
-        If neither `before` nor `after` are passed and it's needed to add a new
-            argument, then append the new argument to the end.
-        If `positional` is passed and it's True, try to add the given value
-            as a positional argument. If it's None, do as appropriate.
-            Ignore `preserve_spacing` if positional is True.
-
+        - Use `positional`, `before` and `after` keyword arguments only when
+          adding a new argument.
+        - If `before` is given, ignore `after`.
+        - If neither `before` nor `after` are given and it's needed to add a
+          new argument, then append the new argument to the end.
+        - If `positional` is True, try to add the given value as a positional
+          argument. Ignore `preserve_spacing` if positional is True.
+          If it's None, do what seems more appropriate.
         """
         args = list(reversed(self.arguments))
         arg = get_arg(name, args)
@@ -253,17 +254,18 @@ class Template(SubWikiText):
             after_values = []
             for arg in args:
                 aname = arg.name
-                before_names.append(regex.match(r'\s*', aname)[0])
-                name_lengths.append(len(aname))
-                bv, av = regex.match(r'(\s*).*(\s*)$', arg.value).groups()
-                before_values.append(bv)
-                after_values.append(av)
-            before_name = mode(before_names)
-            name_length = mode(name_lengths)
-            after_value = mode(
-                [regex.match(r'.*?(\s*)\|', self.string)[1]] + after_values[1:]
+                name_len = len(aname)
+                name_lengths.append(name_len)
+                before_names.append(STARTING_WS_MATCH(aname)[0])
+                arg_value = arg.value
+                before_values.append(STARTING_WS_MATCH(arg_value)[0])
+                after_values.append(ENDING_WS_MATCH(arg_value)[0])
+            pre_name_ws_mode = mode(before_names)
+            name_length_mode = mode(name_lengths)
+            post_value_ws_mode = mode(
+                [SPACE_AFTER_SEARCH(self.string)[0]] + after_values[1:]
             )
-            before_value = mode(before_values)
+            pre_value_ws_mode = mode(before_values)
         else:
             preserve_spacing = False
         # Calculate the string that needs to be added to the Template.
@@ -273,8 +275,9 @@ class Template(SubWikiText):
         else:
             if preserve_spacing:
                 addstring = (
-                    '|' + (before_name + name.strip(WS)).ljust(name_length) +
-                    '=' + before_value + value + after_value
+                    '|' + (pre_name_ws_mode + name.strip(WS)).
+                    ljust(name_length_mode) +
+                    '=' + pre_value_ws_mode + value + post_value_ws_mode
                 )
             else:
                 addstring = '|' + name + '=' + value
@@ -294,7 +297,7 @@ class Template(SubWikiText):
                     # The addstring needs to be recalculated because we don't
                     # want to change the the whitespace before final braces.
                     arg[0:len(arg_string)] = (
-                        arg.string.rstrip(WS) + after_value +
+                        arg.string.rstrip(WS) + post_value_ws_mode +
                         addstring.rstrip(WS) + after_values[0]
                     )
                 else:
@@ -350,7 +353,6 @@ def mode(list_: List[T]) -> T:
     >>> mode([])
     ...
     ValueError: max() arg is an empty sequence
-
     """
     return max(set(list_), key=list_.count)
 

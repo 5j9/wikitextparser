@@ -223,12 +223,21 @@ class SetArg(unittest.TestCase):
         self.assertEqual(
             '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}', t.string
         )
-        # Preserve spacing, only one argument
+
+    def test_preserve_spacing_with_only_one_arg(self):
         t = Template('{{t\n  |  afadfaf =   value \n}}')
         t.set_arg('z', 'z')
         self.assertEqual(
             '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
         )
+
+    def test_multiline_arg(self):
+        t = Template('{{text|\na=\nb\nc\n}}')
+        t.set_arg('d', 'e')
+        self.assertEqual('{{text|\na=\nb\nc|\nd=\ne\n}}', t.string)
+        t = Template('{{text\n\n | a = b\n\n}}')
+        t.set_arg('c', 'd')
+        self.assertEqual('{{text\n\n | a = b\n\n | c = d\n\n}}', t.string)
 
     def test_existing_dont_preserve_space(self):
         t = Template('{{t\n  |  a =   v \n}}')
