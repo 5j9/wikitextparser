@@ -20,7 +20,6 @@ class Argument(SubWikiText):
         """Return argument's name.
 
         For positional arguments return the position as a string.
-
         """
         pipename, equal, value = self._atomic_partition('=')
         if equal:
@@ -52,7 +51,6 @@ class Argument(SubWikiText):
         """Set the name for this argument.
 
         If this is a positional argument, convert it to keyword argument.
-
         """
         oldname = self.name
         if self.positional:
@@ -72,7 +70,6 @@ class Argument(SubWikiText):
         """Change to keyword or positional accordingly.
 
         Raise ValueError if setting positional argument to keyword argument.
-
         """
         pipename, equal, value = self._atomic_partition('=')
         if equal:
@@ -105,7 +102,7 @@ class Argument(SubWikiText):
         """Assign the newvalue to self."""
         pipename, equal, value = self._atomic_partition('=')
         if equal:
-            pnel = len(pipename + equal)
+            pnel = len(pipename + '=')
             self[pnel:pnel + len(value)] = newvalue
         else:
             self[1:len(pipename)] = newvalue
