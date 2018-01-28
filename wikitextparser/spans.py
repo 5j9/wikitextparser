@@ -127,7 +127,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     VERBOSE
 ).finditer
 # External links
-INVALID_EXTLINK_CHARS = r' \t\n<>\[\]"'
+VALID_EXTLINK_CHARS = r'[^ \t\n<>\[\]"]++'
 # See DefaultSettings.php on MediaWiki and
 # https://www.mediawiki.org/wiki/Help:Links#External_links
 BARE_EXTLINK_SCHEME = r'''
@@ -155,7 +155,7 @@ BARE_EXTLINK_SCHEME = r'''
     |xmpp:
 '''
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEME + ')[^' + INVALID_EXTLINK_CHARS + ']'
+    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
@@ -274,12 +274,12 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
 
     The result is a dictionary containing lists of spans:
     {
+        'Comment': comment_spans,
+        'ExtTag': extension_tag_spans,
         'Parameter': parameter_spans,
         'ParserFunction': parser_function_spans,
         'Template': template_spans,
         'WikiLink': wikilink_spans,
-        'Comment': comment_spans,
-        'ExtTag': extension_tag_spans,
     }
 
     """
@@ -337,12 +337,12 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         template_spans_append,
     )
     return {
+        'Comment': comment_spans,
+        'ExtTag': extension_tag_spans,
         'Parameter': parameter_spans,
         'ParserFunction': parser_function_spans,
         'Template': template_spans,
         'WikiLink': wikilink_spans,
-        'Comment': comment_spans,
-        'ExtTag': extension_tag_spans,
     }
 
 

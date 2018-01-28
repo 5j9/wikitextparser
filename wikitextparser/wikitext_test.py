@@ -348,14 +348,13 @@ class ExternalLinks(TestCase):
         self.assertEqual(0, len(p.wikilinks))
 
     def test_template_in_link(self):
-        # According to README.rst
         self.assertEqual(  # expected
             parse('http://example.com{{dead link}}').external_links[0].url,
-            'http://example.com',
+            'http://example.com{{dead link}}',
         )
         self.assertEqual(  # unexpected
             parse('http://example.com/foo{{!}}bar').external_links[0].url,
-            'http://example.com/foo',
+            'http://example.com/foo{{!}}bar',
         )
         self.assertEqual(  # depends on {{foo}} contents
             parse('[http://example.com{{foo}}text]').external_links[0].url,
@@ -374,8 +373,8 @@ class ExternalLinks(TestCase):
         self.assertIsNone(el.text)
         self.assertEqual(el.url, 'http://example.com/foo<!-- comment -->bar')
         self.assertEqual(
-            parse('[http://example.com<!-- c --> t]').external_links[0].url,
-            'http://example.com<!-- c -->',
+            parse('[http://example<!-- c -->.com t]').external_links[0].url,
+            'http://example<!-- c -->.com',
         )
 
     @expectedFailure
@@ -401,15 +400,7 @@ class ExternalLinks(TestCase):
             1,
         )
 
-    def test_bare_external_link_may_not_contain_any_template(self):
-        """Some templates won't be parsed as part of bare the external link."""
-        self.assertEqual(
-            str(parse('http://example.com/{{dead link}}').external_links[0]),
-            'http://example.com/'
-        )
-
     def test_external_link_containing_parser_function(self):
-        """Some templates won't be parsed as part of bare the external link."""
         s = '[https://www.google.<includeonly>com </includeonly>a]'
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
@@ -419,6 +410,20 @@ class ExternalLinks(TestCase):
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
         self.assertEqual(el.url, 'https://www.google.')
+
+    def test_parser_function_in_external_link(self):
+        self.assertEqual(
+            parse(
+                '[urn:u {{<!--c-->#if:a|a}}]'
+            ).external_links[0].parser_functions[0].string,
+            '{{<!--c-->#if:a|a}}',
+        )
+        self.assertEqual(
+            parse(
+                '[urn:{{#if:a| a }} t]'
+            ).external_links[0].url,
+            'urn:{{#if:a| a }}',
+        )
 
 
 class Tables(TestCase):

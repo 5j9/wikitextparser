@@ -4,11 +4,11 @@ from typing import Optional
 
 from regex import compile as regex_compile
 
-from .spans import parse_to_spans, INVALID_EXTLINK_CHARS
+from .spans import VALID_EXTLINK_CHARS
 from .wikitext import SubWikiText
 
 
-URL_MATCH = regex_compile('[^' + INVALID_EXTLINK_CHARS + ']++').match
+URL_MATCH = regex_compile(VALID_EXTLINK_CHARS).match
 
 
 class ExternalLink(SubWikiText):
@@ -16,31 +16,10 @@ class ExternalLink(SubWikiText):
     """Create a new ExternalLink object."""
 
     @property
-    def _shadow(self):
-        """Replace SPAN_PARSER_TYPES with underscores.
-
-        Override the _shadow of SubWikiText to replace comments with
-        underscores. This helps to keep them part of the external link.
-        """
-        ss, se = self._span
-        string = self._lststr[0][ss:se]
-        cached_string, cached_shadow = getattr(
-            self, '_shadow_cache', (None, None)
-        )
-        if cached_string == string:
-            return cached_shadow
-        shadow = bytearray(string.encode('ascii', 'replace'))
-        for s, e in parse_to_spans(shadow)['Comment']:
-            shadow[s:e] = b'_' * (e - s)
-        shadow = shadow.decode()
-        self._shadow_cache = string, shadow
-        return shadow
-
-    @property
     def url(self) -> str:
         """Return the url."""
         if self[0] == '[':
-            return self[1:URL_MATCH(self._shadow, 1).end()]
+            return self[1:URL_MATCH(self._dark_shadow, 1).end()]
         return self.string
 
     @url.setter
@@ -59,7 +38,7 @@ class ExternalLink(SubWikiText):
         """
         string = self.string
         if string[0] == '[':
-            end_match = URL_MATCH(self._shadow, 1)
+            end_match = URL_MATCH(self._dark_shadow, 1)
             url_end = end_match.end()
             end_char = string[url_end]
             if end_char == ']':

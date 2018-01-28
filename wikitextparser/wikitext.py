@@ -17,7 +17,7 @@ from wcwidth import wcswidth
 from .spans import (
     COMMENT_PATTERN,
     parse_to_spans,
-    INVALID_EXTLINK_CHARS,
+    VALID_EXTLINK_CHARS,
     BARE_EXTLINK_SCHEME,
     TAG_EXTENSIONS,
     PARSABLE_TAG_EXTENSIONS,
@@ -25,10 +25,6 @@ from .spans import (
 
 
 # External links (comment inclusive)
-VALID_EXTLINK_CHARS = (
-    # {} are not allowed to prevent inclusion of templates
-    '(?>[^' + INVALID_EXTLINK_CHARS + '{}]++|' + COMMENT_PATTERN + ')++'
-)
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
     '(?>//|' + BARE_EXTLINK_SCHEME + ')',
     VALID_EXTLINK_CHARS,
@@ -410,7 +406,6 @@ class WikiText:
 
         The minimum nesting_level is 0. Being part of any Template or
         ParserFunction increases the level by one.
-
         """
         ss, se = self._span
         level = 0
@@ -463,6 +458,32 @@ class WikiText:
         shadow = shadow.decode()
         self._shadow_cache = (string, shadow)
         return shadow
+
+    @property
+    def _dark_shadow(self):
+        """Replace templates, parser functions, and comments with underscores.
+
+        Used for external links where the mentioned types are valid but may
+        contain invalid link characters characters in them.
+        """
+        ss, se = self._span
+        string = self._lststr[0][ss:se]
+        cached_string, cached_shadow = getattr(
+            self, '_dark_shadow_cache', (None, None)
+        )
+        if cached_string == string:
+            return cached_shadow
+        dark_shadow = bytearray(string.encode('ascii', 'replace'))
+        type_to_spans = parse_to_spans(dark_shadow)
+        for s, e in type_to_spans['Comment']:
+            dark_shadow[s:e] = b'_' * (e - s)
+        repl = b'_' if isinstance(self, ExternalLink) else b'_'
+        for type_ in 'Template', 'ParserFunction':
+            for s, e in type_to_spans[type_]:
+                dark_shadow[s:e] = repl * (e - s)
+        dark_shadow = dark_shadow.decode()
+        self._dark_shadow_cache = string, dark_shadow
+        return dark_shadow
 
     def _pp_type_to_spans(self) -> dict:
         """Create the arguments for the parse function used in pformat method.
@@ -638,7 +659,7 @@ class WikiText:
             # parser functions. See:
             # www.mediawiki.org/wiki/Help:Extension:ParserFunctions#
             #    Stripping_whitespace
-            level = func.nesting_level  # Todo: expose indent level?
+            level = func.nesting_level
             short_indent = '\n' + indent * (level - 1)
             newline_indent = short_indent + indent
             if len(args) == 1:
@@ -766,7 +787,7 @@ class WikiText:
         spans_append = spans.append
         if not spans:
             # All the added spans will be new.
-            for m in EXTERNALLINK_FINDITER(self.string):
+            for m in EXTERNALLINK_FINDITER(self._dark_shadow):
                 span = m.span()
                 span = [span[0] + ss, span[1] + ss]
                 spans_append(span)
@@ -777,7 +798,7 @@ class WikiText:
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        for m in EXTERNALLINK_FINDITER(self.string):
+        for m in EXTERNALLINK_FINDITER(self._dark_shadow):
             s, e = m.span()
             span = [s + ss, e + ss]
             old_span = span_tuple_to_span_get((span[0], span[1]))
