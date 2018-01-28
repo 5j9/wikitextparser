@@ -327,14 +327,9 @@ class WikiText:
         lststr0 = self._lststr[0]
         return lststr0[s:s + index], char, lststr0[s + index + 1:e]
 
-    def _gen_subspans(self, type_: str) -> Generator[List[int], None, None]:
-        """Yield all the sub-span including self._span."""
-        s, e = self._span
-        for span in self._type_to_spans[type_]:
-            ss, se = span
-            # Include self._span
-            if s <= ss and se <= e:
-                yield span
+    def _subspans(self, type_: str) -> List[List[int]]:
+        """Return all the sub-span including self._span."""
+        return self._type_to_spans[type_]
 
     def _close_subspans(self, start: int, stop: int) -> None:
         """Close all sub-spans of (start, stop)."""
@@ -710,7 +705,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 span,
-            ) for span in self._gen_subspans('Parameter')
+            ) for span in self._subspans('Parameter')
         ]
 
     @property
@@ -721,7 +716,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 span,
-            ) for span in self._gen_subspans('ParserFunction')
+            ) for span in self._subspans('ParserFunction')
         ]
 
     @property
@@ -732,7 +727,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 span,
-            ) for span in self._gen_subspans('Template')
+            ) for span in self._subspans('Template')
         ]
 
     @property
@@ -743,7 +738,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 span,
-            ) for span in self._gen_subspans('WikiLink')
+            ) for span in self._subspans('WikiLink')
         ]
 
     @property
@@ -754,7 +749,7 @@ class WikiText:
                 self._lststr,
                 self._type_to_spans,
                 span,
-            ) for span in self._gen_subspans('Comment')
+            ) for span in self._subspans('Comment')
         ]
 
     @property
@@ -1105,7 +1100,7 @@ class SubWikiText(WikiText):
             self._span = \
                 self._type_to_spans[_type][-1] if _span is None else _span
 
-    def _gen_subspans(self, _type: str) -> Generator[int, None, None]:
+    def _subspans(self, _type: str) -> Generator[int, None, None]:
         """Yield all the sub-span indices excluding self._span."""
         s, e = self._span
         for span in self._type_to_spans[_type]:
