@@ -155,7 +155,7 @@ BARE_EXTLINK_SCHEME = r'''
     |xmpp:
 '''
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
+    '\ *+(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links

@@ -377,17 +377,11 @@ class ExternalLinks(TestCase):
             'http://example<!-- c -->.com',
         )
 
-    @expectedFailure
     def test_no_bare_external_link_within_wiki_links(self):
-        """A wikilink's target may not be an external link.
-
-        One possible solution for this is to move the detection of
-        external links to spans.py. But maybe the current implementation
-        is even more useful? Also it should be faster.
-        """
-        p = parse('[[ https://en.wikipedia.org/]]')
-        self.assertEqual(1, len(p.external_links))  # passes
-        self.assertEqual(0, len(p.wikilinks))  # fails
+        """A wikilink's target may not be an external link."""
+        p = parse('[[ https://w|b]]')
+        self.assertEqual('https://w|b', p.external_links[0].string)
+        self.assertEqual(0, len(p.wikilinks))
 
     def test_bare_external_link_must_have_scheme(self):
         """Bare external links must have scheme."""
