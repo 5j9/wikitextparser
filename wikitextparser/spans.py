@@ -45,117 +45,34 @@ PARAMETER_FINDITER = regex_compile(
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARSER_FUNCTION_FINDITER = regex_compile(
-    rb"""
-    \{\{\s*+
-    (?>
-        \#[^{}\s:]++
-        |ARTICLE(?>PAGENAMEE?+|SPACEE?+)
-        |BASEPAGENAMEE?+
-        |CASCADINGSOURCES
-        |D(?>
-            ISPLAYTITLE
-            |EFAULT(?>CATEGORYSORT|SORT(?:KEY)?+)
-        )
-        |FULLPAGENAMEE?+
-        |P(?>
-            AGE(?>
-                ID
-                |SI(?>
-                    ZE
-                    |N(?>
-                        CAT(?:EGORY)?+
-                        |N(?>S|AMESPACE)
-                    )
-                )
-                |NAMEE?+
-            )
-            |ROTECTION(?>LEVEL|EXPIRY)
-        )
-        |ROOTPAGENAMEE?+
-        |N(?>
-            AMESPACE(?>NUMBER|E?+)
-            |UM(?>
-                BER(?>
-                    OF(?>
-                        A(?>CTIVEUSERS|DMINS|RTICLES)
-                        |EDITS
-                        |FILES
-                        |PAGES
-                        |USERS
-                        |VIEWS
-                    )
-                    |INGROUP
-                )
-                |INGROUP
-            )
-        )
-        |REVISION(?>DAY2?+|ID|MONTH1?+|TIMESTAMP|USER|YEAR)
-        |SUB(?>
-            JECT(?>SPACEE?+|PAGENAMEE?+)
-            |PAGENAMEE?
-        )
-        |TALK(?>PAGENAMEE?+|SPACEE?+)
-        |anchorencode
-        |canonicalurl
-        |f(?>
-            ilepath
-            |ormatnum
-            |ullurl
-        )
-        |g(?>
-            rammar
-            |ender
-        )
-        |int
-        |l(?>
-            c(?:first)?+
-            |ocalurl
-        )
-        |nse?+
-        |p(?>
-            ad(?>left|right)
-            |lural
-        )
-        |u(?>
-            c(?:first)?+
-            |rlencode
-        )
-    )
-    :[^{}]*+
-    \}\}
-    """,
-    VERBOSE
+    rb'\{\{\s*+'
+    # generated pattern: config.regex_pattern(config._parser_functions)
+    # with \#[^{}\s:]++ added manually.
+    rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?>first)?+)|p(?>lural|ad(?>right|left))|'
+    rb'nse?+|l(?>ocalurl|c(?>first)?+)|int|g(?>rammar|ender)|f(?>ullurl|ormatn'
+    rb'um|ilepath)|canonicalurl|anchorencode|TALK(?>SPACEE?+|PAGENAMEE?+)|SUB('
+    rb'?>PAGENAMEE?+|JECT(?>SPACEE?+|PAGENAMEE?+))|R(?>OOTPAGENAMEE?+|EVISION('
+    rb'?>YEAR|USER|TIMESTAMP|MONTH1?+|ID|DAY2?+))|P(?>ROTECTION(?>LEVEL|EXPIRY'
+    rb')|AGE(?>SI(?>ZE|N(?>N(?>S|AMESPACE)|CAT(?>EGORY)?+))|NAMEE?+|ID))|N(?>U'
+    rb'M(?>INGROUP|BER(?>OF(?>VIEWS|USERS|PAGES|FILES|EDITS|A(?>RTICLES|DMINS|'
+    rb'CTIVEUSERS))|INGROUP))|AMESPACE(?>NUMBER|E)?+)|FULLPAGENAMEE?+|D(?>ISPL'
+    rb'AYTITLE|EFAULT(?>SORT(?>KEY)?+|CATEGORYSORT))|CASCADINGSOURCES|BASEPAGE'
+    rb'NAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE?+))'
+    # end of generated part
+    rb':[^{}]*+\}\}',
 ).finditer
 # External links
 VALID_EXTLINK_CHARS = r'[^ \t\n<>\[\]"]++'
-# See DefaultSettings.php on MediaWiki and
-# https://www.mediawiki.org/wiki/Help:Links#External_links
-BARE_EXTLINK_SCHEME = r'''
-    bitcoin:
-    |ftp(?>://|s://)
-    |g(?>eo:|it://|opher://)
-    |http(?>://|s://)
-    |irc(?>://|s://)
-    |m(?>
-        a(?>gnet:|ilto:)
-        |ms://
-    )
-    |n(?>ews:|ntp://)
-    |redis://
-    |s(?>
-        ftp://
-        |ip(?>:|s:)
-        |ms:
-        |sh://
-        |vn://
-    )
-    |tel(?>:|net://)
-    |urn:
-    |worldwind://
-    |xmpp:
-'''
+
+# generated pattern: config.regex_pattern(config._bare_external_link_schemes)
+BARE_EXTLINK_SCHEMES_PATTERN = (
+    r'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|'
+    r's(?>vn://|sh://|ms:|ip(?>s:|:)|ftp://)|redis://|n(?>ntp://|ews:)|'
+    r'm(?>ms://|a(?>ilto:|gnet:))|irc(?>s://|://)|http(?>s://|://)|'
+    r'g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitcoin:)'
+)
 BARE_EXTERNALLINK_PATTERN = (
-    '\ *+(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
+    '\ *+(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
@@ -183,52 +100,8 @@ WIKILINK_FINDITER = regex_compile((
     )).encode(),
     IGNORECASE | VERBOSE,
 ).finditer
-# For a complete list of extension tags on your wiki, see the
-# "Parser extension tags" section at the end of [[Special:Version]].
-# <templatedata> and <includeonly> were manually added to the  following lists.
-# A simple trick to find out if a tag should be listed here or not is as
-# follows:
-# Create the {{text}} template in your wiki (You can copy the source code from
-# English Wikipedia). Then save the following in a test page:
-# {{text|0<tagname>1}}2</tagname>3}}4
-# If the ending braces in the rendered result appear between 3 and 4, then
-# `tagname` is not an extension tag (e.g. <small>). Otherwise, i.e. if those
-# braces appear between 1 and 2 or completely don't show up, `tagname` is
-# probably an extension tag (e.g.: <pre>).
-TAG_EXTENSIONS = [
-    'charinsert',
-    'graph',
-    'hiero',
-    'math',
-    'nowiki',
-    'pre',
-    'score',
-    'source',
-    'syntaxhighlight',
-    'templatedata',
-    'timeline',
-]
-# Contents of the some of the extension tags can be parsed as wikitext.
-# For example, templates are valid inside the poem tag:
-#    <poem>{{text|Hi!}}</poem>
-# But not within math or source or ...
-# for more information about the <categorytree> tag see:
-# https://www.mediawiki.org/wiki/Extension:CategoryTree#
-#    The_.7B.7B.23categorytree.7D.7D_parser_function
-PARSABLE_TAG_EXTENSIONS = [
-    'categorytree',
-    'gallery',
-    'imagemap',
-    'includeonly',
-    'indicator',
-    'inputbox',
-    'poem',
-    'ref',
-    'references',
-    'section',
-]
-TAG_BY_NAME_PATTERN = (
-    r"""
+
+TAG_BY_NAME_PATTERN = rb"""
     # First group is the tag name
     # Second group is indicator for PARSABLE_TAG_EXTENSIONS
     < ((?>%s)|((?>%s))) \b [^>]*+ (?<!/)>
@@ -245,16 +118,26 @@ TAG_BY_NAME_PATTERN = (
     )*?
     # tag-end
     </\1\s*+>
-    """
+"""
+
+# generated pattern: config.regex_pattern(config._parsable_tag_extensions)
+PARSABLE_TAG_EXTENSIONS_PATTERN = (
+    rb'(?>section|ref(?>erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|'
+    rb'magemap)|gallery|categorytree)'
+)
+# generated pattern: config.regex_pattern(config._unparsable_tag_extensions)
+UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
+    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|'
+    rb'math|hiero|graph|charinsert)'
 )
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But probably not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-EXTENSION_TAGS_FINDITER = regex_compile((
+EXTENSION_TAGS_FINDITER = regex_compile(
     TAG_BY_NAME_PATTERN % (
-        '|'.join(TAG_EXTENSIONS), '|'.join(PARSABLE_TAG_EXTENSIONS)
-    )).encode(),
+        UNPARSABLE_TAG_EXTENSIONS_PATTERN, PARSABLE_TAG_EXTENSIONS_PATTERN
+    ),
     IGNORECASE | VERBOSE,
 ).finditer
 COMMENT_PATTERN = r'<!--(?>[^-]++|-(?!->))*+-->'

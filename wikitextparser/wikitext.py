@@ -14,23 +14,22 @@ from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
 from regex import compile as regex_compile
 from wcwidth import wcswidth
 
+from .config import _tag_extensions
 from .spans import (
     COMMENT_PATTERN,
     parse_to_spans,
     VALID_EXTLINK_CHARS,
-    BARE_EXTLINK_SCHEME,
-    TAG_EXTENSIONS,
-    PARSABLE_TAG_EXTENSIONS,
+    BARE_EXTLINK_SCHEMES_PATTERN,
 )
 
 
 # External links (comment inclusive)
 BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
-    '(?>//|' + BARE_EXTLINK_SCHEME + ')',
+    '(?>//|' + BARE_EXTLINK_SCHEMES_PATTERN + ')',
     VALID_EXTLINK_CHARS,
 )
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEME + ')' + VALID_EXTLINK_CHARS
+    '(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
 )
 EXTERNALLINK_FINDITER = regex_compile(
     r'(?:%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
@@ -68,8 +67,6 @@ TABLE_FINDITER = regex_compile(
     """,
     DOTALL | MULTILINE | VERBOSE
 ).finditer
-
-TAG_EXTENSIONS = set(TAG_EXTENSIONS) | set(PARSABLE_TAG_EXTENSIONS)
 
 # Types which are detected by the
 SPAN_PARSER_TYPES = {
@@ -996,7 +993,7 @@ class WikiText:
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         if name:
-            if name in TAG_EXTENSIONS:
+            if name in _tag_extensions:
                 string = lststr[0]
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtTag')
