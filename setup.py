@@ -17,7 +17,7 @@ setup(
     author='5j9',
     author_email='5j9@users.noreply.github.com',
     license='GNU General Public License v3 (GPLv3)',
-    packages=find_packages(),
+    packages=find_packages(exclude='tests'),
     install_requires=[
         'regex',
         'wcwidth',
