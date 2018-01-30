@@ -6,7 +6,8 @@ import unittest
 from regex import compile as regex_compile
 
 import wikitextparser as wtp
-from wikitextparser.tag import (
+# noinspection PyProtectedMember
+from wikitextparser._tag import (
     TAG_FULLMATCH, START_TAG_FINDITER, END_TAG_PATTERN
 )
 

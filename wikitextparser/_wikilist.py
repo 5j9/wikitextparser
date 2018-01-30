@@ -4,7 +4,7 @@ from typing import List, Union, Tuple, Dict, MutableSequence, Match
 
 import regex
 
-from .wikitext import SubWikiText
+from ._wikitext import SubWikiText
 
 
 SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*+(?>\n|\Z))*+'

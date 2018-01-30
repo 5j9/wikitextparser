@@ -3,9 +3,9 @@
 from regex import compile as regex_compile, REVERSE
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
 
-from .argument import Argument
-from .spans import COMMENT_PATTERN
-from .wikitext import SubWikiText, WS
+from ._argument import Argument
+from ._spans import COMMENT_PATTERN
+from ._wikitext import SubWikiText, WS
 
 
 COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub

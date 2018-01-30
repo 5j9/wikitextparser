@@ -4,7 +4,8 @@
 import unittest
 
 from wikitextparser import parse
-from wikitextparser.table import Table, Cell
+# noinspection PyProtectedMember
+from wikitextparser._table import Table, Cell
 
 
 class TableCell(unittest.TestCase):

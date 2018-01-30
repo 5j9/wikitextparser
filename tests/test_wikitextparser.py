@@ -6,7 +6,7 @@ import unittest
 
 
 if __name__ == '__main__':
-    test_suite = unittest.defaultTestLoader.discover('.', '*_test.py')
+    test_suite = unittest.defaultTestLoader.discover('.')
     test_runner = unittest.TextTestRunner(
         resultclass=unittest.TextTestResult, verbosity=1
     )

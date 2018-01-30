@@ -15,7 +15,7 @@ from regex import compile as regex_compile
 from wcwidth import wcswidth
 
 from .config import _tag_extensions
-from .spans import (
+from ._spans import (
     COMMENT_PATTERN,
     parse_to_spans,
     VALID_EXTLINK_CHARS,

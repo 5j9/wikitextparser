@@ -3,7 +3,7 @@
 
 from typing import Optional
 
-from .wikitext import SubWikiText
+from ._wikitext import SubWikiText
 
 
 class WikiLink(SubWikiText):

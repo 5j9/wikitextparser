@@ -4,7 +4,8 @@
 from unittest import expectedFailure, main, TestCase
 
 from wikitextparser import WikiText, parse, Template, ParserFunction
-from wikitextparser.wikitext import WS
+# noinspection PyProtectedMember
+from wikitextparser._wikitext import WS
 
 
 class TestWikiText(TestCase):

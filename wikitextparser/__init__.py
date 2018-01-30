@@ -3,22 +3,22 @@
 
 import regex as _regex
 
-from .parameter import Parameter
-from .argument import Argument
-from .externallink import ExternalLink
-from .wikilink import WikiLink
-from .section import Section
-from .comment import Comment
-from . import wikitext as _wikitext
-from .table import Table
-from .template import Template
-from .parser_function import ParserFunction
-from .tag import Tag
-from .tag import START_TAG_PATTERN as _START_TAG_PATTERN
-from .tag import END_TAG_BYTES_PATTERN as _END_TAG_BYTES_PATTERN
-from .tag import START_TAG_FINDITER as _START_TAG_FINDITER
-from .wikilist import WikiList
-from .wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT
+from ._parameter import Parameter
+from ._argument import Argument
+from ._externallink import ExternalLink
+from ._wikilink import WikiLink
+from ._section import Section
+from ._comment import Comment
+from . import _wikitext
+from ._table import Table
+from ._template import Template
+from ._parser_function import ParserFunction
+from ._tag import Tag
+from ._tag import START_TAG_PATTERN as _START_TAG_PATTERN
+from ._tag import END_TAG_BYTES_PATTERN as _END_TAG_BYTES_PATTERN
+from ._tag import START_TAG_FINDITER as _START_TAG_FINDITER
+from ._wikilist import WikiList
+from ._wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT
 
 
 _regex.DEFAULT_VERSION = _regex.VERSION1

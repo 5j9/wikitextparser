@@ -5,8 +5,8 @@ from typing import List
 
 import regex
 
-from .wikitext import SubWikiText
-from .argument import Argument
+from ._wikitext import SubWikiText
+from ._argument import Argument
 
 
 BAR_SPLITS_FULLMATCH = regex.compile(

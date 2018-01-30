@@ -4,7 +4,7 @@
 from re import compile as re_compile, MULTILINE
 from typing import MutableSequence, Union, List, Dict
 
-from .wikitext import WikiText, WS
+from ._wikitext import WikiText, WS
 
 
 HEADER_MATCH = re_compile(

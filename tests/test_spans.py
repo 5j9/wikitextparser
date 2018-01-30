@@ -3,7 +3,8 @@
 
 from unittest import expectedFailure, main, TestCase
 
-from wikitextparser.spans import PARSER_FUNCTION_FINDITER, parse_to_spans
+# noinspection PyProtectedMember
+from wikitextparser._spans import PARSER_FUNCTION_FINDITER, parse_to_spans
 import wikitextparser as wtp
 
 

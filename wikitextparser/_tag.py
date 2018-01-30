@@ -15,7 +15,7 @@ from warnings import warn
 from regex import compile as regex_compile
 from regex import VERBOSE, DOTALL
 
-from .wikitext import SubWikiText
+from ._wikitext import SubWikiText
 
 
 # HTML elements all have names that only use alphanumeric ASCII characters

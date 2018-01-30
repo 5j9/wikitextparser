@@ -3,7 +3,7 @@
 
 from typing import Optional
 
-from .wikitext import SubWikiText, WS
+from ._wikitext import SubWikiText, WS
 
 
 class Parameter(SubWikiText):

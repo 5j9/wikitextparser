@@ -5,7 +5,7 @@ from typing import Match, MutableSequence, Union, Dict, List
 
 import regex
 
-from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
+from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
 
 
 # https://regex101.com/r/hB4dX2/17

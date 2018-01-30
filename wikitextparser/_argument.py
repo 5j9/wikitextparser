@@ -1,8 +1,8 @@
 ﻿"""Define the Argument class."""
 
 
-from .wikitext import SubWikiText
-from .spans import parse_to_spans
+from ._wikitext import SubWikiText
+from ._spans import parse_to_spans
 
 
 class Argument(SubWikiText):

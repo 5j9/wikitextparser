@@ -4,8 +4,8 @@ from typing import Optional
 
 from regex import compile as regex_compile
 
-from .spans import VALID_EXTLINK_CHARS
-from .wikitext import SubWikiText
+from ._spans import VALID_EXTLINK_CHARS
+from ._wikitext import SubWikiText
 
 
 URL_MATCH = regex_compile(VALID_EXTLINK_CHARS).match

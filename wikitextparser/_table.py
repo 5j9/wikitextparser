@@ -6,14 +6,14 @@ from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 import regex
 
-from .cell import (
+from ._cell import (
     Cell,
     NEWLINE_CELL_MATCH,
     INLINE_HAEDER_CELL_MATCH,
     INLINE_NONHAEDER_CELL_MATCH
 )
-from .tag import ATTRS_MATCH, SubWikiTextWithAttrs
-from .wikitext import WS
+from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
+from ._wikitext import WS
 
 
 CAPTION_REGEX = regex.compile(

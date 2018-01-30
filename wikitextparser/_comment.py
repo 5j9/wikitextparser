@@ -1,7 +1,7 @@
 ﻿"""Define the Comment class."""
 
 
-from .wikitext import SubWikiText
+from ._wikitext import SubWikiText
 
 
 class Comment(SubWikiText):

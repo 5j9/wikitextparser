@@ -4,7 +4,8 @@
 import unittest
 
 from wikitextparser import ParserFunction, WikiText
-from wikitextparser.wikitext import WS
+# noinspection PyProtectedMember
+from wikitextparser._wikitext import WS
 
 
 class TestParserFunction(unittest.TestCase):
