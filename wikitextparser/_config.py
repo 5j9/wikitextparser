@@ -32,7 +32,7 @@ def _pattern(trie: dict) -> str:
 
     subpattern_to_chars = _defaultdict(list)
 
-    for char, sub_trie in sorted(trie.items(), reverse=True):
+    for char, sub_trie in trie.items():
         if not char:
             continue
         subpattern = _pattern(sub_trie)
@@ -43,6 +43,7 @@ def _pattern(trie: dict) -> str:
         if len(chars) == 1:
             alts.append(chars[0] + subpattern)
         else:
+            chars.sort(reverse=True)
             alts.append('[' + ''.join(chars) + ']' + subpattern)
 
     if len(alts) == 1:
@@ -53,6 +54,7 @@ def _pattern(trie: dict) -> str:
             else:  # more than one character in alts[0]
                 result = '(?>' + result + ')?+'
     else:
+        alts.sort(reverse=True)
         result = '(?>' + '|'.join(alts) + ')'
         if optional:
             result += '?+'
