@@ -10,7 +10,7 @@ here = path.abspath(path.dirname(__file__))
 setup(
     name='wikitextparser',
     # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-    version='0.18.0',
+    version='0.18.1.dev0',
     description='A simple parsing tool for MediaWiki\'s wikitext markup.',
     long_description=open(path.join(here, 'README.rst')).read(),
     url='https://github.com/5j9/wikitextparser',
