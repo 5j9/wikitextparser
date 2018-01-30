@@ -1,4 +1,4 @@
-"""Test the functions in config module."""
+"""Test the _config.py module."""
 
 from unittest import main, TestCase
 
@@ -76,4 +76,3 @@ class RegexPattern(TestCase):
 
 if __name__ == '__main__':
     main()
-
