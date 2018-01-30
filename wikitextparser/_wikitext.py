@@ -14,7 +14,7 @@ from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
 from regex import compile as regex_compile
 from wcwidth import wcswidth
 
-from .config import _tag_extensions
+from ._config import _tag_extensions
 from ._spans import (
     COMMENT_PATTERN,
     parse_to_spans,

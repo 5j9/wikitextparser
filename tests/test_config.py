@@ -3,7 +3,7 @@
 from unittest import main, TestCase
 
 # noinspection PyProtectedMember
-from wikitextparser.config import _pattern, _plant_trie, regex_pattern
+from wikitextparser._config import _pattern, _plant_trie, regex_pattern
 
 
 class TestPlantTrie(TestCase):
