@@ -11,14 +11,13 @@ from regex import compile as regex_compile
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 # Templates
-TEMPLATE_FINDITER = regex_compile(
-    (
-        r'''
-        \{\{
-        \s*+%1s\s*+  # name
+TEMPLATE_FINDITER = regex_compile((
+        r'\{\{\s*+'
+        # name
+        + VALID_TITLE_CHARS_PATTERN + '''
+        \s*+
         (?>\|[^{}]*+)?+  # optional args
-        \}\}
-        ''' % VALID_TITLE_CHARS_PATTERN
+        \}\}'''
     ).encode(),
     VERBOSE,
 ).finditer
@@ -79,7 +78,8 @@ BARE_EXTERNALLINK_PATTERN = (
 WIKILINK_FINDITER = regex_compile((
     r'''
     \[\[
-    (?!%s)%s
+    (?!''' + BARE_EXTERNALLINK_PATTERN + r')'
+    + VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'', 1) + '''
     (
         \]\]
         |
@@ -94,17 +94,23 @@ WIKILINK_FINDITER = regex_compile((
         )*?
         \]\]
     )
-    ''' % (
-        BARE_EXTERNALLINK_PATTERN,
-        VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'', 1),
-    )).encode(),
+    ''').encode(),
     IGNORECASE | VERBOSE,
 ).finditer
 
-TAG_BY_NAME_PATTERN = rb"""
-    # First group is the tag name
-    # Second group is indicator for PARSABLE_TAG_EXTENSIONS
-    < ((?>%s)|((?>%s))) \b [^>]*+ (?<!/)>
+# generated pattern: config.regex_pattern(config._parsable_tag_extensions)
+PARSABLE_TAG_EXTENSIONS_PATTERN = (
+    rb'(?>section|ref(?>erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|'
+    rb'magemap)|gallery|categorytree)'
+)
+# generated pattern: config.regex_pattern(config._unparsable_tag_extensions)
+UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
+    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|'
+    rb'math|hiero|graph|charinsert)'
+)
+TAG_BY_NAME_PATTERN = (
+    rb'< (' + UNPARSABLE_TAG_EXTENSIONS_PATTERN + rb'|(' +
+    PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')) \b [^>]*+ (?<!/)>
     # content
     (?>
         # Contains no other tags or
@@ -117,27 +123,15 @@ TAG_BY_NAME_PATTERN = rb"""
         <\1\b[^>]*/>
     )*?
     # tag-end
-    </\1\s*+>
-"""
+    </\1\s*+>'''
+)
 
-# generated pattern: config.regex_pattern(config._parsable_tag_extensions)
-PARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>section|ref(?>erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|'
-    rb'magemap)|gallery|categorytree)'
-)
-# generated pattern: config.regex_pattern(config._unparsable_tag_extensions)
-UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|'
-    rb'math|hiero|graph|charinsert)'
-)
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
-# But probably not bullet proof:
+# But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 EXTENSION_TAGS_FINDITER = regex_compile(
-    TAG_BY_NAME_PATTERN % (
-        UNPARSABLE_TAG_EXTENSIONS_PATTERN, PARSABLE_TAG_EXTENSIONS_PATTERN
-    ),
+    TAG_BY_NAME_PATTERN,
     IGNORECASE | VERBOSE,
 ).finditer
 COMMENT_PATTERN = r'<!--(?>[^-]++|-(?!->))*+-->'
