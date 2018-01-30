@@ -62,6 +62,11 @@ class TestPattern(TestCase):
             _pattern(_plant_trie(['a', 'abc'])), 'a(?>bc)?+',
         )
 
+    def test_a_or_abc_or_null(self):
+        self.assertEqual(
+            _pattern(_plant_trie(['', 'a', 'bc'])), '(?>bc|a)?+',
+        )
+
 
 class RegexPattern(TestCase):
 
