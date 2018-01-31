@@ -27,14 +27,13 @@ def _pattern(trie: dict) -> str:
         if len(trie) == 1:
             return ''
         optional = True
+        del trie['']
     else:
         optional = False
 
     subpattern_to_chars = _defaultdict(list)
 
     for char, sub_trie in trie.items():
-        if not char:
-            continue
         subpattern = _pattern(sub_trie)
         subpattern_to_chars[subpattern].append(char)
 
@@ -52,7 +51,7 @@ def _pattern(trie: dict) -> str:
             if len(result) == 1:
                 result += '?+'
             else:  # more than one character in alts[0]
-                result = '(?>' + result + ')?+'
+                result = '(?:' + result + ')?+'
     else:
         alts.sort(reverse=True)
         result = '(?>' + '|'.join(alts) + ')'
