@@ -45,7 +45,7 @@ PARAMETER_FINDITER = regex_compile(
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARSER_FUNCTION_FINDITER = regex_compile(
     rb'\{\{\s*+'
-    # generated pattern: config.regex_pattern(config._parser_functions)
+    # generated pattern: _config.regex_pattern(_config._parser_functions)
     # with \#[^{}\s:]++ added manually.
     rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?>first)?+)|p(?>lural|ad(?>right|left))|'
     rb'nse?+|l(?>ocalurl|c(?>first)?+)|int|g(?>rammar|ender)|f(?>ullurl|ormatn'
@@ -63,7 +63,7 @@ PARSER_FUNCTION_FINDITER = regex_compile(
 # External links
 VALID_EXTLINK_CHARS = r'[^ \t\n<>\[\]"]++'
 
-# generated pattern: config.regex_pattern(config._bare_external_link_schemes)
+# generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
 BARE_EXTLINK_SCHEMES_PATTERN = (
     r'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|'
     r's(?>vn://|sh://|ms:|ip(?>s:|:)|ftp://)|redis://|n(?>ntp://|ews:)|'
@@ -71,16 +71,16 @@ BARE_EXTLINK_SCHEMES_PATTERN = (
     r'g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitcoin:)'
 )
 BARE_EXTERNALLINK_PATTERN = (
-    '\ *+(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
+    '(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile((
     r'''
     \[\[
-    (?!''' + BARE_EXTERNALLINK_PATTERN + r')'
+    (?!\ *+''' + BARE_EXTERNALLINK_PATTERN + r')'
     + VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'', 1) + '''
-    (
+    (?:
         \]\]
         |
         \| # Text of the wikilink
@@ -98,15 +98,15 @@ WIKILINK_FINDITER = regex_compile((
     IGNORECASE | VERBOSE,
 ).finditer
 
-# generated pattern: config.regex_pattern(config._parsable_tag_extensions)
+# generated pattern: _config.regex_pattern(_config._parsable_tag_extensions)
 PARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>section|ref(?>erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|'
-    rb'magemap)|gallery|categorytree)'
+    rb'(?>section|ref(?>erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|mage'
+    rb'map)|gallery|categorytree)'
 )
-# generated pattern: config.regex_pattern(config._unparsable_tag_extensions)
+# generated pattern: _config.regex_pattern(_config._unparsable_tag_extensions)
 UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|'
-    rb'math|hiero|graph|charinsert)'
+    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|m'
+    rb'ath|hiero|graph|charinsert)'
 )
 TAG_BY_NAME_PATTERN = (
     rb'< (' + UNPARSABLE_TAG_EXTENSIONS_PATTERN + rb'|(' +
