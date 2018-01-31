@@ -1109,15 +1109,15 @@ class SubWikiText(WikiText):
 
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
-    from .tag import (
+    from ._tag import (
         Tag, START_TAG_PATTERN, END_TAG_BYTES_PATTERN, START_TAG_FINDITER
     )
-    from .parser_function import ParserFunction
-    from .template import Template
-    from .wikilink import WikiLink
-    from .comment import Comment
-    from .externallink import ExternalLink
-    from .section import Section
-    from .wikilist import WikiList, LIST_PATTERN_FORMAT
-    from .table import Table
-    from .parameter import Parameter
+    from ._parser_function import ParserFunction
+    from ._template import Template
+    from ._wikilink import WikiLink
+    from ._comment import Comment
+    from ._externallink import ExternalLink
+    from ._section import Section
+    from ._wikilist import WikiList, LIST_PATTERN_FORMAT
+    from ._table import Table
+    from ._parameter import Parameter
