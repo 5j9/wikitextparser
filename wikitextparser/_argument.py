@@ -37,7 +37,7 @@ class Argument(SubWikiText):
             if '=' in arg_str:
                 # The argument may is still be positional if the equal sign is
                 # inside an atomic sub-spans.
-                byte_array = bytearray(arg_str.encode('ascii', 'replace'))
+                byte_array = bytearray(arg_str, 'ascii', 'replace')
                 parse_to_spans(byte_array)  # Remove sub-spans from byte_array
                 if b'=' in byte_array:
                     # This is a keyword argument.
