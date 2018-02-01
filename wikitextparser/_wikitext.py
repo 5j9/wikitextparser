@@ -109,12 +109,12 @@ class WikiText:
         self._lststr = [string]
         span = [0, len(string)]
         self._span = span
-        byte_array = bytearray(string.encode('ascii', 'replace'))
+        byte_array = bytearray(string, 'ascii', 'replace')
         _type = self._type
         if _type not in SPAN_PARSER_TYPES:
             type_to_spans = self._type_to_spans = parse_to_spans(byte_array)
             type_to_spans[_type] = [span]
-            self._shadow_cache = string, byte_array.decode()
+            self._shadow_cache = string, byte_array.decode(), type_to_spans
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
@@ -129,7 +129,7 @@ class WikiText:
             self._type_to_spans = type_to_spans
             byte_array[:2] = head
             byte_array[-2:] = tail
-            self._shadow_cache = (string, byte_array.decode())
+            self._shadow_cache = string, byte_array.decode(), type_to_spans
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -238,7 +238,7 @@ class WikiText:
         # Add the newly added spans contained in the value.
         type_to_spans = self._type_to_spans
         for type_, spans in parse_to_spans(
-            bytearray(value.encode('ascii', 'replace'))
+            bytearray(value, 'ascii', 'replace')
         ).items():
             spans_append = type_to_spans[type_].append
             for s, e in spans:
@@ -293,7 +293,7 @@ class WikiText:
         # Remember newly added spans by the string.
         spans_dict = self._type_to_spans
         for k, v in parse_to_spans(
-            bytearray(string.encode('ascii', 'replace'))
+            bytearray(string, 'ascii', 'replace')
         ).items():
             spans_append = spans_dict[k].append
             for s, e in v:
@@ -426,9 +426,8 @@ class WikiText:
         """
         ss, se = self._span
         string = self._lststr[0][ss:se]
-        cached_string, cached_shadow = getattr(
-            self, '_shadow_cache', (None, None)
-        )
+        cached_string, cached_shadow, spans_dict = getattr(
+            self, '_shadow_cache', (None, None, None))
         if cached_string == string:
             return cached_shadow
         # In the old method the existing spans were used to create the shadow.
@@ -437,18 +436,18 @@ class WikiText:
         # amount of time. The new method tries to parse the self.string which
         # is usually much more faster because there are usually far less
         # sub-spans for individual objects.
-        shadow = bytearray(string.encode('ascii', 'replace'))
+        shadow = bytearray(string, 'ascii', 'replace')
         if self._type in SPAN_PARSER_TYPES:
             head = shadow[:2]
             tail = shadow[-2:]
             shadow[:2] = shadow[-2:] = b'__'
-            parse_to_spans(shadow)
+            spans_dict = parse_to_spans(shadow)
             shadow[:2] = head
             shadow[-2:] = tail
         else:
-            parse_to_spans(shadow)
+            spans_dict = parse_to_spans(shadow)
         shadow = shadow.decode()
-        self._shadow_cache = (string, shadow)
+        self._shadow_cache = string, shadow, spans_dict
         return shadow
 
     @property
@@ -458,23 +457,15 @@ class WikiText:
         Used for external links where the mentioned types are valid but may
         contain invalid link characters characters in them.
         """
-        ss, se = self._span
-        string = self._lststr[0][ss:se]
-        cached_string, cached_shadow = getattr(
-            self, '_dark_shadow_cache', (None, None)
-        )
-        if cached_string == string:
-            return cached_shadow
-        dark_shadow = bytearray(string.encode('ascii', 'replace'))
-        type_to_spans = parse_to_spans(dark_shadow)
-        for s, e in type_to_spans['Comment']:
+        shadow = self._shadow  # set or update _shadow_cache
+        cached_string, cached_shadow, spans_dict = self._shadow_cache
+        dark_shadow = bytearray(shadow, 'ascii')
+        for s, e in spans_dict['Comment']:
             dark_shadow[s:e] = b'_' * (e - s)
-        repl = b'_' if isinstance(self, ExternalLink) else b'_'
         for type_ in 'Template', 'ParserFunction':
-            for s, e in type_to_spans[type_]:
-                dark_shadow[s:e] = repl * (e - s)
+            for s, e in spans_dict[type_]:
+                dark_shadow[s:e] = b'_' * (e - s)
         dark_shadow = dark_shadow.decode()
-        self._dark_shadow_cache = string, dark_shadow
         return dark_shadow
 
     def _pp_type_to_spans(self) -> dict:
@@ -1013,7 +1004,7 @@ class WikiText:
         # and so on.
         ss = self._span[0]
         shadow = self._shadow
-        shadow_bytearray = bytearray(shadow.encode('ascii'))
+        shadow_bytearray = bytearray(shadow, 'ascii')
         if name:
             # There is a name but it is not in TAG_EXTENSIONS.
             name_pattern = r'(?P<name>' + name + ')'
