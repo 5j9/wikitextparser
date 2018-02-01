@@ -24,15 +24,16 @@ from ._spans import (
 
 
 # External links (comment inclusive)
-BRACKET_EXTERNALLINK_PATTERN = r'\[%s%s\ *+[^\]\n]*+\]' % (
-    '(?>//|' + BARE_EXTLINK_SCHEMES_PATTERN + ')',
-    VALID_EXTLINK_CHARS,
+BRACKET_EXTERNALLINK_PATTERN = (
+    rb'\[(?>//|' + BARE_EXTLINK_SCHEMES_PATTERN + rb')'
+    + VALID_EXTLINK_CHARS + rb'\ *+[^\]\n]*+\]'
 )
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
+    rb'(?>' + BARE_EXTLINK_SCHEMES_PATTERN + rb')' + VALID_EXTLINK_CHARS
 )
 EXTERNALLINK_FINDITER = regex_compile(
-    r'(?:%s|%s)' % (BARE_EXTERNALLINK_PATTERN, BRACKET_EXTERNALLINK_PATTERN),
+    rb'(?:' + BARE_EXTERNALLINK_PATTERN
+    + rb'|' + BRACKET_EXTERNALLINK_PATTERN + rb')',
     IGNORECASE | VERBOSE,
 ).finditer
 
@@ -465,7 +466,6 @@ class WikiText:
         for type_ in 'Template', 'ParserFunction':
             for s, e in spans_dict[type_]:
                 dark_shadow[s:e] = b'_' * (e - s)
-        dark_shadow = dark_shadow.decode()
         return dark_shadow
 
     def _pp_type_to_spans(self) -> dict:

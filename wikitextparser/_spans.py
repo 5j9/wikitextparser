@@ -9,16 +9,15 @@ from regex import compile as regex_compile
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS_PATTERN = r'[^\x00-\x1f\|\{\}\[\]<>\n]++'
+VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 # Templates
-TEMPLATE_FINDITER = regex_compile((
-        r'\{\{\s*+'
-        # name
-        + VALID_TITLE_CHARS_PATTERN + '''
-        \s*+
-        (?>\|[^{}]*+)?+  # optional args
-        \}\}'''
-    ).encode(),
+TEMPLATE_FINDITER = regex_compile(
+    rb'\{\{\s*+'
+    # name
+    + VALID_TITLE_CHARS_PATTERN + rb'''
+    \s*+
+    (?>\|[^{}]*+)?+  # optional args
+    \}\}''',
     VERBOSE,
 ).finditer
 INVALID_TL_NAME_FINDITER = regex_compile(
@@ -61,25 +60,25 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb':[^{}]*+\}\}',
 ).finditer
 # External links
-VALID_EXTLINK_CHARS = r'[^ \t\n<>\[\]"]++'
+VALID_EXTLINK_CHARS = rb'[^ \t\n<>\[\]"]++'
 
 # generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
 BARE_EXTLINK_SCHEMES_PATTERN = (
-    r'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s:|:'
-    r')|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc(?>s:'
-    r'//|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitcoin'
-    r':)'
+    rb'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s:|'
+    rb':)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc(?>'
+    rb's://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitc'
+    rb'oin:)'
 )
 BARE_EXTERNALLINK_PATTERN = (
-    '(?>' + BARE_EXTLINK_SCHEMES_PATTERN + ')' + VALID_EXTLINK_CHARS
+    rb'(?>' + BARE_EXTLINK_SCHEMES_PATTERN + rb')' + VALID_EXTLINK_CHARS
 )
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_FINDITER = regex_compile((
-    r'''
+WIKILINK_FINDITER = regex_compile(
+    rb'''
     \[\[
-    (?!\ *+''' + BARE_EXTERNALLINK_PATTERN + r')'
-    + VALID_TITLE_CHARS_PATTERN.replace(r'\{\}', r'', 1) + '''
+    (?!\ *+''' + BARE_EXTERNALLINK_PATTERN + rb')'
+    + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
     (?:
         \]\]
         |
@@ -94,7 +93,7 @@ WIKILINK_FINDITER = regex_compile((
         )*?
         \]\]
     )
-    ''').encode(),
+    ''',
     IGNORECASE | VERBOSE,
 ).finditer
 
