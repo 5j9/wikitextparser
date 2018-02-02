@@ -11,10 +11,10 @@ from ._wikitext import SubWikiText, WS
 COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
 
 BAR_SPLITS_FULLMATCH = regex_compile(
-    r'{{'
-    r'[^|}]*+'  # name
-    r'(?<arg>\|[^|}]*+)*+'
-    r'}}'
+    rb'{{'
+    rb'[^|}]*+'  # name
+    rb'(?<arg>\|[^|}]*+)*+'
+    rb'}}'
 ).fullmatch
 STARTING_WS_MATCH = regex_compile(r'\s*+').match
 ENDING_WS_MATCH = regex_compile(r'(?>\n[ \t]*)*+', REVERSE).match
@@ -61,7 +61,7 @@ class Template(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        h = self._atomic_partition('|')[0]
+        h = self._atomic_partition(124)[0]
         if len(h) == len(self.string):
             return h[2:-2]
         return h[2:]

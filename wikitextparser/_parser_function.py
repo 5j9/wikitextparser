@@ -10,10 +10,10 @@ from ._argument import Argument
 
 
 BAR_SPLITS_FULLMATCH = regex.compile(
-    r'{{'
-    r'[^:|}]*+'  # name
-    r'(?<arg>:[^|}]*+)?+(?<arg>\|[^|}]*+)*+'
-    r'}}'
+    rb'{{'
+    rb'[^:|}]*+'  # name
+    rb'(?<arg>:[^|}]*+)?+(?<arg>\|[^|}]*+)*+'
+    rb'}}'
 ).fullmatch
 
 

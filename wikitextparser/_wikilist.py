@@ -2,30 +2,27 @@
 
 from typing import List, Union, Tuple, Dict, MutableSequence, Match
 
-import regex
+from regex import escape, fullmatch, MULTILINE
 
 from ._wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = r'(?>^(?<pattern>{pattern})[:;#*].*+(?>\n|\Z))*+'
+SUBLIST_PATTERN = rb'(?>^(?<pattern>{pattern})[:;#*].*+(?>\n|\Z))*+'
 LIST_PATTERN_FORMAT = (
-    r'''
-    (?<fullitem>
-        ^
-        (?<pattern>{pattern})
-        (?(?<=;\s*+)
-            # mark inline definition as an item
-            (?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+
-            (?>\n|\Z)%s
-            |
-            # non-definition
-            (?<item>.*+)
-            (?>\n|\Z)%s
-        )
-    )++
-    '''
-    % (SUBLIST_PATTERN, SUBLIST_PATTERN)
-).format
+    rb'(?<fullitem>'
+    rb'^'
+    rb'(?<pattern>{pattern})'
+    rb'(?(?<=;\s*+)'
+    # mark inline definition as an item
+    rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
+    rb'(?>\n|\Z)' + SUBLIST_PATTERN +
+    rb'|'
+    # non-definition
+    rb'(?<item>.*+)'
+    rb'(?>\n|\Z)' + SUBLIST_PATTERN +
+    rb')'
+    rb')++'
+)
 
 
 class WikiList(SubWikiText):
@@ -46,10 +43,10 @@ class WikiList(SubWikiText):
         if _match:
             self._cached_match = _match
         else:
-            self._cached_match = regex.fullmatch(
-                LIST_PATTERN_FORMAT(pattern=pattern),
+            self._cached_match = fullmatch(
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
                 self._shadow,
-                regex.MULTILINE | regex.VERBOSE,
+                MULTILINE,
             )
 
     @property
@@ -58,12 +55,13 @@ class WikiList(SubWikiText):
         match = self._cached_match
         s, e = match.span()
         shadow = self._shadow
+        # Todo: Is the match.string.find(shadow) logic correct?
         if s + len(shadow) == e and match.string.find(shadow) == s:
             return match
-        match = regex.fullmatch(
-            LIST_PATTERN_FORMAT(pattern=self.pattern),
+        match = fullmatch(
+            LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode()),
             self._shadow,
-            regex.MULTILINE | regex.VERBOSE,
+            MULTILINE,
         )
         self._cached_match = match
         return match
@@ -153,4 +151,4 @@ class WikiList(SubWikiText):
         ms = match.start()
         for s, e in reversed(match.spans('pattern')):
             self[s - ms:e - ms] = newstart
-        self.pattern = regex.escape(newstart)
+        self.pattern = escape(newstart)

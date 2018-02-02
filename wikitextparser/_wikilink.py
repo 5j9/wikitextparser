@@ -12,7 +12,7 @@ class WikiLink(SubWikiText):
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""
-        head, pipe, tail = self._atomic_partition('|')
+        head, pipe, tail = self._atomic_partition(124)
         if pipe:
             return head[2:]
         else:
@@ -21,7 +21,7 @@ class WikiLink(SubWikiText):
     @target.setter
     def target(self, newtarget: str) -> None:
         """Set a new target."""
-        head, pipe, tail = self._atomic_partition('|')
+        head, pipe, tail = self._atomic_partition(124)
         if not pipe:
             head = head[:-2]
         self[2:len(head)] = newtarget
@@ -29,7 +29,7 @@ class WikiLink(SubWikiText):
     @property
     def text(self) -> Optional[str]:
         """Return the text of this WikiLink. Do not include linktrail."""
-        head, pipe, tail = self._atomic_partition('|')
+        head, pipe, tail = self._atomic_partition(124)
         if pipe:
             return tail[:-2]
         return None
@@ -40,7 +40,7 @@ class WikiLink(SubWikiText):
 
         Do not change the linktrail.
         """
-        head, pipe, tail = self._atomic_partition('|')
+        head, pipe, tail = self._atomic_partition(124)
         if pipe:
             if newtext is None:
                 del self[len(head + pipe) - 1:len(head + pipe + tail) - 2]

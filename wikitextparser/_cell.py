@@ -3,14 +3,14 @@
 
 from typing import Match, MutableSequence, Union, Dict, List
 
-import regex
+from regex import compile as regex_compile, VERBOSE, DOTALL
 
 from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
 
 
 # https://regex101.com/r/hB4dX2/17
-NEWLINE_CELL_MATCH = regex.compile(
-    r"""
+NEWLINE_CELL_MATCH = regex_compile(
+    rb"""
     # only for matching, not search
     \s*+
     (?P<sep>[|!](?![+}-]))
@@ -53,14 +53,14 @@ NEWLINE_CELL_MATCH = regex.compile(
         $
     )
     """,
-    regex.VERBOSE
+    VERBOSE
 ).match
 # https://regex101.com/r/qK1pJ8/5
 # In header rows, any "!!" is treated as "||".
 # See: https://github.com/wikimedia/mediawiki/blob/
 # 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
-INLINE_HAEDER_CELL_MATCH = regex.compile(
-    r"""
+INLINE_HAEDER_CELL_MATCH = regex_compile(
+    rb"""
     (?>
         # immediate closure of attrs
         \|!(?P<attrs>)!
@@ -101,11 +101,11 @@ INLINE_HAEDER_CELL_MATCH = regex.compile(
         $
     )
     """,
-    regex.VERBOSE | regex.DOTALL
+    VERBOSE | DOTALL
 ).match
 # https://regex101.com/r/hW8aZ3/7
-INLINE_NONHAEDER_CELL_MATCH = regex.compile(
-    r"""
+INLINE_NONHAEDER_CELL_MATCH = regex_compile(
+    rb"""
     \|\| # catch the matching pipe (style holder).
     (?>
         # immediate closure
@@ -133,7 +133,7 @@ INLINE_NONHAEDER_CELL_MATCH = regex.compile(
         )
     )
     """,
-    regex.VERBOSE
+    VERBOSE
 ).match
 
 
@@ -173,9 +173,9 @@ class Cell(SubWikiTextWithAttrs):
         cached_match = self._cached_match
         if cached_match and cached_match.string == shadow:
             return cached_match
-        if shadow[0] == '\n':
+        if shadow[0] == 10: # ord('\n')
             m = NEWLINE_CELL_MATCH(shadow)
-            self._header = m['sep'] == '!'
+            self._header = m['sep'] == 33  # ord('!')
         elif self._header:
             m = INLINE_HAEDER_CELL_MATCH(shadow)
         else:
@@ -226,21 +226,22 @@ class Cell(SubWikiTextWithAttrs):
         shadow = cell_match.string
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
+            encoded_attr_name = attr_name.encode()
             attrs_m = ATTRS_MATCH(shadow, attrs_start, attrs_end)
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
-                if n == attr_name:
+                if n == encoded_attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
-                    q = 1 if attrs_m.string[ve] in '"\'' else 0
+                    q = 1 if attrs_m.string[ve] in b'"\'' else 0
                     self[vs - q:ve + q] = '"{}"'.format(attr_value)
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs')
-            fmt = '{}="{}" ' if shadow[attr_end - 1] == ' ' else ' {}="{}"'
+            fmt = '{}="{}" ' if shadow[attr_end - 1] == 32 else ' {}="{}"'
             self.insert(attr_end, fmt.format(attr_name, attr_value))
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if shadow[0] == '\n':
+        if shadow[0] == 10:  # ord('\n')
             self.insert(
                 cell_match.start('sep') + 1,
                 fmt.format(attr_name, attr_value)

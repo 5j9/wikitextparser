@@ -59,11 +59,11 @@ class Table(SubWikiTextWithAttrs):
         """Return match_table."""
         shadow = self._shadow
         # Remove table-start and table-end marks.
-        pos = shadow.find('\n')
+        pos = shadow.find(10)  # ord('\n')
         lsp = _lstrip_increase(shadow, pos)
         # Remove everything until the first row
-        while shadow[lsp] not in '!|':
-            nlp = shadow.find('\n', lsp)
+        while shadow[lsp] not in b'!|':
+            nlp = shadow.find(10, lsp)  # ord('\n')
             pos = nlp
             lsp = _lstrip_increase(shadow, pos)
         # Start of the first row
@@ -83,13 +83,13 @@ class Table(SubWikiTextWithAttrs):
                 match_row.append(m)
                 sep = m['sep']
                 pos = m.end()
-                if sep == '|':
+                if sep == b'|':
                     m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
                     while m:
                         match_row.append(m)
                         pos = m.end()
                         m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
-                elif sep == '!':
+                elif sep == b'!':
                     m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
                     while m:
                         match_row.append(m)
@@ -128,6 +128,7 @@ class Table(SubWikiTextWithAttrs):
 
         """
         match_table = self._match_table
+        # Todo: Use shadow to handle comments, etc.?
         string = self.string
         table_data = []  # type: List[List[str]]
         if strip:
@@ -154,7 +155,7 @@ class Table(SubWikiTextWithAttrs):
                     row_attrs_append = row_attrs.append
                     for m in match_row:
                         s, e = m.span('attrs')
-                        captures = ATTRS_MATCH(string, s, e).captures
+                        captures = ATTRS_MATCH(string.encode(), s, e).captures
                         row_attrs_append(dict(zip(
                             captures('attr_name'), captures('attr_value')
                         )))
@@ -288,7 +289,7 @@ class Table(SubWikiTextWithAttrs):
         cache = getattr(self, '_cached_attrs_match', None)
         if cache and cache.string == shadow:
             return cache
-        attrs_match = ATTRS_MATCH(shadow, 2, shadow.find('\n'))
+        attrs_match = ATTRS_MATCH(shadow, 2, shadow.find(10))  # ord('\n')
         self._cached_attrs_match = attrs_match
         return attrs_match
 
@@ -399,14 +400,14 @@ def _apply_attr_spans(
                     if xwidth > len(r):
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
-            colspan = int(attrs_get('colspan', 1))
+            colspan = int(attrs_get(b'colspan', 1))
             if colspan == 0:
                 # Note: colspan="0" tells the browser to span the cell to
                 # the last column of the column group (colgroup)
                 # http://www.w3schools.com/TAGS/att_td_colspan.asp
                 colspan = 1
             # 13.9
-            rowspan = int(attrs_get('rowspan', 1))
+            rowspan = int(attrs_get(b'rowspan', 1))
             # 13.10
             if rowspan == 0:
                 # Note: rowspan="0" tells the browser to span the cell to the
@@ -464,15 +465,15 @@ def _apply_attr_spans(
     return table
 
 
-def _lstrip_increase(string: str, pos: int) -> int:
-    """Return the new position to lstrip the string."""
-    length = len(string)
-    while pos < length and string[pos].isspace():
+def _lstrip_increase(shadow: bytearray, pos: int) -> int:
+    """Return the new position to lstrip the shadow."""
+    length = len(shadow)
+    while pos < length and shadow[pos:pos + 1].isspace():
         pos += 1
     return pos
 
 
-def _semi_caption_increase(string: str, pos: int) -> int:
+def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting semi-caption.
 
     Captions are optional and only one should be placed between table-start
@@ -480,30 +481,30 @@ def _semi_caption_increase(string: str, pos: int) -> int:
     be ignored. We call these semi-captions.
 
     """
-    lsp = _lstrip_increase(string, pos)
-    while string[lsp:lsp + 2] == '|+':
-        pos = string.find('\n', lsp + 2)
-        lsp = _lstrip_increase(string, pos)
-        while string[lsp] not in ('!', '|'):
+    lsp = _lstrip_increase(shadow, pos)
+    while shadow[lsp:lsp + 2] == b'|+':
+        pos = shadow.find(10, lsp + 2)  # ord('\n')
+        lsp = _lstrip_increase(shadow, pos)
+        while shadow[lsp] not in b'!|':
             # This line is a continuation of semi-caption line.
-            nlp = string.find('\n', lsp + 1)
+            nlp = shadow.find(10, lsp + 1)  # ord('\n')
             pos = nlp
-            lsp = _lstrip_increase(string, nlp)
+            lsp = _lstrip_increase(shadow, nlp)
     return pos
 
 
-def _row_separator_increase(string: str, pos: int) -> int:
+def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting row separator line.
 
     Also skips any semi-caption lines before and after the separator.
 
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    scp = _semi_caption_increase(string, pos)
-    lsp = _lstrip_increase(string, scp)
-    while string[lsp:lsp + 2] == '|-':
+    scp = _semi_caption_increase(shadow, pos)
+    lsp = _lstrip_increase(shadow, scp)
+    while shadow[lsp:lsp + 2] == b'|-':
         # We are on a row separator line.
-        pos = string.find('\n', lsp + 2)
-        pos = _semi_caption_increase(string, pos)
-        lsp = _lstrip_increase(string, pos)
+        pos = shadow.find(10, lsp + 2)  # ord('\n')
+        pos = _semi_caption_increase(shadow, pos)
+        lsp = _lstrip_increase(shadow, pos)
     return pos

@@ -51,7 +51,7 @@ SECTIONS_FULLMATCH = regex_compile(
 
 # Tables
 TABLE_FINDITER = regex_compile(
-    r"""
+    rb"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
     ^
@@ -115,8 +115,7 @@ class WikiText:
         if _type not in SPAN_PARSER_TYPES:
             type_to_spans = self._type_to_spans = parse_to_spans(byte_array)
             type_to_spans[_type] = [span]
-            self._shadow_cache = \
-                string, byte_array.decode(), byte_array, type_to_spans
+            self._shadow_cache = string, byte_array, type_to_spans
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
@@ -131,8 +130,7 @@ class WikiText:
             self._type_to_spans = type_to_spans
             byte_array[:2] = head
             byte_array[-2:] = tail
-            self._shadow_cache = \
-                string, byte_array.decode(), byte_array, type_to_spans
+            self._shadow_cache = string, byte_array, type_to_spans
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -318,14 +316,14 @@ class WikiText:
         """Set a new string for this object. Note the old data will be lost."""
         self[:] = newstring
 
-    def _atomic_partition(self, char: str) -> Tuple[str, str, str]:
+    def _atomic_partition(self, char: int) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic sub-spans."""
         s, e = self._span
         index = self._shadow.find(char)
         if index == -1:
             return self._lststr[0][s:e], '', ''
         lststr0 = self._lststr[0]
-        return lststr0[s:s + index], char, lststr0[s + index + 1:e]
+        return lststr0[s:s + index], chr(char), lststr0[s + index + 1:e]
 
     def _subspans(self, type_: str) -> List[List[int]]:
         """Return all the sub-span including self._span."""
@@ -414,7 +412,7 @@ class WikiText:
         return level
 
     @property
-    def _shadow(self) -> str:
+    def _shadow(self) -> bytearray:
         """Return a copy of self.string with specific sub-spans replaced.
 
         Comments blocks are replaced by spaces. Other sub-spans are replaced
@@ -428,28 +426,27 @@ class WikiText:
         """
         ss, se = self._span
         string = self._lststr[0][ss:se]
-        cached_string, cached_shadow, byte_array, spans_dict = getattr(
-            self, '_shadow_cache', (None, None, None, None))
+        cached_string, shadow, spans_dict = getattr(
+            self, '_shadow_cache', (None, None, None))
         if cached_string == string:
-            return cached_shadow
+            return shadow
         # In the old method the existing spans were used to create the shadow.
         # But it was slow because there can be thousands of spans and iterating
         # over them to find the relevant sub-spans could take a significant
         # amount of time. The new method tries to parse the self.string which
         # is usually much more faster because there are usually far less
         # sub-spans for individual objects.
-        byte_array = bytearray(string, 'ascii', 'replace')
+        shadow = bytearray(string, 'ascii', 'replace')
         if self._type in SPAN_PARSER_TYPES:
-            head = byte_array[:2]
-            tail = byte_array[-2:]
-            byte_array[:2] = byte_array[-2:] = b'__'
-            spans_dict = parse_to_spans(byte_array)
-            byte_array[:2] = head
-            byte_array[-2:] = tail
+            head = shadow[:2]
+            tail = shadow[-2:]
+            shadow[:2] = shadow[-2:] = b'__'
+            spans_dict = parse_to_spans(shadow)
+            shadow[:2] = head
+            shadow[-2:] = tail
         else:
-            spans_dict = parse_to_spans(byte_array)
-        shadow = byte_array.decode()
-        self._shadow_cache = string, shadow, byte_array, spans_dict
+            spans_dict = parse_to_spans(shadow)
+        self._shadow_cache = string, shadow, spans_dict
         return shadow
 
     @property
@@ -460,8 +457,8 @@ class WikiText:
         contain invalid link characters characters in them.
         """
         shadow = self._shadow  # set or update _shadow_cache
-        cached_string, shadow, byte_array, spans_dict = self._shadow_cache
-        dark_shadow = byte_array[:]
+        spans_dict = self._shadow_cache[2]
+        dark_shadow = shadow[:]
         for type_ in 'Template', 'ParserFunction', 'Comment':
             for s, e in spans_dict[type_]:
                 dark_shadow[s:e] = b'_' * (e - s)
@@ -886,7 +883,7 @@ class WikiText:
         tables_append = tables.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        shadow = self._shadow
+        shadow = self._shadow[:]
         ss, se = self._span
         spans = type_to_spans.setdefault('Table', [])
         if not spans:
@@ -900,7 +897,7 @@ class WikiText:
                     span = [ss + ms + len(m[1]), ss + me]
                     spans.append(span)
                     tables_append(Table(lststr, type_to_spans, span))
-                    shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
+                    shadow[ms:me] = b'_' * (me - ms)
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
@@ -918,7 +915,7 @@ class WikiText:
                 else:
                     span = old_span
                 tables_append(Table(lststr, type_to_spans, span))
-                shadow = shadow[:ms] + '_' * (me - ms) + shadow[me:]
+                shadow[ms:me] = b'_' * (me - ms)
         return tables
 
     def lists(self, pattern: str=None) -> List['WikiList']:
@@ -926,8 +923,8 @@ class WikiText:
 
         :pattern: The starting pattern for list items.
             Return all types of lists (ol, ul, and dl) if pattern is None.
-            If pattern is not None, it will be passed to the regex engine with
-            VERBOSE flag on, so `#` and `*` should be escaped. Examples:
+            If pattern is not None, it will be passed to the regex engine,
+            remember to escape the `*` character. Examples:
 
                 - `\#` means top-level ordered lists
                 - `\#\*` means unordred lists inside an ordered one
@@ -938,15 +935,15 @@ class WikiText:
 
                 Be careful when using the following patterns as they will
                 probably cause malfunction in the `sublists` method of the
-                resultant List. (However they should be safe to use if you are
+                resultant List. (However don't worry about them if you are
                 not going to use the `sublists` method.)
 
                 - Use `\*+` as a pattern and nested unordered lists will be
                     treated as flat.
                 - Use `\*\s*` as pattern to rtstrip `items` of the list.
 
-                Although this parameter is optional, but specifying it can
-                improve the performance.
+                Although the pattern parameter is optional, but specifying it
+                can improve the performance.
 
         """
         lists = []
@@ -959,8 +956,8 @@ class WikiText:
             else (pattern,)  # type: Tuple[str, ...]
         for pattern in patterns:
             list_regex = regex_compile(
-                LIST_PATTERN_FORMAT(pattern=pattern),
-                MULTILINE | VERBOSE,
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
+                MULTILINE,
             )
             ss = self._span[0]
             for m in list_regex.finditer(self._shadow):
@@ -1003,20 +1000,21 @@ class WikiText:
         # and so on.
         ss = self._span[0]
         shadow = self._shadow
-        shadow_bytearray = self._shadow_cache[2][:]
         if name:
             # There is a name but it is not in TAG_EXTENSIONS.
-            name_pattern = r'(?P<name>' + name + ')'
             reversed_start_matches = reversed([m for m in regex_compile(
-                START_TAG_PATTERN.format(name=name_pattern), VERBOSE
+                START_TAG_PATTERN.replace(
+                    rb'{name}', rb'(?P<name>' + name.encode() + rb')'
+                ), VERBOSE
             ).finditer(shadow)])
-            end_search = regex_compile(END_TAG_BYTES_PATTERN .replace(
-                b'%(name)s', name.encode()
+            end_search = regex_compile(END_TAG_PATTERN .replace(
+                b'{name}', name.encode()
             )).search
         else:
             reversed_start_matches = reversed(
                 [m for m in START_TAG_FINDITER(shadow)]
             )
+        shadow_copy = shadow[:]
         spans = type_to_spans.setdefault('Tag', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         spans_append = spans.append
@@ -1030,18 +1028,18 @@ class WikiText:
                 if name:
                     # the end_search is already available
                     # noinspection PyUnboundLocalVariable
-                    end_match = end_search(shadow_bytearray, start_match.end())
+                    end_match = end_search(shadow_copy, start_match.end())
                 else:
                     # build end_search according to start tag name
                     end_match = search(
-                        END_TAG_BYTES_PATTERN.replace(
-                            b'%(name)s', start_match['name'].encode()
+                        END_TAG_PATTERN.replace(
+                            b'{name}', start_match['name']
                         ),
-                        shadow_bytearray,
+                        shadow_copy,
                     )
                 if end_match:
                     s, e = end_match.span()
-                    shadow_bytearray[s:e] = b'_' * (e - s)
+                    shadow_copy[s:e] = b'_' * (e - s)
                     span = [ss + start_match.start(), ss + e]
                 else:
                     # Assume start-only tag.

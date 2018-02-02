@@ -12,52 +12,50 @@ For more info see:
 from typing import Dict, Optional, Union, List, MutableSequence, Any
 from warnings import warn
 
-from regex import compile as regex_compile
-from regex import VERBOSE, DOTALL
+from regex import compile as regex_compile, VERBOSE, DOTALL
 
 from ._wikitext import SubWikiText
 
 
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
-TAG_NAME = r'(?P<name>[A-Za-z0-9]++)'
+TAG_NAME = rb'(?P<name>[A-Za-z0-9]++)'
 # https://www.w3.org/TR/html5/infrastructure.html#space-character
-SPACE_CHARS = r' \t\n\u000C\r'
+SPACE_CHARS = rb' \t\n\u000C\r'
 # http://stackoverflow.com/a/93029/2705757
 # chrs = (chr(i) for i in range(sys.maxunicode))
 # control_chars = ''.join(c for c in chrs if unicodedata.category(c) == 'Cc')
-CONTROL_CHARS = r'\x00-\x1f\x7f-\x9f'
+CONTROL_CHARS = rb'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = (
-    r'(?P<attr_name>[^{SPACE_CHARS}{CONTROL_CHARS}\u0000"\'>/=]++)'
-).format(**locals())
-WS_EQ_WS = r'[{SPACE_CHARS}]*+=[{SPACE_CHARS}]*+'.format(**locals())
+    rb'(?P<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'\u0000"\'>/=]++)'
+)
+WS_EQ_WS = rb'[' + SPACE_CHARS + rb']*+=[' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = (
-    r'(?P<attr_value>[^{SPACE_CHARS}"\'=<>`]++)'
-).format(**locals())
-QUOTED_ATTR_VAL = r'(?P<quote>[\'"])(?P<attr_value>.+?)(?P=quote)'
+    rb'(?P<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`]++)'
+)
+QUOTED_ATTR_VAL = rb'(?P<quote>[\'"])(?P<attr_value>.+?)(?P=quote)'
 # May include character references, but for now, ignore the fact that they
 # cannot contain an ambiguous ampersand.
 ATTR_VAL = (
-    r'''
-    (?:
-        # If an empty attribute is to be followed by the optional
-        # "/" character, then there must be a space character separating
-        # the two. This rule is ignored here.
-        {WS_EQ_WS}{UNQUOTED_ATTR_VAL}[{SPACE_CHARS}]*|  # Todo: possessive?
-        {WS_EQ_WS}{QUOTED_ATTR_VAL}[{SPACE_CHARS}]*|  # Todo: possessive?
-        [{SPACE_CHARS}]*+(?P<attr_value>) # empty attribute
-    )
-    '''
-).format(**locals())
+    # If an empty attribute is to be followed by the optional
+    # "/" character, then there must be a space character separating
+    # the two. This rule is ignored here.
+    # Todo: possessive?
+    rb'(?:' + WS_EQ_WS + UNQUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
+        # Todo: possessive?
+        + WS_EQ_WS + QUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
+        + rb'[' + SPACE_CHARS + rb']*+(?P<attr_value>)' # empty attribute
+    + rb')'
+)
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTR_PATTERN = (
-    r'(?P<attr>[{SPACE_CHARS}]++{ATTR_NAME}{ATTR_VAL})'.format(**locals())
+    rb'(?P<attr>[' + SPACE_CHARS + rb']++' + ATTR_NAME + ATTR_VAL + rb')'
 )
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
-    r'(?P<attr>[{SPACE_CHARS}]*+{ATTR_NAME}{ATTR_VAL})*+'.format(**locals()),
-    flags=VERBOSE
+    rb'(?P<attr>[' + SPACE_CHARS + rb']*+' + ATTR_NAME + ATTR_VAL + rb')*+',
+    flags=VERBOSE,
 ).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
@@ -69,27 +67,26 @@ ATTRS_MATCH = regex_compile(
 # yet. See
 # https://developer.mozilla.org/en/docs/Web/SVG/Namespaces_Crash_Course
 # for an overview.
-END_TAG_PATTERN = r'(?P<end></%(name)s[{SPACE_CHARS}]*+>)'.format(**locals())
-END_TAG = END_TAG_PATTERN % {'name': r'(?P<end_name>(?P=name))'}
-END_TAG_BYTES_PATTERN = END_TAG_PATTERN.encode()
-TAG_CONTENTS = r'(?P<contents>.*?)'
+END_TAG_PATTERN = rb'(?P<end></{name}[' + SPACE_CHARS + rb']*+>)'
+END_TAG = END_TAG_PATTERN.replace(rb'{name}', rb'(?P<end_name>(?P=name))')
+TAG_CONTENTS = rb'(?P<contents>.*?)'
 # Note that the following regex won't check for nested tags
 TAG_FULLMATCH = regex_compile(
-    r'''
+    rb'''
     # Note that the start group does not include the > character
     (?P<start>
-        <{TAG_NAME}{ATTR_PATTERN}*  # Todo: Possessive?
+        <''' + TAG_NAME + ATTR_PATTERN + rb'''*  # Todo: Possessive?
     )
     # After the attributes, or after the tag name if there are no attributes,
     # there may be one or more space characters. This is sometimes required but
     # ignored here.
-    [{SPACE_CHARS}]*+
+    [''' + SPACE_CHARS + rb''']*+
     (?>
         (?P<self_closing>/>)|
-        >{TAG_CONTENTS}{END_TAG}|
+        >''' + TAG_CONTENTS + END_TAG + rb'''|
         (?P<start_only>>)
     )
-    '''.format(**locals()),
+    ''',
     flags=DOTALL | VERBOSE,
 ).fullmatch
 # Todo: can the tags method be implemented using a TAG_FINDITER? Will
@@ -102,16 +99,16 @@ TAG_FULLMATCH = regex_compile(
 #     TAG.format(**locals()), flags=DOTALL | VERBOSE
 # ).finditer
 START_TAG_PATTERN = (
-    r'''
-    (?P<start>
-        <{name}(?:%1s)*  # Todo: Why can't be made possessive?
-        [%2s]*+
-        (?:(?P<self_closing>/>)|>)
-    )
-    ''' % (ATTR_PATTERN, SPACE_CHARS)
+    rb'(?P<start>'
+    # Todo: Why can't be made possessive?
+    # Todo: Use byte variables
+    rb'<{name}(?:' + ATTR_PATTERN + rb')*'
+    rb'[' + SPACE_CHARS + rb']*+'
+    rb'(?:(?P<self_closing>/>)|>)'
+    rb')'
 )
 START_TAG_FINDITER = regex_compile(
-    START_TAG_PATTERN.format(name=TAG_NAME), VERBOSE
+    START_TAG_PATTERN.replace(b'{name}', TAG_NAME), VERBOSE
 ).finditer
 
 
@@ -184,7 +181,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         for i, (s, e) in enumerate(reversed(match.spans('attr_name'))):
             if string[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
-                q = 1 if match.string[ve] in '"\'' else 0
+                q = 1 if match.string[ve] in b'"\'' else 0
                 self[vs - q:ve + q] = '"{}"'.format(attr_value)
                 return
         # The attr_name is new, add a new attribute.
@@ -258,7 +255,7 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def name(self) -> str:
         """Return tag name."""
-        return self._match['name']
+        return self._match['name'].decode()
 
     @name.setter
     def name(self, name: str) -> None:
@@ -297,7 +294,7 @@ class Tag(SubWikiTextWithAttrs):
         else:
             # This is a self-closing tag.
             s, e = match.span('self_closing')
-            self[s:e] = '>{0}</{1}>'.format(contents, match['name'])
+            self[s:e] = '>{0}</{1}>'.format(contents, match['name'].decode())
 
     @property
     def parsed_contents(self) -> SubWikiText:

@@ -18,28 +18,28 @@ class Tag(unittest.TestCase):
 
     def test_start_tag_patterns(self):
         self.assertEqual(
-            start_tag_finder('<a>').groupdict(),
-            {'name': 'a', 'attr': None, 'quote': None,
-             'start': '<a>', 'attr_name': None,
+            start_tag_finder(b'<a>').groupdict(),
+            {'name': b'a', 'attr': None, 'quote': None,
+             'start': b'<a>', 'attr_name': None,
              'self_closing': None, 'attr_value': None}
         )
         self.assertEqual(
-            start_tag_finder('<a t>').groupdict(),
-            {'name': 'a', 'attr': ' t', 'quote': None,
-             'start': '<a t>', 'attr_name': 't', 'attr_value': '',
+            start_tag_finder(b'<a t>').groupdict(),
+            {'name': b'a', 'attr': b' t', 'quote': None,
+             'start': b'<a t>', 'attr_name': b't', 'attr_value': b'',
              'self_closing': None}
         )
         self.assertEqual(
-            start_tag_finder('<input value=yes>').groupdict(),
-            {'name': 'input', 'attr': ' value=yes', 'quote': None,
-             'start': '<input value=yes>', 'attr_name': 'value',
-             'attr_value': 'yes', 'self_closing': None}
+            start_tag_finder(b'<input value=yes>').groupdict(),
+            {'name': b'input', 'attr': b' value=yes', 'quote': None,
+             'start': b'<input value=yes>', 'attr_name': b'value',
+             'attr_value': b'yes', 'self_closing': None}
         )
         self.assertEqual(
-            start_tag_finder("<input type='checkbox'>").groupdict(),
-            {'name': 'input', 'attr': " type='checkbox'", 'quote': "'",
-             'start': "<input type='checkbox'>", 'attr_name': 'type',
-             'attr_value': 'checkbox', 'self_closing': None}
+            start_tag_finder(b"<input type='checkbox'>").groupdict(),
+            {'name': b'input', 'attr': b" type='checkbox'", 'quote': b"'",
+             'start': b"<input type='checkbox'>", 'attr_name': b'type',
+             'attr_value': b'checkbox', 'self_closing': None}
         )
         # This is not standard HTML5, but could be useful to have.
         # self.assertEqual(
@@ -49,18 +49,18 @@ class Tag(unittest.TestCase):
         #      'self_closing': None}
         # )
         self.assertEqual(
-            start_tag_finder("<t a1=v1 a2=v2>").capturesdict(),
-            {'attr_name': ['a1', 'a2'], 'start': ['<t a1=v1 a2=v2>'],
-             'attr': [' a1=v1', ' a2=v2'], 'quote': [],
-             'attr_value': ['v1', 'v2'], 'self_closing': [], 'name': ['t']}
+            start_tag_finder(b"<t a1=v1 a2=v2>").capturesdict(),
+            {'attr_name': [b'a1', b'a2'], 'start': [b'<t a1=v1 a2=v2>'],
+             'attr': [b' a1=v1', b' a2=v2'], 'quote': [],
+             'attr_value': [b'v1', b'v2'], 'self_closing': [], 'name': [b't']}
         )
 
     def test_end_tag_patterns(self):
         self.assertEqual(
             regex_compile(
-                END_TAG_PATTERN % {'name': 'p'}
-            ).search('</p>').groupdict(),
-            {'end': '</p>'},
+                END_TAG_PATTERN.replace(b'{name}', b'p')
+            ).search(b'</p>').groupdict(),
+            {'end': b'</p>'},
         )
 
     @unittest.expectedFailure
