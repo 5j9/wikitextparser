@@ -4,7 +4,7 @@
 import warnings
 from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
-import regex
+from regex import compile as regex_compile, VERBOSE
 
 from ._cell import (
     Cell,
@@ -16,7 +16,7 @@ from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
 from ._wikitext import WS
 
 
-CAPTION_REGEX = regex.compile(
+CAPTION_MATCH = regex_compile(
     r"""
     # Everything until the caption line
     (?P<preattrs>
@@ -44,8 +44,8 @@ CAPTION_REGEX = regex.compile(
         \|\|
     )
     """,
-    regex.VERBOSE
-)
+    VERBOSE
+).match
 T = TypeVar('T')
 
 
@@ -128,7 +128,8 @@ class Table(SubWikiTextWithAttrs):
 
         """
         match_table = self._match_table
-        # Todo: Use shadow to handle comments, etc.?
+        # Note string is only used for extracting data, matching is done over
+        # the shadow.
         string = self.string
         table_data = []  # type: List[List[str]]
         if strip:
@@ -261,7 +262,7 @@ class Table(SubWikiTextWithAttrs):
     @property
     def caption(self) -> Optional[str]:
         """Return caption of the table."""
-        m = CAPTION_REGEX.match(self.string)
+        m = CAPTION_MATCH(self.string)
         if m:
             return m['caption']
         return None
@@ -269,7 +270,7 @@ class Table(SubWikiTextWithAttrs):
     @caption.setter
     def caption(self, newcaption: str) -> None:
         """Set a new caption."""
-        m = CAPTION_REGEX.match(self.string)
+        m = CAPTION_MATCH(self.string)
         if m:
             preattrs = m['preattrs']
             attrs = m['attrs'] or ''
@@ -314,7 +315,7 @@ class Table(SubWikiTextWithAttrs):
         """Set new attributes for this table."""
         warnings.warn(
             'Table.table_attrs is deprecated. '
-            'Use set_attr, and del_attr methods instead.',
+            'Use set_attr and del_attr methods instead.',
             DeprecationWarning,
         )
         h = self.string.partition('\n')[0]
@@ -323,7 +324,7 @@ class Table(SubWikiTextWithAttrs):
     @property
     def caption_attrs(self) -> Optional[str]:
         """Return caption attributes."""
-        m = CAPTION_REGEX.match(self.string)
+        m = CAPTION_MATCH(self.string)
         if m:
             return m['attrs']
         return None
@@ -333,7 +334,7 @@ class Table(SubWikiTextWithAttrs):
         """Set new caption attributes."""
         string = self.string
         h, s, t = string.partition('\n')
-        m = CAPTION_REGEX.match(string)
+        m = CAPTION_MATCH(string)
         if not m:
             # There is no caption-line
             self.insert(len(h + s), '|+' + attrs + '|\n')
