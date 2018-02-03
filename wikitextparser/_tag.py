@@ -97,7 +97,6 @@ TAG_FULLMATCH = regex_compile(
 # ).finditer
 START_TAG_PATTERN = (
     rb'(?P<start>'
-    # Todo: Why can't be made possessive?
     rb'<{name}(?:' + ATTR_PATTERN + rb')*'
     rb'[' + SPACE_CHARS + rb']*+'
     rb'(?:(?P<self_closing>/>)|>)'
@@ -115,7 +114,6 @@ class SubWikiTextWithAttrs(SubWikiText):
     Any class that is going to inherit from SubWikiTextWithAttrs should provide
     _attrs_match property. Note that matching should be done on shadow.
     It's usually a good idea to cache the _attrs_match property.
-
     """
 
     _attrs_match = None  # type: Any
@@ -149,7 +147,6 @@ class SubWikiTextWithAttrs(SubWikiText):
         If there are already multiple attributes with the given name, only
             return the value of the last one.
         Return an empty string if the mentioned name is an empty attribute.
-
         """
         spans = self._attrs_match.spans
         string = self.string
@@ -170,7 +167,6 @@ class SubWikiTextWithAttrs(SubWikiText):
         If there are already multiple attributes with the given name, only
         set the value for the last one.
         If attr_value == '', use the implicit empty attribute syntax.
-
         """
         match = self._attrs_match
         string = self.string
@@ -197,7 +193,6 @@ class SubWikiTextWithAttrs(SubWikiText):
         """Delete all the attributes with the given name.
 
         Pass if the attr_name is not found in self.
-
         """
         match = self._attrs_match
         string = self.string
@@ -221,19 +216,18 @@ class Tag(SubWikiTextWithAttrs):
 
     """Create a new Tag object."""
 
-    _cached_match = None  # type: Any
+    _match_cache = None, None  # type: Any
 
     @property
     def _match(self) -> Any:
         """Return the match object for the current tag. Cache the result."""
-        _cached_match = self._cached_match
-        shadow = self._shadow
-        if _cached_match is None or _cached_match.string != shadow:
-            _cached_match = TAG_FULLMATCH(shadow)
-            self._cached_match = _cached_match
-            return _cached_match
-        # _cached_match.string == shadow
-        return _cached_match
+        cached_match, cached_string = self._match_cache
+        string = self.string
+        if cached_string == string:
+            return cached_match
+        match = TAG_FULLMATCH(self._shadow)
+        self._match_cache = match, string
+        return match
 
     _attrs_match = _match
 
@@ -270,7 +264,6 @@ class Tag(SubWikiTextWithAttrs):
         >>> t.contents = 'n'
         >>> t.string
         '<t>n</t>'
-
         """
         match = self._match
         start, end = match.span('contents')

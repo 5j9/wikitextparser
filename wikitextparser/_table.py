@@ -52,7 +52,8 @@ T = TypeVar('T')
 class Table(SubWikiTextWithAttrs):
 
     """Create a new Table object."""
-    # They should provide the same API as in Tag and Cell classes.
+
+    _attrs_match_cache = None, None
 
     @property
     def _match_table(self) -> List[List[Any]]:
@@ -286,12 +287,13 @@ class Table(SubWikiTextWithAttrs):
 
     @property
     def _attrs_match(self) -> Any:
+        cache_match, cache_string = self._attrs_match_cache
+        string = self.string
+        if cache_string == string:
+            return cache_match
         shadow = self._shadow
-        cache = getattr(self, '_cached_attrs_match', None)
-        if cache and cache.string == shadow:
-            return cache
         attrs_match = ATTRS_MATCH(shadow, 2, shadow.find(10))  # ord('\n')
-        self._cached_attrs_match = attrs_match
+        self._attrs_match_cache = attrs_match, string
         return attrs_match
 
     @property

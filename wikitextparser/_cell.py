@@ -154,11 +154,16 @@ class Cell(SubWikiTextWithAttrs):
         """Initialize the object."""
         super().__init__(string, _type_to_spans, _span, _type)
         self._header = header
-        self._cached_match = _match
-        self._cached_attrs_match = (
-            _attrs_match if _attrs_match is not None else
-            ATTRS_MATCH(_match['attrs']) if _match else None
-        )
+        if _match:
+            string = self.string
+            self._match_cache = _match, string
+            if _attrs_match:
+                self._attrs_match_cache = _attrs_match, string
+            else:
+                self._attrs_match_cache = \
+                    ATTRS_MATCH(_match['attrs']), string
+        else:
+            self._attrs_match_cache = self._match_cache = None, None
 
     @property
     def _match(self):
@@ -167,12 +172,12 @@ class Cell(SubWikiTextWithAttrs):
         Be extra careful when using this property. The position of match
         may be something other than zero if the match is cached from the
         parent object (the initial value).
-
         """
+        cache_match, cache_string = self._match_cache
+        string = self.string
+        if cache_string == string:
+            return cache_match
         shadow = self._shadow
-        cached_match = self._cached_match
-        if cached_match and cached_match.string == shadow:
-            return cached_match
         if shadow[0] == 10: # ord('\n')
             m = NEWLINE_CELL_MATCH(shadow)
             self._header = m['sep'] == 33  # ord('!')
@@ -180,34 +185,36 @@ class Cell(SubWikiTextWithAttrs):
             m = INLINE_HAEDER_CELL_MATCH(shadow)
         else:
             m = INLINE_NONHAEDER_CELL_MATCH(shadow)
-        self._cached_match = m
-        self._cached_attrs_match = None
+        self._match_cache = m, string
+        self._attrs_match_cache = None, None
         return m
 
     @property
     def value(self) -> str:
         """Return cell's value."""
         m = self._match
+        offset = m.start()
         s, e = m.span('data')
-        return self[s:e]
+        return self[s - offset:e - offset]
 
     @value.setter
     def value(self, new_value: str) -> None:
         """Assign new_value to self."""
-        match = self._match
-        s, e = match.span('data')
-        self[s:e] = new_value
+        m = self._match
+        offset = m.start()
+        s, e = m.span('data')
+        self[s - offset:e - offset] = new_value
 
     @property
     def _attrs_match(self):
         """Return the match object for attributes."""
-        shadow = self._shadow
-        cache = self._cached_attrs_match
-        if cache and cache.string == shadow:
+        cache, cache_string = self._attrs_match_cache
+        string = self.string
+        if cache_string == string:
             return cache
         s, e = self._match.span('attrs')
-        attrs_match = ATTRS_MATCH(shadow, s, e)
-        self._cached_attrs_match = attrs_match
+        attrs_match = ATTRS_MATCH(self._shadow, s, e)
+        self._attrs_match_cache = attrs_match, string
         return attrs_match
 
     def set_attr(self, attr_name: str, attr_value: str) -> None:
@@ -216,7 +223,6 @@ class Cell(SubWikiTextWithAttrs):
         If there are already multiple attributes with that name, only
         set the value for the last one.
         If attr_value == '', use the implicit empty attribute syntax.
-
         """
         # Note: The set_attr method of the parent class cannot be used instead
         # of this method because a cell could be without any attrs placeholder

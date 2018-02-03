@@ -41,30 +41,28 @@ class WikiList(SubWikiText):
         super().__init__(string, _type_to_spans, _span, _type)
         self.pattern = pattern
         if _match:
-            self._cached_match = _match
+            self._match_cache = _match, self.string
         else:
-            self._cached_match = fullmatch(
+            self._match_cache = fullmatch(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
                 self._shadow,
                 MULTILINE,
-            )
+            ), self.string
 
     @property
     def _match(self):
         """Return the match object for the current list."""
-        match = self._cached_match
-        s, e = match.span()
-        shadow = self._shadow
-        # Todo: Is the match.string.find(shadow) logic correct?
-        if s + len(shadow) == e and match.string.find(shadow) == s:
-            return match
-        match = fullmatch(
+        cache_match, cache_string = self._match_cache
+        string = self.string
+        if cache_string == string:
+            return cache_match
+        cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode()),
             self._shadow,
             MULTILINE,
         )
-        self._cached_match = match
-        return match
+        self._match_cache = cache_match, string
+        return cache_match
 
     @property
     def items(self) -> List[str]:
@@ -140,6 +138,7 @@ class WikiList(SubWikiText):
         s -= ms - ss
         for pattern in patterns:
             for lst in lists(self_pattern + pattern):
+                # noinspection PyProtectedMember
                 ls, le = lst._span
                 if s < ls and le <= e:
                     sublists_append(lst)

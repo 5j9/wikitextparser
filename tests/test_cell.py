@@ -85,15 +85,15 @@ class TableCell(unittest.TestCase):
         self.assertEqual(c.value, '{{text|t}}')
 
     def test_cached_attrs_expiry(self):
-        """_cached_attrs should expire when _cached_match is updated."""
+        """_cached_attrs should expire when _match_cache is updated."""
         c = Cell('\n!v', True)
-        # Fill _cached_attrs and _cached_match
+        # Fill _match_cache and _attrs_match_cache
         self.assertEqual(c.attrs, {})
         # Invalidate both caches
         c.insert(2, 'a|')
-        # Update _cached_match
+        # Update _match_cache
         self.assertEqual(c.value, 'v')
-        # _cached_attrs should not be valid
+        # _attrs_match_cache should not be valid
         self.assertEqual(c.attrs, {'a': ''})
 
     def test_cell_attrs_using_table_match(self):
