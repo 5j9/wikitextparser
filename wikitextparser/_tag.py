@@ -53,7 +53,6 @@ ATTR_PATTERN = (
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
     rb'(?P<attr>[' + SPACE_CHARS + rb']*+' + ATTR_NAME + ATTR_VAL + rb')*+',
-    flags=VERBOSE,
 ).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
@@ -85,7 +84,7 @@ TAG_FULLMATCH = regex_compile(
         (?P<start_only>>)
     )
     ''',
-    flags=DOTALL | VERBOSE,
+    DOTALL | VERBOSE,
 ).fullmatch
 # Todo: can the tags method be implemented using a TAG_FINDITER? Will
 # that be more performant?
@@ -105,7 +104,7 @@ START_TAG_PATTERN = (
     rb')'
 )
 START_TAG_FINDITER = regex_compile(
-    START_TAG_PATTERN.replace(b'{name}', TAG_NAME), VERBOSE
+    START_TAG_PATTERN.replace(b'{name}', TAG_NAME)
 ).finditer
 
 

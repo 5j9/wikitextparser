@@ -34,7 +34,7 @@ BARE_EXTERNALLINK_PATTERN = (
 EXTERNALLINK_FINDITER = regex_compile(
     rb'(?:' + BARE_EXTERNALLINK_PATTERN
     + rb'|' + BRACKET_EXTERNALLINK_PATTERN + rb')',
-    IGNORECASE | VERBOSE,
+    IGNORECASE,
 ).finditer
 
 # Sections
@@ -1005,7 +1005,7 @@ class WikiText:
             reversed_start_matches = reversed([m for m in regex_compile(
                 START_TAG_PATTERN.replace(
                     rb'{name}', rb'(?P<name>' + name.encode() + rb')'
-                ), VERBOSE
+                )
             ).finditer(shadow)])
             end_search = regex_compile(END_TAG_PATTERN .replace(
                 b'{name}', name.encode()
