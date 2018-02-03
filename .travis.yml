@@ -9,7 +9,6 @@ script:
     - cd tests
     - coverage run __main__.py
 python:
-    - "3.3"
     - "3.4"
     - "3.5"
     - "3.6"
