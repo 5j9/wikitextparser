@@ -8,7 +8,7 @@ from ._wikitext import WikiText, WS
 
 
 HEADER_MATCH = re_compile(
-    r'(={1,6})[^\n]+?\1[ \t]*$',
+    rb'(={1,6})[^\n]+?\1[ \t]*$',
     MULTILINE,
 ).match
 
@@ -33,7 +33,7 @@ class Section(WikiText):
     @property
     def level(self) -> int:
         """Return level of this section. Level is in range(1,7)."""
-        m = HEADER_MATCH(self.string)
+        m = HEADER_MATCH(self._shadow)
         if m:
             return len(m.group(1))
         return 0
@@ -53,7 +53,7 @@ class Section(WikiText):
         level = self.level
         if level == 0:
             return ''
-        return self.string.partition('\n')[0].rstrip(WS)[level:-level]
+        return self._atomic_partition(10)[0].rstrip(WS)[level:-level]
 
     @title.setter
     def title(self, value: str) -> None:
@@ -72,7 +72,7 @@ class Section(WikiText):
         """Return contents of this section."""
         if self.level == 0:
             return self.string
-        return self.string.partition('\n')[2]
+        return self._atomic_partition(10)[2]
 
     @contents.setter
     def contents(self, value: str) -> None:

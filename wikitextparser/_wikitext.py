@@ -39,7 +39,7 @@ EXTERNALLINK_FINDITER = regex_compile(
 
 # Sections
 SECTIONS_FULLMATCH = regex_compile(
-    r'''
+    rb'''
     (?<section>.*?)
     (?<section>
         ^(?<eq>={1,6})[^\n]+?(?P=eq)[ \t]*+$  # header
@@ -803,7 +803,7 @@ class WikiText:
         ss, se = self._span
         type_spans = type_to_spans.setdefault('Section', [])
         type_spans_append = type_spans.append
-        full_match = SECTIONS_FULLMATCH(lststr[0][ss:se])
+        full_match = SECTIONS_FULLMATCH(self._shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('eq')]
         s, e = section_spans.pop(0)
