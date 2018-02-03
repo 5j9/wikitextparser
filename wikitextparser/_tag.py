@@ -41,11 +41,9 @@ ATTR_VAL = (
     # If an empty attribute is to be followed by the optional
     # "/" character, then there must be a space character separating
     # the two. This rule is ignored here.
-    # Todo: possessive?
     rb'(?:' + WS_EQ_WS + UNQUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
-        # Todo: possessive?
-        + WS_EQ_WS + QUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
-        + rb'[' + SPACE_CHARS + rb']*+(?P<attr_value>)' # empty attribute
+    + WS_EQ_WS + QUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
+    + rb'[' + SPACE_CHARS + rb']*+(?P<attr_value>)'  # empty attribute
     + rb')'
 )
 # Ignore ambiguous ampersand for the sake of simplicity.
@@ -101,7 +99,6 @@ TAG_FULLMATCH = regex_compile(
 START_TAG_PATTERN = (
     rb'(?P<start>'
     # Todo: Why can't be made possessive?
-    # Todo: Use byte variables
     rb'<{name}(?:' + ATTR_PATTERN + rb')*'
     rb'[' + SPACE_CHARS + rb']*+'
     rb'(?:(?P<self_closing>/>)|>)'
@@ -226,17 +223,6 @@ class Tag(SubWikiTextWithAttrs):
     """Create a new Tag object."""
 
     _cached_match = None  # type: Any
-
-    def __init__(
-        self,
-        string: Union[str, MutableSequence[str]],
-        _type_to_spans: Dict[str, List[List[int]]]=None,
-        _span: List[int]=None,
-        _type: str='Tag',
-    ) -> None:
-        """Initialize the Tag object."""
-        # Todo: This method can be removed?
-        super().__init__(string, _type_to_spans, _span, _type)
 
     @property
     def _match(self) -> Any:
