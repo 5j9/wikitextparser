@@ -14,6 +14,7 @@ from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
 from regex import compile as regex_compile
 from wcwidth import wcswidth
 
+# noinspection PyProtectedMember
 from ._config import _tag_extensions
 from ._spans import (
     COMMENT_PATTERN,
@@ -1107,6 +1108,7 @@ class SubWikiText(WikiText):
             if s < ss and se <= e:
                 yield span
 
+    # noinspection PyProtectedMember
     def ancestors(self, type_: Optional[str]=None) -> List['WikiText']:
         """Return the ancestors of the current node.
 
@@ -1120,7 +1122,7 @@ class SubWikiText(WikiText):
         if type_ is None:
             types = SPAN_PARSER_TYPES
         else:
-            types = (type_,)
+            types = type_,
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         ss = self._span[0]
