@@ -278,6 +278,35 @@ Accessing HTML tags:
 
 WikiTextParser is able to handle common usages of HTML and extension tags. However it is not a fully-fledged HTML parser and may fail on edge cases or malformed HTML input. Please open an issue on github if you encounter bugs.
 
+Miscellaneous
+-------------
+``parent`` and ``ancestors`` methods can be used to access a node's parent or ancestors respectively:
+
+.. code:: python
+
+    >>> t = parse("{{a|{{b|{{c|{{d}}}}}}}}").templates[0]
+    >>> t.ancestors()
+    [Template('{{c|{{d}}}}'),
+     Template('{{b|{{c|{{d}}}}}}'),
+     Template('{{a|{{b|{{c|{{d}}}}}}}}')]
+    >>> t.parent()
+    Template('{{c|{{d}}}}')
+    >>> _.parent()
+    Template('{{b|{{c|{{d}}}}}}')
+    >>> _.parent()
+    Template('{{a|{{b|{{c|{{d}}}}}}}}')
+    >>> _.parent()  # Returns None
+
+Use the optional ``type_`` argument if looking for ancestors of a specific type:
+
+.. code:: python
+
+    >>> parsed = parse('{{a|{{#if:{{b{{c<!---->}}}}}}}}')
+    >>> comment = parsed.comments[0]
+    >>> comment.ancestors(type_='ParserFunction')
+    [ParserFunction('{{#if:{{b{{c<!---->}}}}}}')]
+
+
 Compared with mwparserfromhell
 ==============================
 

@@ -33,7 +33,7 @@ _wikitext.Table = Table
 _wikitext.Section = Section
 _wikitext.WikiList = WikiList
 _wikitext.LIST_PATTERN_FORMAT = _LIST_PATTERN_FORMAT
-_wikitext.Tag = Tag
+_wikitext.Tag = _wikitext.ExtensionTag = Tag
 _wikitext.START_TAG_PATTERN = _START_TAG_PATTERN
 _wikitext.END_TAG_PATTERN = _END_TAG_PATTERN
 _wikitext.START_TAG_FINDITER = _START_TAG_FINDITER

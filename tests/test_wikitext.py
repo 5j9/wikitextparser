@@ -1075,7 +1075,6 @@ class Tags(TestCase):
         parent element.
 
         See: https://www.w3.org/TR/html51/syntax.html#optional-tags
-
         """
         parsed = parse('<li>')
         tags = parsed.tags()
@@ -1097,6 +1096,24 @@ class Tags(TestCase):
         ref.set_attr('name', 'z')
         self.assertEqual(ref.string, '<ref name="z">citation</ref>')
         self.assertEqual(references.string, '<references/>')
+
+
+class Ancestors(TestCase):
+
+    def test_ancestors_and_parent(self):
+        parsed = parse('{{a|{{#if:{{b{{c<!---->}}}}}}}}')
+        self.assertEqual(parsed.parent(), None)
+        self.assertEqual(parsed.ancestors(), [])
+        c = parsed.comments[0]
+        c_parent = c.parent()
+        self.assertEqual(c_parent.string, '{{c<!---->}}')
+        self.assertEqual(c_parent.parent().string, '{{b{{c<!---->}}}}')
+        self.assertEqual(len(c.ancestors()), 4)
+        self.assertEqual(len(c.ancestors(type_='Template')), 3)
+        self.assertEqual(len(c.ancestors(type_='ParserFunction')), 1)
+        t = Template('{{a}}')
+        self.assertEqual(t.ancestors(), [])
+        self.assertIsNone(t.parent())
 
 
 if __name__ == '__main__':

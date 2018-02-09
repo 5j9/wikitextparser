@@ -1056,6 +1056,16 @@ class WikiText:
             tags_append(Tag(lststr, type_to_spans, span, 'Tag'))
         return tags
 
+    @staticmethod
+    def parent(type_: Optional[str]=None) -> None:
+        """Return None. (The parent of the root node is None)"""
+        return None
+
+    @staticmethod
+    def ancestors(type_: Optional[str]=None) -> list:
+        """Return []. (The root node has no ancestors)"""
+        return []
+
 
 class SubWikiText(WikiText):
 
@@ -1096,6 +1106,49 @@ class SubWikiText(WikiText):
             ss, se = span
             if s < ss and se <= e:
                 yield span
+
+    def ancestors(self, type_: Optional[str]=None) -> List['WikiText']:
+        """Return the ancestors of the current node.
+
+        :param type_: the type of the desired ancestors as a string.
+            Currently the following types are supported: {
+                Template, ParserFunction, WikiLink, Comment, Parameter,
+                ExtensionTag,
+            }
+            The default is None and means all the ancestors of any type above.
+        """
+        if type_ is None:
+            types = SPAN_PARSER_TYPES
+        else:
+            types = (type_,)
+        lststr = self._lststr
+        type_to_spans = self._type_to_spans
+        ss = self._span[0]
+        ancestors = []
+        ancestors_append = ancestors.append
+        for type_ in types:
+            cls = globals()[type_]
+            for span in type_to_spans[type_]:
+                if span[0] < ss:
+                    ancestors_append(cls(lststr, type_to_spans, span, type_))
+        return sorted(ancestors, key=lambda i: ss - i._span[0])
+
+    def parent(self, type_: Optional[str]=None) -> Optional['WikiText']:
+        """Return the parent node of the current object.
+
+        :param type_: the type of the desired parent object.
+            Currently the following types are supported: {
+                Template, ParserFunction, WikiLink, Comment, Parameter,
+                ExtensionTag
+            }
+            The default is None and means the first parent, of any type above.
+        :return: parent WikiText object or None if no parent with the desired
+            type_ is found.
+        """
+        ancestors = self.ancestors(type_)
+        if ancestors:
+            return ancestors[0]
+        return None
 
 
 if __name__ == '__main__':
