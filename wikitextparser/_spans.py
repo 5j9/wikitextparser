@@ -214,7 +214,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     )
     return {
         'Comment': comment_spans,
-        'ExtTag': extension_tag_spans,
+        'ExtensionTag': extension_tag_spans,
         'Parameter': parameter_spans,
         'ParserFunction': parser_function_spans,
         'Template': template_spans,

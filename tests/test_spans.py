@@ -349,7 +349,7 @@ class Spans(TestCase):
             {
                 'Parameter': [], 'ParserFunction': [[4, 17]],
                 'Template': [[1, 21]], 'WikiLink': [], 'Comment': [],
-                'ExtTag': []
+                'ExtensionTag': []
             },
             parse_to_spans(bytearray(
                 b'{{{ {{#if:v|y|n}}} }}'
@@ -361,7 +361,7 @@ class Spans(TestCase):
             {
                 'Parameter': [], 'ParserFunction': [],
                 'Template': [], 'WikiLink': [[30, 38], [5, 40]], 'Comment': [],
-                'ExtTag': [[0, 46]]
+                'ExtensionTag': [[0, 46]]
             },
             parse_to_spans(bytearray(
                 b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>'

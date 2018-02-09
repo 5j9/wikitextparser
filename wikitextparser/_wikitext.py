@@ -71,7 +71,8 @@ TABLE_FINDITER = regex_compile(
 
 # Types which are detected by the
 SPAN_PARSER_TYPES = {
-    'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter', 'ExtTag'
+    'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
+    'ExtensionTag',
 }
 
 WS = '\r\n\t '
@@ -302,7 +303,7 @@ class WikiText:
 
     @property
     def span(self) -> tuple:
-        """Return the span of self.string according to the root node."""
+        """Return the span of self relative to the start of the root node."""
         return tuple(self._span)
 
     @property
@@ -418,8 +419,10 @@ class WikiText:
         Comments blocks are replaced by spaces. Other sub-spans are replaced
         by underscores.
 
-        The replaced subspans are:
-            ('Template', 'WikiLink', 'ParserFunction', 'ExtTag', 'Comment',)
+        The replaced sub-spans are: (
+            'Template', 'WikiLink', 'ParserFunction', 'ExtensionTag',
+            'Comment',
+        )
 
         This function is called upon extracting tables or extracting the data
         inside them.
@@ -983,8 +986,8 @@ class WikiText:
             if name in _tag_extensions:
                 string = lststr[0]
                 return [
-                    Tag(lststr, type_to_spans, span, 'ExtTag')
-                    for span in type_to_spans['ExtTag']
+                    Tag(lststr, type_to_spans, span, 'ExtensionTag')
+                    for span in type_to_spans['ExtensionTag']
                     if string.startswith('<' + name, span[0])
                 ]
             tags = []  # type: List['Tag']
@@ -992,8 +995,8 @@ class WikiText:
         else:
             # There is no name, add all extension tags. Before using shadow.
             tags = [
-                Tag(lststr, type_to_spans, span, 'ExtTag')
-                for span in type_to_spans['ExtTag']
+                Tag(lststr, type_to_spans, span, 'ExtensionTag')
+                for span in type_to_spans['ExtensionTag']
             ]
             tags_append = tags.append
         # Get the left-most start tag, match it to right-most end tag
@@ -1098,7 +1101,7 @@ class SubWikiText(WikiText):
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
     from ._tag import (
-        Tag, START_TAG_PATTERN, END_TAG_BYTES_PATTERN, START_TAG_FINDITER
+        Tag, START_TAG_PATTERN, END_TAG_PATTERN, START_TAG_FINDITER
     )
     from ._parser_function import ParserFunction
     from ._template import Template
