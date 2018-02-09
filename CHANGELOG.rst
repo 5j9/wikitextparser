@@ -1,6 +1,7 @@
 Unreleased
 ----------
-- Added: ``parent`` and ``ancestors`` methods.
+- Added: ``parent`` and ``ancestors`` methods
+- Added: ``__version__`` to ``__init__.py``
 
 v0.19.0
 -------

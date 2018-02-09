@@ -2,17 +2,23 @@
 
 
 from setuptools import setup, find_packages
-from os import path
+from os.path import abspath, dirname, join
+from re import search, MULTILINE
 
 
-here = path.abspath(path.dirname(__file__))
+here = abspath(dirname(__file__))
 
 setup(
     name='wikitextparser',
-    # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-    version='0.20.0.dev0',
+    version=search(
+        r'^__version__ = [\'"]([^\'"]*)[\'"]',
+        open(
+            join(here, 'wikitextparser', '__init__.py'), encoding='utf8'
+        ).read(),
+        MULTILINE,
+    ).group(1),
     description='A simple parsing tool for MediaWiki\'s wikitext markup.',
-    long_description=open(path.join(here, 'README.rst')).read(),
+    long_description=open(join(here, 'README.rst'), encoding='utf8').read(),
     url='https://github.com/5j9/wikitextparser',
     author='5j9',
     author_email='5j9@users.noreply.github.com',
