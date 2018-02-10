@@ -17,7 +17,6 @@ from wcwidth import wcswidth
 # noinspection PyProtectedMember
 from ._config import _tag_extensions
 from ._spans import (
-    COMMENT_PATTERN,
     parse_to_spans,
     VALID_EXTLINK_CHARS,
     BARE_EXTLINK_SCHEMES_PATTERN,
@@ -99,10 +98,10 @@ class WikiText:
 
         Parameters:
         - string: The string to be parsed or a list containing the string of
-            the parent object.
+          the parent object.
         - _type_to_spans: If the lststr is already parsed, pass its
-            _type_to_spans property as _type_to_spans to avoid parsing it
-            again.
+          _type_to_spans property as _type_to_spans to avoid parsing it
+          again.
 
         """
         if _type_to_spans:
