@@ -2,6 +2,8 @@
     :target: https://travis-ci.org/5j9/wikitextparser
 .. image:: https://codecov.io/github/5j9/wikitextparser/coverage.svg?branch=master
     :target: https://codecov.io/github/5j9/wikitextparser
+.. image:: https://readthedocs.org/projects/wikitextparser/badge/?version=latest
+    :target: http://wikitextparser.readthedocs.io/en/latest/?badge=latest
 
 ==============
 WikiTextParser
