@@ -6,6 +6,7 @@
 ==============
 WikiTextParser
 ==============
+.. Quick Start Guid
 
 A simple to use WikiText parsing library for `MediaWiki <https://www.mediawiki.org/wiki/MediaWiki>`_.
 
