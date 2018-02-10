@@ -96,13 +96,11 @@ class WikiText:
 
         Set the initial values for self._lststr, self._type_to_spans.
 
-        Parameters:
-        - string: The string to be parsed or a list containing the string of
-          the parent object.
-        - _type_to_spans: If the lststr is already parsed, pass its
-          _type_to_spans property as _type_to_spans to avoid parsing it
-          again.
-
+        :param string: The string to be parsed or a list containing the string
+            of the parent object.
+        :param _type_to_spans: If the lststr is already parsed, pass its
+            _type_to_spans property as _type_to_spans to avoid parsing it
+            again.
         """
         if _type_to_spans:
             self._type_to_spans = _type_to_spans
@@ -146,7 +144,6 @@ class WikiText:
 
         Also self and parsed_wikitext should belong to the same parsed
         wikitext object for this function to return True.
-
         """
         # Is it useful (and a good practice) to also accepts str inputs
         # and check if self.string contains it?
@@ -172,7 +169,6 @@ class WikiText:
         """Return adjusted start and stop index as tuple.
 
         Used in  __setitem__ and __delitem__.
-
         """
         ss, se = self._span
         if isinstance(key, int):
@@ -215,7 +211,6 @@ class WikiText:
         By doing so only one of the `_extend_span_update` and
         `_shrink_span_update` functions will be called and the performance
         will improve.
-
         """
         start, stop = self._check_index(key)
         # Update lststr
@@ -252,7 +247,6 @@ class WikiText:
         Note: If an operation involves both insertion and deletion, it'll be
         safer to use the `insert` function first. Otherwise there is a
         possibility of insertion into the wrong spans.
-
         """
         start, stop = self._check_index(key)
         lststr = self._lststr
@@ -272,7 +266,6 @@ class WikiText:
         of the key being an slice, or the need to shrink any of the sub-spans.
 
         If parse is False, don't parse the inserted string.
-
         """
         ss, se = self._span
         lststr = self._lststr
@@ -347,7 +340,6 @@ class WikiText:
         _extend_span_update, you might wanna consider doing the
         _extend_span_update before the _shrink_span_update as this function
         can cause data loss in self._type_to_spans.
-
         """
         # Note: No span should be removed from _type_to_spans.
         for spans in self._type_to_spans.values():
@@ -470,10 +462,8 @@ class WikiText:
     def _pp_type_to_spans(self) -> dict:
         """Create the arguments for the parse function used in pformat method.
 
-
         Only pass the spans of subspans and change the spans to fit the new
         scope, i.e self.string.
-
         """
         ss, se = self._span
         if ss == 0 and se == len(self._lststr[0]):
@@ -505,7 +495,6 @@ class WikiText:
         at the equal signs, and adding space where appropriate.
 
         Note that this function will not mutate self.
-
         """
         ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
@@ -797,7 +786,6 @@ class WikiText:
 
         The first section will always be the lead section, even if it is an
         empty string.
-
         """
         sections = []  # type: List['Section']
         sections_append = sections.append
@@ -924,7 +912,7 @@ class WikiText:
     def lists(self, pattern: str=None) -> List['WikiList']:
         """Return a list of WikiList objects.
 
-        :pattern: The starting pattern for list items.
+        :param pattern: The starting pattern for list items.
             Return all types of lists (ol, ul, and dl) if pattern is None.
             If pattern is not None, it will be passed to the regex engine,
             remember to escape the `*` character. Examples:
@@ -947,7 +935,6 @@ class WikiText:
 
                 Although the pattern parameter is optional, but specifying it
                 can improve the performance.
-
         """
         lists = []
         lststr = self._lststr
@@ -1069,10 +1056,9 @@ class WikiText:
 
 class SubWikiText(WikiText):
 
-    """Define a middle-class to be used by some other subclasses.
+    """Define a class to be inherited by some subclasses of WikiText.
 
-    Allow the user to focus on a particular part of WikiText.
-
+    Allow to focus on a particular part of WikiText.
     """
 
     def __init__(
@@ -1112,10 +1098,8 @@ class SubWikiText(WikiText):
         """Return the ancestors of the current node.
 
         :param type_: the type of the desired ancestors as a string.
-            Currently the following types are supported: {
-                Template, ParserFunction, WikiLink, Comment, Parameter,
-                ExtensionTag,
-            }
+            Currently the following types are supported: {Template,
+            ParserFunction, WikiLink, Comment, Parameter, ExtensionTag}.
             The default is None and means all the ancestors of any type above.
         """
         if type_ is None:
@@ -1138,13 +1122,11 @@ class SubWikiText(WikiText):
         """Return the parent node of the current object.
 
         :param type_: the type of the desired parent object.
-            Currently the following types are supported: {
-                Template, ParserFunction, WikiLink, Comment, Parameter,
-                ExtensionTag
-            }
+            Currently the following types are supported: {Template,
+            ParserFunction, WikiLink, Comment, Parameter, ExtensionTag}.
             The default is None and means the first parent, of any type above.
         :return: parent WikiText object or None if no parent with the desired
-            type_ is found.
+            `type_` is found.
         """
         ancestors = self.ancestors(type_)
         if ancestors:

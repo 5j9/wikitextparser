@@ -28,7 +28,6 @@ class Template(SubWikiText):
     """Convert strings to Template objects.
 
     The string should start with {{ and end with }}.
-
     """
 
     @property
@@ -88,20 +87,19 @@ class Template(SubWikiText):
         - Use uppercase for the first letter if `capital_links`.
         - Remove #anchor.
 
-        :rm_namespaces: is used to provide additional localized namespaces
-            for the template namespace. They will be removed from the result.
-            Default is ('Template',).
-        :capital_links: If True, convert the first letter of the template's
-            name to a capital letter. See [[mw:Manual:$wgCapitalLinks]] for
-            more info.
-        :code: is the language code.
+        :param rm_namespaces: is used to provide additional localized
+            namespaces for the template namespace. They will be removed from
+            the result. Default is ('Template',).
+        :param capital_links: If True, convert the first letter of the
+            template's name to a capital letter. See
+            [[mw:Manual:$wgCapitalLinks]] for more info.
+        :param code: is the language code.
 
         Example:
             >>> Template(
             ...     '{{ eN : tEmPlAtE : <!-- c --> t_1 # b | a }}'
             ... ).normal_name(code='en')
             'T 1'
-
         """
         # Remove comments
         name = COMMENT_SUB('', self.name).strip(WS)

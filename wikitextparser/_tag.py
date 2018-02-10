@@ -145,7 +145,7 @@ class SubWikiTextWithAttrs(SubWikiText):
 
         Return None if the attr_name does not exist in self.
         If there are already multiple attributes with the given name, only
-            return the value of the last one.
+        return the value of the last one.
         Return an empty string if the mentioned name is an empty attribute.
         """
         spans = self._attrs_match.spans

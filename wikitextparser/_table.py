@@ -117,16 +117,15 @@ class Table(SubWikiTextWithAttrs):
     ) -> Union[List[List[str]], List[str], str]:
         """Return a list containing lists of row values.
 
-        :span: If true, calculate rows according to rowspans and colspans
+        :param span: If true, calculate rows according to rowspans and colspans
             attributes. Otherwise ignore them.
-        :row: Return the specified row only. Zero-based index.
-        :column: Return the specified column only. Zero-based index.
+        :param row: Return the specified row only. Zero-based index.
+        :param column: Return the specified column only. Zero-based index.
 
         Note: Due to the lots of complications that it may cause, this function
             won't look inside templates, parser functions, etc.
             See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
             wikitables can be inserted within templates.
-
         """
         match_table = self._match_table
         # Note string is only used for extracting data, matching is done over
@@ -175,16 +174,15 @@ class Table(SubWikiTextWithAttrs):
     ) -> Union[List[List[Cell]], List[Cell], Cell]:
         """Return a list of lists containing Cell objects.
 
-        :span: If is True, rearrange the result according to colspan and rospan
-            attributes.
-        :row: Return the specified row only. Zero-based index.
-        :column: Return the specified column only. Zero-based index.
+        :param span: If is True, rearrange the result according to colspan and
+            rospan attributes.
+        :param row: Return the specified row only. Zero-based index.
+        :param column: Return the specified column only. Zero-based index.
 
         If both row and column are provided, return the relevant cell object.
 
         If only need the values inside cells, then use the ``data`` method
         instead.
-
         """
         tbl_span = self._span
         ss = tbl_span[0]
@@ -300,10 +298,9 @@ class Table(SubWikiTextWithAttrs):
     def table_attrs(self) -> str:
         """Return table attributes.
 
-        Placing attributes after the table start tag ({|) applies
-        attributes to the entire table.
+        In MediaWiki, placing attributes after the table start tag (`{|`)
+        applies attributes to the entire table.
         See [[mw:Help:Tables#Attributes on tables]] for more info.
-
         """
         warnings.warn(
             'Table.table_attrs is deprecated. '
@@ -482,7 +479,6 @@ def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
     Captions are optional and only one should be placed between table-start
     and the first row. Others captions are not part of the table and will
     be ignored. We call these semi-captions.
-
     """
     lsp = _lstrip_increase(shadow, pos)
     while shadow[lsp:lsp + 2] == b'|+':
@@ -500,7 +496,6 @@ def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting row separator line.
 
     Also skips any semi-caption lines before and after the separator.
-
     """
     # General format of row separators: r'\|-[^\n]*\n'
     scp = _semi_caption_increase(shadow, pos)

@@ -68,8 +68,7 @@ class WikiList(SubWikiText):
     def items(self) -> List[str]:
         """Return items as a list of strings.
 
-        Don't include subitems and the start pattern.
-
+        Don't include sub-items and the start pattern.
         """
         items = []  # type: List[str]
         append = items.append
@@ -97,7 +96,6 @@ class WikiList(SubWikiText):
         """Return level of nesting for the current list.
 
         Level is a one-based index, for example the level for `* a` will be 1.
-
         """
         return len(self._match['pattern'])
 
@@ -106,15 +104,14 @@ class WikiList(SubWikiText):
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 
-        :i: The index if the item which its sub-lists are desired.
+        :param i: The index if the item which its sub-lists are desired.
             The performance is likely to be better if `i` is None.
 
-        :pattern: The starting symbol for the desired sub-lists.
+        :param pattern: The starting symbol for the desired sub-lists.
             The `pattern` of the current list will be automatically added
             as prefix.
             Although this parameter is optional, but specifying it can improve
             the performance.
-
         """
         patterns = ('\#', '\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
