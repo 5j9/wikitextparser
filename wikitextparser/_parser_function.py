@@ -1,6 +1,7 @@
 """"Define the ParserFunction class."""
 
 
+from bisect import insort
 from typing import List
 
 import regex
@@ -33,14 +34,13 @@ class ParserFunction(SubWikiText):
             type_ = id(pf_span)
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
-            arg_spans_append = arg_spans.append
             span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
             ss = pf_span[0]
             for s, e in split_spans:
                 span = [ss + s, ss + e]
                 old_span = span_tuple_to_span_get((span[0], span[1]))
                 if old_span is None:
-                    arg_spans_append(span)
+                    insort(arg_spans, span)
                 else:
                     span = old_span
                 arguments_append(Argument(lststr, type_to_spans, span, type_))

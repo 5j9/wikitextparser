@@ -68,7 +68,7 @@ class Argument(unittest.TestCase):
 
     def test_dont_confuse_subspan_equal_with_keyword_arg_equal(self):
         p = wtp.parse('{{text| {{text|1=first}} | b }}')
-        a0, a1 = p.templates[1].arguments
+        a0, a1 = p.templates[0].arguments
         self.assertEqual(' {{text|1=first}} ', a0.value)
         self.assertEqual('1', a0.name)
         self.assertEqual(' b ', a1.value)

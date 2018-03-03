@@ -4,7 +4,9 @@
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using separate strings for each node.
 
+from bisect import insort
 from copy import deepcopy
+from operator import attrgetter
 from typing import (
     MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional,
 )
@@ -125,7 +127,7 @@ class WikiText:
             tail = byte_array[-2:]
             byte_array[-2:] = byte_array[:2] = b'__'
             type_to_spans = parse_to_spans(byte_array)
-            type_to_spans[_type].append(span)
+            type_to_spans[_type].insert(0, span)
             self._type_to_spans = type_to_spans
             byte_array[:2] = head
             byte_array[-2:] = tail
@@ -237,9 +239,8 @@ class WikiText:
         for type_, spans in parse_to_spans(
             bytearray(value, 'ascii', 'replace')
         ).items():
-            spans_append = type_to_spans[type_].append
             for s, e in spans:
-                spans_append([s + start, e + start])
+                insort(type_to_spans[type_], [s + start, e + start])
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
@@ -286,13 +287,12 @@ class WikiText:
             elength=string_len,
         )
         # Remember newly added spans by the string.
-        spans_dict = self._type_to_spans
-        for k, v in parse_to_spans(
+        type_to_spans = self._type_to_spans
+        for type_, spans in parse_to_spans(
             bytearray(string, 'ascii', 'replace')
         ).items():
-            spans_append = spans_dict[k].append
-            for s, e in v:
-                spans_append([s + index, e + index])
+            for s, e in spans:
+                insort(type_to_spans[type_], [index + s, index + e])
 
     @property
     def span(self) -> tuple:
@@ -512,16 +512,16 @@ class WikiText:
                 if not c.contents.strip(ws):
                     del c[:]
         # First remove all current spacings.
-        for template in parsed.templates:
-            s_tl_name = template.name.strip(ws)
+        for template in reversed(parsed.templates):
+            stripped_tl_name = template.name.strip(ws)
             template.name = (
-                ' ' + s_tl_name + ' '
-                if s_tl_name[0] == '{' else s_tl_name
+                ' ' + stripped_tl_name + ' '
+                if stripped_tl_name[0] == '{' else stripped_tl_name
             )
             args = template.arguments
             if not args:
                 continue
-            if ':' in s_tl_name:
+            if ':' in stripped_tl_name:
                 # Don't use False because we don't know for sure.
                 not_a_parser_function = None
             else:
@@ -1082,7 +1082,7 @@ class SubWikiText(WikiText):
             self._span = span
         else:
             self._span = \
-                self._type_to_spans[_type][-1] if _span is None else _span
+                self._type_to_spans[_type][0] if _span is None else _span
 
     def _subspans(self, _type: str) -> Generator[int, None, None]:
         """Yield all the sub-span indices excluding self._span."""

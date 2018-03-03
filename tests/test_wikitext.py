@@ -13,7 +13,7 @@ class TestWikiText(TestCase):
     """Test the basics  of the WikiText class."""
 
     def test_len(self):
-        t2, t1 = WikiText('{{t1|{{t2}}}}').templates
+        t1, t2 = WikiText('{{t1|{{t2}}}}').templates
         self.assertEqual(len(t2), 6)
         self.assertEqual(len(t1), 13)
 
@@ -22,7 +22,7 @@ class TestWikiText(TestCase):
 
     def test_getitem(self):
         s = '{{t1|{{t2}}}}'
-        t2, t1 = WikiText(s).templates
+        t1, t2 = WikiText(s).templates
         self.assertEqual(t2[2], 't')
         self.assertEqual(t2[2:4], 't2')
         self.assertEqual(t2[-4:-2], 't2')
@@ -31,7 +31,7 @@ class TestWikiText(TestCase):
     def test_setitem(self):
         s = '{{t1|{{t2}}}}'
         wt = WikiText(s)
-        t2, t1 = wt.templates
+        t1, t2 = wt.templates
         t2[2] = 'a'
         self.assertEqual(t2.string, '{{a2}}')
         self.assertEqual(t1.string, '{{t1|{{a2}}}}')
@@ -92,7 +92,7 @@ class TestWikiText(TestCase):
     def test_delitem(self):
         s = '{{t1|{{t2}}}}'
         wt = WikiText(s)
-        t2, t1 = wt.templates
+        t1, t2 = wt.templates
         del t2[3]
         self.assertEqual(wt.string, '{{t1|{{t}}}}')
         del wt[5:10]
@@ -109,13 +109,13 @@ class Contains(TestCase):
 
     def test_a_is_actually_in_b(self):
         s = '{{b|{{a}}}}'
-        a, b = WikiText(s).templates
+        b, a = WikiText(s).templates
         self.assertTrue(a in b)
         self.assertFalse(b in a)
 
     def test_a_seems_to_be_in_b_but_in_another_span(self):
         s = '{{b|{{a}}}}{{a}}'
-        a1, a2, b = WikiText(s).templates
+        b, a1, a2 = WikiText(s).templates
         self.assertTrue(a1 in b)
         self.assertFalse(a2 in b)
         self.assertFalse(a2 in a1)
@@ -123,8 +123,8 @@ class Contains(TestCase):
 
     def test_a_b_from_different_objects(self):
         s = '{{b|{{a}}}}'
-        a1, b1 = WikiText(s).templates
-        a2, b2 = WikiText(s).templates
+        b1, a1 = WikiText(s).templates
+        b2, a2 = WikiText(s).templates
         self.assertTrue(a1 in b1)
         self.assertTrue(a2 in b2)
         self.assertFalse(a2 in b1)
@@ -519,7 +519,7 @@ class IndentLevel(TestCase):
 
     def test_a_in_b(self):
         s = '{{b|{{a}}}}'
-        a, b = WikiText(s).templates
+        b, a = WikiText(s).templates
         self.assertEqual(1, b.nesting_level)
         self.assertEqual(2, a.nesting_level)
 
@@ -879,7 +879,7 @@ class TestPformat(TestCase):
     def test_repformat(self):
         """Make sure that pformat won't mutate self."""
         s = '{{a|{{b|{{c}}}}}}'
-        c, b, a = WikiText(s).templates
+        a, b, c = WikiText(s).templates
         self.assertEqual(
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
             a.pformat(),
@@ -1049,15 +1049,15 @@ class Tags(TestCase):
         self.assertEqual(b, '<b>strikethrough-bold</b>')
         s = parsed.tags('s')[0].string
         self.assertEqual(s, '<s><b>strikethrough-bold</b></s>')
-        refs = parsed.tags()
-        self.assertEqual(refs[0].string, b)
-        self.assertEqual(refs[1].string, s)
+        s2, b2 = parsed.tags()
+        self.assertEqual(b2.string, b)
+        self.assertEqual(s2.string, s)
 
     def test_same_nested_tags(self):
         parsed = parse('<b><b>bold</b></b>')
         tags_by_name = parsed.tags('b')
-        self.assertEqual(tags_by_name[1].string, '<b><b>bold</b></b>')
-        self.assertEqual(tags_by_name[0].string, '<b>bold</b>')
+        self.assertEqual(tags_by_name[0].string, '<b><b>bold</b></b>')
+        self.assertEqual(tags_by_name[1].string, '<b>bold</b>')
         all_tags = parsed.tags()
         self.assertEqual(all_tags[0].string, tags_by_name[0].string)
         self.assertEqual(all_tags[1].string, tags_by_name[1].string)
@@ -1084,7 +1084,7 @@ class Tags(TestCase):
         parsed = parse('<br><s><b>sb</b></s>')
         s = parsed.tags('s')[0]
         self.assertEqual(s.string, '<s><b>sb</b></s>')
-        b = s.tags()[0]
+        b = s.tags()[1]
         self.assertEqual(b.string, '<b>sb</b>')
 
     def test_extension_tags_are_not_lost_in_shadows(self):

@@ -1,8 +1,9 @@
 ﻿"""Define the Table class."""
 
 
-import warnings
+from bisect import insort
 from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
+from warnings import warn
 
 from regex import compile as regex_compile, VERBOSE
 
@@ -103,7 +104,7 @@ class Table(SubWikiTextWithAttrs):
 
     def getdata(self, span: bool=True) -> List[List[str]]:
         """Use Table.data instead."""
-        warnings.warn(
+        warn(
             'Table.getdata is deprecated. Use Table.data instead.',
             DeprecationWarning,
         )
@@ -218,7 +219,7 @@ class Table(SubWikiTextWithAttrs):
                     )))
                 old_span = next((s for s in spans if s == cell_span), None)
                 if old_span is None:
-                    spans.append(cell_span)
+                    insort(spans, cell_span)
                 else:
                     cell_span = old_span
                 row_cells.append(
@@ -244,7 +245,7 @@ class Table(SubWikiTextWithAttrs):
 
     def getrdata(self, i: int, span: bool=True) -> List[str]:
         """Use Table.data(span, row=i) instead."""
-        warnings.warn(
+        warn(
             'Table.getrdata is deprecated. Use data(span, row=i) instead.',
             DeprecationWarning,
         )
@@ -252,7 +253,7 @@ class Table(SubWikiTextWithAttrs):
 
     def getcdata(self, i: int, span: bool=True) -> List[str]:
         """Use Table.data(span, column=i) instead."""
-        warnings.warn(
+        warn(
             'Table.getcdata is deprecated. Use data(span, column=i) instead.',
             DeprecationWarning,
         )
@@ -302,7 +303,7 @@ class Table(SubWikiTextWithAttrs):
         applies attributes to the entire table.
         See [[mw:Help:Tables#Attributes on tables]] for more info.
         """
-        warnings.warn(
+        warn(
             'Table.table_attrs is deprecated. '
             'Use has_attr and get_attr methods instead.',
             DeprecationWarning,
@@ -312,7 +313,7 @@ class Table(SubWikiTextWithAttrs):
     @table_attrs.setter
     def table_attrs(self, attrs: str) -> None:
         """Set new attributes for this table."""
-        warnings.warn(
+        warn(
             'Table.table_attrs is deprecated. '
             'Use set_attr and del_attr methods instead.',
             DeprecationWarning,

@@ -213,12 +213,12 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         template_spans_append,
     )
     return {
-        'Comment': comment_spans,
-        'ExtensionTag': extension_tag_spans,
-        'Parameter': parameter_spans,
-        'ParserFunction': parser_function_spans,
-        'Template': template_spans,
-        'WikiLink': wikilink_spans,
+        'Comment': sorted(comment_spans),
+        'ExtensionTag': sorted(extension_tag_spans),
+        'Parameter': sorted(parameter_spans),
+        'ParserFunction': sorted(parser_function_spans),
+        'Template': sorted(template_spans),
+        'WikiLink': sorted(wikilink_spans),
     }
 
 
