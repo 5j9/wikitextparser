@@ -35,14 +35,14 @@ class Spans(TestCase):
         )
         self.assertEqual(
             wt._type_to_spans['Template'],
-            [[12, 18], [19, 25], [39, 45], [46, 52], [5, 27], [32, 54]],
+            [[5, 27], [12, 18], [19, 25], [32, 54], [39, 45], [46, 52]],
         )
 
     def test_multiline_mutitemplate(self):
         wt = wtp.WikiText('{{cite\n    |{{t1}}\n    |{{t2}}}}')
         self.assertEqual(
             wt._type_to_spans['Template'],
-            [[12, 18], [24, 30], [0, 32]],
+            [[0, 32], [12, 18], [24, 30]],
         )
 
     def test_lacks_ending_braces(self):
@@ -133,7 +133,7 @@ class Spans(TestCase):
     def test_unicode_parameters(self):
         wt = wtp.WikiText('{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')
         self.assertEqual(
-            [[9, 27], [0, 30]],
+            [[0, 30], [9, 27]],
             wt._type_to_spans['Parameter'],
         )
 
@@ -142,7 +142,7 @@ class Spans(TestCase):
             "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 [[Wikilink2]].]]"
         )
         self.assertEqual(
-            [[30, 43], [49, 62], [0, 65]],
+            [[0, 65], [30, 43], [49, 62]],
             parsed._type_to_spans['WikiLink'],
         )
 
@@ -324,7 +324,7 @@ class Spans(TestCase):
 
     def test_single_brace_after_first_tl_removal(self):
         self.assertEqual(
-            [[7, 16], [0, 20]],
+            [[0, 20], [7, 16]],
             parse_to_spans(bytearray(b'{{text|{{text|}}} }}'))['Template'],
         )
 
@@ -360,7 +360,7 @@ class Spans(TestCase):
         self.assertEqual(
             {
                 'Parameter': [], 'ParserFunction': [],
-                'Template': [], 'WikiLink': [[30, 38], [5, 40]], 'Comment': [],
+                'Template': [], 'WikiLink': [[5, 40], [30, 38]], 'Comment': [],
                 'ExtensionTag': [[0, 46]]
             },
             parse_to_spans(bytearray(

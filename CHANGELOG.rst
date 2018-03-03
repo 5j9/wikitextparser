@@ -1,3 +1,8 @@
+v0.21.0
+-------
+- Changed: Results are now sorted by their span.
+- Fixed: Bug in ``ancestors`` and ``parent`` methods.
+
 v0.20.0
 -------
 - Added: ``parent`` and ``ancestors`` methods
