@@ -150,11 +150,11 @@ class ShrinkSpanUpdate(TestCase):
         template.name = template.name.strip(WS)
         self.assertEqual('|d=', arg.string)
 
-    def test_rmstart_s__rmstop__e(self):
-        wt = WikiText('{{t|<!--c-->}}')
+    def test_rmstart_s_rmstop_e(self):
+        wt = WikiText('{{t| {{t2|<!--c-->}} }}')
         c = wt.comments[0]
         t = wt.templates[0]
-        t[3:8] = ''
+        t[3:14] = ''
         self.assertEqual(c.string, 'c-->')
 
     def test_shrink_more_than_one_subspan(self):

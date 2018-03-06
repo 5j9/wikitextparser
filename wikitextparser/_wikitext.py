@@ -372,8 +372,6 @@ class WikiText:
                     s, e = span = spans[i]
                     continue
                 break
-            else:
-                continue
             while i >= 0:
                 if e <= rmstart:
                     # s <= e <= rmstart <= rmstop
@@ -382,17 +380,13 @@ class WikiText:
                         break
                     s, e = span = spans[i]
                     continue
-                if rmstop <= e:
-                    # s <= rmstart <= rmstop <= e
-                    span[1] -= rmstop - rmstart
-                    i -= 1
-                    if i < 0:
-                        break
-                    s, e = span = spans[i]
-                    continue
-                # s <= rmstart <= e < rmstop
-                span[1] = rmstart
+                # s <= rmstart <= rmstop <= e
+                span[1] -= rmstop - rmstart
                 i -= 1
+                if i < 0:
+                    break
+                s, e = span = spans[i]
+                continue
 
     def _insert_update(self, index: int, length: int) -> None:
         """Update self._type_to_spans according to the added length."""
@@ -404,37 +398,6 @@ class WikiText:
                     # index is before s, or at s but not on self_span
                     if index < span[0] or span[0] == index != ss:
                         span[0] += length
-            # The following method uses sort, but turned out to be slower
-            # if not spans:
-            #     continue
-            # ispans = iter(spans)
-            # for span in ispans:
-            #     s, e = span
-            #     if s < index:
-            #         if index < e or e == index == se:
-            #             span[1] += length
-            #     else:
-            #         ispans = chain((span,), ispans)
-            #         break
-            # else:
-            #     continue
-            # for span in ispans:
-            #     if index == s:
-            #         s, e = span
-            #         if s != ss:
-            #             span[0] += length
-            #             span[1] += length
-            #         elif index < e or e == index == se:
-            #             span[1] += length
-            #     else:
-            #         ispans = chain((span,), ispans)
-            #         break
-            # else:
-            #     continue
-            # for span in ispans:
-            #     # index < s <= e
-            #     span[0] += length
-            #     span[1] += length
 
     @property
     def nesting_level(self) -> int:
