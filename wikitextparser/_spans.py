@@ -3,7 +3,7 @@
 
 from typing import Dict, List, Callable, Any, Optional
 
-from regex import VERBOSE, DOTALL, IGNORECASE
+from regex import VERBOSE, IGNORECASE
 from regex import compile as regex_compile
 
 

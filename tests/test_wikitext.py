@@ -135,7 +135,7 @@ class Contains(TestCase):
 
 class ShrinkSpanUpdate(TestCase):
 
-    """Test the _shrink_span_update method."""
+    """Test the _shrink_update method."""
 
     def test_stripping_template_name_should_update_its_arg_spans(self):
         t = Template('{{ t\n |1=2}}')
@@ -181,6 +181,12 @@ class CloseSubSpans(TestCase):
         wt._type_to_spans = {'ParserFunction': [[16, 25]]}
         wt._close_subspans(16, 27)
         self.assertFalse(wt._type_to_spans['ParserFunction'])
+
+    def test_rm_start_not_equal_to_self_start(self):
+        wt = WikiText('t{{a}}')
+        wt._type_to_spans = {'Templates': [[1, 6]]}
+        wt._close_subspans(5, 6)
+        self.assertEqual(wt._type_to_spans, {'Templates': [[1, 6]]})
 
 
 class ExpandSpanUpdate(TestCase):
@@ -418,6 +424,13 @@ class ExternalLinks(TestCase):
                 '[urn:{{#if:a| a }} t]'
             ).external_links[0].url,
             'urn:{{#if:a| a }}',
+        )
+
+    def test_equal_span_ids(self):
+        p = parse('lead\n== 1 ==\nhttp://wikipedia.org/')
+        self.assertEqual(
+            id(p.external_links[0]._span),
+            id(p.sections[1].external_links[0]._span)
         )
 
 
@@ -943,6 +956,18 @@ class TestPformat(TestCase):
             parse('{{en:text|n=v\n}}').pformat(),
         )
 
+    def test_no_error(self):
+        # the errors were actually found in shrink/insert/extend
+        self.assertEqual(
+            parse('{{#f1:{{#f2:}}{{t|}}}}').pformat(),
+            '{{#f1:\n    {{#f2:\n        \n    }}'
+            '{{t\n        | 1 = \n    }}\n}}',
+        )
+        self.assertEqual(
+            parse('{{{{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}\n}}}}\n').pformat(),
+            '{{ {{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}}} }}\n',
+        )
+
 
 class Sections(TestCase):
 
@@ -967,8 +992,8 @@ class Sections(TestCase):
         wt = WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
         s1.insert(0, 'c\n== s0 ==\nc\n')
-        s0 = wt.sections[1]
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
+        s0 = wt.sections[1]
         self.assertEqual('== s0 ==\nc\n', s0.string)
         self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
         s1.insert(len(wt.string), '=== s2 ===\nc\n')
@@ -1114,6 +1139,10 @@ class Ancestors(TestCase):
         t = Template('{{a}}')
         self.assertEqual(t.ancestors(), [])
         self.assertIsNone(t.parent())
+
+    def test_not_every_sooner_starting_span_is_a_parent(self):
+        a, b = parse('[[a]][[b]]').wikilinks
+        self.assertEqual(b.ancestors(), [])
 
 
 if __name__ == '__main__':

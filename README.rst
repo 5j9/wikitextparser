@@ -41,10 +41,10 @@ Templates
 
     >>> parsed = wtp.parse("{{text|value1{{text|value2}}}}")
     >>> parsed.templates
-    [Template('{{text|value2}}'), Template('{{text|value1{{text|value2}}}}')]
-    >>> parsed.templates[1].arguments
+    [Template('{{text|value1{{text|value2}}}}'), Template('{{text|value2}}')]
+    >>> parsed.templates[0].arguments
     [Argument("|value1{{text|value2}}")]
-    >>> parsed.templates[1].arguments[0].value = 'value3'
+    >>> parsed.templates[0].arguments[0].value = 'value3'
     >>> print(parsed)
     {{text|value3}}
 
@@ -53,7 +53,7 @@ The ``pformat`` method returns a pretty-print formatted string for templates:
 .. code:: python
 
     >>> parsed = wtp.parse('{{t1 |b=b|c=c| d={{t2|e=e|f=f}} }}')
-    >>> t2, t1 = parsed.templates
+    >>> t1, t2 = parsed.templates
     >>> print(t2.pformat())
     {{t2
         | e = e
@@ -95,6 +95,7 @@ Template parameters:
     >>> param
     Parameter('{{{a|c}}}')
     >>> param.append_default('d')
+    >>> param
     Parameter('{{{a|{{{d|c}}}}}}')
 
 
@@ -102,13 +103,14 @@ WikiLinks
 ---------
 
 .. code:: python
-
-    >>> wt.wikilinks
-    [WikiLink("[[A|B]]")]
-    >>> wt.wikilinks[0].target = 'Z'
-    >>> wt.wikilinks[0].text = 'X'
-    >>> wt.wikilinks[0]
-    WikiLink('[[Z|X]]')
+    >>> parsed = wtp.parse('text [[A|B]] text')
+    >>> wl = parsed.wikilinks[0]
+    >>> wl
+    WikiLink('[[A|B]]')
+    >>> wl.target = 'Z'
+    >>> wl.text = 'X'
+    >>> parsed
+    WikiText('text [[Z|X]] text')
 
 Sections
 --------
@@ -155,12 +157,12 @@ Extracting cell values of a table:
 .. code:: python
 
     >>> p = wtp.parse("""{|
-    |  Orange    ||   Apple   ||   more
-    |-
-    |   Bread    ||   Pie     ||   more
-    |-
-    |   Butter   || Ice cream ||  and more
-    |}""")
+    ... |  Orange    ||   Apple   ||   more
+    ... |-
+    ... |   Bread    ||   Pie     ||   more
+    ... |-
+    ... |   Butter   || Ice cream ||  and more
+    ... |}""")
     >>> p.tables[0].data()
     [['Orange', 'Apple', 'more'],
      ['Bread', 'Pie', 'more'],
@@ -210,14 +212,14 @@ The `lists` method provides access to lists within the wikitext.
 .. code:: python
 
     >>> parsed = wtp.parse(
-        'text\n'
-        '* list item a\n'
-        '* list item b\n'
-        '** sub-list of b\n'
-        '* list item c\n'
-        '** sub-list of b\n'
-        'text'
-    )
+    ...     'text\n'
+    ...     '* list item a\n'
+    ...     '* list item b\n'
+    ...     '** sub-list of b\n'
+    ...     '* list item c\n'
+    ...     '** sub-list of b\n'
+    ...     'text'
+    ... )
     >>> wikilist = parsed.lists()[0]
     >>> wikilist.items
     [' list item a', ' list item b', ' list item c']
@@ -287,12 +289,12 @@ Miscellaneous
 
 .. code:: python
 
-    >>> t = parse("{{a|{{b|{{c|{{d}}}}}}}}").templates[0]
-    >>> t.ancestors()
+    >>> template_d = parse("{{a|{{b|{{c|{{d}}}}}}}}").templates[3]
+    >>> template_d.ancestors()
     [Template('{{c|{{d}}}}'),
      Template('{{b|{{c|{{d}}}}}}'),
      Template('{{a|{{b|{{c|{{d}}}}}}}}')]
-    >>> t.parent()
+    >>> template_d.parent()
     Template('{{c|{{d}}}}')
     >>> _.parent()
     Template('{{b|{{c|{{d}}}}}}')
