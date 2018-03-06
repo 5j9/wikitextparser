@@ -249,9 +249,9 @@ Convert one type of list to another using the convert method. Specifying the sta
 .. code:: python
 
         >>> wl = wtp.WikiList(
-            ':*A1\n:*#B1\n:*#B2\n:*:continuing A1\n:*A2',
-            pattern=':\*'
-        )
+        ...     ':*A1\n:*#B1\n:*#B2\n:*:continuing A1\n:*A2',
+        ...     pattern=':\*'
+        ... )
         >>> print(wl)
         :*A1
         :*#B1
