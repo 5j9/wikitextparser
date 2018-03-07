@@ -1,7 +1,7 @@
 """Initialize the wikitextparser."""
 
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-__version__ = '0.21.1'
+__version__ = '0.21.2.dev0'
 
 import regex as _regex
 
