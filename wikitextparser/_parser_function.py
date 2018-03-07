@@ -68,5 +68,4 @@ class ParserFunction(TlPfMixin):
     @name.setter
     def name(self, newname: str) -> None:
         """Set a new name."""
-        name = self.name
-        self[2:2 + len(name)] = newname
+        self[2:2 + len(self.name)] = newname

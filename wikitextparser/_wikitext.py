@@ -165,7 +165,8 @@ class WikiText:
         return False
 
     def __len__(self):
-        return len(self.string)
+        s, e = self._span
+        return e - s
 
     def __getitem__(self, key: Union[slice, int]) -> str:
         """Return self.string[item]."""

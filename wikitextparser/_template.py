@@ -46,8 +46,7 @@ class Template(TlPfMixin):
     @name.setter
     def name(self, newname: str) -> None:
         """Set the new name for the template."""
-        name = self.name
-        self[2:2 + len(name)] = newname
+        self[2:2 + len(self.name)] = newname
 
     def normal_name(
         self,
@@ -119,7 +118,6 @@ class Template(TlPfMixin):
         Warning: Some meaningful data may be removed from wikitext.
 
         Also see `rm_dup_args_safe` function.
-
         """
         names = set()  # type: set
         for a in reversed(self.arguments):
@@ -147,7 +145,6 @@ class Template(TlPfMixin):
         the value of the remaining duplicate arguments.
 
         Also see `rm_first_of_dup_args` function.
-
         """
         name_to_lastarg_vals = {} \
             # type: Dict[str, Tuple[Argument, List[str]]]
@@ -287,7 +284,6 @@ class Template(TlPfMixin):
         """Return the last argument with the given name.
 
         Return None if no argument with that name is found.
-
         """
         return get_arg(name, reversed(self.arguments))
 
@@ -299,7 +295,6 @@ class Template(TlPfMixin):
         Note: If you just need to get an argument and you want to LBYL, it's
             better to get_arg directly and then check if the returned value
             is None.
-
         """
         for arg in reversed(self.arguments):
             if arg.name.strip(WS) == name.strip(WS):
@@ -341,7 +336,6 @@ def get_arg(name: str, args: Iterable[Argument]) -> Optional[Argument]:
     As the computation of self.arguments is a little costly, this
     function was created so that other methods that have already computed
     the arguments use it instead of calling self.get_arg directly.
-
     """
     for arg in args:
         if arg.name.strip(WS) == name.strip(WS):
