@@ -1,7 +1,9 @@
 """"Define the Template class."""
 
-from regex import compile as regex_compile, REVERSE
+
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
+
+from regex import compile as regex_compile, REVERSE
 
 from ._argument import Argument
 from ._spans import COMMENT_PATTERN
@@ -34,27 +36,32 @@ class Template(SubWikiText):
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         arguments = []
-        split_spans = BAR_SPLITS_FULLMATCH(self._shadow).spans('arg')
+        shadow = self._shadow
+        split_spans = BAR_SPLITS_FULLMATCH(shadow).spans('arg')
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            tl_span = self._span
-            type_ = id(tl_span)
+            ss, se = span = self._span
+            type_ = id(span)
             lststr = self._lststr
+            string = lststr[0]
             arg_spans = type_to_spans.setdefault(type_, [])
             arg_spans_append = arg_spans.append
             span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
-            ss = tl_span[0]
-            for s, e in split_spans:
-                s, e = arg_span = [ss + s, ss + e]
-                old_span = span_tuple_to_span_get((s, e))
+            for arg_tl_start, arg_tl_end in split_spans:
+                arg_s, arg_e = arg_span = [
+                    ss + arg_tl_start, ss + arg_tl_end]
+                old_span = span_tuple_to_span_get((arg_s, arg_e))
                 if old_span is None:
                     arg_spans_append(arg_span)
                 else:
                     arg_span = old_span
-                arguments_append(
-                    Argument(lststr, type_to_spans, arg_span, type_)
+                arg = Argument(lststr, type_to_spans, arg_span, type_)
+                arg._shadow_cache = (
+                    string[arg_tl_start:arg_tl_end],
+                    shadow[arg_tl_start:arg_tl_end],
                 )
+                arguments_append(arg)
             arg_spans.sort()
         return arguments
 
