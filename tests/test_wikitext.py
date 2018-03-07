@@ -408,17 +408,18 @@ class ExternalLinks(TestCase):
             1,
         )
 
-    @expectedFailure  # This depends on context and/or requires evaluation.
     def test_external_link_containing_extension_tags(self):
         s = '[https://www.google.<includeonly>com </includeonly>a]'
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
-        self.assertEqual(
+        # Warning: This depends on context and/or requires evaluation.
+        self.assertNotEqual(
             el.url, 'https://www.google.a')
         s = '[https://www.google.<noinclude>com </noinclude>a]'
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
-        self.assertEqual(el.url, 'https://www.google.com')
+        # Warning: This depends on context and/or requires evaluation.
+        self.assertNotEqual(el.url, 'https://www.google.com')
 
     def test_parser_function_in_external_link(self):
         self.assertEqual(
