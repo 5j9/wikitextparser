@@ -1,6 +1,6 @@
-Unreleased
-----------
-- Fixed: Bug in ``external_links``
+v0.21.1
+-------
+- Fixed: A bug in ``external_links``
 
 v0.21.0
 -------
