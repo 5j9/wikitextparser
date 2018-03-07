@@ -60,7 +60,8 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb':[^{}]*+\}\}',
 ).finditer
 # External links
-VALID_EXTLINK_CHARS = rb'[^ \t\n<>\[\]"]++'
+INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
+VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
 
 # generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
 BARE_EXTLINK_SCHEMES_PATTERN = (

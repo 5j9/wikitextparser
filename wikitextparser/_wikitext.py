@@ -20,6 +20,7 @@ from wcwidth import wcswidth
 from ._config import _tag_extensions
 from ._spans import (
     parse_to_spans,
+    INVALID_EXTLINK_CHARS,
     VALID_EXTLINK_CHARS,
     BARE_EXTLINK_SCHEMES_PATTERN,
 )
@@ -38,6 +39,9 @@ EXTERNALLINK_FINDITER = regex_compile(
     + rb'|' + BRACKET_EXTERNALLINK_PATTERN + rb')',
     IGNORECASE,
 ).finditer
+INVALID_EXT_CHARS_SUB = regex_compile(
+    rb'[' + INVALID_EXTLINK_CHARS + rb']'
+).sub
 
 # Sections
 SECTIONS_FULLMATCH = regex_compile(
@@ -116,7 +120,7 @@ class WikiText:
         if _type not in SPAN_PARSER_TYPES:
             type_to_spans = self._type_to_spans = parse_to_spans(byte_array)
             type_to_spans[_type] = [span]
-            self._shadow_cache = string, byte_array, type_to_spans
+            self._shadow_cache = string, byte_array
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
@@ -127,11 +131,11 @@ class WikiText:
             tail = byte_array[-2:]
             byte_array[-2:] = byte_array[:2] = b'__'
             type_to_spans = parse_to_spans(byte_array)
+            self._shadow_cache = string, byte_array
             type_to_spans[_type].insert(0, span)
             self._type_to_spans = type_to_spans
             byte_array[:2] = head
             byte_array[-2:] = tail
-            self._shadow_cache = string, byte_array, type_to_spans
 
     def __str__(self) -> str:
         """Return self-object as a string."""
@@ -433,8 +437,8 @@ class WikiText:
         """
         ss, se = self._span
         string = self._lststr[0][ss:se]
-        cached_string, shadow, spans_dict = getattr(
-            self, '_shadow_cache', (None, None, None))
+        cached_string, shadow = getattr(
+            self, '_shadow_cache', (None, None))
         if cached_string == string:
             return shadow
         # In the old method the existing spans were used to create the shadow.
@@ -448,28 +452,31 @@ class WikiText:
             head = shadow[:2]
             tail = shadow[-2:]
             shadow[:2] = shadow[-2:] = b'__'
-            spans_dict = parse_to_spans(shadow)
+            parse_to_spans(shadow)
             shadow[:2] = head
             shadow[-2:] = tail
         else:
-            spans_dict = parse_to_spans(shadow)
-        self._shadow_cache = string, shadow, spans_dict
+            parse_to_spans(shadow)
+        self._shadow_cache = string, shadow
         return shadow
 
     @property
-    def _dark_shadow(self):
-        """Replace templates, parser functions, and comments with underscores.
+    def _ext_link_shadow(self):
+        """Replace the invalid chars of SPAN_PARSER_TYPES with b'_'.
 
-        Used for external links where the mentioned types are valid but may
-        contain invalid link characters characters in them.
+        For comments, all characters are replaced, but for ('Template',
+        'ParserFunction', 'Parameter') only invalid characters are replaced.
         """
-        shadow = self._shadow  # set or update _shadow_cache
-        spans_dict = self._shadow_cache[2]
-        dark_shadow = shadow[:]
-        for type_ in 'Template', 'ParserFunction', 'Comment':
-            for s, e in spans_dict[type_]:
-                dark_shadow[s:e] = b'_' * (e - s)
-        return dark_shadow
+        ss, se = self._span
+        string = self._lststr[0][ss:se]
+        byte_array = bytearray(string, 'ascii', 'replace')
+        subspans = self._subspans
+        for type_ in 'Template', 'ParserFunction', 'Parameter':
+            for s, e in subspans(type_):
+                byte_array[s:e] = INVALID_EXT_CHARS_SUB(b'_', byte_array[s:e])
+        for s, e in subspans('Comment'):
+            byte_array[s:e] = (e - s) * b'_'
+        return byte_array
 
     def _pp_type_to_spans(self) -> Dict[str, List[List[int]]]:
         """Create the arguments for the parse function used in pformat method.
@@ -742,17 +749,14 @@ class WikiText:
         """Return a list of found external link objects.
 
         Note:
-            Templates adjacent to *bare* external links, are *not* considered
-            part of the link. In reality, this depends on the contents of the
-            template:
+            Templates adjacent to external links are considered part of the
+            link. In reality, this depends on the contents of the template:
 
             >>> WikiText(
             ...    'http://example.com{{dead link}}'
             ...).external_links[0].url
-            'http://example.com'
+            'http://example.com{{dead link}}'
 
-            But if the external link is in brackets, everything until the
-            first space is treated as the url:
             >>> WikiText(
             ...    '[http://example.com{{space template}} text]'
             ...).external_links[0].url
@@ -767,7 +771,7 @@ class WikiText:
         if not spans:
             # All the added spans will be new.
             spans_append = spans.append
-            for m in EXTERNALLINK_FINDITER(self._dark_shadow):
+            for m in EXTERNALLINK_FINDITER(self._ext_link_shadow):
                 s, e = m.span()
                 span = [ss + s, ss + e]
                 spans_append(span)
@@ -778,7 +782,7 @@ class WikiText:
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        for m in EXTERNALLINK_FINDITER(self._dark_shadow):
+        for m in EXTERNALLINK_FINDITER(self._ext_link_shadow):
             s, e = m.span()
             span = s, e = [s + ss, e + ss]
             old_span = span_tuple_to_span_get((s, e))
@@ -1098,8 +1102,10 @@ class SubWikiText(WikiText):
         """Yield all the sub-span indices excluding self._span."""
         ss, se = self._span
         spans = self._type_to_spans[_type]
-        for span in spans[bisect(spans, [ss]):]:
-            # Do not yield self._span.
+        # Do not yield self._span by bisecting for s < ss.
+        # The second bisect is an optimization and should be on [se + 1],
+        # but empty spans are not desired thus [se] is used.
+        for span in spans[bisect(spans, [ss]):bisect(spans, [se])]:
             if span[1] <= se:
                 yield span
 

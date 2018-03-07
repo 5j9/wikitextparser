@@ -298,6 +298,13 @@ class ExternalLinks(TestCase):
 
     """Test the WikiText.external_links."""
 
+    def test_external_links_inside_template(self):
+        t = Template('{{t0|urn:0{{t1|urn:1}}}}')
+        u = t.external_links[0]
+        # Warning: both urn's are treated ast one.
+        # In a live site this will depends on templates.
+        self.assertEqual('urn:0{{t1|urn:1}}}}', u.string)
+
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
         wt = WikiText(s)
@@ -401,16 +408,17 @@ class ExternalLinks(TestCase):
             1,
         )
 
-    def test_external_link_containing_parser_function(self):
+    @expectedFailure  # This depends on context and/or requires evaluation.
+    def test_external_link_containing_extension_tags(self):
         s = '[https://www.google.<includeonly>com </includeonly>a]'
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
         self.assertEqual(
-            el.url, 'https://www.google.<includeonly>com </includeonly>a')
+            el.url, 'https://www.google.a')
         s = '[https://www.google.<noinclude>com </noinclude>a]'
         el = parse(s).external_links[0]
         self.assertEqual(str(el), s)
-        self.assertEqual(el.url, 'https://www.google.')
+        self.assertEqual(el.url, 'https://www.google.com')
 
     def test_parser_function_in_external_link(self):
         self.assertEqual(

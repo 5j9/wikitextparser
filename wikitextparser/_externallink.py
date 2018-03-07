@@ -19,7 +19,7 @@ class ExternalLink(SubWikiText):
     def url(self) -> str:
         """Return the url."""
         if self[0] == '[':
-            return self[1:URL_MATCH(self._dark_shadow, 1).end()]
+            return self[1:URL_MATCH(self._ext_link_shadow, 1).end()]
         return self.string
 
     @url.setter
@@ -38,7 +38,7 @@ class ExternalLink(SubWikiText):
         """
         string = self.string
         if string[0] == '[':
-            end_match = URL_MATCH(self._dark_shadow, 1)
+            end_match = URL_MATCH(self._ext_link_shadow, 1)
             url_end = end_match.end()
             end_char = string[url_end]
             if end_char == ']':

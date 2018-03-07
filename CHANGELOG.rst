@@ -1,7 +1,11 @@
+Unreleased
+----------
+- Fixed: Bug in ``external_links``
+
 v0.21.0
 -------
-- Changed: Results are now sorted by their span.
-- Fixed: Bug in ``ancestors`` and ``parent`` methods.
+- Changed: The order of results, now everything is sorted by its starting position.
+- Fixed: Bug in ``ancestors`` and ``parent`` methods
 
 v0.20.0
 -------
