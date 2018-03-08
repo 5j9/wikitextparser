@@ -64,11 +64,12 @@ INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
 VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
 
 # generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
+# A \b is added to the beginning.
 BARE_EXTLINK_SCHEMES_PATTERN = (
-    rb'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s:|'
-    rb':)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc(?>'
-    rb's://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitc'
-    rb'oin:)'
+    rb'\b(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s'
+    rb':|:)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc('
+    rb'?>s://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bi'
+    rb'tcoin:)'
 )
 BARE_EXTERNALLINK_PATTERN = (
     rb'(?>' + BARE_EXTLINK_SCHEMES_PATTERN + rb')' + VALID_EXTLINK_CHARS

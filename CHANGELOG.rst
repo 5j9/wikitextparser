@@ -1,6 +1,10 @@
+v0.21.2
+-------
+- Fixed: A bug in ``external_links`` (the starting position must now be a word boundary; previously this condition was not checked)
+
 v0.21.1
 -------
-- Fixed: A bug in ``external_links``
+- Fixed: A bug in ``external_links`` (external links withing sub-templates are now detected correctly; previously they were ignored)
 
 v0.21.0
 -------

@@ -298,6 +298,9 @@ class ExternalLinks(TestCase):
 
     """Test the WikiText.external_links."""
 
+    def test_starting_boundary(self):
+        self.assertFalse(parse('turn:a').external_links)
+
     def test_external_links_inside_template(self):
         t = Template('{{t0|urn:0{{t1|urn:1}}}}')
         u = t.external_links[0]
