@@ -330,12 +330,11 @@ class WikiText:
         ss, se = self._span
         for spans in self._type_to_spans.values():
             b = bisect(spans, [start])
-            p = 0
-            for i, (s, e) in enumerate(spans[b:bisect(spans, [stop])]):
+            for i, (s, e) in enumerate(spans[b:bisect(spans, [stop], b)]):
                 if e <= stop:
                     if ss != s or se != e:
-                        spans.pop(i + b - p)[:] = -1, -1
-                        p += 1
+                        spans.pop(i + b)[:] = -1, -1
+                        b -= 1
 
     def _shrink_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
@@ -1106,7 +1105,8 @@ class SubWikiText(WikiText):
         # Do not yield self._span by bisecting for s < ss.
         # The second bisect is an optimization and should be on [se + 1],
         # but empty spans are not desired thus [se] is used.
-        for span in spans[bisect(spans, [ss]):bisect(spans, [se])]:
+        b = bisect(spans, [ss])
+        for span in spans[b:bisect(spans, [se], b)]:
             if span[1] <= se:
                 yield span
 
