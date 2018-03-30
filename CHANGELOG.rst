@@ -1,6 +1,6 @@
 v0.21.3
 -------
-- Fixed: A bug in processing `Section` objects.
+- Fixed: A bug in processing ``Section`` objects.
 
 v0.21.2
 -------
