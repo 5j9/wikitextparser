@@ -1,3 +1,7 @@
+v0.21.3
+-------
+- Fixed: A bug in processing `Section` objects.
+
 v0.21.2
 -------
 - Fixed: A bug in ``external_links`` (the starting position must now be a word boundary; previously this condition was not checked)
