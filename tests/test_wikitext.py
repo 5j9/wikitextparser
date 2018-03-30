@@ -1056,6 +1056,11 @@ class Sections(TestCase):
         t = '=\tt\t=\t'
         self.assertEqual(str(parse(t).sections[1]), t)
 
+    def test_deleting_a_section_wont_corrupt_others(self):
+        z, a, b, c = parse('=a=\na\n==b==\nb\n==c==\nc').sections
+        b.string = ''
+        self.assertEqual(c.string, '==c==\nc')
+
 
 class WikiList(TestCase):
 

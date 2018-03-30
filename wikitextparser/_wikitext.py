@@ -815,9 +815,8 @@ class WikiText:
             # All spans are new
             type_spans_append = spans.append
             # Lead section
-            span = [s, e]
-            type_spans_append(span)
-            lead_section = Section(lststr, type_to_spans, span)
+            lead_span = [s, e]
+            lead_section = Section(lststr, type_to_spans, lead_span)
             # Other sections
             for current_level, (s, e) in zip(
                 reversed(levels), reversed(section_spans)
@@ -838,6 +837,8 @@ class WikiText:
                 type_spans_append(span)
                 sections_append(Section(lststr, type_to_spans, span))
             sections_append(lead_section)
+            type_spans_append(lead_span)
+            spans.reverse()
             sections.reverse()
             return sections
         # There are already some spans. Instead of appending new spans
@@ -846,11 +847,11 @@ class WikiText:
         # Continue lead section
         old_span = span_tuple_to_span((s, e))
         if old_span is None:
-            span = [s, e]
-            insort(spans, span)
+            lead_span = [s, e]
+            insort(spans, lead_span)
         else:
-            span = old_span
-        lead_section = Section(lststr, type_to_spans, span)
+            lead_span = old_span
+        lead_section = Section(lststr, type_to_spans, lead_span)
         # Adjust other sections
         calced_spans = []
         calced_spans_append = calced_spans.append
