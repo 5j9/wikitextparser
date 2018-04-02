@@ -408,6 +408,17 @@ class Data(unittest.TestCase):
         )
         self.assertEqual(table.data(), [['a', 'b|c']])
 
+    def test_unicode_data(self):
+        """Note the \u201D character at line 2. wikitextparser/issues/9."""
+        t = Table(
+            '{|class=wikitable\n'
+            '|align="center" rowspan="1"|A\u201D\n'
+            '|align="center" rowspan="1"|B\n'
+            '|}'
+        )
+        d = t.data()
+        self.assertEqual(d, [['A”', 'B']])
+
 
 class Caption(unittest.TestCase):
 

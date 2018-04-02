@@ -122,11 +122,12 @@ class Table(SubWikiTextWithAttrs):
             attributes. Otherwise ignore them.
         :param row: Return the specified row only. Zero-based index.
         :param column: Return the specified column only. Zero-based index.
+        :param strip: strip data values
 
         Note: Due to the lots of complications that it may cause, this function
             won't look inside templates, parser functions, etc.
             See https://www.mediawiki.org/wiki/Extension:Pipe_Escape for how
-            wikitables can be inserted within templates.
+            wiki-tables can be inserted within templates.
         """
         match_table = self._match_table
         # Note string is only used for extracting data, matching is done over
@@ -157,7 +158,8 @@ class Table(SubWikiTextWithAttrs):
                     row_attrs_append = row_attrs.append
                     for m in match_row:
                         s, e = m.span('attrs')
-                        captures = ATTRS_MATCH(string.encode(), s, e).captures
+                        captures = ATTRS_MATCH(
+                            string.encode('ascii', 'replace'), s, e).captures
                         row_attrs_append(dict(zip(
                             captures('attr_name'), captures('attr_value')
                         )))
