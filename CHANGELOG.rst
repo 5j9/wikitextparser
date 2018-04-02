@@ -1,3 +1,7 @@
+v0.21.4
+-------
+- Fixed a bug in Table.data (issue #9)
+
 v0.21.3
 -------
 - Fixed: A bug in processing ``Section`` objects.
