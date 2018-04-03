@@ -306,14 +306,14 @@ class Spans(TestCase):
             b'{{int:message name}}',
             # Miscellaneous
             b'{{#language:language code}}',
+            b'{{msg:xyz}}',
+            b'{{msgnw:xyz}}',
+            b'{{raw:xyz}}',
+            b'{{safesubst:xyz}}',
+            b'{{subst:xyz}}',
         )
         for pf in parser_functions:
             self.assertEqual(next(finditer(pf))[0], pf)
-        # Transclusion modifiers
-        # May change in the future.
-        self.assertFalse(list(finditer(b'{{msg:xyz}}')))
-        self.assertFalse(list(finditer(b'{{raw:xyz}}')))
-        self.assertFalse(list(finditer(b'{{raw:xyz}}')))
 
     def test_wikilinks_inside_exttags(self):
         self.assertEqual(

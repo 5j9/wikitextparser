@@ -46,16 +46,17 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb'\{\{\s*+'
     # generated pattern: _config.regex_pattern(_config._parser_functions)
     # with \#[^{}\s:]++ added manually.
-    rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?:first)?+)|p(?>lural|ad(?>right|left))|'
-    rb'nse?+|l(?>ocalurl|c(?:first)?+)|int|g(?>rammar|ender)|f(?>ullurl|ormatn'
-    rb'um|ilepath)|canonicalurl|anchorencode|TALK(?>SPACEE?+|PAGENAMEE?+)|SUB('
-    rb'?>PAGENAMEE?+|JECT(?>SPACEE?+|PAGENAMEE?+))|R(?>OOTPAGENAMEE?+|EVISION('
-    rb'?>YEAR|USER|TIMESTAMP|MONTH1?+|ID|DAY2?+))|P(?>ROTECTION(?>LEVEL|EXPIRY'
-    rb')|AGE(?>SI(?>ZE|N(?>N(?>S|AMESPACE)|CAT(?:EGORY)?+))|NAMEE?+|ID))|N(?>U'
-    rb'M(?>INGROUP|BER(?>OF(?>VIEWS|USERS|PAGES|FILES|EDITS|A(?>RTICLES|DMINS|'
-    rb'CTIVEUSERS))|INGROUP))|AMESPACE(?>NUMBER|E)?+)|FULLPAGENAMEE?+|D(?>ISPL'
-    rb'AYTITLE|EFAULT(?>SORT(?:KEY)?+|CATEGORYSORT))|CASCADINGSOURCES|BASEPAGE'
-    rb'NAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE?+))'
+    rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?:first)?+)|s(?>ubst|afesubst)|raw|p(?>l'
+    rb'ural|ad(?>right|left))|nse?+|msg(?:nw)?+|l(?>ocalurl|c(?:first)?+)|int|'
+    rb'g(?>rammar|ender)|f(?>ullurl|ormatnum|ilepath)|canonicalurl|anchorencod'
+    rb'e|TALK(?>SPACEE?+|PAGENAMEE?+)|SUB(?>PAGENAMEE?+|JECT(?>SPACEE?+|PAGENA'
+    rb'MEE?+))|R(?>OOTPAGENAMEE?+|EVISION(?>YEAR|USER|TIMESTAMP|MONTH1?+|ID|DA'
+    rb'Y2?+))|P(?>ROTECTION(?>LEVEL|EXPIRY)|AGE(?>SI(?>ZE|N(?>N(?>S|AMESPACE)|'
+    rb'CAT(?:EGORY)?+))|NAMEE?+|ID))|N(?>UM(?>INGROUP|BER(?>OF(?>VIEWS|USERS|P'
+    rb'AGES|FILES|EDITS|A(?>RTICLES|DMINS|CTIVEUSERS))|INGROUP))|AMESPACE(?>NU'
+    rb'MBER|E)?+)|FULLPAGENAMEE?+|D(?>ISPLAYTITLE|EFAULT(?>SORT(?:KEY)?+|CATEG'
+    rb'ORYSORT))|CASCADINGSOURCES|BASEPAGENAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE'
+    rb'?+))'
     # end of generated part
     rb':[^{}]*+\}\}',
 ).finditer
