@@ -115,10 +115,10 @@ _tag_extensions = _parsable_tag_extensions | _unparsable_tag_extensions
 # https://phabricator.wikimedia.org/source/mediawiki/browse/master/includes/DefaultSettings.php
 # See also: https://www.mediawiki.org/wiki/Help:Links#External_links
 _bare_external_link_schemes = {
-  'bitcoin:', 'ftp://', 'ftps://', 'geo:', 'git://', 'gopher://', 'http://',
-  'https://', 'irc://', 'ircs://', 'magnet:', 'mailto:', 'mms://', 'news:',
-  'nntp://', 'redis://', 'sftp://', 'sip:', 'sips:', 'sms:', 'ssh://',
-  'svn://', 'tel:', 'telnet://', 'urn:', 'worldwind://', 'xmpp:',  # '//'
+    'bitcoin:', 'ftp://', 'ftps://', 'geo:', 'git://', 'gopher://', 'http://',
+    'https://', 'irc://', 'ircs://', 'magnet:', 'mailto:', 'mms://', 'news:',
+    'nntp://', 'redis://', 'sftp://', 'sip:', 'sips:', 'sms:', 'ssh://',
+    'svn://', 'tel:', 'telnet://', 'urn:', 'worldwind://', 'xmpp:',  # '//'
 }
 
 _parser_functions = {

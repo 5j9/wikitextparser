@@ -1,4 +1,4 @@
-""""Define the Template class."""
+"""Define the Template class."""
 
 
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple

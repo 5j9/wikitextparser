@@ -32,7 +32,7 @@ class ExternalLink(SubWikiText):
 
     @property
     def text(self) -> Optional[str]:
-        """Return the text part. (the part after the first space)
+        """Return the text part (the part after the first space).
 
         Return None if this is a bare link or has no associated text.
         """

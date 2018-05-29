@@ -7,8 +7,8 @@ from ._wikitext import SubWikiText
 
 
 class WikiLink(SubWikiText):
-
     """Define a class to represent WikiLinks."""
+
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""

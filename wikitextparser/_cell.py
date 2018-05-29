@@ -178,7 +178,7 @@ class Cell(SubWikiTextWithAttrs):
         if cache_string == string:
             return cache_match
         shadow = self._shadow
-        if shadow[0] == 10: # ord('\n')
+        if shadow[0] == 10:  # ord('\n')
             m = NEWLINE_CELL_MATCH(shadow)
             self._header = m['sep'] == 33  # ord('!')
         elif self._header:

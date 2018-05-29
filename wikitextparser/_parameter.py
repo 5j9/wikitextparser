@@ -27,9 +27,8 @@ class Parameter(SubWikiText):
     def pipe(self) -> str:
         """Return `|` if there is a pipe (default value) in the Parameter.
 
-         Return '' otherwise.
-
-         """
+        Return '' otherwise.
+        """
         return self._atomic_partition(124)[1]
 
     @property

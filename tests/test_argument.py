@@ -1,4 +1,4 @@
-﻿"""Test the Argument class."""
+"""Test the Argument class."""
 
 
 import unittest

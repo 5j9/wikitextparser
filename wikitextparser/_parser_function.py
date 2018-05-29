@@ -1,4 +1,4 @@
-""""Define the ParserFunction class."""
+"""Define the ParserFunction class."""
 
 
 from bisect import insort
