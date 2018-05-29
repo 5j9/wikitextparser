@@ -1,3 +1,8 @@
+v0.21.5
+-------
+- Fixed Invalid escape sequences for Python 3.6.
+- Added ``msg``, ``msgnw``, ``raw``, ``safesubst``, and ``subst`` to known parser function identifiers.
+
 v0.21.4
 -------
 - Fixed a bug in Table.data (issue #9)
