@@ -14,7 +14,7 @@ class WikiListTest(unittest.TestCase):
             '* with a star\n'
             '** more stars mean\n'
             '*** deeper levels',
-            pattern='\*'
+            pattern=r'\*'
         )
         items = ul.items
         self.assertEqual(items, [' Lists are easy to do:', ' with a star'])
@@ -36,14 +36,14 @@ class WikiListTest(unittest.TestCase):
             '##1-3\n'
             ' -->\n'
             '#2\n',
-            pattern='\#'
+            pattern=r'\#'
         )
         self.assertEqual(wl.items[1], '2')
 
     def test_dont_return_shadow(self):
         wl = wtp.WikiList(
             '#1 {{t}}',
-            pattern='\#'
+            pattern=r'\#'
         )
         self.assertEqual(wl.items[0], '1 {{t}}')
 
@@ -54,11 +54,11 @@ class WikiListTest(unittest.TestCase):
             '## 0.1\n'
             '#* 0.0\n'
             '# 2\n',
-            pattern='\#'
+            pattern=r'\#'
         )
         items = wl.items[0]
         self.assertEqual(items, ' 0')
-        subitems0 = wl.sublists(0, '\#')[0]
+        subitems0 = wl.sublists(0, r'\#')[0]
         self.assertEqual(subitems0.items, [' 0.0', ' 0.1'])
         # Test to see that arguments are optional.
         sublists = wl.sublists()
@@ -74,11 +74,11 @@ class WikiListTest(unittest.TestCase):
             '* list item c\n'
             'text'
         )
-        wikilist = parsed.lists(pattern='\*')[0]
+        wikilist = parsed.lists(pattern=r'\*')[0]
         self.assertEqual(
             wikilist.items, [' list item a', ' list item b', ' list item c']
         )
-        sublist = wikilist.sublists(1, '\*')[0]
+        sublist = wikilist.sublists(1, r'\*')[0]
         self.assertEqual(
             sublist.items, [' sub-list of b']
         )
@@ -92,7 +92,7 @@ class WikiListTest(unittest.TestCase):
             ':; sub-item 2 : colon plus definition\n'
             '; item 2 \n'
             ': back to the main list\n',
-            pattern='[:;]\s*'
+            pattern=r'[:;]\s*'
         )
         self.assertEqual(
             wl.items,
@@ -115,12 +115,12 @@ class WikiListTest(unittest.TestCase):
             '*#*; apple\n'
             '*#*; banana\n'
             '*#*: fruits',
-            pattern='\*'
+            pattern=r'\*'
         )
         self.assertEqual(wl.items, [' Or create mixed lists'])
-        swl = wl.sublists(0, '\#')[0]
+        swl = wl.sublists(0, r'\#')[0]
         self.assertEqual(swl.items, [' and nest them'])
-        sswl = swl.sublists(0, '\*')[0]
+        sswl = swl.sublists(0, r'\*')[0]
         self.assertEqual(sswl.items, [' like this'])
         ssswl = sswl.sublists(0, '[;:]')[0]
         self.assertEqual(ssswl.items, [
@@ -138,7 +138,7 @@ class WikiListTest(unittest.TestCase):
             ':*#B2\n'
             ':*:continuing A1\n'
             ':*A2',
-            pattern=':\*'
+            pattern=r':\*'
         )
         self.assertEqual(wl.level, 2)
         wl.convert('#')
@@ -150,11 +150,11 @@ class WikiListTest(unittest.TestCase):
             '#:continuing A1\n'
             '#A2'
         )
-        self.assertEqual(wl.pattern, '\#')
+        self.assertEqual(wl.pattern, r'\#')
         self.assertEqual(wl.level, 1)
 
     def test_cache_update(self):
-        wl = wtp.WikiList('*a {{t}}', pattern='\*')
+        wl = wtp.WikiList('*a {{t}}', pattern=r'\*')
         wl.templates[0].name = 'ttt'
         self.assertEqual(wl.string, '*a {{ttt}}')
 

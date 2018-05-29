@@ -113,7 +113,7 @@ class WikiList(SubWikiText):
             Although this parameter is optional, but specifying it can improve
             the performance.
         """
-        patterns = ('\#', '\*', '[:;]') if pattern is None \
+        patterns = (r'\#', r'\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         self_pattern = self.pattern
         lists = self.lists

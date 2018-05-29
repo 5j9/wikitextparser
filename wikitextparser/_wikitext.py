@@ -926,7 +926,7 @@ class WikiText:
         return tables
 
     def lists(self, pattern: str=None) -> List['WikiList']:
-        """Return a list of WikiList objects.
+        r"""Return a list of WikiList objects.
 
         :param pattern: The starting pattern for list items.
             Return all types of lists (ol, ul, and dl) if pattern is None.
@@ -957,7 +957,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        patterns = ('\#', '\*', '[:;]') if pattern is None \
+        patterns = (r'\#', r'\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         for pattern in patterns:
             list_regex = regex_compile(
@@ -1060,17 +1060,16 @@ class WikiText:
 
     @staticmethod
     def parent(type_: Optional[str]=None) -> None:
-        """Return None. (The parent of the root node is None)"""
+        """Return None (The parent of the root node is None)."""
         return None
 
     @staticmethod
     def ancestors(type_: Optional[str]=None) -> list:
-        """Return []. (The root node has no ancestors)"""
+        """Return [] (the root node has no ancestors)."""
         return []
 
 
 class SubWikiText(WikiText):
-
     """Define a class to be inherited by some subclasses of WikiText.
 
     Allow to focus on a particular part of WikiText.
