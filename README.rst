@@ -103,6 +103,7 @@ WikiLinks
 ---------
 
 .. code:: python
+
     >>> parsed = wtp.parse('text [[A|B]] text')
     >>> wl = parsed.wikilinks[0]
     >>> wl
