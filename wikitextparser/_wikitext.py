@@ -40,7 +40,7 @@ EXTERNALLINK_FINDITER = regex_compile(
     IGNORECASE,
 ).finditer
 INVALID_EXT_CHARS_SUB = regex_compile(
-    rb'[' + INVALID_EXTLINK_CHARS + rb']'
+    rb'[' + INVALID_EXTLINK_CHARS + rb'{}]'
 ).sub
 
 # Sections
@@ -473,7 +473,8 @@ class WikiText:
         subspans = self._subspans
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e in subspans(type_):
-                byte_array[s:e] = INVALID_EXT_CHARS_SUB(b'_', byte_array[s:e])
+                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
+                    b' ', byte_array[s + 2:e - 2]) + b'  '
         for s, e in subspans('Comment'):
             byte_array[s:e] = (e - s) * b'_'
         return byte_array

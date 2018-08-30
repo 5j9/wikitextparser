@@ -298,15 +298,24 @@ class ExternalLinks(TestCase):
 
     """Test the WikiText.external_links."""
 
+    def test_in_template(self):
+        # with brackets
+        els = parse('{{text|http://example.com?foo=bar}}').external_links
+        self.assertEqual(len(els), 1)
+        self.assertEqual(els[0].url, 'http://example.com?foo=bar')
+        # without brackets
+        els = parse('{{text|[http://example.com?foo=bar]}}').external_links
+        self.assertEqual(len(els), 1)
+        self.assertEqual(els[0].url, 'http://example.com?foo=bar')
+
     def test_starting_boundary(self):
         self.assertFalse(parse('turn:a').external_links)
 
     def test_external_links_inside_template(self):
         t = Template('{{t0|urn:0{{t1|urn:1}}}}')
-        u = t.external_links[0]
         # Warning: both urn's are treated ast one.
-        # In a live site this will depends on templates.
-        self.assertEqual('urn:0{{t1|urn:1}}}}', u.string)
+        # But on a live site this depends on the template outcome.
+        self.assertEqual(t.external_links[0].string, 'urn:0')
 
     def test_bare_link(self):
         s = 'text1 HTTP://mediawiki.org text2'
@@ -365,21 +374,22 @@ class ExternalLinks(TestCase):
         self.assertEqual(0, len(p.wikilinks))
 
     def test_template_in_link(self):
+        # Note: In reality all assertions depend on the template outcome.
         self.assertEqual(  # expected
             parse('http://example.com{{dead link}}').external_links[0].url,
-            'http://example.com{{dead link}}',
+            'http://example.com',
         )
         self.assertEqual(  # unexpected
             parse('http://example.com/foo{{!}}bar').external_links[0].url,
-            'http://example.com/foo{{!}}bar',
+            'http://example.com/foo',
         )
         self.assertEqual(  # depends on {{foo}} contents
             parse('[http://example.com{{foo}}text]').external_links[0].url,
-            'http://example.com{{foo}}text',
+            'http://example.com',
         )
         self.assertEqual(  # depends on {{foo bar}} contents
             parse('[http://example.com{{foo bar}} t]').external_links[0].url,
-            'http://example.com{{foo bar}}',
+            'http://example.com',
         )
 
     def test_comment_in_external_link(self):
@@ -431,12 +441,8 @@ class ExternalLinks(TestCase):
             ).external_links[0].parser_functions[0].string,
             '{{<!--c-->#if:a|a}}',
         )
-        self.assertEqual(
-            parse(
-                '[urn:{{#if:a| a }} t]'
-            ).external_links[0].url,
-            'urn:{{#if:a| a }}',
-        )
+        # Note: Depends on the parser function outcome.
+        self.assertEqual(len(parse('[urn:{{#if:a|a|}} t]').external_links), 0)
 
     def test_equal_span_ids(self):
         p = parse('lead\n== 1 ==\nhttp://wikipedia.org/')

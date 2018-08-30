@@ -1,3 +1,7 @@
+v0.22.0
+-------
+- Change the behaviour of external_links property to never return Templates or parser functions as part of the external link.
+
 v0.21.5
 -------
 - Fixed Invalid escape sequences for Python 3.6.
