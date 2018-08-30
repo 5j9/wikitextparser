@@ -4,11 +4,10 @@ from typing import Optional
 
 from regex import compile as regex_compile
 
-from ._spans import VALID_EXTLINK_CHARS
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, BRACKET_EXTERNAL_LINK_URL
 
 
-URL_MATCH = regex_compile(VALID_EXTLINK_CHARS).match
+URL_MATCH = regex_compile(BRACKET_EXTERNAL_LINK_URL).match
 
 
 class ExternalLink(SubWikiText):

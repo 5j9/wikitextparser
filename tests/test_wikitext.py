@@ -298,6 +298,22 @@ class ExternalLinks(TestCase):
 
     """Test the WikiText.external_links."""
 
+    def test_ipv6_brackets(self):
+        # See:
+        # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
+        self.assertEqual(
+            parse('https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
+            .external_links[0].url,
+            'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
+        el = parse(
+            '[https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/ t]'
+        ).external_links[0]
+        self.assertEqual(
+            el.url, 'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
+        self.assertEqual(el.text, 't')
+        s = '[//[fe80::1ff:fe23:4567:890a]:443/ t]'
+        self.assertEqual(parse(s).external_links[0].string, s)
+
     def test_in_template(self):
         # with brackets
         els = parse('{{text|http://example.com?foo=bar}}').external_links

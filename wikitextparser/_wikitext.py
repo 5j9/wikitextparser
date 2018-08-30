@@ -21,24 +21,25 @@ from ._config import _tag_extensions
 from ._spans import (
     parse_to_spans,
     INVALID_EXTLINK_CHARS,
-    VALID_EXTLINK_CHARS,
-    BARE_EXTLINK_SCHEMES_PATTERN,
+    BARE_EXTERNAL_LINK,
+    EXTERNAL_LINK_URL_TAIL,
 )
 
 
-# External links (comment inclusive)
-BRACKET_EXTERNALLINK_PATTERN = (
-    rb'\[(?>//|' + BARE_EXTLINK_SCHEMES_PATTERN + rb')'
-    + VALID_EXTLINK_CHARS + rb'\ *+[^\]\n]*+\]'
-)
-BARE_EXTERNALLINK_PATTERN = (
-    rb'(?>' + BARE_EXTLINK_SCHEMES_PATTERN + rb')' + VALID_EXTLINK_CHARS
-)
-EXTERNALLINK_FINDITER = regex_compile(
-    rb'(?:' + BARE_EXTERNALLINK_PATTERN
-    + rb'|' + BRACKET_EXTERNALLINK_PATTERN + rb')',
-    IGNORECASE,
-).finditer
+# External links
+# _config.regex_pattern(_config._bare_external_link_schemes | {'//'})
+BRACKET_EXTERNAL_LINK_SCHEMES = (
+    rb'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s:|'
+    rb':)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc(?>'
+    rb's://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitc'
+    rb'oin:|//)')
+BRACKET_EXTERNAL_LINK_URL = (
+    BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
+BRACKET_EXTERNAL_LINK = (
+    rb'\[' + BRACKET_EXTERNAL_LINK_URL + rb'[^\]\n]*+\]')
+EXTERNAL_LINK = \
+    rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
+EXTERNAL_LINK_FINDITER = regex_compile(EXTERNAL_LINK, IGNORECASE).finditer
 INVALID_EXT_CHARS_SUB = regex_compile(
     rb'[' + INVALID_EXTLINK_CHARS + rb'{}]'
 ).sub
@@ -772,7 +773,7 @@ class WikiText:
         if not spans:
             # All the added spans will be new.
             spans_append = spans.append
-            for m in EXTERNALLINK_FINDITER(self._ext_link_shadow):
+            for m in EXTERNAL_LINK_FINDITER(self._ext_link_shadow):
                 s, e = m.span()
                 span = [ss + s, ss + e]
                 spans_append(span)
@@ -783,7 +784,7 @@ class WikiText:
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        for m in EXTERNALLINK_FINDITER(self._ext_link_shadow):
+        for m in EXTERNAL_LINK_FINDITER(self._ext_link_shadow):
             s, e = m.span()
             span = s, e = [s + ss, e + ss]
             old_span = span_tuple_to_span_get((s, e))

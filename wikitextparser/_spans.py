@@ -63,24 +63,29 @@ PARSER_FUNCTION_FINDITER = regex_compile(
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
 VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
-
+# See more info on literal IPv6 see:
+# https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
+# The following pattern is part of EXT_LINK_ADDR constant in
+# https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
+LITERAL_IPV6_AND_TAIL = \
+    rb'\[[0-9a-fA-F:.]++\][^' + INVALID_EXTLINK_CHARS + rb']*+'
 # generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
 # A \b is added to the beginning.
-BARE_EXTLINK_SCHEMES_PATTERN = (
+BARE_EXTERNAL_LINK_SCHEMES = (
     rb'\b(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s'
     rb':|:)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc('
     rb'?>s://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bi'
-    rb'tcoin:)'
-)
-BARE_EXTERNALLINK_PATTERN = (
-    rb'(?>' + BARE_EXTLINK_SCHEMES_PATTERN + rb')' + VALID_EXTLINK_CHARS
-)
+    rb'tcoin:)')
+EXTERNAL_LINK_URL_TAIL = (
+    rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
+BARE_EXTERNAL_LINK = (
+    BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
     \[\[
-    (?!\ *+''' + BARE_EXTERNALLINK_PATTERN + rb')'
+    (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
     + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
     (?:
         \]\]
