@@ -1,0 +1,1012 @@
+<!-- Query time: 0.467777-->
+<!-- SQL = select /* SLOW OK */ user_name, count(rev_id) cnt from revision join user on rev_user = user_id left join user_groups on rev_user = ug_user and ug_group = 'bot' where ug_group is null group by rev_user order by cnt desc limit 500 -->
+[[رده:فهرست‌های ویکی‌پدیانویسان بر پایه وضعیت ویکی‌پدیایی]]
+[[رده:گزارش‌های دیتابیس ویکی‌پدیا]]
+این فهرست ۵۰۰ کاربر دارای بیشترین ویرایش در ویکی‌پدیای فارسی را نشان می‌دهد (شامل ربات‌ها نمی‌شود).
+
+آخرین به روز رسانی: ‏۱۰ فوریهٔ ۲۰۱۷، ساعت ۱۲:۰۴ (UTC)
+{| class="wikitable sortable"
+!ردیف
+!کاربر
+!تعداد ویرایش
+|-
+| {{formatnum:1|NOSEP}} || [[کاربر:پیام به کاربر جدید]] || {{formatnum:158636}}
+|-
+| {{formatnum:2|NOSEP}} || [[کاربر:World Cup 2010]] || {{formatnum:147682}}
+|-
+| {{formatnum:3|NOSEP}} || [[کاربر:ماني]] || {{formatnum:140929}}
+|-
+| {{formatnum:4|NOSEP}} || [[کاربر:Darafsh]] || {{formatnum:138714}}
+|-
+| {{formatnum:5|NOSEP}} || [[کاربر:Modern Sciences]] || {{formatnum:109439}}
+|-
+| {{formatnum:6|NOSEP}} || [[کاربر:Kasir]] || {{formatnum:105714}}
+|-
+| {{formatnum:7|NOSEP}} || [[کاربر:Dalba]] || {{formatnum:97696}}
+|-
+| {{formatnum:8|NOSEP}} || [[کاربر:Yamaha5]] || {{formatnum:91302}}
+|-
+| {{formatnum:9|NOSEP}} || [[کاربر:Alborzagros]] || {{formatnum:73956}}
+|-
+| {{formatnum:10|NOSEP}} || [[کاربر:Wikimostafa]] || {{formatnum:60183}}
+|-
+| {{formatnum:11|NOSEP}} || [[کاربر:آرش]] || {{formatnum:56402}}
+|-
+| {{formatnum:12|NOSEP}} || [[کاربر:سندباد]] || {{formatnum:54755}}
+|-
+| {{formatnum:13|NOSEP}} || [[کاربر:Taranet]] || {{formatnum:54571}}
+|-
+| {{formatnum:14|NOSEP}} || [[کاربر:Ladsgroup]] || {{formatnum:53396}}
+|-
+| {{formatnum:15|NOSEP}} || [[کاربر:همان]] || {{formatnum:50827}}
+|-
+| {{formatnum:16|NOSEP}} || [[کاربر:Reza1615]] || {{formatnum:48880}}
+|-
+| {{formatnum:17|NOSEP}} || [[کاربر:Ali.eblis1]] || {{formatnum:47182}}
+|-
+| {{formatnum:18|NOSEP}} || [[کاربر:Sicaspi]] || {{formatnum:46903}}
+|-
+| {{formatnum:19|NOSEP}} || [[کاربر:زرشک]] || {{formatnum:45593}}
+|-
+| {{formatnum:20|NOSEP}} || [[کاربر:FawikiPatroller]] || {{formatnum:45038}}
+|-
+| {{formatnum:21|NOSEP}} || [[کاربر:Raamin]] || {{formatnum:45023}}
+|-
+| {{formatnum:22|NOSEP}} || [[کاربر:Gire 3pich2005]] || {{formatnum:44680}}
+|-
+| {{formatnum:23|NOSEP}} || [[کاربر:Sunfyre]] || {{formatnum:44360}}
+|-
+| {{formatnum:24|NOSEP}} || [[کاربر:Huji]] || {{formatnum:41453}}
+|-
+| {{formatnum:25|NOSEP}} || [[کاربر:Roozitaa]] || {{formatnum:40343}}
+|-
+| {{formatnum:26|NOSEP}} || [[کاربر:Mardetanha]] || {{formatnum:39908}}
+|-
+| {{formatnum:27|NOSEP}} || [[کاربر:Ebrahim]] || {{formatnum:39515}}
+|-
+| {{formatnum:28|NOSEP}} || [[کاربر:Behaafarid]] || {{formatnum:38757}}
+|-
+| {{formatnum:29|NOSEP}} || [[کاربر:Alishahss75ali]] || {{formatnum:37598}}
+|-
+| {{formatnum:30|NOSEP}} || [[کاربر:Sanchooli]] || {{formatnum:36216}}
+|-
+| {{formatnum:31|NOSEP}} || [[کاربر:محمديان]] || {{formatnum:35084}}
+|-
+| {{formatnum:32|NOSEP}} || [[کاربر:Meisam]] || {{formatnum:34685}}
+|-
+| {{formatnum:33|NOSEP}} || [[کاربر:MelancholieBot]] || {{formatnum:34415}}
+|-
+| {{formatnum:34|NOSEP}} || [[کاربر:Sonia Sevilla]] || {{formatnum:33200}}
+|-
+| {{formatnum:35|NOSEP}} || [[کاربر:Saeidpourbabak]] || {{formatnum:32649}}
+|-
+| {{formatnum:36|NOSEP}} || [[کاربر:ZxxZxxZ]] || {{formatnum:31807}}
+|-
+| {{formatnum:37|NOSEP}} || [[کاربر:Sharaky]] || {{formatnum:31717}}
+|-
+| {{formatnum:38|NOSEP}} || [[کاربر:Amirreza]] || {{formatnum:31382}}
+|-
+| {{formatnum:39|NOSEP}} || [[کاربر:Hamedvahid]] || {{formatnum:31271}}
+|-
+| {{formatnum:40|NOSEP}} || [[کاربر:4nn1l2]] || {{formatnum:30803}}
+|-
+| {{formatnum:41|NOSEP}} || [[کاربر:Fatemi]] || {{formatnum:30194}}
+|-
+| {{formatnum:42|NOSEP}} || [[کاربر:نوژن]] || {{formatnum:29476}}
+|-
+| {{formatnum:43|NOSEP}} || [[کاربر:Abtinb]] || {{formatnum:29132}}
+|-
+| {{formatnum:44|NOSEP}} || [[کاربر:Elmju]] || {{formatnum:29085}}
+|-
+| {{formatnum:45|NOSEP}} || [[کاربر:Tisfoon]] || {{formatnum:28330}}
+|-
+| {{formatnum:46|NOSEP}} || [[کاربر:Cobain]] || {{formatnum:28025}}
+|-
+| {{formatnum:47|NOSEP}} || [[کاربر:Senemmar]] || {{formatnum:27661}}
+|-
+| {{formatnum:48|NOSEP}} || [[کاربر:Arash.pt]] || {{formatnum:27366}}
+|-
+| {{formatnum:49|NOSEP}} || [[کاربر:Iroony]] || {{formatnum:27181}}
+|-
+| {{formatnum:50|NOSEP}} || [[کاربر:Pirhayati]] || {{formatnum:25914}}
+|-
+| {{formatnum:51|NOSEP}} || [[کاربر:Taddah]] || {{formatnum:24746}}
+|-
+| {{formatnum:52|NOSEP}} || [[کاربر:Milad]] || {{formatnum:24675}}
+|-
+| {{formatnum:53|NOSEP}} || [[کاربر:Ariobarzan]] || {{formatnum:24532}}
+|-
+| {{formatnum:54|NOSEP}} || [[کاربر:Amirali-E]] || {{formatnum:24382}}
+|-
+| {{formatnum:55|NOSEP}} || [[کاربر:KOLI]] || {{formatnum:23810}}
+|-
+| {{formatnum:56|NOSEP}} || [[کاربر:Hamid Hassani]] || {{formatnum:23449}}
+|-
+| {{formatnum:57|NOSEP}} || [[کاربر:ارژنگ]] || {{formatnum:23282}}
+|-
+| {{formatnum:58|NOSEP}} || [[کاربر:Mahdy Saffar]] || {{formatnum:23114}}
+|-
+| {{formatnum:59|NOSEP}} || [[کاربر:مهرنگار]] || {{formatnum:23068}}
+|-
+| {{formatnum:60|NOSEP}} || [[کاربر:Paiamshadi]] || {{formatnum:22976}}
+|-
+| {{formatnum:61|NOSEP}} || [[کاربر:Mazandar]] || {{formatnum:22661}}
+|-
+| {{formatnum:62|NOSEP}} || [[کاربر:Farzan44]] || {{formatnum:22130}}
+|-
+| {{formatnum:63|NOSEP}} || [[کاربر:مانفی]] || {{formatnum:20316}}
+|-
+| {{formatnum:64|NOSEP}} || [[کاربر:Freshman404]] || {{formatnum:19364}}
+|-
+| {{formatnum:65|NOSEP}} || [[کاربر:R0stam]] || {{formatnum:19319}}
+|-
+| {{formatnum:66|NOSEP}} || [[کاربر:Ahura21]] || {{formatnum:19286}}
+|-
+| {{formatnum:67|NOSEP}} || [[کاربر:Gnosis]] || {{formatnum:19123}}
+|-
+| {{formatnum:68|NOSEP}} || [[کاربر:Samak]] || {{formatnum:19046}}
+|-
+| {{formatnum:69|NOSEP}} || [[کاربر:Farzaaaad2000]] || {{formatnum:18960}}
+|-
+| {{formatnum:70|NOSEP}} || [[کاربر:MRG90]] || {{formatnum:18934}}
+|-
+| {{formatnum:71|NOSEP}} || [[کاربر:Sahehco]] || {{formatnum:18688}}
+|-
+| {{formatnum:72|NOSEP}} || [[کاربر:Wayiran]] || {{formatnum:18524}}
+|-
+| {{formatnum:73|NOSEP}} || [[کاربر:Mehdi]] || {{formatnum:17630}}
+|-
+| {{formatnum:74|NOSEP}} || [[کاربر:Arfarshchi]] || {{formatnum:17563}}
+|-
+| {{formatnum:75|NOSEP}} || [[کاربر:KhabarNegar]] || {{formatnum:17331}}
+|-
+| {{formatnum:76|NOSEP}} || [[کاربر:Mehran]] || {{formatnum:17199}}
+|-
+| {{formatnum:77|NOSEP}} || [[کاربر:Aliparsa]] || {{formatnum:17190}}
+|-
+| {{formatnum:78|NOSEP}} || [[کاربر:قلی زادگان]] || {{formatnum:15996}}
+|-
+| {{formatnum:79|NOSEP}} || [[کاربر:Diako1971]] || {{formatnum:15724}}
+|-
+| {{formatnum:80|NOSEP}} || [[کاربر:Ayda]] || {{formatnum:15650}}
+|-
+| {{formatnum:81|NOSEP}} || [[کاربر:M samadi]] || {{formatnum:15457}}
+|-
+| {{formatnum:82|NOSEP}} || [[کاربر:Behzad.Modares]] || {{formatnum:15443}}
+|-
+| {{formatnum:83|NOSEP}} || [[کاربر:علیرضا]] || {{formatnum:15310}}
+|-
+| {{formatnum:84|NOSEP}} || [[کاربر:Grim reaper]] || {{formatnum:14977}}
+|-
+| {{formatnum:85|NOSEP}} || [[کاربر:Behnam mancini]] || {{formatnum:14876}}
+|-
+| {{formatnum:86|NOSEP}} || [[کاربر:Armanjafari]] || {{formatnum:14679}}
+|-
+| {{formatnum:87|NOSEP}} || [[کاربر:حسام]] || {{formatnum:14183}}
+|-
+| {{formatnum:88|NOSEP}} || [[کاربر:جواد]] || {{formatnum:14165}}
+|-
+| {{formatnum:89|NOSEP}} || [[کاربر:ایلیا 2010]] || {{formatnum:14164}}
+|-
+| {{formatnum:90|NOSEP}} || [[کاربر:AliReza]] || {{formatnum:13999}}
+|-
+| {{formatnum:91|NOSEP}} || [[کاربر:PHoBiA]] || {{formatnum:13923}}
+|-
+| {{formatnum:92|NOSEP}} || [[کاربر:تیرداد]] || {{formatnum:13895}}
+|-
+| {{formatnum:93|NOSEP}} || [[کاربر:Mazdakabedi]] || {{formatnum:13831}}
+|-
+| {{formatnum:94|NOSEP}} || [[کاربر:Babaksaeidpour]] || {{formatnum:13829}}
+|-
+| {{formatnum:95|NOSEP}} || [[کاربر:Mani-bakhtiar]] || {{formatnum:13825}}
+|-
+| {{formatnum:96|NOSEP}} || [[کاربر:OKBot]] || {{formatnum:13822}}
+|-
+| {{formatnum:97|NOSEP}} || [[کاربر:دوستدار ویکیپدیا]] || {{formatnum:13671}}
+|-
+| {{formatnum:98|NOSEP}} || [[کاربر:Adler.fa]] || {{formatnum:13565}}
+|-
+| {{formatnum:99|NOSEP}} || [[کاربر:Calak]] || {{formatnum:13407}}
+|-
+| {{formatnum:100|NOSEP}} || [[کاربر:Far-gh]] || {{formatnum:13194}}
+|-
+| {{formatnum:101|NOSEP}} || [[کاربر:Shervinafshar]] || {{formatnum:13068}}
+|-
+| {{formatnum:102|NOSEP}} || [[کاربر:H.b.sh]] || {{formatnum:13064}}
+|-
+| {{formatnum:103|NOSEP}} || [[کاربر:Elph]] || {{formatnum:13051}}
+|-
+| {{formatnum:104|NOSEP}} || [[کاربر:Behzad39]] || {{formatnum:12969}}
+|-
+| {{formatnum:105|NOSEP}} || [[کاربر:ظهیری]] || {{formatnum:12910}}
+|-
+| {{formatnum:106|NOSEP}} || [[کاربر:Pouyana]] || {{formatnum:12864}}
+|-
+| {{formatnum:107|NOSEP}} || [[کاربر:Sa.vakilian]] || {{formatnum:12817}}
+|-
+| {{formatnum:108|NOSEP}} || [[کاربر:Rmashhadi]] || {{formatnum:12798}}
+|-
+| {{formatnum:109|NOSEP}} || [[کاربر:AFlorence]] || {{formatnum:12600}}
+|-
+| {{formatnum:110|NOSEP}} || [[کاربر:طاها]] || {{formatnum:12466}}
+|-
+| {{formatnum:111|NOSEP}} || [[کاربر:Omid]] || {{formatnum:12408}}
+|-
+| {{formatnum:112|NOSEP}} || [[کاربر:ایستاده در شب]] || {{formatnum:12256}}
+|-
+| {{formatnum:113|NOSEP}} || [[کاربر:AmirAK]] || {{formatnum:12238}}
+|-
+| {{formatnum:114|NOSEP}} || [[کاربر:Amolbot]] || {{formatnum:12078}}
+|-
+| {{formatnum:115|NOSEP}} || [[کاربر:Hootandolati]] || {{formatnum:11930}}
+|-
+| {{formatnum:116|NOSEP}} || [[کاربر:Oyakmohsen]] || {{formatnum:11789}}
+|-
+| {{formatnum:117|NOSEP}} || [[کاربر:XerxesII]] || {{formatnum:11778}}
+|-
+| {{formatnum:118|NOSEP}} || [[کاربر:Navidff]] || {{formatnum:11539}}
+|-
+| {{formatnum:119|NOSEP}} || [[کاربر:Mahan]] || {{formatnum:11471}}
+|-
+| {{formatnum:120|NOSEP}} || [[کاربر:Nersy]] || {{formatnum:11307}}
+|-
+| {{formatnum:121|NOSEP}} || [[کاربر:Persiana]] || {{formatnum:11134}}
+|-
+| {{formatnum:122|NOSEP}} || [[کاربر:Atalay]] || {{formatnum:11092}}
+|-
+| {{formatnum:123|NOSEP}} || [[کاربر:Mostafazizi]] || {{formatnum:10942}}
+|-
+| {{formatnum:124|NOSEP}} || [[کاربر:سیمرغ]] || {{formatnum:10777}}
+|-
+| {{formatnum:125|NOSEP}} || [[کاربر:زاید الوصف]] || {{formatnum:10749}}
+|-
+| {{formatnum:126|NOSEP}} || [[کاربر:Behtis]] || {{formatnum:10746}}
+|-
+| {{formatnum:127|NOSEP}} || [[کاربر:Meysam]] || {{formatnum:10646}}
+|-
+| {{formatnum:128|NOSEP}} || [[کاربر:Raatin]] || {{formatnum:10628}}
+|-
+| {{formatnum:129|NOSEP}} || [[کاربر:Nightryder84]] || {{formatnum:10520}}
+|-
+| {{formatnum:130|NOSEP}} || [[کاربر:RAHA68]] || {{formatnum:10504}}
+|-
+| {{formatnum:131|NOSEP}} || [[کاربر:Kian]] || {{formatnum:10375}}
+|-
+| {{formatnum:132|NOSEP}} || [[کاربر:Asadi s]] || {{formatnum:10328}}
+|-
+| {{formatnum:133|NOSEP}} || [[کاربر:Ali ringo]] || {{formatnum:10274}}
+|-
+| {{formatnum:134|NOSEP}} || [[کاربر:Kamix]] || {{formatnum:10258}}
+|-
+| {{formatnum:135|NOSEP}} || [[کاربر:Reza Amper]] || {{formatnum:10257}}
+|-
+| {{formatnum:136|NOSEP}} || [[کاربر:MohammadtheEditor]] || {{formatnum:10218}}
+|-
+| {{formatnum:137|NOSEP}} || [[کاربر:M.Fanavar]] || {{formatnum:10200}}
+|-
+| {{formatnum:138|NOSEP}} || [[کاربر:Surena]] || {{formatnum:10128}}
+|-
+| {{formatnum:139|NOSEP}} || [[کاربر:Achaemenes]] || {{formatnum:9732}}
+|-
+| {{formatnum:140|NOSEP}} || [[کاربر:Juybari]] || {{formatnum:9621}}
+|-
+| {{formatnum:141|NOSEP}} || [[کاربر:محمد.رضا]] || {{formatnum:9610}}
+|-
+| {{formatnum:142|NOSEP}} || [[کاربر:Derakhshan]] || {{formatnum:9604}}
+|-
+| {{formatnum:143|NOSEP}} || [[کاربر:Arian]] || {{formatnum:9590}}
+|-
+| {{formatnum:144|NOSEP}} || [[کاربر:Hariva]] || {{formatnum:9554}}
+|-
+| {{formatnum:145|NOSEP}} || [[کاربر:Reza luke]] || {{formatnum:9401}}
+|-
+| {{formatnum:146|NOSEP}} || [[کاربر:عارون]] || {{formatnum:9358}}
+|-
+| {{formatnum:147|NOSEP}} || [[کاربر:Parastoo]] || {{formatnum:9264}}
+|-
+| {{formatnum:148|NOSEP}} || [[کاربر:Young Readers]] || {{formatnum:9242}}
+|-
+| {{formatnum:149|NOSEP}} || [[کاربر:HaDi]] || {{formatnum:9071}}
+|-
+| {{formatnum:150|NOSEP}} || [[کاربر:کامران اورفه]] || {{formatnum:8979}}
+|-
+| {{formatnum:151|NOSEP}} || [[کاربر:Nshervsampad]] || {{formatnum:8916}}
+|-
+| {{formatnum:152|NOSEP}} || [[کاربر:وهمن]] || {{formatnum:8882}}
+|-
+| {{formatnum:153|NOSEP}} || [[کاربر:In twilight]] || {{formatnum:8857}}
+|-
+| {{formatnum:154|NOSEP}} || [[کاربر:Farvartish]] || {{formatnum:8840}}
+|-
+| {{formatnum:155|NOSEP}} || [[کاربر:Mahdiz]] || {{formatnum:8806}}
+|-
+| {{formatnum:156|NOSEP}} || [[کاربر:مسعود]] || {{formatnum:8714}}
+|-
+| {{formatnum:157|NOSEP}} || [[کاربر:Deybirth]] || {{formatnum:8694}}
+|-
+| {{formatnum:158|NOSEP}} || [[کاربر:Faramarz]] || {{formatnum:8600}}
+|-
+| {{formatnum:159|NOSEP}} || [[کاربر:AlnoktaBOT]] || {{formatnum:8402}}
+|-
+| {{formatnum:160|NOSEP}} || [[کاربر:Anvar11]] || {{formatnum:8370}}
+|-
+| {{formatnum:161|NOSEP}} || [[کاربر:Shahroozporia]] || {{formatnum:8286}}
+|-
+| {{formatnum:162|NOSEP}} || [[کاربر:Aliazimifarsi]] || {{formatnum:8180}}
+|-
+| {{formatnum:163|NOSEP}} || [[کاربر:محک]] || {{formatnum:8172}}
+|-
+| {{formatnum:164|NOSEP}} || [[کاربر:هفشجانی]] || {{formatnum:8124}}
+|-
+| {{formatnum:165|NOSEP}} || [[کاربر:Behzaad]] || {{formatnum:8095}}
+|-
+| {{formatnum:166|NOSEP}} || [[کاربر:Ali20 wiki]] || {{formatnum:8008}}
+|-
+| {{formatnum:167|NOSEP}} || [[کاربر:Aparhizi]] || {{formatnum:7912}}
+|-
+| {{formatnum:168|NOSEP}} || [[کاربر:Gharouni]] || {{formatnum:7800}}
+|-
+| {{formatnum:169|NOSEP}} || [[کاربر:پوویا]] || {{formatnum:7720}}
+|-
+| {{formatnum:170|NOSEP}} || [[کاربر:دانقولا]] || {{formatnum:7667}}
+|-
+| {{formatnum:171|NOSEP}} || [[کاربر:P.arashnia]] || {{formatnum:7632}}
+|-
+| {{formatnum:172|NOSEP}} || [[کاربر:P0lyzoarium]] || {{formatnum:7607}}
+|-
+| {{formatnum:173|NOSEP}} || [[کاربر:Mahdi28]] || {{formatnum:7473}}
+|-
+| {{formatnum:174|NOSEP}} || [[کاربر:Mmehdi.g]] || {{formatnum:7410}}
+|-
+| {{formatnum:175|NOSEP}} || [[کاربر:In fact]] || {{formatnum:7357}}
+|-
+| {{formatnum:176|NOSEP}} || [[کاربر:MOSIOR]] || {{formatnum:7333}}
+|-
+| {{formatnum:177|NOSEP}} || [[کاربر:Ojanfar]] || {{formatnum:7200}}
+|-
+| {{formatnum:178|NOSEP}} || [[کاربر:نگونبانگونی]] || {{formatnum:7139}}
+|-
+| {{formatnum:179|NOSEP}} || [[کاربر:مرتضا]] || {{formatnum:7129}}
+|-
+| {{formatnum:180|NOSEP}} || [[کاربر:Meysamin]] || {{formatnum:7097}}
+|-
+| {{formatnum:181|NOSEP}} || [[کاربر:JhsBot]] || {{formatnum:7078}}
+|-
+| {{formatnum:182|NOSEP}} || [[کاربر:Hamedrocker]] || {{formatnum:7033}}
+|-
+| {{formatnum:183|NOSEP}} || [[کاربر:Pedram.salehpoor]] || {{formatnum:7029}}
+|-
+| {{formatnum:184|NOSEP}} || [[کاربر:MohandesWiki]] || {{formatnum:6844}}
+|-
+| {{formatnum:185|NOSEP}} || [[کاربر:Masoud bukani]] || {{formatnum:6648}}
+|-
+| {{formatnum:186|NOSEP}} || [[کاربر:سعی]] || {{formatnum:6606}}
+|-
+| {{formatnum:187|NOSEP}} || [[کاربر:علی رجبی]] || {{formatnum:6602}}
+|-
+| {{formatnum:188|NOSEP}} || [[کاربر:روزبه]] || {{formatnum:6567}}
+|-
+| {{formatnum:189|NOSEP}} || [[کاربر:Smorteza]] || {{formatnum:6481}}
+|-
+| {{formatnum:190|NOSEP}} || [[کاربر:Artacoana]] || {{formatnum:6416}}
+|-
+| {{formatnum:191|NOSEP}} || [[کاربر:Abiii13wp]] || {{formatnum:6416}}
+|-
+| {{formatnum:192|NOSEP}} || [[کاربر:یوشیچی تویوهارا]] || {{formatnum:6414}}
+|-
+| {{formatnum:193|NOSEP}} || [[کاربر:AnuJuno]] || {{formatnum:6395}}
+|-
+| {{formatnum:194|NOSEP}} || [[کاربر:مهدی مدیحی]] || {{formatnum:6369}}
+|-
+| {{formatnum:195|NOSEP}} || [[کاربر:Peredhil]] || {{formatnum:6340}}
+|-
+| {{formatnum:196|NOSEP}} || [[کاربر:Salarabdolmohamadian]] || {{formatnum:6302}}
+|-
+| {{formatnum:197|NOSEP}} || [[کاربر:Markman Darkman]] || {{formatnum:6163}}
+|-
+| {{formatnum:198|NOSEP}} || [[کاربر:Shfarshid]] || {{formatnum:6132}}
+|-
+| {{formatnum:199|NOSEP}} || [[کاربر:Mohsen.1987]] || {{formatnum:6125}}
+|-
+| {{formatnum:200|NOSEP}} || [[کاربر:Alborz Fallah]] || {{formatnum:6095}}
+|-
+| {{formatnum:201|NOSEP}} || [[کاربر:Tgeik]] || {{formatnum:6091}}
+|-
+| {{formatnum:202|NOSEP}} || [[کاربر:Optional]] || {{formatnum:6088}}
+|-
+| {{formatnum:203|NOSEP}} || [[کاربر:Espiral]] || {{formatnum:6061}}
+|-
+| {{formatnum:204|NOSEP}} || [[کاربر:Sepehrnoush]] || {{formatnum:6019}}
+|-
+| {{formatnum:205|NOSEP}} || [[کاربر:Meysamwiki]] || {{formatnum:5985}}
+|-
+| {{formatnum:206|NOSEP}} || [[کاربر:Montesquieu~fawiki]] || {{formatnum:5970}}
+|-
+| {{formatnum:207|NOSEP}} || [[کاربر:BlueDevil]] || {{formatnum:5885}}
+|-
+| {{formatnum:208|NOSEP}} || [[کاربر:Zhilbert]] || {{formatnum:5857}}
+|-
+| {{formatnum:209|NOSEP}} || [[کاربر:Doostdar]] || {{formatnum:5837}}
+|-
+| {{formatnum:210|NOSEP}} || [[کاربر:قاسم منصور]] || {{formatnum:5834}}
+|-
+| {{formatnum:211|NOSEP}} || [[کاربر:Alefbe]] || {{formatnum:5785}}
+|-
+| {{formatnum:212|NOSEP}} || [[کاربر:Sahand Ace]] || {{formatnum:5770}}
+|-
+| {{formatnum:213|NOSEP}} || [[کاربر:Godisnowhere]] || {{formatnum:5715}}
+|-
+| {{formatnum:214|NOSEP}} || [[کاربر:Sahim]] || {{formatnum:5705}}
+|-
+| {{formatnum:215|NOSEP}} || [[کاربر:Coffeetalkh]] || {{formatnum:5443}}
+|-
+| {{formatnum:216|NOSEP}} || [[کاربر:دن کیشوت]] || {{formatnum:5431}}
+|-
+| {{formatnum:217|NOSEP}} || [[کاربر:Movyn]] || {{formatnum:5404}}
+|-
+| {{formatnum:218|NOSEP}} || [[کاربر:Maadikhah]] || {{formatnum:5364}}
+|-
+| {{formatnum:219|NOSEP}} || [[کاربر:Sdfhkjdbhoppiozcxzcxvvdvbdfk]] || {{formatnum:5314}}
+|-
+| {{formatnum:220|NOSEP}} || [[کاربر:Mehdiabbasi]] || {{formatnum:5301}}
+|-
+| {{formatnum:221|NOSEP}} || [[کاربر:TruthPraiser]] || {{formatnum:5287}}
+|-
+| {{formatnum:222|NOSEP}} || [[کاربر:Kowsari]] || {{formatnum:5283}}
+|-
+| {{formatnum:223|NOSEP}} || [[کاربر:Exclude7]] || {{formatnum:5239}}
+|-
+| {{formatnum:224|NOSEP}} || [[کاربر:Soroush]] || {{formatnum:5224}}
+|-
+| {{formatnum:225|NOSEP}} || [[کاربر:افغان پالیسی]] || {{formatnum:5161}}
+|-
+| {{formatnum:226|NOSEP}} || [[کاربر:Saeedparva]] || {{formatnum:5122}}
+|-
+| {{formatnum:227|NOSEP}} || [[کاربر:Pastorals2007]] || {{formatnum:5096}}
+|-
+| {{formatnum:228|NOSEP}} || [[کاربر:Dreamfall]] || {{formatnum:5092}}
+|-
+| {{formatnum:229|NOSEP}} || [[کاربر:Carl]] || {{formatnum:5057}}
+|-
+| {{formatnum:230|NOSEP}} || [[کاربر:Maahmaah]] || {{formatnum:5017}}
+|-
+| {{formatnum:231|NOSEP}} || [[کاربر:Navid.k]] || {{formatnum:5006}}
+|-
+| {{formatnum:232|NOSEP}} || [[کاربر:یاس]] || {{formatnum:5000}}
+|-
+| {{formatnum:233|NOSEP}} || [[کاربر:QN]] || {{formatnum:4973}}
+|-
+| {{formatnum:234|NOSEP}} || [[کاربر:Darwin machine]] || {{formatnum:4966}}
+|-
+| {{formatnum:235|NOSEP}} || [[کاربر:کامران آزاد]] || {{formatnum:4905}}
+|-
+| {{formatnum:236|NOSEP}} || [[کاربر:Signal89]] || {{formatnum:4888}}
+|-
+| {{formatnum:237|NOSEP}} || [[کاربر:SalmanParsi]] || {{formatnum:4887}}
+|-
+| {{formatnum:238|NOSEP}} || [[کاربر:Leyth]] || {{formatnum:4877}}
+|-
+| {{formatnum:239|NOSEP}} || [[کاربر:Reborn User]] || {{formatnum:4856}}
+|-
+| {{formatnum:240|NOSEP}} || [[کاربر:Behabadi]] || {{formatnum:4850}}
+|-
+| {{formatnum:241|NOSEP}} || [[کاربر:Fajr18]] || {{formatnum:4827}}
+|-
+| {{formatnum:242|NOSEP}} || [[کاربر:Hafez]] || {{formatnum:4821}}
+|-
+| {{formatnum:243|NOSEP}} || [[کاربر:جیمبو دامبلی دیمبو]] || {{formatnum:4782}}
+|-
+| {{formatnum:244|NOSEP}} || [[کاربر:Yoosef Pooranvary]] || {{formatnum:4758}}
+|-
+| {{formatnum:245|NOSEP}} || [[کاربر:Sasan Geranmehr]] || {{formatnum:4742}}
+|-
+| {{formatnum:246|NOSEP}} || [[کاربر:Bidabadi]] || {{formatnum:4721}}
+|-
+| {{formatnum:247|NOSEP}} || [[کاربر:Kazemita1]] || {{formatnum:4700}}
+|-
+| {{formatnum:248|NOSEP}} || [[کاربر:Masood Matin]] || {{formatnum:4682}}
+|-
+| {{formatnum:249|NOSEP}} || [[کاربر:Hermion]] || {{formatnum:4635}}
+|-
+| {{formatnum:250|NOSEP}} || [[کاربر:ویکی خور]] || {{formatnum:4589}}
+|-
+| {{formatnum:251|NOSEP}} || [[کاربر:Nathaniel83]] || {{formatnum:4550}}
+|-
+| {{formatnum:252|NOSEP}} || [[کاربر:محمدعلی بختیاری]] || {{formatnum:4537}}
+|-
+| {{formatnum:253|NOSEP}} || [[کاربر:ترانه جوانبخت]] || {{formatnum:4519}}
+|-
+| {{formatnum:254|NOSEP}} || [[کاربر:ICEAGE]] || {{formatnum:4501}}
+|-
+| {{formatnum:255|NOSEP}} || [[کاربر:همنشین بهار]] || {{formatnum:4464}}
+|-
+| {{formatnum:256|NOSEP}} || [[کاربر:Paraw]] || {{formatnum:4456}}
+|-
+| {{formatnum:257|NOSEP}} || [[کاربر:Hoseyn 1]] || {{formatnum:4449}}
+|-
+| {{formatnum:258|NOSEP}} || [[کاربر:پاناروما]] || {{formatnum:4414}}
+|-
+| {{formatnum:259|NOSEP}} || [[کاربر:Aleem]] || {{formatnum:4382}}
+|-
+| {{formatnum:260|NOSEP}} || [[کاربر:Aghajanpour]] || {{formatnum:4370}}
+|-
+| {{formatnum:261|NOSEP}} || [[کاربر:Amiraram]] || {{formatnum:4368}}
+|-
+| {{formatnum:262|NOSEP}} || [[کاربر:Blue.Earth]] || {{formatnum:4345}}
+|-
+| {{formatnum:263|NOSEP}} || [[کاربر:Komeil 4life]] || {{formatnum:4302}}
+|-
+| {{formatnum:264|NOSEP}} || [[کاربر:Ehsan aslani]] || {{formatnum:4297}}
+|-
+| {{formatnum:265|NOSEP}} || [[کاربر:Hosseiniran]] || {{formatnum:4291}}
+|-
+| {{formatnum:266|NOSEP}} || [[کاربر:Hussein Ghofrani]] || {{formatnum:4242}}
+|-
+| {{formatnum:267|NOSEP}} || [[کاربر:Mohsens]] || {{formatnum:4190}}
+|-
+| {{formatnum:268|NOSEP}} || [[کاربر:Wikitranser]] || {{formatnum:4188}}
+|-
+| {{formatnum:269|NOSEP}} || [[کاربر:Eh kia]] || {{formatnum:4151}}
+|-
+| {{formatnum:270|NOSEP}} || [[کاربر:Siavash]] || {{formatnum:4074}}
+|-
+| {{formatnum:271|NOSEP}} || [[کاربر:Navid rabiee]] || {{formatnum:4073}}
+|-
+| {{formatnum:272|NOSEP}} || [[کاربر:Fdmfi]] || {{formatnum:4066}}
+|-
+| {{formatnum:273|NOSEP}} || [[کاربر:Jacopo188]] || {{formatnum:4058}}
+|-
+| {{formatnum:274|NOSEP}} || [[کاربر:Mohamadhosein.a]] || {{formatnum:4054}}
+|-
+| {{formatnum:275|NOSEP}} || [[کاربر:کایروس]] || {{formatnum:4048}}
+|-
+| {{formatnum:276|NOSEP}} || [[کاربر:Rab.mj79]] || {{formatnum:3971}}
+|-
+| {{formatnum:277|NOSEP}} || [[کاربر:Kaveh]] || {{formatnum:3959}}
+|-
+| {{formatnum:278|NOSEP}} || [[کاربر:تفکر]] || {{formatnum:3934}}
+|-
+| {{formatnum:279|NOSEP}} || [[کاربر:F4fluids]] || {{formatnum:3924}}
+|-
+| {{formatnum:280|NOSEP}} || [[کاربر:Choqa zanbil]] || {{formatnum:3896}}
+|-
+| {{formatnum:281|NOSEP}} || [[کاربر:Darkicebot]] || {{formatnum:3879}}
+|-
+| {{formatnum:282|NOSEP}} || [[کاربر:Ladybloomextract]] || {{formatnum:3874}}
+|-
+| {{formatnum:283|NOSEP}} || [[کاربر:Lapskingwiki]] || {{formatnum:3873}}
+|-
+| {{formatnum:284|NOSEP}} || [[کاربر:Xerxessenior]] || {{formatnum:3872}}
+|-
+| {{formatnum:285|NOSEP}} || [[کاربر:یوشیمیتسو]] || {{formatnum:3829}}
+|-
+| {{formatnum:286|NOSEP}} || [[کاربر:Iranianson]] || {{formatnum:3814}}
+|-
+| {{formatnum:287|NOSEP}} || [[کاربر:Sandman]] || {{formatnum:3806}}
+|-
+| {{formatnum:288|NOSEP}} || [[کاربر:Nargess.n]] || {{formatnum:3800}}
+|-
+| {{formatnum:289|NOSEP}} || [[کاربر:تیراژه]] || {{formatnum:3798}}
+|-
+| {{formatnum:290|NOSEP}} || [[کاربر:تسلیم]] || {{formatnum:3793}}
+|-
+| {{formatnum:291|NOSEP}} || [[کاربر:Kaaveh Ahangar]] || {{formatnum:3771}}
+|-
+| {{formatnum:292|NOSEP}} || [[کاربر:Keivan.f]] || {{formatnum:3766}}
+|-
+| {{formatnum:293|NOSEP}} || [[کاربر:Qoqnous]] || {{formatnum:3735}}
+|-
+| {{formatnum:294|NOSEP}} || [[کاربر:Arash redcat]] || {{formatnum:3638}}
+|-
+| {{formatnum:295|NOSEP}} || [[کاربر:Mmxx]] || {{formatnum:3628}}
+|-
+| {{formatnum:296|NOSEP}} || [[کاربر:E235]] || {{formatnum:3621}}
+|-
+| {{formatnum:297|NOSEP}} || [[کاربر:E THP]] || {{formatnum:3602}}
+|-
+| {{formatnum:298|NOSEP}} || [[کاربر:Simsala111]] || {{formatnum:3594}}
+|-
+| {{formatnum:299|NOSEP}} || [[کاربر:Bbadree]] || {{formatnum:3545}}
+|-
+| {{formatnum:300|NOSEP}} || [[کاربر:Mpj7]] || {{formatnum:3533}}
+|-
+| {{formatnum:301|NOSEP}} || [[کاربر:Maziarparizade]] || {{formatnum:3517}}
+|-
+| {{formatnum:302|NOSEP}} || [[کاربر:Editor-1]] || {{formatnum:3510}}
+|-
+| {{formatnum:303|NOSEP}} || [[کاربر:S.abbasi]] || {{formatnum:3509}}
+|-
+| {{formatnum:304|NOSEP}} || [[کاربر:A.M.Z.A]] || {{formatnum:3495}}
+|-
+| {{formatnum:305|NOSEP}} || [[کاربر:Rooh23]] || {{formatnum:3492}}
+|-
+| {{formatnum:306|NOSEP}} || [[کاربر:Arashk rp2]] || {{formatnum:3470}}
+|-
+| {{formatnum:307|NOSEP}} || [[کاربر:Raayen]] || {{formatnum:3463}}
+|-
+| {{formatnum:308|NOSEP}} || [[کاربر:Hashtablakoo2000]] || {{formatnum:3433}}
+|-
+| {{formatnum:309|NOSEP}} || [[کاربر:Omid hendupur]] || {{formatnum:3422}}
+|-
+| {{formatnum:310|NOSEP}} || [[کاربر:Americophile]] || {{formatnum:3393}}
+|-
+| {{formatnum:311|NOSEP}} || [[کاربر:M7S6M]] || {{formatnum:3371}}
+|-
+| {{formatnum:312|NOSEP}} || [[کاربر:مصطفی 8]] || {{formatnum:3349}}
+|-
+| {{formatnum:313|NOSEP}} || [[کاربر:Masoud 75]] || {{formatnum:3349}}
+|-
+| {{formatnum:314|NOSEP}} || [[کاربر:قاصدک بهار]] || {{formatnum:3330}}
+|-
+| {{formatnum:315|NOSEP}} || [[کاربر:IranianNationalist]] || {{formatnum:3313}}
+|-
+| {{formatnum:316|NOSEP}} || [[کاربر:یکی از یاران خدا]] || {{formatnum:3303}}
+|-
+| {{formatnum:317|NOSEP}} || [[کاربر:Bersam]] || {{formatnum:3277}}
+|-
+| {{formatnum:318|NOSEP}} || [[کاربر:Ahmadahmadf]] || {{formatnum:3274}}
+|-
+| {{formatnum:319|NOSEP}} || [[کاربر:Radmanesh~fawiki]] || {{formatnum:3273}}
+|-
+| {{formatnum:320|NOSEP}} || [[کاربر:Γεωργός]] || {{formatnum:3256}}
+|-
+| {{formatnum:321|NOSEP}} || [[کاربر:Gnat]] || {{formatnum:3231}}
+|-
+| {{formatnum:322|NOSEP}} || [[کاربر:Companionship]] || {{formatnum:3226}}
+|-
+| {{formatnum:323|NOSEP}} || [[کاربر:Sina12]] || {{formatnum:3216}}
+|-
+| {{formatnum:324|NOSEP}} || [[کاربر:Soheyla]] || {{formatnum:3176}}
+|-
+| {{formatnum:325|NOSEP}} || [[کاربر:Baqeri]] || {{formatnum:3175}}
+|-
+| {{formatnum:326|NOSEP}} || [[کاربر:Bellavista1957]] || {{formatnum:3152}}
+|-
+| {{formatnum:327|NOSEP}} || [[کاربر:Persia2099]] || {{formatnum:3144}}
+|-
+| {{formatnum:328|NOSEP}} || [[کاربر:فخرالدین بلاگ]] || {{formatnum:3122}}
+|-
+| {{formatnum:329|NOSEP}} || [[کاربر:A.R.Rostamzade]] || {{formatnum:3086}}
+|-
+| {{formatnum:330|NOSEP}} || [[کاربر:Damaavand]] || {{formatnum:3070}}
+|-
+| {{formatnum:331|NOSEP}} || [[کاربر:Mohsen ghasemee]] || {{formatnum:3065}}
+|-
+| {{formatnum:332|NOSEP}} || [[کاربر:ویژه]] || {{formatnum:3056}}
+|-
+| {{formatnum:333|NOSEP}} || [[کاربر:Mnasiri7]] || {{formatnum:3025}}
+|-
+| {{formatnum:334|NOSEP}} || [[کاربر:Mahanrahi]] || {{formatnum:3011}}
+|-
+| {{formatnum:335|NOSEP}} || [[کاربر:SPhotographer]] || {{formatnum:3002}}
+|-
+| {{formatnum:336|NOSEP}} || [[کاربر:Sefid par]] || {{formatnum:2990}}
+|-
+| {{formatnum:337|NOSEP}} || [[کاربر:Superaryan85]] || {{formatnum:2975}}
+|-
+| {{formatnum:338|NOSEP}} || [[کاربر:اشکان.ح]] || {{formatnum:2969}}
+|-
+| {{formatnum:339|NOSEP}} || [[کاربر:Shams bahari]] || {{formatnum:2960}}
+|-
+| {{formatnum:340|NOSEP}} || [[کاربر:حامد میرزاحسینی]] || {{formatnum:2927}}
+|-
+| {{formatnum:341|NOSEP}} || [[کاربر:برسام]] || {{formatnum:2851}}
+|-
+| {{formatnum:342|NOSEP}} || [[کاربر:Dernhelm]] || {{formatnum:2821}}
+|-
+| {{formatnum:343|NOSEP}} || [[کاربر:Ms96]] || {{formatnum:2808}}
+|-
+| {{formatnum:344|NOSEP}} || [[کاربر:AliFatehi]] || {{formatnum:2807}}
+|-
+| {{formatnum:345|NOSEP}} || [[کاربر:SiarFisher]] || {{formatnum:2801}}
+|-
+| {{formatnum:346|NOSEP}} || [[کاربر:Mfaiiazi]] || {{formatnum:2791}}
+|-
+| {{formatnum:347|NOSEP}} || [[کاربر:Vviki]] || {{formatnum:2780}}
+|-
+| {{formatnum:348|NOSEP}} || [[کاربر:Armin Rhine]] || {{formatnum:2754}}
+|-
+| {{formatnum:349|NOSEP}} || [[کاربر:Peymanpi]] || {{formatnum:2717}}
+|-
+| {{formatnum:350|NOSEP}} || [[کاربر:Javid44]] || {{formatnum:2712}}
+|-
+| {{formatnum:351|NOSEP}} || [[کاربر:Oqtay]] || {{formatnum:2704}}
+|-
+| {{formatnum:352|NOSEP}} || [[کاربر:Wiki66]] || {{formatnum:2702}}
+|-
+| {{formatnum:353|NOSEP}} || [[کاربر:درپیت]] || {{formatnum:2700}}
+|-
+| {{formatnum:354|NOSEP}} || [[کاربر:آرمین]] || {{formatnum:2686}}
+|-
+| {{formatnum:355|NOSEP}} || [[کاربر:Mitra.sh1368]] || {{formatnum:2683}}
+|-
+| {{formatnum:356|NOSEP}} || [[کاربر:Diyarenoon]] || {{formatnum:2665}}
+|-
+| {{formatnum:357|NOSEP}} || [[کاربر:Arani1392]] || {{formatnum:2609}}
+|-
+| {{formatnum:358|NOSEP}} || [[کاربر:Ali Esfandiari]] || {{formatnum:2603}}
+|-
+| {{formatnum:359|NOSEP}} || [[کاربر:Sadegh50ir]] || {{formatnum:2599}}
+|-
+| {{formatnum:360|NOSEP}} || [[کاربر:Ram!n]] || {{formatnum:2584}}
+|-
+| {{formatnum:361|NOSEP}} || [[کاربر:Mehrdad elli]] || {{formatnum:2572}}
+|-
+| {{formatnum:362|NOSEP}} || [[کاربر:آسا]] || {{formatnum:2572}}
+|-
+| {{formatnum:363|NOSEP}} || [[کاربر:فرهنگ2016]] || {{formatnum:2559}}
+|-
+| {{formatnum:364|NOSEP}} || [[کاربر:Poorya0014]] || {{formatnum:2558}}
+|-
+| {{formatnum:365|NOSEP}} || [[کاربر:Nimavojdani]] || {{formatnum:2546}}
+|-
+| {{formatnum:366|NOSEP}} || [[کاربر:Mhdf]] || {{formatnum:2544}}
+|-
+| {{formatnum:367|NOSEP}} || [[کاربر:Invalid username 309~fawiki]] || {{formatnum:2537}}
+|-
+| {{formatnum:368|NOSEP}} || [[کاربر:Rezadecoder]] || {{formatnum:2511}}
+|-
+| {{formatnum:369|NOSEP}} || [[کاربر:Njamali]] || {{formatnum:2436}}
+|-
+| {{formatnum:370|NOSEP}} || [[کاربر:Amir Eftekhari Milani]] || {{formatnum:2376}}
+|-
+| {{formatnum:371|NOSEP}} || [[کاربر:Javadhidden]] || {{formatnum:2375}}
+|-
+| {{formatnum:372|NOSEP}} || [[کاربر:Farbodebrahimi]] || {{formatnum:2372}}
+|-
+| {{formatnum:373|NOSEP}} || [[کاربر:AlmaBeta]] || {{formatnum:2363}}
+|-
+| {{formatnum:374|NOSEP}} || [[کاربر:Alamir]] || {{formatnum:2347}}
+|-
+| {{formatnum:375|NOSEP}} || [[کاربر:Mohafezekaar]] || {{formatnum:2346}}
+|-
+| {{formatnum:376|NOSEP}} || [[کاربر:HnSr]] || {{formatnum:2343}}
+|-
+| {{formatnum:377|NOSEP}} || [[کاربر:تهراني ها]] || {{formatnum:2338}}
+|-
+| {{formatnum:378|NOSEP}} || [[کاربر:Metagalaxy]] || {{formatnum:2316}}
+|-
+| {{formatnum:379|NOSEP}} || [[کاربر:The Ocean]] || {{formatnum:2310}}
+|-
+| {{formatnum:380|NOSEP}} || [[کاربر:Pbahramian]] || {{formatnum:2307}}
+|-
+| {{formatnum:381|NOSEP}} || [[کاربر:Mahla poori]] || {{formatnum:2297}}
+|-
+| {{formatnum:382|NOSEP}} || [[کاربر:Fjalili]] || {{formatnum:2292}}
+|-
+| {{formatnum:383|NOSEP}} || [[کاربر:ساقی]] || {{formatnum:2274}}
+|-
+| {{formatnum:384|NOSEP}} || [[کاربر:Ormazda]] || {{formatnum:2267}}
+|-
+| {{formatnum:385|NOSEP}} || [[کاربر:Amg72827]] || {{formatnum:2256}}
+|-
+| {{formatnum:386|NOSEP}} || [[کاربر:سمپاد2000]] || {{formatnum:2247}}
+|-
+| {{formatnum:387|NOSEP}} || [[کاربر:Rotlink]] || {{formatnum:2236}}
+|-
+| {{formatnum:388|NOSEP}} || [[کاربر:Sajjad.mn]] || {{formatnum:2229}}
+|-
+| {{formatnum:389|NOSEP}} || [[کاربر:Ahmad87]] || {{formatnum:2223}}
+|-
+| {{formatnum:390|NOSEP}} || [[کاربر:Benyamin-ln]] || {{formatnum:2218}}
+|-
+| {{formatnum:391|NOSEP}} || [[کاربر:Amirrad]] || {{formatnum:2201}}
+|-
+| {{formatnum:392|NOSEP}} || [[کاربر:محسن مقدس زاده]] || {{formatnum:2197}}
+|-
+| {{formatnum:393|NOSEP}} || [[کاربر:YusuF]] || {{formatnum:2192}}
+|-
+| {{formatnum:394|NOSEP}} || [[کاربر:Majidshekari]] || {{formatnum:2188}}
+|-
+| {{formatnum:395|NOSEP}} || [[کاربر:Serpico]] || {{formatnum:2183}}
+|-
+| {{formatnum:396|NOSEP}} || [[کاربر:Barzkar]] || {{formatnum:2156}}
+|-
+| {{formatnum:397|NOSEP}} || [[کاربر:Mosaffa]] || {{formatnum:2152}}
+|-
+| {{formatnum:398|NOSEP}} || [[کاربر:Categorer]] || {{formatnum:2139}}
+|-
+| {{formatnum:399|NOSEP}} || [[کاربر:God's spirit]] || {{formatnum:2136}}
+|-
+| {{formatnum:400|NOSEP}} || [[کاربر:Lombanto]] || {{formatnum:2115}}
+|-
+| {{formatnum:401|NOSEP}} || [[کاربر:Physicsch]] || {{formatnum:2113}}
+|-
+| {{formatnum:402|NOSEP}} || [[کاربر:یزدانداد دیودادان]] || {{formatnum:2105}}
+|-
+| {{formatnum:403|NOSEP}} || [[کاربر:محمد67]] || {{formatnum:2097}}
+|-
+| {{formatnum:404|NOSEP}} || [[کاربر:Xyzrt]] || {{formatnum:2092}}
+|-
+| {{formatnum:405|NOSEP}} || [[کاربر:KamalPF]] || {{formatnum:2077}}
+|-
+| {{formatnum:406|NOSEP}} || [[کاربر:MOHANDA]] || {{formatnum:2067}}
+|-
+| {{formatnum:407|NOSEP}} || [[کاربر:Alieseraj]] || {{formatnum:2060}}
+|-
+| {{formatnum:408|NOSEP}} || [[کاربر:Manimihan]] || {{formatnum:2030}}
+|-
+| {{formatnum:409|NOSEP}} || [[کاربر:میم میم صاد]] || {{formatnum:2020}}
+|-
+| {{formatnum:410|NOSEP}} || [[کاربر:Diyako~fawiki]] || {{formatnum:2016}}
+|-
+| {{formatnum:411|NOSEP}} || [[کاربر:Ab2llah]] || {{formatnum:2007}}
+|-
+| {{formatnum:412|NOSEP}} || [[کاربر:Parpak]] || {{formatnum:2005}}
+|-
+| {{formatnum:413|NOSEP}} || [[کاربر:Persianknight]] || {{formatnum:1992}}
+|-
+| {{formatnum:414|NOSEP}} || [[کاربر:Shoshtari123]] || {{formatnum:1988}}
+|-
+| {{formatnum:415|NOSEP}} || [[کاربر:آتروپات]] || {{formatnum:1988}}
+|-
+| {{formatnum:416|NOSEP}} || [[کاربر:Kave]] || {{formatnum:1972}}
+|-
+| {{formatnum:417|NOSEP}} || [[کاربر:Amir a57]] || {{formatnum:1970}}
+|-
+| {{formatnum:418|NOSEP}} || [[کاربر:MohammaD]] || {{formatnum:1954}}
+|-
+| {{formatnum:419|NOSEP}} || [[کاربر:Ismail.Sharifi]] || {{formatnum:1938}}
+|-
+| {{formatnum:420|NOSEP}} || [[کاربر:Master2000]] || {{formatnum:1936}}
+|-
+| {{formatnum:421|NOSEP}} || [[کاربر:Ariaveeg]] || {{formatnum:1930}}
+|-
+| {{formatnum:422|NOSEP}} || [[کاربر:Cyrus abdi]] || {{formatnum:1923}}
+|-
+| {{formatnum:423|NOSEP}} || [[کاربر:Lavasooni]] || {{formatnum:1917}}
+|-
+| {{formatnum:424|NOSEP}} || [[کاربر:Ziraksima]] || {{formatnum:1909}}
+|-
+| {{formatnum:425|NOSEP}} || [[کاربر:Ashena iran]] || {{formatnum:1903}}
+|-
+| {{formatnum:426|NOSEP}} || [[کاربر:Khazaei]] || {{formatnum:1893}}
+|-
+| {{formatnum:427|NOSEP}} || [[کاربر:I7-860]] || {{formatnum:1888}}
+|-
+| {{formatnum:428|NOSEP}} || [[کاربر:Leosan]] || {{formatnum:1887}}
+|-
+| {{formatnum:429|NOSEP}} || [[کاربر:3000MAX]] || {{formatnum:1882}}
+|-
+| {{formatnum:430|NOSEP}} || [[کاربر:Mahdijiba]] || {{formatnum:1879}}
+|-
+| {{formatnum:431|NOSEP}} || [[کاربر:کولاک]] || {{formatnum:1871}}
+|-
+| {{formatnum:432|NOSEP}} || [[کاربر:Tvss]] || {{formatnum:1871}}
+|-
+| {{formatnum:433|NOSEP}} || [[کاربر:Saha]] || {{formatnum:1862}}
+|-
+| {{formatnum:434|NOSEP}} || [[کاربر:Behruz]] || {{formatnum:1860}}
+|-
+| {{formatnum:435|NOSEP}} || [[کاربر:آیرن]] || {{formatnum:1851}}
+|-
+| {{formatnum:436|NOSEP}} || [[کاربر:Soheyl75]] || {{formatnum:1851}}
+|-
+| {{formatnum:437|NOSEP}} || [[کاربر:Amin pedia]] || {{formatnum:1851}}
+|-
+| {{formatnum:438|NOSEP}} || [[کاربر:ح-اكبري]] || {{formatnum:1845}}
+|-
+| {{formatnum:439|NOSEP}} || [[کاربر:Mjbmr]] || {{formatnum:1834}}
+|-
+| {{formatnum:440|NOSEP}} || [[کاربر:BlueBlack]] || {{formatnum:1830}}
+|-
+| {{formatnum:441|NOSEP}} || [[کاربر:فاطمه جانگ]] || {{formatnum:1826}}
+|-
+| {{formatnum:442|NOSEP}} || [[کاربر:Spidaj]] || {{formatnum:1822}}
+|-
+| {{formatnum:443|NOSEP}} || [[کاربر:محمدرضا جلالی]] || {{formatnum:1818}}
+|-
+| {{formatnum:444|NOSEP}} || [[کاربر:Behoush]] || {{formatnum:1818}}
+|-
+| {{formatnum:445|NOSEP}} || [[کاربر:MMjex]] || {{formatnum:1815}}
+|-
+| {{formatnum:446|NOSEP}} || [[کاربر:Armin.rezayati]] || {{formatnum:1812}}
+|-
+| {{formatnum:447|NOSEP}} || [[کاربر:مهران کردی]] || {{formatnum:1807}}
+|-
+| {{formatnum:448|NOSEP}} || [[کاربر:Atila Kagan]] || {{formatnum:1793}}
+|-
+| {{formatnum:449|NOSEP}} || [[کاربر:Arianarian]] || {{formatnum:1790}}
+|-
+| {{formatnum:450|NOSEP}} || [[کاربر:Aboutorab]] || {{formatnum:1785}}
+|-
+| {{formatnum:451|NOSEP}} || [[کاربر:Famizban]] || {{formatnum:1779}}
+|-
+| {{formatnum:452|NOSEP}} || [[کاربر:Propars55]] || {{formatnum:1774}}
+|-
+| {{formatnum:453|NOSEP}} || [[کاربر:Shahramsh]] || {{formatnum:1773}}
+|-
+| {{formatnum:454|NOSEP}} || [[کاربر:HRV]] || {{formatnum:1767}}
+|-
+| {{formatnum:455|NOSEP}} || [[کاربر:آزادسرو]] || {{formatnum:1765}}
+|-
+| {{formatnum:456|NOSEP}} || [[کاربر:Jistili1]] || {{formatnum:1759}}
+|-
+| {{formatnum:457|NOSEP}} || [[کاربر:Arghiyan]] || {{formatnum:1759}}
+|-
+| {{formatnum:458|NOSEP}} || [[کاربر:Mr.Iran]] || {{formatnum:1755}}
+|-
+| {{formatnum:459|NOSEP}} || [[کاربر:Abdossamad Talebpour]] || {{formatnum:1755}}
+|-
+| {{formatnum:460|NOSEP}} || [[کاربر:خالقیان]] || {{formatnum:1750}}
+|-
+| {{formatnum:461|NOSEP}} || [[کاربر:فرزند ایران اسلامی]] || {{formatnum:1747}}
+|-
+| {{formatnum:462|NOSEP}} || [[کاربر:Suseleng]] || {{formatnum:1737}}
+|-
+| {{formatnum:463|NOSEP}} || [[کاربر:The future]] || {{formatnum:1734}}
+|-
+| {{formatnum:464|NOSEP}} || [[کاربر:Ebiwikifa]] || {{formatnum:1731}}
+|-
+| {{formatnum:465|NOSEP}} || [[کاربر:Ghasem1122]] || {{formatnum:1724}}
+|-
+| {{formatnum:466|NOSEP}} || [[کاربر:Persian Gulf 4ever]] || {{formatnum:1721}}
+|-
+| {{formatnum:467|NOSEP}} || [[کاربر:Gomaashte]] || {{formatnum:1720}}
+|-
+| {{formatnum:468|NOSEP}} || [[کاربر:Carlossuarez46]] || {{formatnum:1710}}
+|-
+| {{formatnum:469|NOSEP}} || [[کاربر:Alishahini]] || {{formatnum:1708}}
+|-
+| {{formatnum:470|NOSEP}} || [[کاربر:MikeEcho]] || {{formatnum:1692}}
+|-
+| {{formatnum:471|NOSEP}} || [[کاربر:Negahil]] || {{formatnum:1673}}
+|-
+| {{formatnum:472|NOSEP}} || [[کاربر:Haji doliskani]] || {{formatnum:1673}}
+|-
+| {{formatnum:473|NOSEP}} || [[کاربر:Magic Wizard]] || {{formatnum:1670}}
+|-
+| {{formatnum:474|NOSEP}} || [[کاربر:علی ویکی]] || {{formatnum:1668}}
+|-
+| {{formatnum:475|NOSEP}} || [[کاربر:Esmatly]] || {{formatnum:1667}}
+|-
+| {{formatnum:476|NOSEP}} || [[کاربر:Hosein hs]] || {{formatnum:1663}}
+|-
+| {{formatnum:477|NOSEP}} || [[کاربر:Xanax]] || {{formatnum:1658}}
+|-
+| {{formatnum:478|NOSEP}} || [[کاربر:Rahgozar1]] || {{formatnum:1646}}
+|-
+| {{formatnum:479|NOSEP}} || [[کاربر:Bahraam Roshan]] || {{formatnum:1645}}
+|-
+| {{formatnum:480|NOSEP}} || [[کاربر:Paryvar]] || {{formatnum:1639}}
+|-
+| {{formatnum:481|NOSEP}} || [[کاربر:JXtra]] || {{formatnum:1637}}
+|-
+| {{formatnum:482|NOSEP}} || [[کاربر:Torgani]] || {{formatnum:1637}}
+|-
+| {{formatnum:483|NOSEP}} || [[کاربر:Seiavoshy]] || {{formatnum:1629}}
+|-
+| {{formatnum:484|NOSEP}} || [[کاربر:Manart]] || {{formatnum:1617}}
+|-
+| {{formatnum:485|NOSEP}} || [[کاربر:Ghods]] || {{formatnum:1616}}
+|-
+| {{formatnum:486|NOSEP}} || [[کاربر:Amin rkh]] || {{formatnum:1615}}
+|-
+| {{formatnum:487|NOSEP}} || [[کاربر:Azadi68]] || {{formatnum:1612}}
+|-
+| {{formatnum:488|NOSEP}} || [[کاربر:حسین]] || {{formatnum:1602}}
+|-
+| {{formatnum:489|NOSEP}} || [[کاربر:Pinkfloyd amir]] || {{formatnum:1600}}
+|-
+| {{formatnum:490|NOSEP}} || [[کاربر:Mehregaan]] || {{formatnum:1599}}
+|-
+| {{formatnum:491|NOSEP}} || [[کاربر:Nimaryn]] || {{formatnum:1594}}
+|-
+| {{formatnum:492|NOSEP}} || [[کاربر:Ashkan P.]] || {{formatnum:1592}}
+|-
+| {{formatnum:493|NOSEP}} || [[کاربر:Niknafs]] || {{formatnum:1588}}
+|-
+| {{formatnum:494|NOSEP}} || [[کاربر:Vyatana]] || {{formatnum:1582}}
+|-
+| {{formatnum:495|NOSEP}} || [[کاربر:Volleyfans]] || {{formatnum:1577}}
+|-
+| {{formatnum:496|NOSEP}} || [[کاربر:امیرمسعود]] || {{formatnum:1566}}
+|-
+| {{formatnum:497|NOSEP}} || [[کاربر:Amin5530]] || {{formatnum:1565}}
+|-
+| {{formatnum:498|NOSEP}} || [[کاربر:LE.B.B]] || {{formatnum:1554}}
+|-
+| {{formatnum:499|NOSEP}} || [[کاربر:Ahmadrizo]] || {{formatnum:1549}}
+|-
+| {{formatnum:500|NOSEP}} || [[کاربر:Alirezamim]] || {{formatnum:1535}}
+|}
