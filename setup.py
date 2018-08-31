@@ -11,10 +11,10 @@ here = abspath(dirname(__file__))
 setup(
     name='wikitextparser',
     version=search(
-        r'^__version__ = [\'"]([^\'"]*)[\'"]',
+        r"^__version__ = '([^']*)'",
         open(
-            join(here, 'wikitextparser', '__init__.py'), encoding='utf8'
-        ).read(),
+            join(here, 'wikitextparser', '__init__.py'),
+            encoding='ascii', errors='ignore').read(),
         MULTILINE,
     ).group(1),
     description='A simple parsing tool for MediaWiki\'s wikitext markup.',
