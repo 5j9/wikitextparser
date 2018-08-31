@@ -45,14 +45,13 @@ INVALID_EXT_CHARS_SUB = regex_compile(
 ).sub
 
 # Sections
+SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
 SECTIONS_FULLMATCH = regex_compile(
-    rb'''
-    (?<section>.*?)
-    (?<section>
-        ^(?<eq>={1,6})[^\n]+?(?P=eq)[ \t]*+$  # header
-        .*?
-    )*  # todo: why can't be made possessive?
-    ''',
+    rb'(?<section>.*?)'
+    rb'(?<section>'
+    + SECTION_HEADING +  # heading
+    rb'  .*?'  # section content
+    rb')*',  # Todo: why can't be made possessive?
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
 
@@ -810,7 +809,7 @@ class WikiText:
         spans = type_to_spans.setdefault('Section', [])
         full_match = SECTIONS_FULLMATCH(self._shadow)
         section_spans = full_match.spans('section')
-        levels = [len(eq) for eq in full_match.captures('eq')]
+        levels = [len(eq) for eq in full_match.captures('equals')]
         s, e = section_spans.pop(0)
         s, e = s + ss, e + ss
         if not spans:

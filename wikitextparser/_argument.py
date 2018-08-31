@@ -1,19 +1,36 @@
 ﻿"""Define the Argument class."""
 
+from regex import compile as regex_compile, MULTILINE
 
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, SECTION_HEADING
 from ._spans import parse_to_spans
+
+ARG_SHADOW_MATCH = regex_compile(
+    rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING
+    + rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
+    MULTILINE).match
 
 
 class Argument(SubWikiText):
 
     """Create a new Argument Object.
 
-    Note that in mediawiki documentation `arguments` are (also) called
-    parameters. In this module the convention is like this:
-    {{{parameter}}}, {{t|argument}}.
+    Note that in MediaWiki documentation `arguments` are (also) called
+    parameters. In this module the convention is:
+    {{{parameter}}}, {{template|argument}}.
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
+
+    @property
+    def _shadow_match(self):
+        cached_shadow_match, cache_string = getattr(
+            self, '_shadow_match_cache', (None, None))
+        self_string = str(self)
+        if cache_string == self_string:
+            return cached_shadow_match
+        shadow_match = ARG_SHADOW_MATCH(self._shadow)
+        self._shadow_match_cache = shadow_match, self_string
+        return shadow_match
 
     @property
     def name(self) -> str:
@@ -21,13 +38,14 @@ class Argument(SubWikiText):
 
         For positional arguments return the position as a string.
         """
-        pipename, equal, value = self._atomic_partition(61)
-        if equal:
-            return pipename[1:]
-        # positional argument
-        position = 1
         lststr0 = self._lststr[0]
         ss = self._span[0]
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
+            s, e = shadow_match.span('pre_eq')
+            return lststr0[ss + s:ss + e]
+        # positional argument
+        position = 1
         # Todo: if we had the index of self._span, we could only look-up
         # the head of the self._type_to_spans.
         for s, e in self._type_to_spans[self._type]:
@@ -61,21 +79,19 @@ class Argument(SubWikiText):
     @property
     def positional(self) -> bool:
         """Return True if there is an equal sign in the argument else False."""
-        if self._atomic_partition(61)[1]:
-            return False
-        return True
+        return False if self._shadow_match['eq'] else True
 
     @positional.setter
     def positional(self, to_positional: bool) -> None:
         """Change to keyword or positional accordingly.
 
-        Raise ValueError if setting positional argument to keyword argument.
+        Raise ValueError on trying to convert positional to keyword argument.
         """
-        pipename, equal, value = self._atomic_partition(61)
-        if equal:
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
             # Keyword argument
             if to_positional:
-                del self[1:len(pipename + '=')]
+                del self[1:shadow_match.end('eq')]
             else:
                 return
         if to_positional:
@@ -91,18 +107,16 @@ class Argument(SubWikiText):
     @property
     def value(self) -> str:
         """Return value of a keyword argument."""
-        pipename, equal, value = self._atomic_partition(61)
-        if equal:
-            return value
-        # Anonymous parameter
-        return pipename[1:]
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
+            return self[shadow_match.start('post_eq'):]
+        return self[1:]
 
     @value.setter
     def value(self, newvalue: str) -> None:
         """Assign the newvalue to self."""
-        pipename, equal, value = self._atomic_partition(61)
-        if equal:
-            pnel = len(pipename + '=')
-            self[pnel:pnel + len(value)] = newvalue
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
+            self[shadow_match.start('post_eq'):] = newvalue
         else:
-            self[1:len(pipename)] = newvalue
+            self[1:] = newvalue

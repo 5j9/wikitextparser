@@ -2,6 +2,7 @@ v0.22.0
 -------
 - Change the behaviour of external_links property to never return Templates or parser functions as part of the external link.
 - Add support for literal IPv6 external links, e.g. https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/.
+- Fixed: Do not mistake the equal signs of section titles for template keyword arguments.
 
 v0.21.5
 -------
