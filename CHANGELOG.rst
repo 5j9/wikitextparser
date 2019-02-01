@@ -1,3 +1,7 @@
+v0.22.1
+-------
+- Fixed MemoryError caused by very long or unclosed comment tags (issue #12)
+
 v0.22.0
 -------
 - Change the behaviour of external_links property to never return Templates or parser functions as part of the external link.

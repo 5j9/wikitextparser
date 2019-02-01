@@ -141,7 +141,7 @@ EXTENSION_TAGS_FINDITER = regex_compile(
     TAG_BY_NAME_PATTERN,
     IGNORECASE | VERBOSE,
 ).finditer
-COMMENT_PATTERN = r'<!--(?>[^-]++|-(?!->))*+-->'
+COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN.encode()).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
     rb'''
