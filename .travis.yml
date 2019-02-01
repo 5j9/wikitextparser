@@ -12,10 +12,12 @@ python:
     - "3.4"
     - "3.5"
     - "3.6"
-    - "nightly"
 matrix:
   include:
     - python: 3.7  # travis-ci/issues/9815
+      dist: xenial
+      sudo: true
+    - python: nightly  # travis-ci/issues/9815
       dist: xenial
       sudo: true
 after_success:
