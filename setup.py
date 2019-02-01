@@ -30,6 +30,9 @@ setup(
         'wcwidth',
         'typing;python_version<"3.5"',
     ],
+    extras_require={
+        'dev': ['path.py', 'coverage', 'twine'],
+    },
     zip_safe=True,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
