@@ -123,7 +123,7 @@ class Template(TlPfMixin):
         for a in reversed(self.arguments):
             name = a.name.strip(WS)
             if name in names:
-                del a[:len(a.string)]
+                a.delete()
             else:
                 names.add(name)
 
@@ -162,20 +162,20 @@ class Template(TlPfMixin):
                 # This is a duplicate argument.
                 if not val:
                     # This duplicate argument is empty. It's safe to remove it.
-                    del arg[0:len(arg.string)]
+                    arg.delete()
                 else:
                     # Try to remove any of the detected duplicates of this
                     # that are empty or their value equals to this one.
                     lastarg, dup_vals = name_to_lastarg_vals[name]
                     if val in dup_vals:
-                        del arg[0:len(arg.string)]
+                        arg.delete()
                     elif '' in dup_vals:
                         # This happens only if the last occurrence of name has
                         # been an empty string; other empty values will
                         # be removed as they are seen.
                         # In other words index of the empty argument in
                         # dup_vals is always 0.
-                        del lastarg[0:len(lastarg.string)]
+                        lastarg.delete()
                         dup_vals.pop(0)
                     else:
                         # It was not possible to remove any of the duplicates.
