@@ -120,3 +120,7 @@ class Argument(SubWikiText):
             self[shadow_match.start('post_eq'):] = newvalue
         else:
             self[1:] = newvalue
+
+    def delete(self):
+        """Remove this argument from containing template."""
+        del self[:]
