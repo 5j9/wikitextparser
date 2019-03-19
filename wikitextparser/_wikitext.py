@@ -96,7 +96,7 @@ class WikiText:
     def __init__(
         self,
         string: Union[MutableSequence[str], str],
-        _type_to_spans: Dict[str, List[List[int]]]=None,
+        _type_to_spans: Dict[str, List[List[int]]] = None,
     ) -> None:
         """Initialize the object.
 
@@ -495,7 +495,7 @@ class WikiText:
             ] for type_, spans in self._type_to_spans.items()
         }
 
-    def pprint(self, indent: str= '    ', remove_comments=False):
+    def pprint(self, indent: str = '    ', remove_comments=False):
         """Deprecated, use self.pformat instead."""
         warn(
             'pprint method is deprecated, use pformat instead.',
@@ -503,7 +503,7 @@ class WikiText:
         )
         return self.pformat(indent, remove_comments)
 
-    def pformat(self, indent: str= '    ', remove_comments=False) -> str:
+    def pformat(self, indent: str = '    ', remove_comments=False) -> str:
         """Return a pretty-print of self.string as string.
 
         Try to organize templates and parser functions by indenting, aligning
@@ -926,7 +926,7 @@ class WikiText:
                 shadow[ms:me] = b'_' * (me - ms)
         return tables
 
-    def lists(self, pattern: str=None) -> List['WikiList']:
+    def lists(self, pattern: str = None) -> List['WikiList']:
         r"""Return a list of WikiList objects.
 
         :param pattern: The starting pattern for list items.
@@ -1060,12 +1060,12 @@ class WikiText:
         return sorted(tags, key=attrgetter('_span'))
 
     @staticmethod
-    def parent(type_: Optional[str]=None) -> None:
+    def parent(type_: Optional[str] = None) -> None:
         """Return None (The parent of the root node is None)."""
         return None
 
     @staticmethod
-    def ancestors(type_: Optional[str]=None) -> list:
+    def ancestors(type_: Optional[str] = None) -> list:
         """Return [] (the root node has no ancestors)."""
         return []
 
@@ -1079,9 +1079,9 @@ class SubWikiText(WikiText):
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[Dict[str, List[List[int]]]]=None,
-        _span: Optional[List[int]]=None,
-        _type: Optional[Union[str, int]]=None,
+        _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
+        _span: Optional[List[int]] = None,
+        _type: Optional[Union[str, int]] = None,
     ) -> None:
         """Initialize the object."""
         _type = _type or type(self).__name__
@@ -1112,7 +1112,7 @@ class SubWikiText(WikiText):
                 yield span
 
     # noinspection PyProtectedMember
-    def ancestors(self, type_: Optional[str]=None) -> List['WikiText']:
+    def ancestors(self, type_: Optional[str] = None) -> List['WikiText']:
         """Return the ancestors of the current node.
 
         :param type_: the type of the desired ancestors as a string.
@@ -1137,7 +1137,7 @@ class SubWikiText(WikiText):
                     ancestors_append(cls(lststr, type_to_spans, span, type_))
         return sorted(ancestors, key=lambda i: ss - i._span[0])
 
-    def parent(self, type_: Optional[str]=None) -> Optional['WikiText']:
+    def parent(self, type_: Optional[str] = None) -> Optional['WikiText']:
         """Return the parent node of the current object.
 
         :param type_: the type of the desired parent object.

@@ -22,8 +22,8 @@ class Section(WikiText):
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Dict[str, List[List[int]]]=None,
-        _span: List[int]=None,
+        _type_to_spans: Dict[str, List[List[int]]] = None,
+        _span: List[int] = None,
     ) -> None:
         """Initialize the Table object."""
         super().__init__(string, _type_to_spans)

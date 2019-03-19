@@ -9,7 +9,7 @@ For more info see:
 
 """
 
-from typing import Dict, Optional, Union, List, MutableSequence, Any
+from typing import Dict, Optional, Any
 from warnings import warn
 
 from regex import compile as regex_compile, VERBOSE, DOTALL
@@ -137,7 +137,7 @@ class SubWikiTextWithAttrs(SubWikiText):
 
     def has(self, attr_name: str) -> bool:
         """Deprecated alias for has_attr."""
-        warn('`has` is depracated, use `has_attr` instead', DeprecationWarning)
+        warn('`has` is deprecated, use `has_attr` instead', DeprecationWarning)
         return self.has_attr(attr_name)
 
     def get_attr(self, attr_name: str) -> Optional[str]:

@@ -33,10 +33,10 @@ class WikiList(SubWikiText):
         self,
         string: Union[str, MutableSequence[str]],
         pattern: str,
-        _match: Match=None,
-        _type_to_spans: Dict[str, List[List[int]]]=None,
-        _span: List[int]=None,
-        _type: str=None,
+        _match: Match = None,
+        _type_to_spans: Dict[str, List[List[int]]] = None,
+        _span: List[int] = None,
+        _type: str = None,
     ) -> None:
         super().__init__(string, _type_to_spans, _span, _type)
         self.pattern = pattern
@@ -100,7 +100,7 @@ class WikiList(SubWikiText):
         return len(self._match['pattern'])
 
     def sublists(
-        self, i: int=None, pattern: str=None
+        self, i: int = None, pattern: str = None
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 

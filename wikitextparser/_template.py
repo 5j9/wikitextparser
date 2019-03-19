@@ -52,7 +52,7 @@ class Template(TlPfMixin):
         self,
         rm_namespaces=('Template',),
         capital_links=False,
-        code: str=None,
+        code: str = None,
     ) -> str:
         """Return normal form of self.name.
 
@@ -127,7 +127,7 @@ class Template(TlPfMixin):
             else:
                 names.add(name)
 
-    def rm_dup_args_safe(self, tag: str=None) -> None:
+    def rm_dup_args_safe(self, tag: str = None) -> None:
         """Remove duplicate arguments in a safe manner.
 
         Remove the duplicate arguments only in the following situations:
@@ -188,10 +188,10 @@ class Template(TlPfMixin):
     def set_arg(
         self, name: str,
         value: str,
-        positional: bool=None,
-        before: str=None,
-        after: str=None,
-        preserve_spacing: bool=True
+        positional: bool = None,
+        before: str = None,
+        after: str = None,
+        preserve_spacing: bool = True
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
@@ -287,7 +287,7 @@ class Template(TlPfMixin):
         """
         return get_arg(name, reversed(self.arguments))
 
-    def has_arg(self, name: str, value: str=None) -> bool:
+    def has_arg(self, name: str, value: str = None) -> bool:
         """Return true if the is an arg named `name`.
 
         Also check equality of values if `value` is provided.

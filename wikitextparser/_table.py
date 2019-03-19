@@ -102,7 +102,7 @@ class Table(SubWikiTextWithAttrs):
             rsp = _row_separator_increase(shadow, pos)
         return match_table
 
-    def getdata(self, span: bool=True) -> List[List[str]]:
+    def getdata(self, span: bool = True) -> List[List[str]]:
         """Use Table.data instead."""
         warn(
             'Table.getdata is deprecated. Use Table.data instead.',
@@ -111,10 +111,10 @@ class Table(SubWikiTextWithAttrs):
         return self.data(span)
 
     def data(
-        self, span: bool=True,
-        strip: bool= True,
-        row: int=None,
-        column: int=None
+        self, span: bool = True,
+        strip: bool = True,
+        row: int = None,
+        column: int = None
     ) -> Union[List[List[str]], List[str], str]:
         """Return a list containing lists of row values.
 
@@ -173,7 +173,7 @@ class Table(SubWikiTextWithAttrs):
         return table_data[row][column]
 
     def cells(
-        self, row: int=None, column: int=None, span: bool=True,
+        self, row: int = None, column: int = None, span: bool = True,
     ) -> Union[List[List[Cell]], List[Cell], Cell]:
         """Return a list of lists containing Cell objects.
 
@@ -245,7 +245,7 @@ class Table(SubWikiTextWithAttrs):
             return table_cells[row]
         return table_cells[row][column]
 
-    def getrdata(self, i: int, span: bool=True) -> List[str]:
+    def getrdata(self, i: int, span: bool = True) -> List[str]:
         """Use Table.data(span, row=i) instead."""
         warn(
             'Table.getrdata is deprecated. Use data(span, row=i) instead.',
@@ -253,7 +253,7 @@ class Table(SubWikiTextWithAttrs):
         )
         return self.data(span, row=i)
 
-    def getcdata(self, i: int, span: bool=True) -> List[str]:
+    def getcdata(self, i: int, span: bool = True) -> List[str]:
         """Use Table.data(span, column=i) instead."""
         warn(
             'Table.getcdata is deprecated. Use data(span, column=i) instead.',
