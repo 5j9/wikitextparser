@@ -3,7 +3,6 @@
 
 from bisect import insort
 from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
-from warnings import warn
 
 from regex import compile as regex_compile, VERBOSE
 
@@ -101,14 +100,6 @@ class Table(SubWikiTextWithAttrs):
                     m = NEWLINE_CELL_MATCH(shadow, pos)
             rsp = _row_separator_increase(shadow, pos)
         return match_table
-
-    def getdata(self, span: bool = True) -> List[List[str]]:
-        """Use Table.data instead."""
-        warn(
-            'Table.getdata is deprecated. Use Table.data instead.',
-            DeprecationWarning,
-        )
-        return self.data(span)
 
     def data(
         self, span: bool = True,
@@ -245,22 +236,6 @@ class Table(SubWikiTextWithAttrs):
             return table_cells[row]
         return table_cells[row][column]
 
-    def getrdata(self, i: int, span: bool = True) -> List[str]:
-        """Use Table.data(span, row=i) instead."""
-        warn(
-            'Table.getrdata is deprecated. Use data(span, row=i) instead.',
-            DeprecationWarning,
-        )
-        return self.data(span, row=i)
-
-    def getcdata(self, i: int, span: bool = True) -> List[str]:
-        """Use Table.data(span, column=i) instead."""
-        warn(
-            'Table.getcdata is deprecated. Use data(span, column=i) instead.',
-            DeprecationWarning,
-        )
-        return self.data(span, column=i)
-
     @property
     def caption(self) -> Optional[str]:
         """Return caption of the table."""
@@ -296,32 +271,6 @@ class Table(SubWikiTextWithAttrs):
         attrs_match = ATTRS_MATCH(shadow, 2, shadow.find(10))  # ord('\n')
         self._attrs_match_cache = attrs_match, string
         return attrs_match
-
-    @property
-    def table_attrs(self) -> str:
-        """Return table attributes.
-
-        In MediaWiki, placing attributes after the table start tag (`{|`)
-        applies attributes to the entire table.
-        See [[mw:Help:Tables#Attributes on tables]] for more info.
-        """
-        warn(
-            'Table.table_attrs is deprecated. '
-            'Use has_attr and get_attr methods instead.',
-            DeprecationWarning,
-        )
-        return self.string.partition('\n')[0][2:]
-
-    @table_attrs.setter
-    def table_attrs(self, attrs: str) -> None:
-        """Set new attributes for this table."""
-        warn(
-            'Table.table_attrs is deprecated. '
-            'Use set_attr and del_attr methods instead.',
-            DeprecationWarning,
-        )
-        h = self.string.partition('\n')[0]
-        self[2:2 + len(h[2:])] = attrs
 
     @property
     def caption_attrs(self) -> Optional[str]:

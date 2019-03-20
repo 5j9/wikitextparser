@@ -31,50 +31,50 @@ class TableCell(unittest.TestCase):
 
     def test_has_get(self):
         c = Cell('\n! n="v" | 00', True)
-        self.assertTrue(c.has('n'))
-        self.assertEqual(c.get('n'), 'v')
+        self.assertTrue(c.has_attr('n'))
+        self.assertEqual(c.get_attr('n'), 'v')
 
     def test_set_overwrite(self):
         c = Cell('\n! n=v | 00', True)
         # Set a new value for an existing attribute
-        c.set('n', 'w')
+        c.set_attr('n', 'w')
         # Set a new attribute
-        c.set('n2', 'v2')
+        c.set_attr('n2', 'v2')
         self.assertEqual(c.string, '\n! n="w" n2="v2" | 00')
 
     def test_newline_cell_no_attr_span_set(self):
         c = Cell('\n! 00', True)
-        c.set('n', 'v')
+        c.set_attr('n', 'v')
         self.assertEqual(c.string, '\n! n="v" | 00')
         c = Cell('\n! 00', True)
-        c.set('n', '')
+        c.set_attr('n', '')
         self.assertEqual(c.string, '\n! n | 00')
 
     def test_inline_cell_no_attr_span_set(self):
         c = Cell('!! 00', True)
-        c.set('n', 'v')
+        c.set_attr('n', 'v')
         self.assertEqual(c.string, '!! n="v" | 00')
         c = Cell('!! 00', True)
-        c.set('n', '')
+        c.set_attr('n', '')
         self.assertEqual(c.string, '!! n | 00')
 
     def test_space_or_quote_at_set_boundary(self):
         c = Cell('!!n=v|', True)
-        c.set('m', 'w')
+        c.set_attr('m', 'w')
         self.assertEqual(c.string, '!!n=v m="w"|')
         c = Cell('!! n=v |', True)
-        c.set('m', 'w')
+        c.set_attr('m', 'w')
         self.assertEqual(c.string, '!! n=v m="w" |')
 
     def test_delete(self):
         c = Cell('!!n=v|', True)
-        c.delete('n')
+        c.del_attr('n')
         self.assertEqual(c.string, '!!|')
         c = Cell('!!n=v1 m=w n="v2"|', True)
-        c.delete('n')
+        c.del_attr('n')
         self.assertEqual(c.string, '!!m=w |')
         # Test removing a non-existing attribute
-        c.delete('n')
+        c.del_attr('n')
 
     def test_update_match_from_shadow(self):
         t = Table('{|class=wikitable\n|{{text|s}}\n|}')

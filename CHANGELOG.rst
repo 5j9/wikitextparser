@@ -1,3 +1,15 @@
+v0.23.0
+-------
+- Fixed a bug in ``Section`` objects that was causing them to return the properties of the whole page (#15).
+- Removed the deprecated attribute access methods.
+  The following deprecated methods accessible on ``Table`` and ``Tag`` objects, have been removed: ``.has``, ``.get``, ``.set`` .
+  Use ``.has_attr``, ``.get_attr``, ``.set_attr`` instead.
+- Fixed a bug in ``set_attr`` method.
+- Removed the deprecated ``Table.getdata`` method. Use ``Table.data`` instead.
+- Removed the deprecated ``Table.getrdata(row_num)`` method. Use ``Table.data(row=row_num)`` instead.
+- Removed the deprecated ``Table.getcdata(col_num)`` method. Use ``Table.data(col=col_num)`` instead.
+- Removed the deprecated ``Table.table_attrs`` property. Use ``Table.attrs`` or other attribute-related methods instead.
+
 v0.22.1
 -------
 - Fixed MemoryError caused by very long or unclosed comment tags (issue #12)

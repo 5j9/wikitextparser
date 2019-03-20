@@ -344,7 +344,7 @@ class Data(unittest.TestCase):
             '| d\n'
             '|}'
         )
-        self.assertEqual(table.getdata(span=True), [
+        self.assertEqual(table.data(span=True), [
             ['a', 'b', 'c'],
             ['a', 'b', 'd'],
             ['a', 'b', None],
@@ -352,11 +352,11 @@ class Data(unittest.TestCase):
 
     def test_row_data(self):
         table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getrdata(1), ['d', 'e', 'f'])
+        self.assertEqual(table.data(row=1), ['d', 'e', 'f'])
 
     def test_column_data(self):
         table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.getcdata(1), ['b', 'e', 'h'])
+        self.assertEqual(table.data(column=1), ['b', 'e', 'h'])
 
     def test_column_and_row_data(self):
         table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
@@ -474,14 +474,14 @@ class TableAttrs(unittest.TestCase):
 
     def test_multiline_table(self):
         table = Table('{|s\n|a\n|}')
-        self.assertEqual(table.table_attrs, 's')
         self.assertEqual(table.attrs, {'s': ''})
         self.assertEqual(table.has_attr('s'), True)
         self.assertEqual(table.has_attr('n'), False)
         self.assertEqual(table.get_attr('s'), '')
-        table.table_attrs = 'class="wikitable"'
+        table.del_attr('s')
+        table.set_attr('class', 'wikitable')
         self.assertEqual(
-            repr(table), "Table('{|class=\"wikitable\"\\n|a\\n|}')"
+            repr(table), "Table('{| class=\"wikitable\"\\n|a\\n|}')"
         )
         self.assertEqual(table.get_attr('class'), 'wikitable')
         table.set_attr('class', 'sortable')
@@ -548,11 +548,11 @@ class Cells(unittest.TestCase):
         c = t.cells(0, 0)
         c.value = 'v'
         self.assertEqual(c.value, 'v')
-        c.set('a', 'b2')
+        c.set_attr('a', 'b2')
         self.assertEqual(t.string, '{|class=wikitable\n|a="b2"|v\n|}')
-        c.delete('a')
+        c.del_attr('a')
         self.assertEqual(t.string, '{|class=wikitable\n||v\n|}')
-        c.set('c', 'd')
+        c.set_attr('c', 'd')
         self.assertEqual(t.string, '{|class=wikitable\n| c="d"|v\n|}')
 
     def test_cell_span_false(self):
