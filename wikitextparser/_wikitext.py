@@ -108,13 +108,12 @@ class WikiText:
             _type_to_spans property as _type_to_spans to avoid parsing it
             again.
         """
-        if _type_to_spans:
+        if _type_to_spans is not None:
             self._type_to_spans = _type_to_spans
             self._lststr = string  # type: MutableSequence[str]
             return
         self._lststr = [string]
-        span = [0, len(string)]
-        self._span = span
+        span = self._span = [0, len(string)]
         byte_array = bytearray(string, 'ascii', 'replace')
         _type = self._type
         if _type not in SPAN_PARSER_TYPES:
@@ -124,8 +123,8 @@ class WikiText:
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
-            # string with '_'. OTH, we can't modify before passing because
-            # the generated _type_to_spans will lack self._span.
+            # string with '_'. Also, we can't just modify it before passing
+            # because the generated _type_to_spans will lack self._span.
             # As a workaround we can add the missed span after parsing.
             head = byte_array[:2]
             tail = byte_array[-2:]
@@ -695,57 +694,47 @@ class WikiText:
     @property
     def parameters(self) -> List['Parameter']:
         """Return a list of parameter objects."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
         return [
-            Parameter(
-                self._lststr,
-                self._type_to_spans,
-                span,
-            ) for span in self._subspans('Parameter')
-        ]
+            Parameter(_lststr, _type_to_spans, span, 'Parameter')
+            for span in self._subspans('Parameter')]
 
     @property
     def parser_functions(self) -> List['ParserFunction']:
         """Return a list of parser function objects."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
         return [
-            ParserFunction(
-                self._lststr,
-                self._type_to_spans,
-                span,
-            ) for span in self._subspans('ParserFunction')
-        ]
+            ParserFunction(_lststr, _type_to_spans, span, 'ParserFunction')
+            for span in self._subspans('ParserFunction')]
 
     @property
     def templates(self) -> List['Template']:
         """Return a list of templates as template objects."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
         return [
-            Template(
-                self._lststr,
-                self._type_to_spans,
-                span,
-            ) for span in self._subspans('Template')
-        ]
+            Template(_lststr, _type_to_spans, span, 'Template')
+            for span in self._subspans('Template')]
 
     @property
     def wikilinks(self) -> List['WikiLink']:
         """Return a list of wikilink objects."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
         return [
-            WikiLink(
-                self._lststr,
-                self._type_to_spans,
-                span,
-            ) for span in self._subspans('WikiLink')
-        ]
+            WikiLink(_lststr, _type_to_spans, span, 'WikiLink')
+            for span in self._subspans('WikiLink')]
 
     @property
     def comments(self) -> List['Comment']:
         """Return a list of comment objects."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
         return [
-            Comment(
-                self._lststr,
-                self._type_to_spans,
-                span,
-            ) for span in self._subspans('Comment')
-        ]
+            Comment(_lststr, _type_to_spans, span, 'Comment')
+            for span in self._subspans('Comment')]
 
     @property
     def external_links(self) -> List['ExternalLink']:
@@ -779,8 +768,7 @@ class WikiText:
                 span = [ss + s, ss + e]
                 spans_append(span)
                 external_links_append(
-                    ExternalLink(lststr, type_to_spans, span)
-                )
+                    ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
             return external_links
         # There are already some ExternalLink spans. Use the already existing
         # ones when the detected span is one of those.
@@ -793,7 +781,8 @@ class WikiText:
                 insort(spans, span)
             else:
                 span = old_span
-            external_links_append(ExternalLink(lststr, type_to_spans, span))
+            external_links_append(
+                ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
         return external_links
 
     @property
@@ -877,7 +866,7 @@ class WikiText:
                     # Ignore leading whitespace using len(m[1]).
                     span = [ss + ms + len(m[1]), ss + me]
                     spans.append(span)
-                    tables_append(Table(lststr, type_to_spans, span))
+                    tables_append(Table(lststr, type_to_spans, span, 'Table'))
                     shadow[ms:me] = b'_' * (me - ms)
             return tables
         # There are already exists some spans. Try to use the already existing
@@ -896,7 +885,7 @@ class WikiText:
                     insort(spans, span)
                 else:
                     span = old_span
-                tables_append(Table(lststr, type_to_spans, span))
+                tables_append(Table(lststr, type_to_spans, span, 'Table'))
                 shadow[ms:me] = b'_' * (me - ms)
         return tables
 
@@ -1058,20 +1047,21 @@ class SubWikiText(WikiText):
         _type: Optional[Union[str, int]] = None,
     ) -> None:
         """Initialize the object."""
-        _type = _type or type(self).__name__
-        self._type = _type
-
-        super().__init__(string, _type_to_spans)
-
-        # _type_to_spans and _span are either both None or not None.
-        if _type_to_spans is None and _type not in SPAN_PARSER_TYPES:
-            _type_to_spans = self._type_to_spans
-            span = [0, len(string)]
-            _type_to_spans[_type] = [span]
-            self._span = span
+        if _type is None:
+            # assert _span is None
+            # assert _type_to_spans is None
+            self._type = _type = type(self).__name__
+            super().__init__(string)
+            if _type not in SPAN_PARSER_TYPES:
+                span = [0, len(string)]
+                self._type_to_spans[_type] = [span]
+                self._span = span
         else:
-            self._span = \
-                self._type_to_spans[_type][0] if _span is None else _span
+            # assert _span is not None
+            # assert _type_to_spans is not None
+            self._type = _type
+            super().__init__(string, _type_to_spans)
+            self._span = _span
 
     def _subspans(self, _type: str) -> Generator[int, None, None]:
         """Yield all the sub-span indices excluding self._span."""

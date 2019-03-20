@@ -281,5 +281,7 @@ class Tag(SubWikiTextWithAttrs):
         spans = self._type_to_spans
         swt_spans = spans.setdefault('SubWikiText', [span])
         return SubWikiText(
-            self._lststr, spans, next(s for s in swt_spans if s == span)
-        )
+            self._lststr,
+            spans,
+            next(s for s in swt_spans if s == span),
+            'SubWikiText')
