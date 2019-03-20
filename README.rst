@@ -342,3 +342,10 @@ Known issues and limitations
 * `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it should be trivial to compute a WikiLink's linktrail.
 * Templates adjacent to external links, are never considered part of the link. In reality, this depends on the contents of the template. Example: ``parse('http://example.com{{dead link}}').external_links[0].url == 'http://example.com'``
 * While MediaWiki recognizes only a finite number of tags and they are extension-dependent, the ``tags`` method returns anything that looks like an HTML tag. A configuration option might be added in the future to address this issue.
+
+
+Credits
+=======
+* `python <https://www.python.org/>`_
+* `regex <https://bitbucket.org/mrabarnett/mrab-regex/>`_
+* `wcwidth <https://github.com/jquast/wcwidth>`_
