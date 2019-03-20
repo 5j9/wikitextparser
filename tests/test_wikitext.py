@@ -1067,7 +1067,7 @@ class Sections(TestCase):
             b.string,
         )
         # Sections use the same span object
-        # self.assertTrue(b.sections[1]._span is b._span)
+        self.assertTrue(b.sections[1]._span is b._span)
         self.assertEqual(
             '==== c ====\n3\n',
             b.sections[2].string,
