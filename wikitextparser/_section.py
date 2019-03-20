@@ -2,7 +2,6 @@
 
 
 from re import compile as re_compile, MULTILINE
-from typing import MutableSequence, Union, List, Dict
 
 from ._wikitext import WS, SubWikiText
 

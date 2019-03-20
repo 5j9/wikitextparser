@@ -81,24 +81,24 @@ class Table(SubWikiTextWithAttrs):
             if m:
                 match_row = []  # type: List[Any]
                 match_table.append(match_row)
-            while m:
-                match_row.append(m)
-                sep = m['sep']
-                pos = m.end()
-                if sep == b'|':
-                    m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
-                    while m:
-                        match_row.append(m)
-                        pos = m.end()
+                while m:
+                    match_row.append(m)
+                    sep = m['sep']
+                    pos = m.end()
+                    if sep == b'|':
                         m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
-                elif sep == b'!':
-                    m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
-                    while m:
-                        match_row.append(m)
-                        pos = m.end()
+                        while m:
+                            match_row.append(m)
+                            pos = m.end()
+                            m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
+                    elif sep == b'!':
                         m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
-                pos = _semi_caption_increase(shadow, pos)
-                m = NEWLINE_CELL_MATCH(shadow, pos)
+                        while m:
+                            match_row.append(m)
+                            pos = m.end()
+                            m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
+                    pos = _semi_caption_increase(shadow, pos)
+                    m = NEWLINE_CELL_MATCH(shadow, pos)
             rsp = _row_separator_increase(shadow, pos)
         return match_table
 

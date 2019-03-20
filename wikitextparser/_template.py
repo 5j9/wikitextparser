@@ -247,6 +247,7 @@ class Template(TlPfMixin):
             addstring = '|' + value
         else:
             if preserve_spacing:
+                # noinspection PyUnboundLocalVariable
                 addstring = (
                     '|' + (pre_name_ws_mode + name.strip(WS)).
                     ljust(name_length_mode) +
@@ -269,6 +270,7 @@ class Template(TlPfMixin):
                     # Insert after the last argument.
                     # The addstring needs to be recalculated because we don't
                     # want to change the the whitespace before final braces.
+                    # noinspection PyUnboundLocalVariable
                     arg[0:len(arg_string)] = (
                         arg.string.rstrip(WS) + post_value_ws_mode +
                         addstring.rstrip(WS) + after_values[0]
