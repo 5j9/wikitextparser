@@ -47,10 +47,10 @@ INVALID_EXT_CHARS_SUB = regex_compile(
 # Sections
 SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
 SECTIONS_FULLMATCH = regex_compile(
-    rb'(?<section>.*?)'
+    rb'(?<section>(?<equals>).*?)'  # lead section
     rb'(?<section>'
     + SECTION_HEADING +  # heading
-    rb'  .*?'  # section content
+    rb'.*?'  # section content
     rb')*',  # Todo: why can't be made possessive?
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
@@ -75,7 +75,7 @@ TABLE_FINDITER = regex_compile(
     DOTALL | MULTILINE | VERBOSE
 ).finditer
 
-# Types which are detected by the
+# Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
     'ExtensionTag',
@@ -344,6 +344,8 @@ class WikiText:
         _insert_update before the _shrink_update as this function
         can cause data loss in self._type_to_spans.
         """
+        # Note: The following algorithm won't work correctly if spans
+        # are not sorted.
         # Note: No span should be removed from _type_to_spans.
         for spans in self._type_to_spans.values():
             i = len(spans) - 1
@@ -805,82 +807,54 @@ class WikiText:
         sections_append = sections.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        ss, se = self._span
-        spans = type_to_spans.setdefault('Section', [])
+        ss, se = _span = self._span
+        type_spans = type_to_spans.setdefault('Section', [])
         full_match = SECTIONS_FULLMATCH(self._shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('equals')]
-        s, e = section_spans.pop(0)
-        s, e = s + ss, e + ss
-        if not spans:
+        if not type_spans:
             # All spans are new
-            type_spans_append = spans.append
-            # Lead section
-            lead_span = [s, e]
-            lead_section = Section(lststr, type_to_spans, lead_span)
-            # Other sections
-            for current_level, (s, e) in zip(
-                reversed(levels), reversed(section_spans)
+            spans_append = type_spans.append
+            for current_index, (current_level, (s, e)) in enumerate(
+                zip(levels, section_spans), 1
             ):
-                s, e = s + ss, e + ss
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
-                for section, section_level, section_span in zip(
-                    reversed(sections),
-                    levels[-len(sections):],
-                    reversed(spans),
+                for section_index, section_level in enumerate(
+                    levels[current_index:], current_index
                 ):
-                    if section_level > current_level:
-                        e = section_span[1]
+                    if current_level and section_level > current_level:
+                        e = section_spans[section_index][1]
                     else:
                         break
-                span = [s, e]
-                type_spans_append(span)
-                sections_append(Section(lststr, type_to_spans, span))
-            sections_append(lead_section)
-            type_spans_append(lead_span)
-            spans.reverse()
-            sections.reverse()
+                span = [ss + s, ss + e]
+                spans_append(span)
+                sections_append(
+                    Section(lststr, type_to_spans, span, 'Section'))
             return sections
         # There are already some spans. Instead of appending new spans
         # use them when the detected span already exists.
-        span_tuple_to_span = {(s[0], s[1]): s for s in spans}.get
-        # Continue lead section
-        old_span = span_tuple_to_span((s, e))
-        if old_span is None:
-            lead_span = [s, e]
-            insort(spans, lead_span)
-        else:
-            lead_span = old_span
-        lead_section = Section(lststr, type_to_spans, lead_span)
-        # Adjust other sections
-        calced_spans = []
-        calced_spans_append = calced_spans.append
-        for current_level, (s, e) in zip(
-            reversed(levels), reversed(section_spans)
+        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
+        for current_index, (current_level, (s, e)) in enumerate(
+            zip(levels, section_spans), 1
         ):
-            s, e = s + ss, e + ss
             # Add text of the current_section to any parent section.
             # Note that section 0 is not a parent for any subsection.
-            for section, section_level, section_span in zip(
-                reversed(sections),
-                levels[-len(sections):],
-                reversed(calced_spans),
+            for section_index, section_level in enumerate(
+                levels[current_index:], current_index
             ):
-                if section_level > current_level:
-                    e = section_span[1]
+                if current_level and section_level > current_level:
+                    e = section_spans[section_index][1]
                 else:
                     break
+            s, e = ss + s, ss + e
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
                 span = [s, e]
-                insort(spans, span)
+                insort(type_spans, span)
             else:
                 span = old_span
-            calced_spans_append(span)
-            sections_append(Section(lststr, type_to_spans, span))
-        sections_append(lead_section)
-        sections.reverse()
+            sections_append(Section(lststr, type_to_spans, span, 'Section'))
         return sections
 
     @property

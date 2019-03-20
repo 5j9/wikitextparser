@@ -1067,7 +1067,7 @@ class Sections(TestCase):
             b.string,
         )
         # Sections use the same span object
-        self.assertTrue(b.sections[1]._span is b._span)
+        # self.assertTrue(b.sections[1]._span is b._span)
         self.assertEqual(
             '==== c ====\n3\n',
             b.sections[2].string,
@@ -1082,6 +1082,12 @@ class Sections(TestCase):
         z, a, b, c = parse('=a=\na\n==b==\nb\n==c==\nc').sections
         b.string = ''
         self.assertEqual(c.string, '==c==\nc')
+
+    def test_section_templates(self):
+        """section.templates returns templates only from that section."""
+        templates = parse('{{t1}}\n==section==\n{{t2}}').sections[1].templates
+        self.assertEqual(len(templates), 1)
+        self.assertEqual(templates[0].string, '{{t2}}')
 
 
 class WikiList(TestCase):

@@ -4,8 +4,7 @@
 from re import compile as re_compile, MULTILINE
 from typing import MutableSequence, Union, List, Dict
 
-from ._wikitext import WikiText, WS
-
+from ._wikitext import WS, SubWikiText
 
 HEADER_MATCH = re_compile(
     rb'(={1,6})[^\n]+?\1[ \t]*$',
@@ -13,26 +12,16 @@ HEADER_MATCH = re_compile(
 ).match
 
 
-class Section(WikiText):
+class Section(SubWikiText):
 
     """Create a new Section object."""
 
-    _type = 'Section'
-
-    def __init__(
-        self,
-        string: Union[str, MutableSequence[str]],
-        _type_to_spans: Dict[str, List[List[int]]] = None,
-        _span: List[int] = None,
-    ) -> None:
-        """Initialize the Table object."""
-        super().__init__(string, _type_to_spans)
-        if _span:
-            self._span = _span
-
     @property
     def level(self) -> int:
-        """Return level of this section. Level is in range(1,7)."""
+        """Return level of this section.
+
+        Level is in range(1,7) or 0 for the lead section.
+        """
         m = HEADER_MATCH(self._shadow)
         if m:
             return len(m.group(1))
