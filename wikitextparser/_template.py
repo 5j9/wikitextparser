@@ -56,7 +56,7 @@ class Template(TlPfMixin):
         _code: str = None,
         *,
         code: str = None,
-        capitalize=False,
+        capitalize=False
     ) -> str:
         """Return normal form of self.name.
 
