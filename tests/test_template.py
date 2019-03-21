@@ -52,7 +52,8 @@ class TemplateTest(unittest.TestCase):
     def test_normal_name(self):
         t = Template('{{ u |a}}')
         self.assertEqual('u', t.normal_name())
-        self.assertEqual('U', t.normal_name(capital_links=True))
+        self.assertEqual('U', t.normal_name(capitalize=True))
+        self.assertWarns(DeprecationWarning, t.normal_name, capital_links=True)
         t = Template('{{ template: u |a}}')
         self.assertEqual('u', t.normal_name())
         t = Template('{{ الگو:u |a}}')
@@ -63,6 +64,7 @@ class TemplateTest(unittest.TestCase):
         self.assertEqual('t', t.normal_name())
         t = Template('{{ : fa : Template : t  # A }}')
         self.assertEqual('t', t.normal_name(code='fa'))
+        self.assertWarns(DeprecationWarning, t.normal_name, _code='fa')
         t = Template('{{ : t |a}}')
         self.assertEqual('t', t.normal_name())
         t = Template('{{A___B}}')

@@ -2,6 +2,7 @@
 
 
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
+from warnings import warn
 
 from regex import compile as regex_compile, REVERSE
 
@@ -52,7 +53,10 @@ class Template(TlPfMixin):
         self,
         rm_namespaces=('Template',),
         capital_links=False,
+        _code: str = None,
+        *,
         code: str = None,
+        capitalize=False,
     ) -> str:
         """Return normal form of self.name.
 
@@ -61,16 +65,18 @@ class Template(TlPfMixin):
         - Remove namespace ("template:" or any of `localized_namespaces`.
         - Use space instead of underscore.
         - Remove consecutive spaces.
-        - Use uppercase for the first letter if `capital_links`.
+        - Use uppercase for the first letter if `capitalize`.
         - Remove #anchor.
 
         :param rm_namespaces: is used to provide additional localized
             namespaces for the template namespace. They will be removed from
             the result. Default is ('Template',).
-        :param capital_links: If True, convert the first letter of the
+        :param capitalize: If True, convert the first letter of the
             template's name to a capital letter. See
             [[mw:Manual:$wgCapitalLinks]] for more info.
         :param code: is the language code.
+        :param capital_links: deprecated.
+        :param _code: deprecated.
 
         Example:
             >>> Template(
@@ -78,6 +84,14 @@ class Template(TlPfMixin):
             ... ).normal_name(code='en')
             'T 1'
         """
+        if capital_links:
+            warn('`capital_links` argument is deprecated,'
+                 ' use `capitalize` instead', DeprecationWarning)
+            capitalize = capital_links
+        if _code:
+            warn('`positional_code` argument is deprecated,'
+                 ' use `code` instead', DeprecationWarning)
+            code = _code
         # Remove comments
         name = COMMENT_SUB('', self.name).strip(WS)
         # Remove code
@@ -101,7 +115,7 @@ class Template(TlPfMixin):
                     break
         # Use space instead of underscore
         name = name.replace('_', ' ')
-        if capital_links:
+        if capitalize:
             # Use uppercase for the first letter
             n0 = name[0]
             if n0.islower():

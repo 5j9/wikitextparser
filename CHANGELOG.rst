@@ -1,3 +1,9 @@
+v0.23.1
+-------
+- Deprecated ``capital_links`` parameter of ``Template.normal_name``. Use
+  ``capitalize`` instead (keyword-only argument).
+- Deprecated the ``code`` parameter of ``Template.normal_name`` as a positional argument deprecate. It's now a keyword-only argument.
+
 v0.23.0
 -------
 - Fixed a bug in ``Section`` objects that was causing them to return the properties of the whole page (#15).
