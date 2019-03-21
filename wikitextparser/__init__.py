@@ -3,8 +3,6 @@
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
 __version__ = '0.23.1.dev0'
 
-import regex as _regex
-
 from ._parameter import Parameter
 from ._argument import Argument
 from ._externallink import ExternalLink
@@ -22,8 +20,6 @@ from ._tag import START_TAG_FINDITER as _START_TAG_FINDITER
 from ._wikilist import WikiList
 from ._wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT
 
-
-_regex.DEFAULT_VERSION = _regex.VERSION1
 
 _wikitext.ExternalLink = ExternalLink
 _wikitext.WikiLink = WikiLink
