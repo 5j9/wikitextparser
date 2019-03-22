@@ -13,7 +13,7 @@ HEADER_MATCH = re_compile(
 
 class Section(SubWikiText):
 
-    """Create a new Section object."""
+    """Section class is used to represent page sections."""
 
     @property
     def level(self) -> int:
