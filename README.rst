@@ -203,7 +203,7 @@ Calling the ``cells`` method of a ``Table`` returns table cells as ``Cell`` obje
     |}
 
 HTML attributes of Table, Cell, and Tag objects are accessible via
-`get_attr`, `set_attr`, `has_attr`, and  `del_atrr` methods.
+`get_attr`, `set_attr`, `has_attr`, and  `del_attr` methods.
 
 Lists
 -----
