@@ -926,8 +926,7 @@ class WikiText:
         for pattern in patterns:
             list_regex = regex_compile(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
-                MULTILINE,
-            )
+                MULTILINE)
             ss = self._span[0]
             for m in list_regex.finditer(self._shadow):
                 ms, me = m.span()
@@ -940,9 +939,7 @@ class WikiText:
                     span = old_span
                 lists.append(
                     WikiList(
-                        lststr, pattern, m, type_to_spans, span, 'WikiList'
-                    )
-                )
+                        lststr, pattern, m, type_to_spans, span, 'WikiList'))
         return lists
 
     def tags(self, name=None) -> List['Tag']:
