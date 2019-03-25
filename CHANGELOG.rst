@@ -1,5 +1,5 @@
-master branch
--------------
+v0.24.0
+-------
 - Define a deleter for ``WikiText.string`` property and ``Template.del_arg`` method. (#14)
 - Improve the ``lists`` method of ``Template`` and ``Argument`` classes.
 - Fixed a bug in detection of multiline arguments. (#13)
