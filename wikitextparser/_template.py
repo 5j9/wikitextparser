@@ -7,7 +7,7 @@ from warnings import warn
 from regex import compile as regex_compile, REVERSE
 
 from ._argument import Argument
-from ._parser_function import TlPfMixin
+from ._parser_function import SubWikiTextWithArgs
 from ._spans import COMMENT_PATTERN
 from ._wikitext import WS
 
@@ -27,7 +27,7 @@ SPACE_AFTER_SEARCH = regex_compile(r'\s*+(?=\|)').search
 T = TypeVar('T')
 
 
-class Template(TlPfMixin):
+class Template(SubWikiTextWithArgs):
 
     """Convert strings to Template objects.
 
@@ -35,19 +35,7 @@ class Template(TlPfMixin):
     """
 
     _args_matcher = BAR_SPLITS_FULLMATCH
-
-    @property
-    def name(self) -> str:
-        """Return template's name (includes whitespace)."""
-        h = self._atomic_partition(124)[0]
-        if len(h) == len(self.string):
-            return h[2:-2]
-        return h[2:]
-
-    @name.setter
-    def name(self, newname: str) -> None:
-        """Set the new name for the template."""
-        self[2:2 + len(self.name)] = newname
+    _first_arg_sep = 124
 
     def normal_name(
         self,

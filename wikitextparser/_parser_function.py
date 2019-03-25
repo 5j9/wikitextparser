@@ -17,11 +17,12 @@ BAR_SPLITS_FULLMATCH = regex.compile(
 ).fullmatch
 
 
-class TlPfMixin(SubWikiText):
+class SubWikiTextWithArgs(SubWikiText):
 
-    """Define common attributes among Templates and ParserFunctions."""
+    """Define common attributes for `Template` and `ParserFunction`."""
 
     _args_matcher = NotImplemented
+    _first_arg_sep = 0
 
     @property
     def arguments(self) -> List[Argument]:
@@ -61,19 +62,23 @@ class TlPfMixin(SubWikiText):
         return [
             lst for arg in self.arguments for lst in arg.lists(pattern) if lst]
 
+    @property
+    def name(self) -> str:
+        """Return template's name (includes whitespace)."""
+        h = self._atomic_partition(self._first_arg_sep)[0]
+        if len(h) == len(self.string):
+            return h[2:-2]
+        return h[2:]
 
-class ParserFunction(TlPfMixin):
+    @name.setter
+    def name(self, newname: str) -> None:
+        """Set the new name."""
+        self[2:2 + len(self.name)] = newname
+
+
+class ParserFunction(SubWikiTextWithArgs):
 
     """Create a new ParserFunction object."""
 
     _args_matcher = BAR_SPLITS_FULLMATCH
-
-    @property
-    def name(self) -> str:
-        """Return name part of the current ParserFunction."""
-        return self.string[2:].partition(':')[0]
-
-    @name.setter
-    def name(self, newname: str) -> None:
-        """Set a new name."""
-        self[2:2 + len(self.name)] = newname
+    _first_arg_sep = 58
