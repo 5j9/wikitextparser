@@ -295,5 +295,13 @@ class SetArg(TestCase):
         self.assertEqual('{{t|v}}', t.string)
 
 
+class TestDelArg(TestCase):
+
+    def test_del_positional_arg(self):
+        t = Template('{{t| a | b | 2 = c | d }}')
+        t.del_arg('2')
+        self.assertEqual('{{t| a | d }}', t.string)
+
+
 if __name__ == '__main__':
     main()
