@@ -8,8 +8,7 @@ from bisect import bisect, insort
 from copy import deepcopy
 from operator import attrgetter
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional,
-)
+    MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional)
 from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
@@ -22,8 +21,7 @@ from ._spans import (
     parse_to_spans,
     INVALID_EXTLINK_CHARS,
     BARE_EXTERNAL_LINK,
-    EXTERNAL_LINK_URL_TAIL,
-)
+    EXTERNAL_LINK_URL_TAIL)
 
 
 # External links
@@ -78,8 +76,7 @@ TABLE_FINDITER = regex_compile(
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
-    'ExtensionTag',
-}
+    'ExtensionTag'}
 
 WS = '\r\n\t '
 
@@ -189,8 +186,7 @@ class WikiText:
         # isinstance(key, slice)
         if key.step is not None:
             raise NotImplementedError(
-                'step is not implemented for string setter.'
-            )
+                'step is not implemented for string setter.')
         start, stop = key.start or 0, key.stop
         if start < 0:
             start += se - ss
@@ -202,8 +198,7 @@ class WikiText:
             stop += se - ss
         if start > stop:
             raise IndexError(
-                'stop index out of range or start is after the stop'
-            )
+                'stop index out of range or start is after the stop')
         return start + ss, stop + ss
 
     def __setitem__(
@@ -233,8 +228,7 @@ class WikiText:
         elif len_change < 0:
             self._shrink_update(
                 rmstart=stop + len_change,  # new stop
-                rmstop=stop,  # old stop
-            )
+                rmstop=stop)  # old stop
         # Add the newly added spans contained in the value.
         type_to_spans = self._type_to_spans
         for type_, spans in parse_to_spans(
@@ -285,8 +279,7 @@ class WikiText:
         # Update spans
         self._insert_update(
             index=index,
-            length=string_len,
-        )
+            length=string_len)
         # Remember newly added spans by the string.
         type_to_spans = self._type_to_spans
         for type_, spans in parse_to_spans(
@@ -493,8 +486,7 @@ class WikiText:
             type_: [
                 [s - ss, e - ss] for s, e in spans[bisect(spans, [ss]):]
                 if e <= se
-            ] for type_, spans in self._type_to_spans.items()
-        }
+            ] for type_, spans in self._type_to_spans.items()}
 
     def pprint(self, indent: str = '    ', remove_comments=False):
         """Deprecated, use self.pformat instead."""
@@ -574,11 +566,9 @@ class WikiText:
                 stop_conversion = False
                 last_arg.name = (
                     ' ' + arg_stripped_names.pop() + ' ' +
-                    ' ' * (max_name_len - arg_name_lengths.pop())
-                )
+                    ' ' * (max_name_len - arg_name_lengths.pop()))
                 last_arg.value = (
-                    ' ' + last_stripped_value + '\n' + indent * (level - 1)
-                )
+                    ' ' + last_stripped_value + '\n' + indent * (level - 1))
             elif last_is_positional:
                 # (last_value == last_stripped_value
                 # and not_a_parser_function is not True)
@@ -594,8 +584,7 @@ class WikiText:
                 last_arg.name = ' ' + last_arg.name.lstrip(ws)
                 if not last_value.endswith('\n' + indent * (level - 1)):
                     last_arg.value = (
-                        last_value.rstrip(ws) + ' ' + last_comment_indent
-                    )
+                        last_value.rstrip(ws) + ' ' + last_comment_indent)
             if not args:
                 continue
             comment_indent = '<!--\n' + indent * (level - 1) + ' -->'
@@ -620,8 +609,7 @@ class WikiText:
                 elif not_a_parser_function:
                     arg.name = (
                         ' ' + stripped_name + ' ' +
-                        ' ' * (max_name_len - arg_name_len)
-                    )
+                        ' ' * (max_name_len - arg_name_len))
                     arg.value = ' ' + stripped_value + newline_indent
         i = 0
         functions = parsed.parser_functions
@@ -656,8 +644,7 @@ class WikiText:
                 # the first arg is both the first and last argument
                 if arg.positional:
                     arg.value = (
-                        newline_indent + arg.value.strip(ws) + short_indent
-                    )
+                        newline_indent + arg.value.strip(ws) + short_indent)
                 else:
                     # Note that we don't add spaces before and after the
                     # '=' in parser functions because it could be part of
@@ -956,15 +943,13 @@ class WikiText:
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')
                     for span in type_to_spans['ExtensionTag']
-                    if string.startswith('<' + name, span[0])
-                ]
+                    if string.startswith('<' + name, span[0])]
             tags = []  # type: List['Tag']
         else:
             # There is no name, add all extension tags. Before using shadow.
             tags = [
                 Tag(lststr, type_to_spans, span, 'ExtensionTag')
-                for span in type_to_spans['ExtensionTag']
-            ]
+                for span in type_to_spans['ExtensionTag']]
         tags_append = tags.append
         # Get the left-most start tag, match it to right-most end tag
         # and so on.
@@ -974,16 +959,13 @@ class WikiText:
             # There is a name but it is not in TAG_EXTENSIONS.
             reversed_start_matches = reversed([m for m in regex_compile(
                 START_TAG_PATTERN.replace(
-                    rb'{name}', rb'(?P<name>' + name.encode() + rb')'
-                )
+                    rb'{name}', rb'(?P<name>' + name.encode() + rb')')
             ).finditer(shadow)])
             end_search = regex_compile(END_TAG_PATTERN .replace(
-                b'{name}', name.encode()
-            )).search
+                b'{name}', name.encode())).search
         else:
             reversed_start_matches = reversed(
-                [m for m in START_TAG_FINDITER(shadow)]
-            )
+                [m for m in START_TAG_FINDITER(shadow)])
         shadow_copy = shadow[:]
         spans = type_to_spans.setdefault('Tag', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
@@ -1003,10 +985,8 @@ class WikiText:
                     # build end_search according to start tag name
                     end_match = search(
                         END_TAG_PATTERN.replace(
-                            b'{name}', start_match['name']
-                        ),
-                        shadow_copy,
-                    )
+                            b'{name}', start_match['name']),
+                        shadow_copy)
                 if end_match:
                     s, e = end_match.span()
                     shadow_copy[s:e] = b'_' * (e - s)
@@ -1121,8 +1101,7 @@ class SubWikiText(WikiText):
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
     from ._tag import (
-        Tag, START_TAG_PATTERN, END_TAG_PATTERN, START_TAG_FINDITER
-    )
+        Tag, START_TAG_PATTERN, END_TAG_PATTERN, START_TAG_FINDITER)
     from ._parser_function import ParserFunction
     from ._template import Template
     from ._wikilink import WikiLink
