@@ -1,12 +1,12 @@
 ﻿"""Test the ExternalLink class."""
 
 
-import unittest
+from unittest import main, TestCase, expectedFailure
 
 from wikitextparser import Template
 
 
-class TemplateTest(unittest.TestCase):
+class TestTemplate(TestCase):
 
     """Test the Template class."""
 
@@ -193,8 +193,13 @@ class TemplateTest(unittest.TestCase):
         t = Template("{{صعود}}")
         self.assertEqual('صعود', t.name)
 
+    def test_lists(self):
+        l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').templates[0].lists()
+        self.assertEqual(l1.items, ['a', 'b'])
+        self.assertEqual(l2.items, ['c', 'd'])
 
-class SetArg(unittest.TestCase):
+
+class SetArg(TestCase):
 
     """Test set_arg method of Template class."""
 
@@ -223,15 +228,13 @@ class SetArg(unittest.TestCase):
         t = Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
         t.set_arg('z', 'z')
         self.assertEqual(
-            '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}', t.string
-        )
+            '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}', t.string)
 
     def test_preserve_spacing_with_only_one_arg(self):
         t = Template('{{t\n  |  afadfaf =   value \n}}')
         t.set_arg('z', 'z')
         self.assertEqual(
-            '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string
-        )
+            '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}', t.string)
 
     def test_multiline_arg(self):
         t = Template('{{text|\na=\nb\nc\n}}')
@@ -245,15 +248,13 @@ class SetArg(unittest.TestCase):
         t = Template('{{t\n  |  a =   v \n}}')
         t.set_arg('a', 'w', preserve_spacing=False)
         self.assertEqual(
-            '{{t\n  |  a =w}}', t.string
-        )
+            '{{t\n  |  a =w}}', t.string)
 
     def test_new_dont_preserve_space(self):
         t = Template('{{t\n  |  a =   v \n}}')
         t.set_arg('b', 'w', preserve_spacing=False)
         self.assertEqual(
-            '{{t\n  |  a =   v \n|b=w}}', t.string
-        )
+            '{{t\n  |  a =   v \n|b=w}}', t.string)
 
     def test_before(self):
         t = Template('{{t|a|b|c=c|d}}')
@@ -271,7 +272,7 @@ class SetArg(unittest.TestCase):
         t.set_arg('2', 'q', positional=True)
         self.assertEqual('{{t|p|q}}', t.string)
 
-    @unittest.expectedFailure
+    @expectedFailure
     def test_invalid_position(self):
         t = Template('{{t}}')
         t.set_arg('2', 'a', positional=True)
@@ -295,4 +296,4 @@ class SetArg(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

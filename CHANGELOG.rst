@@ -1,5 +1,7 @@
-v0.23.1
--------
+master branch
+-------------
+- Improved the ``lists`` method of ``Template`` and ``Argument`` classes.
+- Fixed a bug in detection of multiline arguments. (#13)
 - Deprecated ``capital_links`` parameter of ``Template.normal_name``. Use
   ``capitalize`` instead (keyword-only argument).
 - Deprecated the ``code`` parameter of ``Template.normal_name`` as a positional argument deprecate. It's now a keyword-only argument.

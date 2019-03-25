@@ -1,12 +1,12 @@
 """Test the Argument class."""
 
 
-import unittest
+from unittest import main, TestCase
 
 from wikitextparser import Argument, Template, parse
 
 
-class TestArgument(unittest.TestCase):
+class TestArgument(TestCase):
 
     """Argument test class."""
 
@@ -114,6 +114,14 @@ class TestArgument(unittest.TestCase):
         self.assertEqual(
             (a.name, a.value), ('http://example.com?foo', 'bar'))
 
+    def test_lists(self):
+        self.assertEqual(Argument('|list=*a\n*b').lists()[0].items, ['a', 'b'])
+        self.assertEqual(Argument('|lst= *a\n*b').lists()[0].items, ['a', 'b'])
+        self.assertEqual(Argument('|*a\n*b').lists()[0].items, ['a', 'b'])
+        # the space at the beginning of a positional argument should not be
+        # ignored. (?)
+        self.assertEqual(Argument('| *a\n*b').lists()[0].items, ['b'])
+
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

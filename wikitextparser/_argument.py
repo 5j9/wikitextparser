@@ -1,14 +1,14 @@
 ﻿"""Define the Argument class."""
 
-from regex import compile as regex_compile, MULTILINE
+from regex import compile as regex_compile, MULTILINE, DOTALL
 
 from ._wikitext import SubWikiText, SECTION_HEADING
 from ._spans import parse_to_spans
 
-ARG_SHADOW_MATCH = regex_compile(
-    rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING
-    + rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
-    MULTILINE).match
+ARG_SHADOW_FULLMATCH = regex_compile(
+    rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING +
+    rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
+    MULTILINE | DOTALL).fullmatch
 
 
 class Argument(SubWikiText):
@@ -28,7 +28,7 @@ class Argument(SubWikiText):
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match
-        shadow_match = ARG_SHADOW_MATCH(self._shadow)
+        shadow_match = ARG_SHADOW_FULLMATCH(self._shadow)
         self._shadow_match_cache = shadow_match, self_string
         return shadow_match
 
@@ -71,10 +71,10 @@ class Argument(SubWikiText):
         If this is a positional argument, convert it to keyword argument.
         """
         oldname = self.name
-        if self.positional:
-            self[0:1] = '|' + newname + '='
-        else:
+        if self._shadow_match['eq']:
             self[1:1 + len(oldname)] = newname
+        else:
+            self[0:1] = '|' + newname + '='
 
     @property
     def positional(self) -> bool:
@@ -101,8 +101,7 @@ class Argument(SubWikiText):
         raise ValueError(
             'Converting positional argument to keyword argument is not '
             'possible without knowing the new name. '
-            'You can use `self.name = somename` instead.'
-        )
+            'You can use `self.name = somename` instead.')
 
     @property
     def value(self) -> str:
@@ -120,3 +119,15 @@ class Argument(SubWikiText):
             self[shadow_match.start('post_eq'):] = newvalue
         else:
             self[1:] = newvalue
+
+    @property
+    def _lists_shadow_ss(self):
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
+            post_eq = shadow_match['post_eq']
+            ls_post_eq = post_eq.lstrip()
+            return (
+                ls_post_eq,
+                self._span[0] + shadow_match.start('post_eq')
+                + len(post_eq) - len(ls_post_eq))
+        return shadow_match[0][1:], self._span[0] + 1

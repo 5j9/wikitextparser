@@ -1,6 +1,4 @@
 """Define the ParserFunction class."""
-
-
 from bisect import insort
 from typing import List
 
@@ -8,6 +6,7 @@ import regex
 
 from ._wikitext import SubWikiText
 from ._argument import Argument
+from ._wikilist import WikiList
 
 
 BAR_SPLITS_FULLMATCH = regex.compile(
@@ -52,6 +51,15 @@ class TlPfMixin(SubWikiText):
                 string[s:e], shadow[arg_self_start:arg_self_end])
             arguments_append(arg)
         return arguments
+
+    def lists(self, pattern: str = None) -> List[WikiList]:
+        """Return the lists in all arguments.
+
+        For performance reasons it is usually preferred to get a specific
+        Argument and use the `lists` method of that argument instead.
+        """
+        return [
+            lst for arg in self.arguments for lst in arg.lists(pattern) if lst]
 
 
 class ParserFunction(TlPfMixin):

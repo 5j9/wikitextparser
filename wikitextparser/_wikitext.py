@@ -12,7 +12,7 @@ from typing import (
 )
 from warnings import warn
 
-from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search
+from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
 from regex import compile as regex_compile
 from wcwidth import wcswidth
 
@@ -889,6 +889,11 @@ class WikiText:
                 shadow[ms:me] = b'_' * (me - ms)
         return tables
 
+    @property
+    def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
+        """Return appropriate shadow and its offset to be used by `lists`."""
+        return self._shadow, self._span[0]
+
     def lists(self, pattern: str = None) -> List['WikiList']:
         r"""Return a list of WikiList objects.
 
@@ -917,29 +922,28 @@ class WikiText:
                 can improve the performance.
         """
         lists = []
+        lists_append = lists.append
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault('WikiList', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        patterns = (r'\#', r'\*', '[:;]') if pattern is None \
-            else (pattern,)  # type: Tuple[str, ...]
-        for pattern in patterns:
-            list_regex = regex_compile(
+        shadow, ss = self._lists_shadow_ss
+        for pattern in \
+                (r'\#', r'\*', '[:;]') if pattern is None else (pattern,):
+            for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
-                MULTILINE)
-            ss = self._span[0]
-            for m in list_regex.finditer(self._shadow):
+                shadow, MULTILINE
+            ):
                 ms, me = m.span()
                 s, e = ss + ms, ss + me
-                span = [s, e]
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
+                    span = [s, e]
                     insort(spans, span)
                 else:
                     span = old_span
-                lists.append(
-                    WikiList(
-                        lststr, pattern, m, type_to_spans, span, 'WikiList'))
+                lists_append(WikiList(
+                    lststr, pattern, m, type_to_spans, span, 'WikiList'))
         return lists
 
     def tags(self, name=None) -> List['Tag']:
