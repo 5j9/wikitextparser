@@ -304,6 +304,11 @@ class WikiText:
         """Set a new string for this object. Note the old data will be lost."""
         self[:] = newstring
 
+    @string.deleter
+    def string(self) -> None:
+        """Set a new string for this object. Note the old data will be lost."""
+        del self[:]
+
     def _atomic_partition(self, char: int) -> Tuple[str, str, str]:
         """Partition self.string where `char`'s not in atomic sub-spans."""
         s, e = self._span

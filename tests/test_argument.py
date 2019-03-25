@@ -45,7 +45,7 @@ class TestArgument(TestCase):
 
     def test_removing_last_arg_should_not_effect_the_others(self):
         a, b, c = Template('{{t|1=v|v|1=v}}').arguments
-        c.string = ''
+        del c[:]
         self.assertEqual('|1=v', a.string)
         self.assertEqual('|v', b.string)
 
@@ -63,8 +63,7 @@ class TestArgument(TestCase):
     def test_name_of_positionals(self):
         self.assertEqual(
             ['1', '2', '3'],
-            [a.name for a in parse('{{t|a|b|c}}').templates[0].arguments],
-        )
+            [a.name for a in parse('{{t|a|b|c}}').templates[0].arguments])
 
     def test_dont_confuse_subspan_equal_with_keyword_arg_equal(self):
         p = parse('{{text| {{text|1=first}} | b }}')

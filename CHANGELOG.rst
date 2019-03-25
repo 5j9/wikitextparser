@@ -1,7 +1,7 @@
 master branch
 -------------
-- Add ``del_arg`` method.
-- Improved the ``lists`` method of ``Template`` and ``Argument`` classes.
+- Define a deleter for ``WikiText.string`` property and ``Template.del_arg`` method. (#14)
+- Improve the ``lists`` method of ``Template`` and ``Argument`` classes.
 - Fixed a bug in detection of multiline arguments. (#13)
 - Deprecated ``capital_links`` parameter of ``Template.normal_name``. Use
   ``capitalize`` instead (keyword-only argument).

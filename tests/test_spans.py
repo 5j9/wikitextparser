@@ -196,7 +196,7 @@ class Spans(TestCase):
         self.assertEqual('1', t2_args[0].name)
         self.assertEqual('2', t2_args[1].name)
         self.assertEqual('1', t2_args[2].name)
-        t1_args[0].string = ''
+        del t1_args[0][:]
         t1_args = t1.arguments
         t2_args = t2.arguments
         self.assertEqual('1', t1_args[0].name)
@@ -205,7 +205,7 @@ class Spans(TestCase):
         self.assertEqual('1', t2_args[0].name)
         self.assertEqual('2', t2_args[1].name)
         self.assertEqual('1', t2_args[2].name)
-        t1_args[1].string = ''
+        del t1_args[1][:]
         t1_args = t1.arguments
         t2_args = t2.arguments
         self.assertEqual("text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text", wt.string)

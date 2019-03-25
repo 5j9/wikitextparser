@@ -375,11 +375,10 @@ class ExternalLinks(TestCase):
     def test_destroy(self):
         s = 'text1 [//en.wikipedia.org wikipedia] text2'
         wt = WikiText(s)
-        wt.external_links[0].string = ''
+        del wt.external_links[0].string
         self.assertEqual(
             'text1  text2',
-            str(wt),
-        )
+            str(wt))
 
     def test_wikilink2externallink_fallback(self):
         p = parse('[[http://example.com foo bar]]')
@@ -1080,7 +1079,7 @@ class Sections(TestCase):
 
     def test_deleting_a_section_wont_corrupt_others(self):
         z, a, b, c = parse('=a=\na\n==b==\nb\n==c==\nc').sections
-        b.string = ''
+        del b.string
         self.assertEqual(c.string, '==c==\nc')
 
     def test_section_templates(self):
