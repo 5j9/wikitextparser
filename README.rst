@@ -313,7 +313,7 @@ Use the optional ``type_`` argument if looking for ancestors of a specific type:
     [ParserFunction('{{#if:{{b{{c<!---->}}}}}}')]
 
 
-To delete any object from the its parent objects use ``del object[:]`` or ``object.string = ''``.
+To delete/remove any object from its parents use ``del object[:]`` or ``del object.string``.
 
 
 Compared with mwparserfromhell
