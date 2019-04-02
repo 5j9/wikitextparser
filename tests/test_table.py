@@ -20,7 +20,7 @@ class Data(unittest.TestCase):
     """Test the data method of the table class."""
 
     def test_each_row_on_a_newline(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n'
             '|Orange\n'
             '|Apple\n'
@@ -30,212 +30,161 @@ class Data(unittest.TestCase):
             '|-\n'
             '|Butter\n'
             '|Ice cream \n'
-            '|}'
-        )
-        self.assertEqual(
-            table.data(),
-            [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
-        )
+            '|}').data(),
+            [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']])
 
     def test_with_optional_rowseprator_on_first_row(self):
-        table = Table(
+        self.assertEqual(Table(
             '{| class=wikitable | g\n'
             ' |- 132131 |||\n'
             '  | a | b\n'
             ' |-\n'
             '  | c\n'
-            '|}'
-        )
-        self.assertEqual(
-            table.data(),
-            [['b'], ['c']],
-        )
+            '|}').data(), [['b'], ['c']])
 
     def test_all_rows_are_on_a_single_line(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n'
             '|a||b||c\n'
             '|-\n'
             '|d||e||f\n'
             '|-\n'
             '|g||h||i\n'
-            '|}'
-        )
-        self.assertEqual(
-            table.data(),
-            [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']],
-        )
+            '|}').data(), [['a', 'b', 'c'], ['d', 'e', 'f'], ['g', 'h', 'i']])
 
     def test_extra_spaces_have_no_effect(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n|  Orange    ||   Apple   ||   more\n|-\n'
             '|   Bread    ||   Pie     ||   more\n|-\n'
-            '|   Butter   || Ice cream ||  and more\n|}'
-        )
-        self.assertEqual(
-            table.data(),
-            [
-                ['Orange', 'Apple', 'more'],
-                ['Bread', 'Pie', 'more'],
-                ['Butter', 'Ice cream', 'and more']],
-        )
+            '|   Butter   || Ice cream ||  and more\n|}').data(), [
+            ['Orange', 'Apple', 'more'],
+            ['Bread', 'Pie', 'more'],
+            ['Butter', 'Ice cream', 'and more']])
 
     def test_longer_text_and_only_rstrip(self):
-        table = Table(
-            '{|\n|multi\nline\ntext. \n\n2nd paragraph. \n|'
-            '\n* ulli1\n* ulli2\n* ulli3\n|}'
-        )
         self.assertEqual(
-            table.data(),
-            [
-                [
-                    'multi\nline\ntext. \n\n2nd paragraph.',
-                    '\n* ulli1\n* ulli2\n* ulli3'
-                ]
-            ]
-        )
+            Table(
+                '{|\n|multi\nline\ntext. \n\n2nd paragraph. \n|'
+                '\n* ulli1\n* ulli2\n* ulli3\n|}'
+            ).data(), [
+                ['multi\nline\ntext. \n\n2nd paragraph.',
+                 '\n* ulli1\n* ulli2\n* ulli3']])
 
     def test_strip_is_false(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n| a || b \n|}'
-        )
-        self.assertEqual(table.data(strip=False), [[' a ', ' b ']])
+        ).data(strip=False), [[' a ', ' b ']])
 
     def test_doublepipe_multiline(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n|| multi\nline\n||\n 1\n|}'
-        )
-        self.assertEqual(table.data(), [['multi\nline', '\n 1']])
+        ).data(), [['multi\nline', '\n 1']])
 
     def test_with_headers(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n! style="text-align:left;"| Item\n! Amount\n! Cost\n|-\n'
             '|Orange\n|10\n|7.00\n|-\n|Bread\n|4\n|3.00\n|-\n'
-            '|Butter\n|1\n|5.00\n|-\n!Total\n|\n|15.00\n|}'
-        )
-        self.assertEqual(
-            table.data(), [
-                ['Item', 'Amount', 'Cost'],
-                ['Orange', '10', '7.00'],
-                ['Bread', '4', '3.00'],
-                ['Butter', '1', '5.00'],
-                ['Total', '', '15.00'],
-            ]
-        )
+            '|Butter\n|1\n|5.00\n|-\n!Total\n|\n|15.00\n|}').data(), [
+            ['Item', 'Amount', 'Cost'],
+            ['Orange', '10', '7.00'],
+            ['Bread', '4', '3.00'],
+            ['Butter', '1', '5.00'],
+            ['Total', '', '15.00']])
 
     def test_with_caption(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n|+Food complements\n|-\n|Orange\n|Apple\n|-\n'
-            '|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
-        )
-        self.assertEqual(
-            table.data(),
-            [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']],
-        )
+            '|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}').data(), [
+            ['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']])
 
     def test_with_caption_attrs(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '|+ sal | no\n'
             '|a \n'
             '|}'
-        )
-        self.assertEqual(table.data(), [['a']])
+        ).data(), [['a']])
 
     def test_second_caption_is_ignored(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n'
             '  |+ c1\n'
             '  |+ c2\n'
             '|-\n'
             '|1\n'
             '|2\n'
-            '|}')
-        self.assertEqual(table.data(), [['1', '2']])
+            '|}').data(), [['1', '2']])
 
     def test_unneeded_newline_after_table_start(self):
-        table = Table('{|\n\n|-\n|c1\n|c2\n|}')
-        self.assertEqual(table.data(), [['c1', 'c2']])
+        self.assertEqual(
+            Table('{|\n\n|-\n|c1\n|c2\n|}').data(), [['c1', 'c2']])
 
     def test_text_after_tablestart_is_not_actually_inside_the_table(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|\n'
             '  text\n'
             '|-\n'
             '|c1\n'
             '|c2\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['c1', 'c2']])
+            '|}').data(), [['c1', 'c2']])
 
     def test_empty_table(self):
-        table = Table('{|class=wikitable\n|}')
-        self.assertEqual(table.data(), [])
+        self.assertEqual(Table('{|class=wikitable\n|}').data(), [])
 
     def test_empty_table_comment_end(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
-            '<!-- c -->|}'
-        )
-        self.assertEqual(table.data(), [])
+            '<!-- c -->|}').data(), [])
 
     def test_empty_table_semi_caption_comment(self):
-        table = Table('{|class=wikitable\n|+\n<!-- c -->|}')
-        self.assertEqual(table.data(), [])
+        self.assertEqual(
+            Table('{|class=wikitable\n|+\n<!-- c -->|}').data(), [])
 
     def test_empty_cell(self):
-        table = Table('{|class=wikitable\n||a || || c\n|}')
-        self.assertEqual(table.data(), [['a', '', 'c']])
+        self.assertEqual(Table(
+            '{|class=wikitable\n||a || || c\n|}').data(), [['a', '', 'c']])
 
     def test_pipe_as_text(self):
         table = Table('{|class=wikitable\n||a | || c\n|}')
         self.assertEqual(table.data(), [['a |', 'c']])
 
     def test_meaningless_rowsep(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '||a || || c\n'
             '|-\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['a', '', 'c']])
+            '|}').data(), [['a', '', 'c']])
 
     def test_template_inside_table(self):
-        table = Table('{|class=wikitable\n|-\n|{{text|a}}\n|}')
-        self.assertEqual(table.data(), [['{{text|a}}']])
+        self.assertEqual(
+            Table('{|class=wikitable\n|-\n|{{text|a}}\n|}').data(),
+            [['{{text|a}}']])
 
     def test_only_pipes_can_seprate_attributes(self):
         """According to the note at mw:Help:Tables#Table_headers."""
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n! style="text-align:left;"! '
-            'Item\n! Amount\n! Cost\n|}'
-        )
-        self.assertEqual(table.data(), [
-            ['style="text-align:left;"! Item', 'Amount', 'Cost']
-        ])
-        table = Table(
+            'Item\n! Amount\n! Cost\n|}').data(), [
+            ['style="text-align:left;"! Item', 'Amount', 'Cost']])
+        self.assertEqual(Table(
             '{|class=wikitable\n! style="text-align:left;"| '
-            'Item\n! Amount\n! Cost\n|}'
-        )
-        self.assertEqual(table.data(), [
-            ['Item', 'Amount', 'Cost']
-        ])
+            'Item\n! Amount\n! Cost\n|}').data(), [['Item', 'Amount', 'Cost']])
 
     def test_double_exclamation_marks_are_valid_on_header_rows(self):
-        table = Table('{|class=wikitable\n!a!!b!!c\n|}')
-        self.assertEqual(table.data(), [['a', 'b', 'c']])
+        self.assertEqual(
+            Table('{|class=wikitable\n!a!!b!!c\n|}').data(), [['a', 'b', 'c']])
 
     def test_double_exclamation_marks_are_valid_only_on_header_rows(self):
         # Actually I'm not sure about this in general.
-        table = Table('{|class=wikitable\n|a!!b!!c\n|}')
-        self.assertEqual(table.data(), [['a!!b!!c']])
+        self.assertEqual(
+            Table('{|class=wikitable\n|a!!b!!c\n|}').data(), [['a!!b!!c']])
 
     def test_caption_in_row_is_treated_as_pipe_and_plut(self):
-        table = Table('{|class=wikitable\n|a|+b||c\n|}')
-        self.assertEqual(table.data(), [['+b', 'c']])
+        self.assertEqual(
+            Table('{|class=wikitable\n|a|+b||c\n|}').data(), [['+b', 'c']])
 
     def test_odd_case1(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '  [[a]]\n'
             ' |+ cp1\n'
@@ -250,105 +199,71 @@ class Data(unittest.TestCase):
             '|+t [[w]]\n\n'
             'text\n'
             '|c2\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=False), [
-            ['h1', '+ h2'],
-            ['+ h4'],
-            ['!+ h6'],
-            ['c1', 'c2']
-        ])
+            '|}').data(span=False), [
+            ['h1', '+ h2'], ['+ h4'], ['!+ h6'], ['c1', 'c2']])
 
     def test_colspan_and_rowspan_and_span_false(self):
-        table = Table(
+        self.assertEqual(Table(
             '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
             '|rowspan="2"|21\n|22\n|23\n|24\n|colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
-        )
-        self.assertEqual(table.data(span=False), [
+        ).data(span=False), [
             ['11'],
             ['21', '22', '23', '24', '25'],
-            ['31', '32', '33', '34'],
-        ])
+            ['31', '32', '33', '34']])
 
     def test_colspan_and_rowspan_and_span_true(self):
-        table = Table(
+        self.assertEqual(Table(
             '{| class="wikitable"\n!colspan= 6 |11\n|-\n'
             '|rowspan="2"|21\n|22\n|23\n|24\n  |colspan="2"|25\n|-\n'
             '|31\n|colspan="2"|32\n|33\n|34\n|}'
-        )
-        self.assertEqual(table.data(span=True), [
+        ).data(span=True), [
             ['11', '11', '11', '11', '11', '11'],
             ['21', '22', '23', '24', '25', '25'],
-            ['21', '31', '32', '32', '33', '34'],
-        ])
+            ['21', '31', '32', '32', '33', '34']])
 
     def test_inline_colspan_and_rowspan(self):
-        table = Table(
+        self.assertEqual(Table(
             '{| class=wikitable\n'
             ' !a !! b !!  c !! rowspan = 2 | d \n'
             ' |- \n'
             ' | e || colspan = "2"| f\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=True), [
+            '|}').data(span=True), [
             ['a', 'b', 'c', 'd'],
-            ['e', 'f', 'f', 'd']
-        ])
+            ['e', 'f', 'f', 'd']])
 
     def test_growing_downward_growing_cells(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '| a || rowspan=0 | b\n'
             '|-\n'
             '| c\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=True), [
-            ['a', 'b'],
-            ['c', 'b'],
-        ])
+            '|}').data(span=True), [['a', 'b'], ['c', 'b']])
 
     def test_colspan_0(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '| colspan=0 | a || b\n'
             '|-\n'
             '| c || d\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=True), [
-            ['a', 'b'],
-            ['c', 'd'],
-        ])
+            '|}').data(span=True), [['a', 'b'], ['c', 'd']])
 
     def test_ending_row_group(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '| rowspan = 3 | a || b\n'
             '|-\n'
             '| c\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=True), [
-            ['a', 'b'],
-            ['a', 'c'],
-            ['a', None],
-        ])
+            '|}').data(span=True), [['a', 'b'], ['a', 'c'], ['a', None]])
 
     def test_ending_row_group_and_rowspan_0(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '| rowspan = 3 | a || rowspan = 0 | b || c\n'
             '|-\n'
             '| d\n'
-            '|}'
-        )
-        self.assertEqual(table.data(span=True), [
-            ['a', 'b', 'c'],
-            ['a', 'b', 'd'],
-            ['a', 'b', None],
-        ])
+            '|}').data(span=True), [
+            ['a', 'b', 'c'], ['a', 'b', 'd'], ['a', 'b', None]])
 
     def test_row_data(self):
         table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
@@ -359,54 +274,44 @@ class Data(unittest.TestCase):
         self.assertEqual(table.data(column=1), ['b', 'e', 'h'])
 
     def test_column_and_row_data(self):
-        table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.data(column=1, row=1), 'e')
+        self.assertEqual(Table(
+            '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
+        ).data(column=1, row=1), 'e')
 
     def test_header_attr_with_exclamation_mark(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n! 1 !! a1 ! a2 | 2 || class=a3 ! id=a4 | 3\n|}'
-        )
-        self.assertEqual(table.data(), [['1', '2', '3']])
+        ).data(), [['1', '2', '3']])
 
     def test_nonheader_attr_with_exclamation_mark(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '| 1 !! 1 ! 1 |||| 3 || a4 ! a4 | 4\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['1 !! 1 ! 1', '', '3', '4']])
+            '|}').data(), [['1 !! 1 ! 1', '', '3', '4']])
 
     def test_single_exclamation_is_not_attribute_data_separator(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '! 1 !! 2 ! 2 !!!! 4 || a5 ! a5 | 5\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['1', '2 ! 2', '', '4', '5']])
+            '|}').data(), [['1', '2 ! 2', '', '4', '5']])
 
     def test_newline_cell_attr_closure_cant_be_cell_sep(self):
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '||||| 2 ! 2\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['', '', '2 ! 2']])
+            '|}').data(), [['', '', '2 ! 2']])
 
     def test_attr_delimiter_cant_be_adjacent_to_cell_delimiter(self):
         """Couldn't find a logical explanation for MW's behaviour."""
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '!a| !!b|c\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['', 'c']])
+            '|}').data(), [['', 'c']])
         # Remove one space and...
-        table = Table(
+        self.assertEqual(Table(
             '{|class=wikitable\n'
             '!a|!!b|c\n'
-            '|}'
-        )
-        self.assertEqual(table.data(), [['a', 'b|c']])
+            '|}').data(), [['a', 'b|c']])
 
     def test_unicode_data(self):
         r"""Note the \u201D character at line 2. wikitextparser/issues/9."""
@@ -414,8 +319,7 @@ class Data(unittest.TestCase):
             '{|class=wikitable\n'
             '|align="center" rowspan="1"|A\u201D\n'
             '|align="center" rowspan="1"|B\n'
-            '|}'
-        ).data(), [['A”', 'B']])
+            '|}').data(), [['A”', 'B']])
 
 
 class Caption(unittest.TestCase):
@@ -429,8 +333,7 @@ class Caption(unittest.TestCase):
         table.caption = 'foo'
         self.assertEqual(
             table.string,
-            '{| class="wikitable"\n|+foo\n|a\n|+ ignore\n|}'
-        )
+            '{| class="wikitable"\n|+foo\n|a\n|+ ignore\n|}')
 
     def test_replace_caption_attrs(self):
         table = Table('{|class="wikitable"\n|+old|cap\n|}')
@@ -445,8 +348,7 @@ class Caption(unittest.TestCase):
     def test_no_attrs_but_caption(self):
         text = (
             '{|\n|+Food complements\n|-\n|Orange\n|Apple\n|-'
-            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
-        )
+            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}')
         table = Table(text)
         self.assertEqual(table.caption, 'Food complements')
         self.assertEqual(table.caption_attrs, None)
@@ -458,14 +360,12 @@ class Caption(unittest.TestCase):
             '{| class="wikitable"\n'
             '|+ style="caption-side:bottom; color:#e76700;"|'
             '\'\'Food complements\'\'\n|-\n|Orange\n|Apple\n|-'
-            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
-        )
+            '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}')
         table = Table(text)
         self.assertEqual(table.caption, "''Food complements''")
         self.assertEqual(
             table.caption_attrs,
-            ' style="caption-side:bottom; color:#e76700;"'
-        )
+            ' style="caption-side:bottom; color:#e76700;"')
 
 
 class TableAttrs(unittest.TestCase):
@@ -511,8 +411,7 @@ class Cells(unittest.TestCase):
             '|| 5\n'
             '! 6 !! a | 7\n'
             '!| 8 || 9\n'
-            '|}'
-        )
+            '|}')
         cells = table.cells()
         self.assertEqual(len(cells), 1)
         self.assertEqual(len(cells[0]), 9)
@@ -525,8 +424,7 @@ class Cells(unittest.TestCase):
             '\n! 6 ',
             '!! a | 7',
             '\n!| 8 ',
-            '|| 9',
-        )
+            '|| 9')
         for r in cells:
             for i, c in enumerate(r):
                 self.assertEqual(c.string, cell_string[i])
