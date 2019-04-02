@@ -1,12 +1,12 @@
 ﻿"""Test the parameters.py module."""
 
 
-import unittest
+from unittest import TestCase, main
 
 import wikitextparser as wtp
 
 
-class Parameter(unittest.TestCase):
+class Parameter(TestCase):
 
     """The parameters test class."""
 
@@ -98,4 +98,4 @@ class Parameter(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

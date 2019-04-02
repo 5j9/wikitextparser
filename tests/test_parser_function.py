@@ -1,14 +1,14 @@
 ﻿"""Test the ExternalLink class."""
 
 
-import unittest
+from unittest import TestCase, main, expectedFailure
 
 from wikitextparser import ParserFunction, WikiText
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import WS
 
 
-class TestParserFunction(unittest.TestCase):
+class TestParserFunction(TestCase):
 
     """Test the ParserFunction class."""
 
@@ -41,7 +41,7 @@ class TestParserFunction(unittest.TestCase):
         wt = WikiText("{{formatnum:text|R}}")
         self.assertEqual(1, len(wt.parser_functions))
 
-    @unittest.expectedFailure
+    @expectedFailure
     def test_parser_function_alias_without_hash_sign(self):
         """‍`آرایش‌عدد` is an alias for `formatnum` on Persian Wikipedia.
 
@@ -60,4 +60,4 @@ class TestParserFunction(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

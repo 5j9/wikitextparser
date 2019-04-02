@@ -1,12 +1,12 @@
 ﻿"""Test the ExternalLink class."""
 
 
-import unittest
+from unittest import TestCase, main
 
 from wikitextparser import ExternalLink
 
 
-class TestExternalLink(unittest.TestCase):
+class TestExternalLink(TestCase):
     """Test capturing of external links."""
 
     def test_repr(self):
@@ -64,4 +64,4 @@ class TestExternalLink(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

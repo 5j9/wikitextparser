@@ -1,14 +1,14 @@
 ﻿"""Test the Argument class."""
 
 
-import unittest
+from unittest import TestCase, main
 
 from wikitextparser import parse
 # noinspection PyProtectedMember
 from wikitextparser._table import Table, Cell
 
 
-class TableCell(unittest.TestCase):
+class TableCell(TestCase):
 
     """Test the Cell class."""
 
@@ -102,4 +102,4 @@ class TableCell(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

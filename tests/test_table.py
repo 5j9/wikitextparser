@@ -10,12 +10,12 @@
 # transpose?
 
 
-import unittest
+from unittest import TestCase, main
 
 from wikitextparser import Table, WikiText
 
 
-class Data(unittest.TestCase):
+class Data(TestCase):
 
     """Test the data method of the table class."""
 
@@ -145,8 +145,8 @@ class Data(unittest.TestCase):
             '{|class=wikitable\n||a || || c\n|}').data(), [['a', '', 'c']])
 
     def test_pipe_as_text(self):
-        table = Table('{|class=wikitable\n||a | || c\n|}')
-        self.assertEqual(table.data(), [['a |', 'c']])
+        self.assertEqual(Table(
+            '{|class=wikitable\n||a | || c\n|}').data(), [['a |', 'c']])
 
     def test_meaningless_rowsep(self):
         self.assertEqual(Table(
@@ -266,12 +266,14 @@ class Data(unittest.TestCase):
             ['a', 'b', 'c'], ['a', 'b', 'd'], ['a', 'b', None]])
 
     def test_row_data(self):
-        table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.data(row=1), ['d', 'e', 'f'])
+        self.assertEqual(
+            Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}').data(row=1), 
+            ['d', 'e', 'f'])
 
     def test_column_data(self):
-        table = Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}')
-        self.assertEqual(table.data(column=1), ['b', 'e', 'h'])
+        self.assertEqual(Table(
+            '{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}'
+        ).data(column=1), ['b', 'e', 'h'])
 
     def test_column_and_row_data(self):
         self.assertEqual(Table(
@@ -322,7 +324,7 @@ class Data(unittest.TestCase):
             '|}').data(), [['A”', 'B']])
 
 
-class Caption(unittest.TestCase):
+class Caption(TestCase):
 
     """Test the caption and caption_attrs methods."""
 
@@ -356,12 +358,11 @@ class Caption(unittest.TestCase):
         self.assertEqual(table.string, text.replace('Food complements', ' C '))
 
     def test_attrs_and_caption(self):
-        text = (
+        table = Table(
             '{| class="wikitable"\n'
             '|+ style="caption-side:bottom; color:#e76700;"|'
             '\'\'Food complements\'\'\n|-\n|Orange\n|Apple\n|-'
             '\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}')
-        table = Table(text)
         self.assertEqual(table.caption, "''Food complements''")
         self.assertEqual(
             table.caption_attrs,
@@ -373,7 +374,7 @@ class Caption(unittest.TestCase):
             [['-a', '-b']])
 
 
-class TableAttrs(unittest.TestCase):
+class TableAttrs(TestCase):
 
     """Test the table_attrs method of the Table class."""
 
@@ -395,16 +396,15 @@ class TableAttrs(unittest.TestCase):
         self.assertEqual(table.attrs, {})
 
     def test_attr_contains_template_newline_invalid_chars(self):
-        t = WikiText(
+        self.assertEqual(WikiText(
             '  {| class=wikitable |ب style="color: {{text| 1 =\n'
             'red}};"\n'
             '| cell\n'
             '|}\n'
-        ).tables[0]
-        self.assertEqual(t.get_attr('style'), 'color: {{text| 1 =\nred}};')
+        ).tables[0].get_attr('style'), 'color: {{text| 1 =\nred}};')
 
 
-class Cells(unittest.TestCase):
+class Cells(TestCase):
 
     """Test the cells method of the table."""
 
@@ -441,10 +441,9 @@ class Cells(unittest.TestCase):
         self.assertEqual(table.cells(row=0)[4].string, cell_string[4])
 
     def test_cell_spans(self):
-        table = WikiText(
+        self.assertEqual(WikiText(
             '<!-- c -->{|class=wikitable\n| a \n|}'
-        ).tables[0]
-        self.assertEqual(table.cells(row=0, column=0).value, ' a ')
+        ).tables[0].cells(row=0, column=0).value, ' a ')
 
     def test_changing_cell_should_effect_the_table(self):
         t = Table('{|class=wikitable\n|a=b|c\n|}')
@@ -459,10 +458,9 @@ class Cells(unittest.TestCase):
         self.assertEqual(t.string, '{|class=wikitable\n| c="d"|v\n|}')
 
     def test_cell_span_false(self):
-        t = Table('{|class=wikitable\n|a=b|c\n|}')
-        c = t.cells(span=False)
-        self.assertEqual(len(c), 1)
+        self.assertEqual(len(Table(
+            '{|class=wikitable\n|a=b|c\n|}').cells(span=False)), 1)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

@@ -1,12 +1,12 @@
 ﻿"""Test the section.py module."""
 
 
-import unittest
+from unittest import TestCase, main, expectedFailure
 
 from wikitextparser import Section
 
 
-class TestSection(unittest.TestCase):
+class TestSection(TestCase):
 
     """Test the Section class."""
 
@@ -43,7 +43,7 @@ class TestSection(unittest.TestCase):
         s.title = ' newtitle '
         self.assertEqual(' newtitle ', s.title)
 
-    @unittest.expectedFailure
+    @expectedFailure
     def test_lead_set_title(self):
         s = Section('lead text')
         s.title = ' newtitle '
@@ -75,4 +75,4 @@ class TestSection(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

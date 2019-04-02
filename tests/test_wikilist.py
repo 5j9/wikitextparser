@@ -1,9 +1,9 @@
-import unittest
+from unittest import TestCase, main
 
 from wikitextparser import WikiList, parse
 
 
-class WikiListTest(unittest.TestCase):
+class WikiListTest(TestCase):
     """Test the WikiList class."""
 
     def test_subitem_are_part_of_item(self):
@@ -141,4 +141,4 @@ class WikiListTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()

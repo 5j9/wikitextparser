@@ -1,6 +1,9 @@
+master
+------
+
 v0.24.1
 -------
-- Fixed a bug in table detecting header cells that start with +, -, or }. (#17)
+- Fixed a bug in detecting table header cells that start with +, -, or }. (#17)
 
 v0.24.0
 -------

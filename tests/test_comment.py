@@ -1,12 +1,12 @@
 ﻿"""Test the Argument class."""
 
 
-import unittest
+from unittest import TestCase, main
 
 import wikitextparser as wtp
 
 
-class Comment(unittest.TestCase):
+class Comment(TestCase):
 
     """Argument test class."""
 
@@ -16,4 +16,4 @@ class Comment(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    main()
