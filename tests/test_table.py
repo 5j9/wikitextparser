@@ -367,6 +367,11 @@ class Caption(unittest.TestCase):
             table.caption_attrs,
             ' style="caption-side:bottom; color:#e76700;"')
 
+    def test_header_cell_starts_with_dash(self):
+        self.assertEqual(
+            Table('''{| class="wikitable"\n!-a\n!-b\n|}''').data(),
+            [['-a', '-b']])
+
 
 class TableAttrs(unittest.TestCase):
 

@@ -1,6 +1,6 @@
 master branch
 -------------
-
+- Fixed a bug in table detecting header cells that start with +, -, or }. (#17)
 
 v0.24.0
 -------

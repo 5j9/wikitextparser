@@ -13,7 +13,7 @@ NEWLINE_CELL_MATCH = regex_compile(
     rb"""
     # only for matching, not search
     \s*+
-    (?P<sep>[|!](?![+}-]))
+    (?P<sep>\|(?![+}-])|!)
     (?>
         # catch the matching pipe (attrs limiter)
         # immediate closure
