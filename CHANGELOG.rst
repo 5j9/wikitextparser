@@ -1,3 +1,7 @@
+v0.24.3
+-------
+- Fixed a rarely occuring bug in detecting parameters with names consisting only of white-space or underscores.
+
 v0.24.2
 -------
 - Fixed a bug in detecting parser functions containing parameters.
