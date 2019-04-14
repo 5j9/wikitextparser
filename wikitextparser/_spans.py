@@ -1,7 +1,7 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 
 
-from typing import Dict, List, Callable, Any, Optional
+from typing import Dict, List, Callable, Optional
 
 from regex import VERBOSE, IGNORECASE
 from regex import compile as regex_compile
@@ -10,11 +10,6 @@ from regex import compile as regex_compile
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
-INVALID_TL_NAME_FINDITER = regex_compile(
-    rb'\{\{'
-    rb'[\s_]*+'  # invalid name
-    rb'(?>\|[^{}]*)?+'  # optional args
-    rb'\}\}').finditer
 # Parameters
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
@@ -44,11 +39,16 @@ PM_PF_TL_FINDITER = regex_compile(
     # end of generated part
     rb':[^{}]*+\}\}()'
     rb'|'
+    # invalid template name
+    rb'[\s_]*+'  # invalid name
+    rb'(?>\|[^{}]*+)?+'  # args
+    rb'\}\}()'
+    rb'|'
     # template
     rb'\s*+'
     + VALID_TITLE_CHARS_PATTERN +  # template name
     rb'\s*+'
-    rb'(?>\|[^{}]*+)?+'  # template args
+    rb'(?>\|[^{}]*+)?+'  # args
     rb'\}\}'
     rb')').finditer
 # External links
@@ -263,14 +263,6 @@ def parse_pm_pf_tl(
     and n times for each of the n WikiLinks.
 
     """
-    # Remove empty double braces
-    while True:
-        match = None  # type: Any
-        for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
-            ms, me = match.span()
-            byte_array[ms:me] = (me - ms) * b'_'
-        if match is None:
-            break
     while True:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
@@ -283,8 +275,13 @@ def parse_pm_pf_tl(
                 parameter_spans_append([ms, me])
             elif match[2] is not None:
                 pfunction_spans_append([ms, me])
+            elif match[3] is not None:  # invalid template name
+                byte_array[ms:me] = b'_' * (me - ms)
+                continue
             else:
                 template_spans_append([ms, me])
-            byte_array[ms:me] = b'_' * (me - ms)
+            # pm, pf, and tl spans usually are part of a valid template name.
+            # Thus, not using b'_' or b' '.
+            byte_array[ms:me] = b'X' * (me - ms)
         if match is None:
             return

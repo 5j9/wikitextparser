@@ -296,8 +296,8 @@ class Spans(TestCase):
 
     def test_nested_wikilinks_in_ref(self):
         self.assertEqual({
-            'Parameter': [], 'ParserFunction': [],
-            'Template': [], 'WikiLink': [[5, 40], [30, 38]], 'Comment': [],
+            'Parameter': [], 'ParserFunction': [], 'Template': [],
+            'WikiLink': [[5, 40], [30, 38]], 'Comment': [],
             'ExtensionTag': [[0, 46]]
         }, parse_to_spans(bytearray(
                 b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>')))
@@ -305,17 +305,15 @@ class Spans(TestCase):
     @expectedFailure
     def test_invalid_nested_wikilinks(self):
         self.assertEqual({
-            'Parameter': [], 'ParserFunction': [],
-            'Template': [], 'WikiLink': [[10, 15]], 'Comment': [],
-            'ExtTag': [[0, 24]]
+            'Parameter': [], 'ParserFunction': [], 'Template': [],
+            'WikiLink': [[10, 15]], 'Comment': [], 'ExtTag': [[0, 24]]
         }, parse_to_spans(bytearray(b'<ref>[[L| [[S]] ]]</ref>')))
 
     @expectedFailure
     def test_invalid_nested_wikilinks_in_ref(self):
         self.assertEqual({
-            'Parameter': [], 'ParserFunction': [],
-            'Template': [], 'WikiLink': [[0, 13]], 'Comment': [],
-            'ExtTag': []
+            'Parameter': [], 'ParserFunction': [], 'Template': [],
+            'WikiLink': [[0, 13]], 'Comment': [], 'ExtTag': []
         }, parse_to_spans(bytearray(b'[[L| [[S]] ]]')))
 
     def test_nested_parser_functions_containing_param(self):
@@ -324,6 +322,12 @@ class Spans(TestCase):
             'ParserFunction': [[0, 31], [9, 28]], 'Template': [],
             'WikiLink': []
         }, parse_to_spans(bytearray(b'{{#if: | {{#expr: {{{p}}} }} }}')))
+
+    def test_eliminate_invalid_templates_after_extracting_params(self):
+        self.assertEqual({
+            'Comment': [], 'ExtensionTag': [], 'Parameter': [[0, 9]],
+            'ParserFunction': [], 'Template': [], 'WikiLink': []
+        }, parse_to_spans(bytearray(b'{{{_|2}}}')))
 
 
 if __name__ == '__main__':
