@@ -283,12 +283,9 @@ class Spans(TestCase):
             parse_to_spans(bytearray(
                 b'<ref>[[{{text|link}}]]</ref>'))['Template'])
 
-    def test_nested_param_semiparser(self):
-        self.assertEqual(
-            [[0, 14]],
-            parse_to_spans(bytearray(
-                b'{{{#if:|y|n}}}'  # looks like a pf but actually is a param
-            ))['Parameter'])
+    def test_params_are_extracted_before_parser_functions(self):
+        self.assertEqual([[0, 17]], parse_to_spans(bytearray(
+            b'{{{#expr:1+1|3}}}'))['Parameter'])
 
     def test_single_brace_after_pf_remove(self):
         self.assertEqual({
