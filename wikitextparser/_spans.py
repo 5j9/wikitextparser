@@ -11,14 +11,10 @@ from regex import compile as regex_compile
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 INVALID_TL_NAME_FINDITER = regex_compile(
-    rb'''
-    \{\{
-    [\s_]*+ # invalid name
-    (?>\|[^{}]*)?+  # optional args
-    \}\}
-    ''',
-    VERBOSE,
-).finditer
+    rb'\{\{'
+    rb'[\s_]*+'  # invalid name
+    rb'(?>\|[^{}]*)?+'  # optional args
+    rb'\}\}').finditer
 # Parameters
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
@@ -52,10 +48,9 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'\s*+'
     + VALID_TITLE_CHARS_PATTERN +  # template name
     rb'\s*+'
-    rb'(?>\|[^{}]*+)?+'  # template argsj
+    rb'(?>\|[^{}]*+)?+'  # template args
     rb'\}\}'
-    rb')',
-).finditer
+    rb')').finditer
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
 VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
@@ -98,19 +93,16 @@ WIKILINK_FINDITER = regex_compile(
         \]\]
     )
     ''',
-    IGNORECASE | VERBOSE,
-).finditer
+    IGNORECASE | VERBOSE).finditer
 
 # generated pattern: _config.regex_pattern(_config._parsable_tag_extensions)
 PARSABLE_TAG_EXTENSIONS_PATTERN = (
     rb'(?>section|ref(?:erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|mage'
-    rb'map)|gallery|categorytree)'
-)
+    rb'map)|gallery|categorytree)')
 # generated pattern: _config.regex_pattern(_config._unparsable_tag_extensions)
 UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
     rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|m'
-    rb'ath|hiero|graph|charinsert)'
-)
+    rb'ath|hiero|graph|charinsert)')
 TAG_BY_NAME_PATTERN = (
     rb'< (' + UNPARSABLE_TAG_EXTENSIONS_PATTERN + rb'|(' +
     PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')) \b [^>]*+ (?<!/)>
@@ -126,27 +118,20 @@ TAG_BY_NAME_PATTERN = (
         <\1\b[^>]*/>
     )*?
     # tag-end
-    </\1\s*+>'''
-)
+    </\1\s*+>''')
 
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 EXTENSION_TAGS_FINDITER = regex_compile(
-    TAG_BY_NAME_PATTERN,
-    IGNORECASE | VERBOSE,
-).finditer
+    TAG_BY_NAME_PATTERN, IGNORECASE | VERBOSE).finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN.encode()).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
-    rb'''
-    (?<!{) { (?=[^{|])
-    |
-    (?<![|}]) } (?=[^}])
-    ''',
-    VERBOSE,
-).finditer
+    rb'(?<!{){(?=[^{|])'
+    rb'|'
+    rb'(?<![|}])}(?=[^}])').finditer
 
 
 def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
@@ -190,40 +175,37 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
                 wikilink_spans_append,
                 parameter_spans_append,
                 parser_function_spans_append,
-                template_spans_append,
-            )
+                template_spans_append)
         byte_array[ms:me] = b'_' * (me - ms)
     # Remove the braces inside WikiLinks.
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of the template should be the whole byte_array.
-    match = True
-    while match:
-        match = False
+    while True:
+        match = None
         for match in WIKILINK_FINDITER(byte_array):
             ms, me = match.span()
             wikilink_spans_append([ms, me])
-            parse_pm_tl_pf(
+            parse_pm_pf_tl(
                 byte_array, ms, me,
                 parameter_spans_append,
                 parser_function_spans_append,
-                template_spans_append,
-            )
+                template_spans_append)
             byte_array[ms:me] = b'_' * (me - ms)
-    parse_pm_tl_pf(
+        if match is None:
+            break
+    parse_pm_pf_tl(
         byte_array, 0, None,
         parameter_spans_append,
         parser_function_spans_append,
-        template_spans_append,
-    )
+        template_spans_append)
     return {
         'Comment': sorted(comment_spans),
         'ExtensionTag': sorted(extension_tag_spans),
         'Parameter': sorted(parameter_spans),
         'ParserFunction': sorted(parser_function_spans),
         'Template': sorted(template_spans),
-        'WikiLink': sorted(wikilink_spans),
-    }
+        'WikiLink': sorted(wikilink_spans)}
 
 
 def parse_tag_extensions(
@@ -243,29 +225,28 @@ def parse_tag_extensions(
     PARSABLE_TAG_EXTENSIONS.
 
     """
-    match = True  # type: Any
-    while match:
-        match = False
+    while True:
+        match = None
         for match in WIKILINK_FINDITER(byte_array, start, end):
             ms, me = match.span()
             wikilink_spans_append([ms, me])
             # See if the other WIKILINK_FINDITER call can help.
-            parse_pm_tl_pf(
+            parse_pm_pf_tl(
                 byte_array, ms, me,
                 parameter_spans_append,
                 pfunction_spans_append,
-                template_spans_append,
-            )
+                template_spans_append)
             byte_array[ms:me] = b'_' * (me - ms)
-    parse_pm_tl_pf(
+        if match is None:
+            break
+    parse_pm_pf_tl(
         byte_array, start, end,
         parameter_spans_append,
         pfunction_spans_append,
-        template_spans_append,
-    )
+        template_spans_append)
 
 
-def parse_pm_tl_pf(
+def parse_pm_pf_tl(
     byte_array: bytearray, start: int, end: Optional[int],
     parameter_spans_append: Callable,
     pfunction_spans_append: Callable,
@@ -283,18 +264,19 @@ def parse_pm_tl_pf(
 
     """
     # Remove empty double braces
-    match = True  # type: Any
-    while match:
-        match = False
+    while True:
+        match = None  # type: Any
         for match in INVALID_TL_NAME_FINDITER(byte_array, start, end):
             ms, me = match.span()
             byte_array[ms:me] = (me - ms) * b'_'
-    ms = True
-    while ms is not None:
+        if match is None:
+            break
+    while True:
         # Single braces will interfere with detection of other elements and
         # should be removed beforehand.
         for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
             byte_array[m.start()] = 95  # 95 == ord('_')
+        match = None
         for match in PM_PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()
             if match[1] is not None:
@@ -304,6 +286,5 @@ def parse_pm_tl_pf(
             else:
                 template_spans_append([ms, me])
             byte_array[ms:me] = b'_' * (me - ms)
-            break
-        else:
-            break
+        if match is None:
+            return
