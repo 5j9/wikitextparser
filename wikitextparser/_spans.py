@@ -300,14 +300,6 @@ def parse_pm_tl_pf(
         for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
             byte_array[m.start()] = 95  # 95 == ord('_')
         ms = None
-        # Parser functions
-        match = True
-        while match:
-            match = False
-            for match in PARSER_FUNCTION_FINDITER(byte_array, start, end):
-                ms, me = match.span()
-                pfunction_spans_append([ms, me])
-                byte_array[ms:me] = b'_' * (me - ms)
         # Parameters
         match = True
         while match:
@@ -315,6 +307,14 @@ def parse_pm_tl_pf(
             for match in PARAMETER_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 parameter_spans_append([ms, me])
+                byte_array[ms:me] = b'_' * (me - ms)
+        # Parser functions
+        match = True
+        while match:
+            match = False
+            for match in PARSER_FUNCTION_FINDITER(byte_array, start, end):
+                ms, me = match.span()
+                pfunction_spans_append([ms, me])
                 byte_array[ms:me] = b'_' * (me - ms)
         # Templates
         # match is False at this point

@@ -343,10 +343,10 @@ class Spans(TestCase):
 
     def test_nested_param_semiparser(self):
         self.assertEqual(
-            [[1, 14]],
+            [[0, 14]],
             parse_to_spans(bytearray(
-                b'{{{#if:v|y|n}}}'
-            ))['ParserFunction'],
+                b'{{{#if:|y|n}}}'  # looks like a pf but actually is a param
+            ))['Parameter'],
         )
 
     def test_single_brace_after_pf_remove(self):
@@ -398,6 +398,13 @@ class Spans(TestCase):
                 b'[[L| [[S]] ]]'
             ))
         )
+
+    def test_nested_parser_functions_containing_param(self):
+        self.assertEqual({
+            'Comment': [], 'ExtensionTag': [], 'Parameter': [[18, 25]],
+            'ParserFunction': [[0, 31], [9, 28]], 'Template': [],
+            'WikiLink': []
+        }, parse_to_spans(bytearray(b'{{#if: | {{#expr: {{{p}}} }} }}')))
 
 
 if __name__ == '__main__':

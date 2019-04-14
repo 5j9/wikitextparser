@@ -993,12 +993,22 @@ class TestPformat(TestCase):
         # the errors were actually found in shrink/insert/extend
         self.assertEqual(
             parse('{{#f1:{{#f2:}}{{t|}}}}').pformat(),
-            '{{#f1:\n    {{#f2:\n        \n    }}'
-            '{{t\n        | 1 = \n    }}\n}}',
+            '{{#f1:'
+            '\n    {{#f2:'
+            '\n        '
+            '\n    }}{{t'
+            '\n        | 1 = '
+            '\n    }}'
+            '\n}}',
         )
         self.assertEqual(
             parse('{{{{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}\n}}}}\n').pformat(),
-            '{{ {{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}}} }}\n',
+            '{{ {{#t2:'
+            '\n        {{{p1|}}}'
+            '\n    }}{{#t3:'
+            '\n        {{{p2|}}}'
+            '\n    }} }}'
+            '\n',
         )
 
 
