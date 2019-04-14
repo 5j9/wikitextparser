@@ -1,5 +1,6 @@
-master
-------
+v0.24.2
+-------
+- Fixed a bug in detecting parser functions containing parameters.
 
 v0.24.1
 -------
