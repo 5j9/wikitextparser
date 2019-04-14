@@ -4,7 +4,7 @@
 from unittest import expectedFailure, main, TestCase
 
 # noinspection PyProtectedMember
-from wikitextparser._spans import PARSER_FUNCTION_FINDITER, parse_to_spans
+from wikitextparser._spans import PM_PF_TL_FINDITER, parse_to_spans
 from wikitextparser import WikiText, parse
 
 
@@ -163,7 +163,7 @@ class Spans(TestCase):
         self.assertEqual('1', t2_args[0].name)
 
     def test_parser_function_regex(self):
-        finditer = PARSER_FUNCTION_FINDITER
+        finditer = PM_PF_TL_FINDITER
         parser_functions = (
             # Technical metadata variables
             b'{{PROTECTIONLEVEL:action}}',

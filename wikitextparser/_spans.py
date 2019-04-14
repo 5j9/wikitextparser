@@ -10,16 +10,6 @@ from regex import compile as regex_compile
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
 VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
-# Templates
-TEMPLATE_FINDITER = regex_compile(
-    rb'\{\{\s*+'
-    # name
-    + VALID_TITLE_CHARS_PATTERN + rb'''
-    \s*+
-    (?>\|[^{}]*+)?+  # optional args
-    \}\}''',
-    VERBOSE,
-).finditer
 INVALID_TL_NAME_FINDITER = regex_compile(
     rb'''
     \{\{
@@ -30,20 +20,18 @@ INVALID_TL_NAME_FINDITER = regex_compile(
     VERBOSE,
 ).finditer
 # Parameters
-PARAMETER_FINDITER = regex_compile(
-    rb'''
-    \{\{\{
-    [^{}]*+
-    \}\}\}
-    ''',
-    VERBOSE,
-).finditer
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-PARSER_FUNCTION_FINDITER = regex_compile(
-    rb'\{\{\s*+'
+PM_PF_TL_FINDITER = regex_compile(
+    rb'\{\{'
+    rb'(?>'
+    # param
+    rb'\{[^{}]*+\}\}\}()'
+    rb'|'
+    # parser function
+    rb'\s*+'
     # generated pattern: _config.regex_pattern(_config._parser_functions)
     # with \#[^{}\s:]++ added manually.
     rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?:first)?+)|s(?>ubst|afesubst)|raw|p(?>l'
@@ -58,7 +46,15 @@ PARSER_FUNCTION_FINDITER = regex_compile(
     rb'ORYSORT))|CASCADINGSOURCES|BASEPAGENAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE'
     rb'?+))'
     # end of generated part
-    rb':[^{}]*+\}\}',
+    rb':[^{}]*+\}\}()'
+    rb'|'
+    # template
+    rb'\s*+'
+    + VALID_TITLE_CHARS_PATTERN +  # template name
+    rb'\s*+'
+    rb'(?>\|[^{}]*+)?+'  # template argsj
+    rb'\}\}'
+    rb')',
 ).finditer
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
@@ -299,26 +295,15 @@ def parse_pm_tl_pf(
         # should be removed beforehand.
         for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
             byte_array[m.start()] = 95  # 95 == ord('_')
-        ms = None
-        # Parameters
-        match = True
-        while match:
-            match = False
-            for match in PARAMETER_FINDITER(byte_array, start, end):
-                ms, me = match.span()
-                parameter_spans_append([ms, me])
-                byte_array[ms:me] = b'_' * (me - ms)
-        # Parser functions
-        match = True
-        while match:
-            match = False
-            for match in PARSER_FUNCTION_FINDITER(byte_array, start, end):
-                ms, me = match.span()
-                pfunction_spans_append([ms, me])
-                byte_array[ms:me] = b'_' * (me - ms)
-        # Templates
-        # match is False at this point
-        for match in TEMPLATE_FINDITER(byte_array, start, end):
+        for match in PM_PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()
-            template_spans_append([ms, me])
+            if match[1] is not None:
+                parameter_spans_append([ms, me])
+            elif match[2] is not None:
+                pfunction_spans_append([ms, me])
+            else:
+                template_spans_append([ms, me])
             byte_array[ms:me] = b'_' * (me - ms)
+            break
+        else:
+            break
