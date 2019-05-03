@@ -1,6 +1,10 @@
+v0.24.4
+-------
+- Fixed a bug in ``Tag.parsed_contents``. (#19)
+
 v0.24.3
 -------
-- Fixed a rarely occuring bug in detecting parameters with names consisting only of white-space or underscores.
+- Fixed a rarely occuring bug in detecting parameters with names consisting only of whitespace or underscores.
 
 v0.24.2
 -------

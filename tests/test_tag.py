@@ -5,7 +5,7 @@ from unittest import TestCase, expectedFailure
 
 from regex import compile as regex_compile
 
-from wikitextparser import Tag
+from wikitextparser import Tag, parse
 # noinspection PyProtectedMember
 from wikitextparser._tag import (
     TAG_FULLMATCH, START_TAG_FINDITER, END_TAG_PATTERN
@@ -133,9 +133,13 @@ class TagTest(TestCase):
         c2 = t.parsed_contents
         self.assertEqual(len(c2._type_to_spans['WikiLink']), 1)
 
+    def test_parsed_content_offset(self):
+        self.assertEqual(
+            parse('t<a>1</a>t').tags()[0].parsed_contents.string, '1')
+
     def test_attrs(self):
-        t = Tag('<t n1=v1 n2="v2" n3>c</t>')
-        self.assertEqual(t.attrs, {'n1': 'v1', 'n2': 'v2', 'n3': ''})
+        self.assertEqual(Tag('<t n1=v1 n2="v2" n3>c</t>').attrs, {
+            'n1': 'v1', 'n2': 'v2', 'n3': ''})
 
     def test_contents_contains_tl(self):
         t = Tag('<b>{{text|t}}</b>')
