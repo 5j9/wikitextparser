@@ -174,9 +174,9 @@ class WikiText:
         ks = key.start
         ke = key.stop
         return self._lststr[0][
-            ss if ks is None else (ss + ks if ks >= 0 else se + ks)
-            :se if ke is None else (ss + ke if ke >= 0 else se + ke)
-            :key.step]
+            ss if ks is None else (ss + ks if ks >= 0 else se + ks):
+            se if ke is None else (ss + ke if ke >= 0 else se + ke):
+            key.step]
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
@@ -619,9 +619,9 @@ class WikiText:
                     if not value.endswith(newline_indent):
                         arg.value += comment_indent
                 elif positional and value != stripped_value:
-                        stop_conversion = True
-                        if not value.endswith(newline_indent):
-                            arg.value += comment_indent
+                    stop_conversion = True
+                    if not value.endswith(newline_indent):
+                        arg.value += comment_indent
                 elif not_a_parser_function:
                     arg.name = (
                         ' ' + stripped_name + ' ' +
