@@ -1,7 +1,7 @@
 """Initialize the wikitextparser."""
 
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-__version__ = '0.24.4.dev0'
+__version__ = '0.24.4'
 
 from ._parameter import Parameter
 from ._argument import Argument

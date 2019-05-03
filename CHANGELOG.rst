@@ -4,7 +4,7 @@ v0.24.4
 
 v0.24.3
 -------
-- Fixed a rarely occuring bug in detecting parameters with names consisting only of whitespace or underscores.
+- Fixed a rarely occurring bug in detecting parameters with names consisting only of whitespace or underscores.
 
 v0.24.2
 -------
