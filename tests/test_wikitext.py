@@ -52,16 +52,17 @@ class TestWikiText(TestCase):
         self.assertEqual('a', w[-9:9])
         self.assertRaises(IndexError, w.__setitem__, 1, 'c')
         self.assertRaises(
-            NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd'
-        )
+            NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
         self.assertEqual('a', w[-1:])
+        self.assertEqual(w[-2:], 'a')
         self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
-        # stop is out of range
+        self.assertEqual(w[0:-2], '')
         self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
         w[0] = 'gg'
         w[1] = 'hh'
         self.assertEqual(w.string, 'ghh')
         # stop and start in range but stop is before start
+        self.assertEqual(w[1:0], '')
         self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
 
     def test_insert(self):

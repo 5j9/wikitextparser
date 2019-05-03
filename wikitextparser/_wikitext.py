@@ -166,7 +166,17 @@ class WikiText:
 
     def __getitem__(self, key: Union[slice, int]) -> str:
         """Return self.string[item]."""
-        return self.string[key]
+        if isinstance(key, int):
+            if key >= 0:
+                return self._lststr[0][self._span[0] + key]
+            return self._lststr[0][self._span[1] + key]
+        ss, se = self._span
+        ks = key.start
+        ke = key.stop
+        return self._lststr[0][
+            ss if ks is None else (ss + ks if ks >= 0 else se + ks)
+            :se if ke is None else (ss + ke if ke >= 0 else se + ke)
+            :key.step]
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
@@ -187,7 +197,8 @@ class WikiText:
         if key.step is not None:
             raise NotImplementedError(
                 'step is not implemented for string setter.')
-        start, stop = key.start or 0, key.stop
+        start = key.start or 0
+        stop = key.stop
         if start < 0:
             start += se - ss
             if start < 0:
