@@ -27,20 +27,25 @@ class TestWikiLink(TestCase):
         wl.target = ' C '
         self.assertEqual('[[ C ]]', wl.string)
 
-    def test_set_target_to_none(self):
-        # If the link is piped:
-        wl = WikiLink('[[a|b]]')
-        wl.text = None
-        self.assertEqual('[[a]]', wl.string)
-        # Without a pipe:
-        wl = WikiLink('[[a]]')
-        wl.text = None
-        self.assertEqual('[[a]]', wl.string)
-
-    def test_set_text(self):
+    def test_text_settter(self):
+        ae = self.assertEqual
         wl = WikiLink('[[A | B]]')
         wl.text = ' C '
-        self.assertEqual('[[A | C ]]', wl.string)
+        ae('[[A | C ]]', wl.string)
+        with self.assertWarns(DeprecationWarning):
+            wl.text = None
+        ae('[[A ]]', wl.string)
+        with self.assertWarns(DeprecationWarning):
+            wl.text = None
+        ae('[[A ]]', wl.string)
+
+    def test_test_deleter(self):
+        ae = self.assertEqual
+        wl = WikiLink('[[t|x]]')
+        del wl.text
+        ae(wl.string, '[[t]]')
+        del wl.text
+        ae(wl.string, '[[t]]')
 
     def test_set_text_when_there_is_no_text(self):
         wl = WikiLink('[[ A ]]')

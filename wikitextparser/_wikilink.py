@@ -2,6 +2,7 @@
 
 
 from typing import Optional
+from warnings import warn
 
 from ._wikitext import SubWikiText
 
@@ -29,25 +30,32 @@ class WikiLink(SubWikiText):
     @property
     def text(self) -> Optional[str]:
         """Return the text of this WikiLink. Do not include linktrail."""
-        head, pipe, tail = self._atomic_partition(124)
-        if pipe:
-            return tail[:-2]
-        return None
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            return None
+        return self[pipe + 1:-2]
 
     @text.setter
-    def text(self, newtext: Optional[str]) -> None:
-        """Set self.text to newtext. Remove it if newtext is None.
-
-        Do not change the linktrail.
-        """
-        head, pipe, tail = self._atomic_partition(124)
-        if pipe:
-            if newtext is None:
-                del self[len(head + pipe) - 1:len(head + pipe + tail) - 2]
-            else:
-                self[len(head + pipe):len(head + pipe + tail) - 2] = newtext
-        elif newtext is not None:
+    def text(self, newtext: str) -> None:
+        """Set self.text to newtext. Do not change the linktrail."""
+        if newtext is None:
+            warn('Using None as a value for text is deprecated; '
+                 'Use `del WikiLink.text` instead', DeprecationWarning)
+            del self.text
+            return
+        pipe = self._shadow.find(124)
+        if pipe == -1:
             self.insert(-2, '|' + newtext)
+            return
+        self[pipe + 1:-2] = newtext
+
+    @text.deleter
+    def text(self):
+        """Delete self.text."""
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            return
+        del self[pipe:-2]
 
     @property
     def fragment(self) -> Optional[str]:
