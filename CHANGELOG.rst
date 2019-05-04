@@ -5,6 +5,7 @@ v0.25.0.dev0
 - Deprecated: Setting ``WikiLink.text`` to None. Use ``del WikiLink.text`` instead.
 - Added a deleter for ``WikiLink.target`` property.
 - Added a deleter for ``Argument.value`` property.
+- Added a deleter for ``ExternalLink.text`` property.
 
 v0.24.4
 -------

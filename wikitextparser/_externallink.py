@@ -37,8 +37,7 @@ class ExternalLink(SubWikiText):
         """
         string = self.string
         if string[0] == '[':
-            end_match = URL_MATCH(self._ext_link_shadow, 1)
-            url_end = end_match.end()
+            url_end = URL_MATCH(self._ext_link_shadow, 1).end()
             end_char = string[url_end]
             if end_char == ']':
                 return None
@@ -62,6 +61,16 @@ class ExternalLink(SubWikiText):
             return
         self.insert(len(string), ' ' + newtext + ']')
         self.insert(0, '[')
+
+    @text.deleter
+    def text(self) -> None:
+        """Delete self.text."""
+        string = self.string
+        if string[0] != '[':
+            return
+        text = self.text
+        if text:
+            del self[-len(text) - 2:-1]
 
     @property
     def in_brackets(self) -> bool:
