@@ -16,10 +16,15 @@ class Parameter(TestCase):
         ae('P', p.name)
         ae('', p.pipe)
         ae(None, p.default)
+        del p.name
+        ae(None, p.default)
+        ae(p.string, '{{{}}}')
+
         p = wtp.Parameter('{{{P|}}}')
         ae('', p.default)
         p.name = ' Q '
         ae('{{{ Q |}}}', p.string)
+
         p = wtp.Parameter('{{{P|D}}}')
         ae('P', p.name)
         ae('|', p.pipe)
@@ -28,6 +33,8 @@ class Parameter(TestCase):
         ae('{{{ Q |D}}}', p.string)
         p.default = ' V '
         ae("Parameter('{{{ Q | V }}}')", repr(p))
+        del p.name
+        ae('{{{| V }}}', p.string)
 
     def test_default_setter(self):
         ae = self.assertEqual

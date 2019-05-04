@@ -8,6 +8,7 @@ v0.25.0.dev0
 - Added deleter method for ``ExternalLink.text`` property.
 - Added deleter method for ``Parameter.default`` property.
 - Deprecated: Setting ``Parameter.default`` to ``None``. Use ``del Parameter.default`` instead.
+- Added deleter method for ``Parameter.name`` property.
 
 
 v0.24.4

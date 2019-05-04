@@ -22,7 +22,19 @@ class Parameter(SubWikiText):
     @name.setter
     def name(self, newname: str) -> None:
         """Set the new name."""
-        self[3:3 + len(self.name)] = newname
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            self[3:-3] = newname
+        self[3:pipe] = newname
+
+    @name.deleter
+    def name(self) -> None:
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            del self[3:-3]
+            return
+        del self[3:pipe]
+
 
     @property
     def pipe(self) -> str:
