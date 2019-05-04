@@ -13,19 +13,31 @@ class WikiLink(SubWikiText):
     @property
     def target(self) -> str:
         """Return target of this WikiLink."""
-        head, pipe, tail = self._atomic_partition(124)
-        if pipe:
-            return head[2:]
-        else:
-            return head[2:-2]
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            return self[2:-2]
+        return self[2:pipe]
 
     @target.setter
     def target(self, newtarget: str) -> None:
         """Set a new target."""
-        head, pipe, tail = self._atomic_partition(124)
-        if not pipe:
-            head = head[:-2]
-        self[2:len(head)] = newtarget
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            self[2:-2] = newtarget
+            return
+        self[2:pipe] = newtarget
+
+    @target.deleter
+    def target(self) -> None:
+        """Delete link target AND pipe.
+
+        In case only deleting the target is desired, use `self.target = ''`.
+        """
+        pipe = self._shadow.find(124)
+        if pipe == -1:
+            del self[2:-2]
+            return
+        del self[2:pipe + 1]
 
     @property
     def text(self) -> Optional[str]:

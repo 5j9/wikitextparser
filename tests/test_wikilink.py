@@ -23,6 +23,10 @@ class TestWikiLink(TestCase):
         wl = WikiLink('[[A | B]]')
         wl.target = ' C '
         self.assertEqual('[[ C | B]]', wl.string)
+        del wl.target
+        self.assertEqual('[[ B]]', wl.string)
+        del wl.target
+        self.assertEqual('[[]]', wl.string)
         wl = WikiLink('[[A]]')
         wl.target = ' C '
         self.assertEqual('[[ C ]]', wl.string)
