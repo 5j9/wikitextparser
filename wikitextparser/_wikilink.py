@@ -48,3 +48,49 @@ class WikiLink(SubWikiText):
                 self[len(head + pipe):len(head + pipe + tail) - 2] = newtext
         elif newtext is not None:
             self.insert(-2, '|' + newtext)
+
+    @property
+    def fragment(self) -> Optional[str]:
+        """Return the fragment identifier."""
+        shadow_find = self._shadow.find
+        pipe = shadow_find(124)
+        hash_ = shadow_find(35)
+        if pipe == -1:
+            if hash_ == -1:
+                return None
+            return self[hash_ + 1:-2]
+        if hash_ == -1 or pipe < hash_:
+            return None
+        return self[hash_ + 1:pipe]
+
+    @fragment.setter
+    def fragment(self, value: str):
+        """Set a new fragment."""
+        shadow_find = self._shadow.find
+        pipe = shadow_find(124)
+        hash_ = shadow_find(35)
+        if pipe == -1:
+            if hash_ == -1:
+                self.insert(-2, '#' + value)
+                return
+            self[hash_ + 1:-2] = value
+            return
+        if hash_ == -1 or hash_ > pipe:
+            self.insert(pipe, '#' + value)
+            return
+        self[hash_ + 1:pipe] = value
+        return
+
+    @fragment.deleter
+    def fragment(self):
+        """Delete fragment."""
+        shadow_find = self._shadow.find
+        hash_ = shadow_find(35)
+        if hash_ == -1:
+            return
+        pipe = shadow_find(124)
+        if pipe == -1:
+            del self[hash_:-2]
+        if pipe < hash_:
+            return
+        del self[hash_:pipe]

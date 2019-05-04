@@ -1,3 +1,7 @@
+v0.25.0.dev0
+------------
+- Added fragment property to ``WikiLink`` class (#18)
+
 v0.24.4
 -------
 - Fixed a bug in ``Tag.parsed_contents``. (#19)

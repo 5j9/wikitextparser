@@ -72,6 +72,66 @@ class TestWikiLink(TestCase):
         # https://en.wikipedia.org/wiki/Help:Pipe_trick#Reverse_pipe_trick
         self.assertEqual(WikiLink('[[|t]]').text, 't')
 
+    def test_fragment_getter(self):
+        ae = self.assertEqual
+        ae(WikiLink('[[a<!--#1-->#<!--#2-->f|x]]').fragment, '<!--#2-->f')
+        ae(WikiLink('[[a<!--#1-->#<!--#2-->f]]').fragment, '<!--#2-->f')
+        ae(WikiLink('[[{{#if:||t}}#{{#if:||s}}|x]]').fragment, '{{#if:||s}}')
+        ae(WikiLink('[[{{#if:||t}}#{{#if:||s}}]]').fragment, '{{#if:||s}}')
+        ae(WikiLink('[[t|x]]').fragment, None)
+        ae(WikiLink('[[t]]').fragment, None)
+        ae(WikiLink('[[t|#]]').fragment, None)
+        ae(WikiLink('[[t#|x]]').fragment, '')
+        ae(WikiLink('[[t#]]').fragment, '')
+
+    def test_fragment_setter(self):
+        ae = self.assertEqual
+        # no frag, no pipe
+        wl = WikiLink('[[a]]')
+        wl.fragment = 'b'
+        ae(wl.string, '[[a#b]]')
+
+        # frag, no pipe
+        wl.fragment = 'c'
+        ae(wl.string, '[[a#c]]')
+
+        # frag, pipe
+        wl.text = ''  # [[a#c|]]
+        wl.fragment = 'd'
+        ae(wl.string, '[[a#d|]]')
+
+        # no frag, pipe
+        del wl.fragment
+        wl.fragment = 'e'
+        ae(wl.string, '[[a#e|]]')
+
+        # no frag after pipe
+        wl = WikiLink('[[a|#]]')
+        wl.fragment = 'f'
+        ae(wl.string, '[[a#f|#]]')
+
+    def test_fragment_deleter(self):
+        ae = self.assertEqual
+        wl = WikiLink('[[a]]')
+        del wl.fragment
+        ae(wl.string, '[[a]]')
+
+        wl = WikiLink('[[a#]]')
+        del wl.fragment
+        ae(wl.string, '[[a]]')
+
+        wl = WikiLink('[[a|]]')
+        del wl.fragment
+        ae(wl.string, '[[a|]]')
+
+        wl = WikiLink('[[a#|]]')
+        del wl.fragment
+        ae(wl.string, '[[a|]]')
+
+        wl = WikiLink('[[a|#]]')
+        del wl.fragment
+        ae(wl.string, '[[a|#]]')
+
 
 if __name__ == '__main__':
     main()
