@@ -46,14 +46,6 @@ class TestArgument(TestCase):
         a.value = ' c '
         self.assertEqual('| a = c ', a.string)
 
-    def test_value_deleter(self):
-        ae = self.assertEqual
-        a = Argument('| a = b ')
-        del a.value
-        ae('| a ', a.string)
-        del a.value
-        ae('|', a.string)
-
     def test_removing_last_arg_should_not_effect_the_others(self):
         ae = self.assertEqual
         a, b, c = Template('{{t|1=v|v|1=v}}').arguments

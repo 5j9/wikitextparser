@@ -25,16 +25,8 @@ class Parameter(SubWikiText):
         pipe = self._shadow.find(124)
         if pipe == -1:
             self[3:-3] = newname
-        self[3:pipe] = newname
-
-    @name.deleter
-    def name(self) -> None:
-        pipe = self._shadow.find(124)
-        if pipe == -1:
-            del self[3:-3]
             return
-        del self[3:pipe]
-
+        self[3:pipe] = newname
 
     @property
     def pipe(self) -> str:

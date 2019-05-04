@@ -4,11 +4,9 @@ v0.25.0.dev0
 - Added deleter method for ``WikiLink.text`` property.
 - Deprecated: Setting ``WikiLink.text`` to ``None``. Use ``del WikiLink.text`` instead.
 - Added deleter method for ``WikiLink.target`` property.
-- Added deleter method for ``Argument.value`` property.
 - Added deleter method for ``ExternalLink.text`` property.
 - Added deleter method for ``Parameter.default`` property.
 - Deprecated: Setting ``Parameter.default`` to ``None``. Use ``del Parameter.default`` instead.
-- Added deleter method for ``Parameter.name`` property.
 
 
 v0.24.4
