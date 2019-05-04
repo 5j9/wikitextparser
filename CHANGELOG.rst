@@ -1,11 +1,14 @@
 v0.25.0.dev0
 ------------
 - Added fragment property to ``WikiLink`` class (#18)
-- Added a deleter for ``WikiLink.text`` property.
-- Deprecated: Setting ``WikiLink.text`` to None. Use ``del WikiLink.text`` instead.
-- Added a deleter for ``WikiLink.target`` property.
-- Added a deleter for ``Argument.value`` property.
-- Added a deleter for ``ExternalLink.text`` property.
+- Added deleter method for ``WikiLink.text`` property.
+- Deprecated: Setting ``WikiLink.text`` to ``None``. Use ``del WikiLink.text`` instead.
+- Added deleter method for ``WikiLink.target`` property.
+- Added deleter method for ``Argument.value`` property.
+- Added deleter method for ``ExternalLink.text`` property.
+- Added deleter method for ``Parameter.default`` property.
+- Deprecated: Setting ``Parameter.default`` to ``None``. Use ``del Parameter.default`` instead.
+
 
 v0.24.4
 -------
@@ -25,7 +28,7 @@ v0.24.1
 
 v0.24.0
 -------
-- Define a deleter for ``WikiText.string`` property and add ``Template.del_arg`` method. (#14)
+- Define deleter method for ``WikiText.string`` property and add ``Template.del_arg`` method. (#14)
 - Improve the ``lists`` method of ``Template`` and ``ParserFunction`` classes. (#15)
 - Fixed a bug in detection of multiline arguments. (#13)
 - Deprecated ``capital_links`` parameter of ``Template.normal_name``. Use

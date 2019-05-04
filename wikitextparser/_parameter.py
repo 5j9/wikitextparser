@@ -2,6 +2,7 @@
 
 
 from typing import Optional
+from warnings import warn
 
 from ._wikitext import SubWikiText, WS
 
@@ -40,21 +41,25 @@ class Parameter(SubWikiText):
         return None
 
     @default.setter
-    def default(self, newdefault: Optional[str]) -> None:
-        """Set a new default value. Use None to remove default."""
-        name, pipe, default = self._atomic_partition(124)
-        if not pipe:
-            # olddefault is None
-            if newdefault is None:
-                return
+    def default(self, newdefault: str) -> None:
+        """Set a new default value."""
+        if newdefault is None:
+            warn('Setting Argument.default to None is deprecated. '
+                 'Use `del Argument.default` instead.', DeprecationWarning)
+            del self.default
+            return
+        pipe = self._shadow.find(124)
+        if pipe == -1:
             self.insert(-3, '|' + newdefault)
             return
-        if newdefault is None:
-            # Only newdefault is None
-            del self[len(name):-3]
+        self[pipe + 1:-3] = newdefault
+
+    @default.deleter
+    def default(self) -> None:
+        pipe = self._shadow.find(124)
+        if pipe == -1:
             return
-        # olddefault is not None and newdefault is not None
-        self[len(name):-3] = '|' + newdefault
+        del self[pipe:-3]
 
     def append_default(self, new_default_name: str) -> None:
         """Append a new default parameter in the appropriate place.
