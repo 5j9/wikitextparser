@@ -316,15 +316,6 @@ class WikiText:
         """Set a new string for this object. Note the old data will be lost."""
         del self[:]
 
-    def _atomic_partition(self, char: int) -> Tuple[str, str, str]:
-        """Partition self.string where `char`'s not in atomic sub-spans."""
-        s, e = self._span
-        index = self._shadow.find(char)
-        if index == -1:
-            return self._lststr[0][s:e], '', ''
-        lststr0 = self._lststr[0]
-        return lststr0[s:s + index], chr(char), lststr0[s + index + 1:e]
-
     def _subspans(self, type_: str) -> List[List[int]]:
         """Return all the sub-span including self._span."""
         return self._type_to_spans[type_]

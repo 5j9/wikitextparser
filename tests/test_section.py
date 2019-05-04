@@ -68,10 +68,10 @@ class TestSection(TestCase):
         self.assertEqual(ts[0].string, '{{t}}')
 
     def test_section_heading_tabs(self):
-        t = '=\tt\t=\t'
-        s = Section(t)
-        self.assertEqual(s.string, t)
+        s = Section('=\tt\t=\t')
+        self.assertEqual(s.string, '=\tt\t=\t')
         self.assertEqual(s.title, '\tt\t')
+        self.assertEqual(s.contents, '')
 
 
 if __name__ == '__main__':

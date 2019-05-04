@@ -65,10 +65,10 @@ class SubWikiTextWithArgs(SubWikiText):
     @property
     def name(self) -> str:
         """Return template's name (includes whitespace)."""
-        h = self._atomic_partition(self._first_arg_sep)[0]
-        if len(h) == len(self.string):
-            return h[2:-2]
-        return h[2:]
+        sep = self._shadow.find(self._first_arg_sep)
+        if sep == -1:
+            return self[2:-2]
+        return self[2:sep]
 
     @name.setter
     def name(self, newname: str) -> None:
