@@ -13,92 +13,99 @@ class TestWikiText(TestCase):
     """Test the basics  of the WikiText class."""
 
     def test_len(self):
+        ae = self.assertEqual
         t1, t2 = WikiText('{{t1|{{t2}}}}').templates
-        self.assertEqual(len(t2), 6)
-        self.assertEqual(len(t1), 13)
+        ae(len(t2), 6)
+        ae(len(t1), 13)
 
     def test_repr(self):
         self.assertEqual(repr(parse('')), "WikiText('')")
 
     def test_getitem(self):
+        ae = self.assertEqual
         s = '{{t1|{{t2}}}}'
         t1, t2 = WikiText(s).templates
-        self.assertEqual(t2[2], 't')
-        self.assertEqual(t2[2:4], 't2')
-        self.assertEqual(t2[-4:-2], 't2')
-        self.assertEqual(t2[-3], '2')
+        ae(t2[2], 't')
+        ae(t2[2:4], 't2')
+        ae(t2[-4:-2], 't2')
+        ae(t2[-3], '2')
 
     def test_setitem(self):
+        ae = self.assertEqual
         s = '{{t1|{{t2}}}}'
         wt = WikiText(s)
         t1, t2 = wt.templates
         t2[2] = 'a'
-        self.assertEqual(t2.string, '{{a2}}')
-        self.assertEqual(t1.string, '{{t1|{{a2}}}}')
+        ae(t2.string, '{{a2}}')
+        ae(t1.string, '{{t1|{{a2}}}}')
         t2[2] = 'bb'
-        self.assertEqual(t2.string, '{{bb2}}')
-        self.assertEqual(t1.string, '{{t1|{{bb2}}}}')
+        ae(t2.string, '{{bb2}}')
+        ae(t1.string, '{{t1|{{bb2}}}}')
         t2[2:5] = 'ccc'
-        self.assertEqual(t2.string, '{{ccc}}')
-        self.assertEqual(t1.string, '{{t1|{{ccc}}}}')
+        ae(t2.string, '{{ccc}}')
+        ae(t1.string, '{{t1|{{ccc}}}}')
         t2[-5:-2] = 'd'
-        self.assertEqual(wt.string, '{{t1|{{d}}}}')
+        ae(wt.string, '{{t1|{{d}}}}')
         t2[-3] = 'e'
-        self.assertEqual(wt.string, '{{t1|{{e}}}}')
+        ae(wt.string, '{{t1|{{e}}}}')
 
     def test_setitem_errors(self):
+        ae = self.assertEqual
         w = WikiText('a')
         self.assertRaises(IndexError, w.__setitem__, -2, 'b')
-        self.assertEqual('a', w[-9:9])
+        ae('a', w[-9:9])
         self.assertRaises(IndexError, w.__setitem__, 1, 'c')
         self.assertRaises(
             NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
-        self.assertEqual('a', w[-1:])
-        self.assertEqual(w[-2:], 'a')
+        ae('a', w[-1:])
+        ae(w[-2:], 'a')
         self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
-        self.assertEqual(w[0:-2], '')
+        ae(w[0:-2], '')
         self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
         w[0] = 'gg'
         w[1] = 'hh'
-        self.assertEqual(w.string, 'ghh')
+        ae(w.string, 'ghh')
         # stop and start in range but stop is before start
-        self.assertEqual(w[1:0], '')
+        ae(w[1:0], '')
         self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
 
     def test_insert(self):
+        ae = self.assertEqual
         w = WikiText('c')
         w.insert(0, 'a')
-        self.assertEqual(w.string, 'ac')
+        ae(w.string, 'ac')
         # Just to show that ``w.insert(i, s)`` is the same as ``w[i:i] = s``:
         v = WikiText('c')
         v[0:0] = 'a'
-        self.assertEqual(w.string, v.string)
+        ae(w.string, v.string)
         w.insert(-1, 'b')
-        self.assertEqual(w.string, 'abc')
+        ae(w.string, 'abc')
         # Like list.insert, w.insert accepts out of range indexes.
         w.insert(5, 'd')
-        self.assertEqual(w.string, 'abcd')
+        ae(w.string, 'abcd')
         w.insert(-5, 'z')
-        self.assertEqual(w.string, 'zabcd')
+        ae(w.string, 'zabcd')
 
     def test_overwriting_template_args(self):
+        ae = self.assertEqual
         t = Template('{{t|a|b|c}}')
         c = t.arguments[-1]
-        self.assertEqual('|c', c.string)
+        ae('|c', c.string)
         t.string = '{{t|0|a|b|c}}'
-        self.assertEqual('', c.string)
-        self.assertEqual('0', t.get_arg('1').value)
-        self.assertEqual('c', t.get_arg('4').value)
+        ae('', c.string)
+        ae('0', t.get_arg('1').value)
+        ae('c', t.get_arg('4').value)
 
     def test_delitem(self):
+        ae = self.assertEqual
         s = '{{t1|{{t2}}}}'
         wt = WikiText(s)
         t1, t2 = wt.templates
         del t2[3]
-        self.assertEqual(wt.string, '{{t1|{{t}}}}')
+        ae(wt.string, '{{t1|{{t}}}}')
         del wt[5:10]
-        self.assertEqual(t1.string, '{{t1|}}')
-        self.assertEqual(t2.string, '')
+        ae(t1.string, '{{t1|}}')
+        ae(t2.string, '')
 
     def test_span(self):
         self.assertEqual(WikiText('').span, (0, 0))
@@ -109,29 +116,31 @@ class Contains(TestCase):
     """Test the __contains__ method of the WikiText class."""
 
     def test_a_is_actually_in_b(self):
-        s = '{{b|{{a}}}}'
-        b, a = WikiText(s).templates
-        self.assertTrue(a in b)
-        self.assertFalse(b in a)
+        b, a = WikiText('{{b|{{a}}}}').templates
+        self.assertIn(a, b)
+        self.assertNotIn(b, a)
 
     def test_a_seems_to_be_in_b_but_in_another_span(self):
+        ani = self.assertNotIn
         s = '{{b|{{a}}}}{{a}}'
         b, a1, a2 = WikiText(s).templates
-        self.assertTrue(a1 in b)
-        self.assertFalse(a2 in b)
-        self.assertFalse(a2 in a1)
-        self.assertFalse(a1 in a2)
+        self.assertIn(a1, b)
+        ani(a2, b)
+        ani(a2, a1)
+        ani(a1, a2)
 
     def test_a_b_from_different_objects(self):
+        ai = self.assertIn
+        ani = self.assertNotIn
         s = '{{b|{{a}}}}'
         b1, a1 = WikiText(s).templates
         b2, a2 = WikiText(s).templates
-        self.assertTrue(a1 in b1)
-        self.assertTrue(a2 in b2)
-        self.assertFalse(a2 in b1)
-        self.assertFalse(a1 in b2)
-        self.assertTrue('{{a}}' in b1)
-        self.assertFalse('{{c}}' in b2)
+        ai(a1, b1)
+        ai(a2, b2)
+        ani(a2, b1)
+        ani(a1, b2)
+        ai('{{a}}', b1)
+        ani('{{c}}', b2)
 
 
 class ShrinkSpanUpdate(TestCase):
@@ -159,13 +168,14 @@ class ShrinkSpanUpdate(TestCase):
         self.assertEqual(c.string, 'c-->')
 
     def test_shrink_more_than_one_subspan(self):
+        ae = self.assertEqual
         wt = WikiText('{{p|[[c1]][[c2]][[c3]]}}')
         wls = wt.wikilinks
         t = wt.templates[0]
         del t[:]
-        self.assertEqual(wls[0].string, '')
-        self.assertEqual(wls[1].string, '')
-        self.assertEqual(wls[2].string, '')
+        ae(wls[0].string, '')
+        ae(wls[1].string, '')
+        ae(wls[2].string, '')
 
 
 class CloseSubSpans(TestCase):
@@ -174,7 +184,7 @@ class CloseSubSpans(TestCase):
 
     def test_spans_are_closed_properly(self):
         # Real example:
-        # self.assertEqual(
+        # ae(
         #     '{{text\n    | 1 = {{#if:\n        \n        | \n    }}\n}}',
         #     WikiText('{{text|1={{#if:|}}\n\n}}').pformat(),
         # )
@@ -201,16 +211,17 @@ class ExpandSpanUpdate(TestCase):
         self.assertEqual('|1=2', a.string)
 
     def test_overwriting_or_extending_selfspan_will_cause_data_loss(self):
+        ae = self.assertEqual
         wt = WikiText('{{t|{{#if:a|b|c}}}}')
         a = wt.templates[0].arguments[0]
         pf = wt.parser_functions[0]
         a.value += ''
-        self.assertEqual('|{{#if:a|b|c}}', a.string)
+        ae('|{{#if:a|b|c}}', a.string)
         # Note that the old parser function is overwritten
-        self.assertEqual('', pf.string)
+        ae('', pf.string)
         pf = a.parser_functions[0]
         a.value = 'a'
-        self.assertEqual('', pf.string)
+        ae('', pf.string)
 
 
 class Templates(TestCase):
@@ -239,9 +250,7 @@ class Templates(TestCase):
     def test_ignore_nowiki(self):
         wt = WikiText("{{text |<nowiki>}} A </nowiki> }} B")
         self.assertEqual(
-            "{{text |<nowiki>}} A </nowiki> }}",
-            str(wt.templates[0])
-        )
+            "{{text |<nowiki>}} A </nowiki> }}", str(wt.templates[0]))
 
     def test_template_inside_extension_tags(self):
         s = "<includeonly>{{t}}</includeonly>"
@@ -291,8 +300,7 @@ class Comments(TestCase):
         wt = WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
         self.assertEqual(
             "\n\ncomment\n{{A}}\n",
-            wt.comments[0].contents
-        )
+            wt.comments[0].contents)
 
 
 class ExternalLinks(TestCase):
@@ -300,30 +308,31 @@ class ExternalLinks(TestCase):
     """Test the WikiText.external_links."""
 
     def test_ipv6_brackets(self):
+        ae = self.assertEqual
         # See:
         # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
-        self.assertEqual(
+        ae(
             parse('https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
             .external_links[0].url,
             'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
         el = parse(
             '[https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/ t]'
         ).external_links[0]
-        self.assertEqual(
-            el.url, 'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
-        self.assertEqual(el.text, 't')
+        ae(el.url, 'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
+        ae(el.text, 't')
         s = '[//[fe80::1ff:fe23:4567:890a]:443/ t]'
-        self.assertEqual(parse(s).external_links[0].string, s)
+        ae(parse(s).external_links[0].string, s)
 
     def test_in_template(self):
+        ae = self.assertEqual
         # with brackets
         els = parse('{{text|http://example.com?foo=bar}}').external_links
-        self.assertEqual(len(els), 1)
-        self.assertEqual(els[0].url, 'http://example.com?foo=bar')
+        ae(len(els), 1)
+        ae(els[0].url, 'http://example.com?foo=bar')
         # without brackets
         els = parse('{{text|[http://example.com?foo=bar]}}').external_links
-        self.assertEqual(len(els), 1)
-        self.assertEqual(els[0].url, 'http://example.com?foo=bar')
+        ae(len(els), 1)
+        ae(els[0].url, 'http://example.com?foo=bar')
 
     def test_starting_boundary(self):
         self.assertFalse(parse('turn:a').external_links)
@@ -339,92 +348,81 @@ class ExternalLinks(TestCase):
         wt = WikiText(s)
         self.assertEqual(
             'HTTP://mediawiki.org',
-            str(wt.external_links[0]),
-        )
+            str(wt.external_links[0]))
 
     def test_with_lable(self):
+        ae = self.assertEqual
         s = 'text1 [http://mediawiki.org MediaWiki] text2'
         el = WikiText(s).external_links[0]
-        self.assertEqual('http://mediawiki.org', el.url)
-        self.assertEqual('MediaWiki', el.text)
+        ae('http://mediawiki.org', el.url)
+        ae('MediaWiki', el.text)
 
     def test_external_link_match_is_not_in_spans(self):
+        ae = self.assertEqual
         wt = WikiText('t [http://b.b b] t [http://c.c c] t')
         # calculate the links
         links1 = wt.external_links
         wt.insert(0, 't [http://a.a a]')
         links2 = wt.external_links
-        self.assertEqual(links1[1].string, '[http://c.c c]')
-        self.assertEqual(links2[0].string, '[http://a.a a]')
+        ae(links1[1].string, '[http://c.c c]')
+        ae(links2[0].string, '[http://a.a a]')
 
     def test_numbered_link(self):
         s = 'text1 [http://mediawiki.org] text2'
         wt = WikiText(s)
-        self.assertEqual(
-            '[http://mediawiki.org]',
-            str(wt.external_links[0]),
-        )
+        self.assertEqual('[http://mediawiki.org]', str(wt.external_links[0]))
 
     def test_protocol_relative(self):
         s = 'text1 [//en.wikipedia.org wikipedia] text2'
         wt = WikiText(s)
         self.assertEqual(
-            '[//en.wikipedia.org wikipedia]',
-            str(wt.external_links[0]),
-        )
+            '[//en.wikipedia.org wikipedia]', str(wt.external_links[0]))
 
     def test_destroy(self):
         s = 'text1 [//en.wikipedia.org wikipedia] text2'
         wt = WikiText(s)
         del wt.external_links[0].string
-        self.assertEqual(
-            'text1  text2',
-            str(wt))
+        self.assertEqual('text1  text2', str(wt))
 
     def test_wikilink2externallink_fallback(self):
+        ae = self.assertEqual
         p = parse('[[http://example.com foo bar]]')
-        self.assertEqual(
-            '[http://example.com foo bar]',
-            p.external_links[0].string
-        )
-        self.assertEqual(0, len(p.wikilinks))
+        ae('[http://example.com foo bar]', p.external_links[0].string)
+        ae(0, len(p.wikilinks))
 
     def test_template_in_link(self):
+        ae = self.assertEqual
         # Note: In reality all assertions depend on the template outcome.
-        self.assertEqual(  # expected
+        ae(  # expected
             parse('http://example.com{{dead link}}').external_links[0].url,
-            'http://example.com',
-        )
-        self.assertEqual(  # unexpected
+            'http://example.com')
+        ae(  # unexpected
             parse('http://example.com/foo{{!}}bar').external_links[0].url,
-            'http://example.com/foo',
-        )
-        self.assertEqual(  # depends on {{foo}} contents
+            'http://example.com/foo')
+        ae(  # depends on {{foo}} contents
             parse('[http://example.com{{foo}}text]').external_links[0].url,
-            'http://example.com',
-        )
-        self.assertEqual(  # depends on {{foo bar}} contents
+            'http://example.com')
+        ae(  # depends on {{foo bar}} contents
             parse('[http://example.com{{foo bar}} t]').external_links[0].url,
-            'http://example.com',
-        )
+            'http://example.com')
 
     def test_comment_in_external_link(self):
+        ae = self.assertEqual
         # This probably can be fixed, but who uses comments within urls?
         el = parse(
-            '[http://example.com/foo<!-- comment -->bar]'
-        ).external_links[0]
+            '[http://example.com/foo<!-- comment -->bar]').external_links[0]
         self.assertIsNone(el.text)
-        self.assertEqual(el.url, 'http://example.com/foo<!-- comment -->bar')
-        self.assertEqual(
+        ae(el.url, 'http://example.com/foo<!-- comment -->bar')
+        ae(
             parse('[http://example<!-- c -->.com t]').external_links[0].url,
-            'http://example<!-- c -->.com',
-        )
+            'http://example<!-- c -->.com')
 
     def test_no_bare_external_link_within_wiki_links(self):
+        ae = self.assertEqual
         """A wikilink's target may not be an external link."""
         p = parse('[[ https://w|b]]')
-        self.assertEqual('https://w|b', p.external_links[0].string)
-        self.assertEqual(0, len(p.wikilinks))
+        ae('https://w|b', p.external_links[0].string)
+        ae(0, len(p.wikilinks))
 
     def test_bare_external_link_must_have_scheme(self):
         """Bare external links must have scheme."""
@@ -433,39 +431,35 @@ class ExternalLinks(TestCase):
     def test_external_link_with_template(self):
         """External links may contain templates."""
         self.assertEqual(
-            len(parse('http://example.com/{{text|foo}}').external_links),
-            1,
-        )
+            len(parse('http://example.com/{{text|foo}}').external_links), 1)
 
     def test_external_link_containing_extension_tags(self):
+        ae = self.assertEqual
         s = '[https://www.google.<includeonly>com </includeonly>a]'
         el = parse(s).external_links[0]
-        self.assertEqual(str(el), s)
+        ae(str(el), s)
         # Warning: This depends on context and/or requires evaluation.
         self.assertNotEqual(
             el.url, 'https://www.google.a')
         s = '[https://www.google.<noinclude>com </noinclude>a]'
         el = parse(s).external_links[0]
-        self.assertEqual(str(el), s)
+        ae(str(el), s)
         # Warning: This depends on context and/or requires evaluation.
         self.assertNotEqual(el.url, 'https://www.google.com')
 
     def test_parser_function_in_external_link(self):
-        self.assertEqual(
-            parse(
-                '[urn:u {{<!--c-->#if:a|a}}]'
-            ).external_links[0].parser_functions[0].string,
-            '{{<!--c-->#if:a|a}}',
-        )
+        ae = self.assertEqual
+        ae(parse(
+            '[urn:u {{<!--c-->#if:a|a}}]'
+        ).external_links[0].parser_functions[0].string, '{{<!--c-->#if:a|a}}')
         # Note: Depends on the parser function outcome.
-        self.assertEqual(len(parse('[urn:{{#if:a|a|}} t]').external_links), 0)
+        ae(len(parse('[urn:{{#if:a|a|}} t]').external_links), 0)
 
     def test_equal_span_ids(self):
         p = parse('lead\n== 1 ==\nhttp://wikipedia.org/')
         self.assertEqual(
             id(p.external_links[0]._span),
-            id(p.sections[1].external_links[0]._span)
-        )
+            id(p.sections[1].external_links[0]._span))
 
 
 class Tables(TestCase):
@@ -488,22 +482,22 @@ class Tables(TestCase):
         self.assertEqual(s, p.tables[0].string)
 
     def test_two_tables(self):
+        ae = self.assertEqual
         s = 'text1\n {|\n|a \n|}\ntext2\n{|\n|b\n|}\ntext3\n'
         p = parse(s)
         tables = p.tables
-        self.assertEqual(2, len(tables))
-        self.assertEqual('{|\n|a \n|}', tables[0].string)
-        self.assertEqual('{|\n|b\n|}', tables[1].string)
+        ae(2, len(tables))
+        ae('{|\n|a \n|}', tables[0].string)
+        ae('{|\n|b\n|}', tables[1].string)
 
     def test_nested_tables(self):
-        s = (
-            'text1\n{|class=wikitable\n|a\n|\n'
+        ae = self.assertEqual
+        s = 'text1\n{|class=wikitable\n|a\n|\n' \
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
-        )
         p = parse(s)
-        self.assertEqual(2, len(p.tables))
-        self.assertEqual(s[6:-6], p.tables[1].string)
-        self.assertEqual('{|class=wikitable\n|b\n|}', p.tables[0].string)
+        ae(2, len(p.tables))
+        ae(s[6:-6], p.tables[1].string)
+        ae('{|class=wikitable\n|b\n|}', p.tables[0].string)
 
     def test_tables_in_different_sections(self):
         s = '{|\n| a\n|}\n\n= s =\n{|\n| b\n|}\n'
@@ -511,13 +505,14 @@ class Tables(TestCase):
         self.assertEqual('{|\n| b\n|}', p.tables[0].string)
 
     def test_match_index_is_none(self):
+        ae = self.assertEqual
         s = '{|\n| b\n|}\n'
         wt = parse(s)
         assert len(wt.tables) == 1
         wt.insert(0, '{|\n| a\n|}\n')
         tables = wt.tables
-        self.assertEqual(tables[0].string, '{|\n| a\n|}')
-        self.assertEqual(tables[1].string, '{|\n| b\n|}')
+        ae(tables[0].string, '{|\n| a\n|}')
+        ae(tables[1].string, '{|\n| b\n|}')
 
     def test_tables_may_be_indented(self):
         s = ' ::{|class=wikitable\n|a\n|}'
@@ -549,9 +544,8 @@ class Tables(TestCase):
         other extension tags.
 
         """
-        s = '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}'
-        wt = parse(s)
-        self.assertEqual(len(wt.tables), 0)
+        self.assertEqual(len(parse(
+            '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}').tables), 0)
 
     def test_template_before_or_after_table(self):
         # This tests self._shadow function.
@@ -565,10 +559,11 @@ class IndentLevel(TestCase):
     """Test the nesting_level method of the WikiText class."""
 
     def test_a_in_b(self):
+        ae = self.assertEqual
         s = '{{b|{{a}}}}'
         b, a = WikiText(s).templates
-        self.assertEqual(1, b.nesting_level)
-        self.assertEqual(2, a.nesting_level)
+        ae(1, b.nesting_level)
+        ae(2, a.nesting_level)
 
 
 class TestPformat(TestCase):
@@ -579,22 +574,19 @@ class TestPformat(TestCase):
         wt = WikiText('{{a|b=b|c=c|d=d|e=e}}')
         self.assertEqual(
             '{{a\n    | b = b\n    | c = c\n    | d = d\n    | e = e\n}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_double_space_indent(self):
         s = "{{a|b=b|c=c|d=d|e=e}}"
         wt = WikiText(s)
         self.assertEqual(
             '{{a\n  | b = b\n  | c = c\n  | d = d\n  | e = e\n}}',
-            wt.pformat('  '),
-        )
+            wt.pformat('  '))
 
     def test_remove_comments(self):
         self.assertEqual(
             '{{a\n  | e = e\n}}',
-            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pformat('  ', True),
-        )
+            WikiText('{{a|<!--b=b|c=c|d=d|-->e=e}}').pformat('  ', True))
 
     def test_first_arg_of_tag_is_whitespace_sensitive(self):
         """The second argument of #tag is an exception.
@@ -604,12 +596,13 @@ class TestPformat(TestCase):
         to pass an empty content. No space is permitted in the area reserved
         for content between the pipe characters || before attribute1.
         """
+        ae = self.assertEqual
         s = '{{#tag:ref||name="n1"}}'
         wt = WikiText(s)
-        self.assertEqual(s, wt.pformat())
+        ae(s, wt.pformat())
         s = '{{#tag:foo| }}'
         wt = WikiText(s)
-        self.assertEqual(s, wt.pformat())
+        ae(s, wt.pformat())
 
     def test_invoke(self):
         """#invoke args are also whitespace-sensitive."""
@@ -626,8 +619,7 @@ class TestPformat(TestCase):
             '    | abcde = f\n'
             '    | g=h\n'
             '}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_parserfunction_with_no_pos_arg(self):
         s = "{{#switch:case|a|b}}"
@@ -638,14 +630,12 @@ class TestPformat(TestCase):
             '    | a\n'
             '    | b\n'
             '}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_convert_positional_to_keyword_if_possible(self):
         self.assertEqual(
             '{{t\n    | 1 = a\n    | 2 = b\n    | 3 = c\n}}',
-            parse('{{t|a|b|c}}').pformat(),
-        )
+            parse('{{t|a|b|c}}').pformat())
 
     def test_inconvertible_positionals(self):
         """Otherwise the second positional arg will also be passed as 1.
@@ -662,21 +652,20 @@ class TestPformat(TestCase):
         Use <!--comments--> to align positional arguments where necessary.
 
         """
-        self.assertEqual(
+        ae = self.assertEqual
+        ae(
             '{{t\n'
             '    |a<!--\n'
             ' -->| b <!--\n'
             '-->}}',
-            parse('{{t|a| b }}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{t|a| b }}').pformat())
+        ae(
             '{{t\n'
             '    | a <!--\n'
             ' -->| 2 = b\n'
             '    | 3 = c\n'
             '}}',
-            parse('{{t| a |b|c}}').pformat(),
-        )
+            parse('{{t| a |b|c}}').pformat())
 
     def test_commented_repformat(self):
         s = '{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}'
@@ -694,15 +683,13 @@ class TestPformat(TestCase):
             '}}',
             parse(
                 '{{#if:true|<span style="color:Blue;">text</span>}}'
-            ).pformat(),
-        )
+            ).pformat())
 
     def test_ignore_zwnj_for_alignment(self):
         self.assertEqual(
             '{{ا\n    | نیم\u200cفاصله       = ۱\n    |'
             ' بدون نیم فاصله = ۲\n}}',
-            parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pformat(),
-        )
+            parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pformat())
 
     def test_equal_sign_alignment(self):
         self.assertEqual(
@@ -710,8 +697,7 @@ class TestPformat(TestCase):
             '    | long_argument_name = 1\n'
             '    | 2                  = 2\n'
             '}}',
-            parse('{{t|long_argument_name=1|2=2}}').pformat(),
-        )
+            parse('{{t|long_argument_name=1|2=2}}').pformat())
 
     def test_arabic_ligature_lam_with_alef(self):
         """'ل' + 'ا' creates a ligature with one character width.
@@ -722,8 +708,7 @@ class TestPformat(TestCase):
         """
         self.assertEqual(
             '{{ا\n    | الف = ۱\n    | لا   = ۲\n}}',
-            parse('{{ا|الف=۱|لا=۲}}').pformat(),
-        )
+            parse('{{ا|الف=۱|لا=۲}}').pformat())
 
     def test_pf_inside_t(self):
         wt = parse('{{t|a= {{#if:I|I}} }}')
@@ -734,8 +719,7 @@ class TestPformat(TestCase):
             '        | I\n'
             '    }}\n'
             '}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_nested_pf_inside_tl(self):
         wt = parse('{{t1|{{t2}}{{#pf:a}}}}')
@@ -745,8 +729,7 @@ class TestPformat(TestCase):
             '        a\n'
             '    }}\n'
             '}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_html_tag_equal(self):
         wt = parse('{{#iferror:<t a="">|yes|no}}')
@@ -756,16 +739,14 @@ class TestPformat(TestCase):
             '    | yes\n'
             '    | no\n'
             '}}',
-            wt.pformat(),
-        )
+            wt.pformat())
 
     def test_pformat_tl_directly(self):
         self.assertEqual(
             '{{t\n'
             '    | 1 = a\n'
             '}}',
-            Template('{{t|a}}').pformat(),
-        )
+            Template('{{t|a}}').pformat())
 
     def test_pformat_pf_directly(self):
         self.assertEqual(
@@ -774,8 +755,7 @@ class TestPformat(TestCase):
             '    | yes\n'
             '    | no\n'
             '}}',
-            ParserFunction('{{#iferror:<t a="">|yes|no}}').pformat(),
-        )
+            ParserFunction('{{#iferror:<t a="">|yes|no}}').pformat())
 
     def test_function_inside_template(self):
         p = parse('{{t|{{#ifeq:||yes}}|a2}}')
@@ -788,8 +768,7 @@ class TestPformat(TestCase):
             '    }}\n'
             '    | 2 = a2\n'
             '}}',
-            p.pformat(),
-        )
+            p.pformat())
 
     def test_parser_template_parser(self):
         p = parse('{{#f:c|e|{{t|a={{#g:b|c}}}}}}')
@@ -804,8 +783,7 @@ class TestPformat(TestCase):
             '        }}\n'
             '    }}\n'
             '}}',
-            p.pformat(),
-        )
+            p.pformat())
 
     def test_pfromat_first_arg_of_functions(self):
         self.assertEqual(
@@ -816,82 +794,71 @@ class TestPformat(TestCase):
             '        | \n'
             '    }}\n'
             '}}',
-            parse('{{#time:{{#if:1|y|}}}}').pformat(),
-        )
+            parse('{{#time:{{#if:1|y|}}}}').pformat())
 
     def test_pformat_pf_whitespace(self):
-        self.assertEqual(
+        ae = self.assertEqual
+        ae(
             '{{#if:\n'
             '    a\n'
             '}}',
-            parse('{{#if: a}}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{#if: a}}').pformat())
+        ae(
             '{{#if:\n'
             '    a\n'
             '}}',
-            parse('{{#if:a }}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{#if:a }}').pformat())
+        ae(
             '{{#if:\n'
             '    a\n'
             '}}',
-            parse('{{#if: a }}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{#if: a }}').pformat())
+        ae(
             '{{#if:\n'
             '    a= b\n'
             '}}',
-            parse('{{#if: a= b }}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{#if: a= b }}').pformat())
+        ae(
             '{{#if:\n'
             '    a = b\n'
             '}}',
-            parse('{{#if:a = b }}').pformat(),
-        )
+            parse('{{#if:a = b }}').pformat())
 
     def test_pformat_tl_whitespace(self):
-        self.assertEqual(
-            '{{t}}',
-            parse('{{ t }}').pformat(),
-        )
-        self.assertEqual(
+        ae = self.assertEqual
+        ae('{{t}}', parse('{{ t }}').pformat())
+        ae(
             '{{ {{t}} \n'
             '    | a = b\n'
             '}}',
-            parse('{{ {{t}}|a=b}}').pformat(),
-        )
+            parse('{{ {{t}}|a=b}}').pformat())
 
     def test_zwnj_is_not_whitespace(self):
         self.assertEqual(
             '{{#if:\n'
             '    \u200c\n'
             '}}',
-            parse('{{#if:\u200c}}').pformat(),
-        )
+            parse('{{#if:\u200c}}').pformat())
 
     def test_colon_in_tl_name(self):
-        self.assertEqual(
+        ae = self.assertEqual
+        ae(
             '{{en:text\n'
             '    |text<!--\n'
             '-->}}',
-            parse('{{en:text|text}}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{en:text|text}}').pformat())
+        ae(
             '{{en:text\n'
             '    |1<!--\n'
             ' -->|2<!--\n'
             '-->}}',
-            parse('{{en:text|1|2}}').pformat(),
-        )
-        self.assertEqual(
+            parse('{{en:text|1|2}}').pformat())
+        ae(
             '{{en:text\n'
             '    |1<!--\n'
             ' -->| 2=v <!--\n'
             '-->}}',
-            parse('{{en:text|1|2=v}}').pformat(),
-        )
+            parse('{{en:text|1|2=v}}').pformat())
 
     def test_parser_function_with_an_empty_argument(self):
         """The result might seem a little odd, but this is a very rare case.
@@ -903,8 +870,7 @@ class TestPformat(TestCase):
             '{{#rel2abs:\n'
             '    \n'
             '}}',
-            parse('{{ #rel2abs: }}').pformat(),
-        )
+            parse('{{ #rel2abs: }}').pformat())
 
     def test_pf_one_kw_arg(self):
         self.assertEqual(
@@ -919,23 +885,20 @@ class TestPformat(TestCase):
         self.assertEqual(
             '{{b\n'
             '    | 1 = {{c}}\n'
-            '}}',
-            b.pformat(),
-        )
+            '}}', b.pformat())
 
     def test_repformat(self):
         """Make sure that pformat won't mutate self."""
+        ae = self.assertEqual
         s = '{{a|{{b|{{c}}}}}}'
         a, b, c = WikiText(s).templates
-        self.assertEqual(
+        ae(
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pformat(),
-        )
+            a.pformat())
         # Again:
-        self.assertEqual(
+        ae(
             '{{a\n    | 1 = {{b\n        | 1 = {{c}}\n    }}\n}}',
-            a.pformat(),
-        )
+            a.pformat())
 
     def test_pformat_keep_separated(self):
         """Test that `{{ {{t}} }}` is not converted to `{{{{t}}}}`.
@@ -946,15 +909,16 @@ class TestPformat(TestCase):
         self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pformat())
 
     def test_deprecated_pprint(self):
+        # noinspection PyDeprecation
         self.assertWarns(DeprecationWarning, WikiText('').pprint, '  ', True)
 
     def test_last_arg_last_char_is_newline(self):
         """Do not add comment_indent when it has no effect."""
-        self.assertEqual(
+        ae = self.assertEqual
+        ae(
             '{{text\n    |{{#if:\n        \n    }}\n}}',
-            WikiText('{{text|{{#if:}}\n}}').pformat(),
-        )
-        self.assertEqual(
+            WikiText('{{text|{{#if:}}\n}}').pformat())
+        ae(
             '{{text\n'
             '    |{{text\n'
             '        |{{#if:\n'
@@ -962,37 +926,30 @@ class TestPformat(TestCase):
             '        }}\n'
             '<!--\n'
             ' -->}}\n'
-            '}}',
-            WikiText('{{text|{{text|{{#if:}}\n}}\n}}').pformat(),
-        )
-        self.assertEqual(
+            '}}', WikiText('{{text|{{text|{{#if:}}\n}}\n}}').pformat())
+        ae(
             '{{text\n'
             '    |{{text\n'
             '        |{{#if:\n'
             '            \n'
             '        }}\n'
             '    }}\n'
-            '}}',
-            WikiText('{{text|{{text|{{#if:}}\n    }}\n}}').pformat(),
-        )
-        self.assertEqual(
+            '}}', WikiText('{{text|{{text|{{#if:}}\n    }}\n}}').pformat())
+        ae(
             '{{text\n    |a\n    |b\n}}',
-            WikiText('{{text|a\n    |b\n}}').pformat(),
-        )
-        self.assertEqual(
+            WikiText('{{text|a\n    |b\n}}').pformat())
+        ae(
             '{{text\n    |a\n    | 2 = b\n}}',
-            WikiText('{{text|a\n    |2=b\n}}').pformat(),
-        )
-        self.assertEqual(
+            WikiText('{{text|a\n    |2=b\n}}').pformat())
+        ae(
             '{{en:text\n'
             '    | n=v\n'
-            '}}',
-            parse('{{en:text|n=v\n}}').pformat(),
-        )
+            '}}', parse('{{en:text|n=v\n}}').pformat())
 
     def test_no_error(self):
         # the errors were actually found in shrink/insert/extend
-        self.assertEqual(
+        ae = self.assertEqual
+        ae(
             parse('{{#f1:{{#f2:}}{{t|}}}}').pformat(),
             '{{#f1:'
             '\n    {{#f2:'
@@ -1000,17 +957,15 @@ class TestPformat(TestCase):
             '\n    }}{{t'
             '\n        | 1 = '
             '\n    }}'
-            '\n}}',
-        )
-        self.assertEqual(
+            '\n}}')
+        ae(
             parse('{{{{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}\n}}}}\n').pformat(),
             '{{ {{#t2:'
             '\n        {{{p1|}}}'
             '\n    }}{{#t3:'
             '\n        {{{p2|}}}'
             '\n    }} }}'
-            '\n',
-        )
+            '\n')
 
 
 class Sections(TestCase):
@@ -1033,15 +988,16 @@ class Sections(TestCase):
         self.assertEqual('text\r\n', p.sections[0].string)
 
     def test_inserting_into_sections(self):
+        ae = self.assertEqual
         wt = WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
         s1.insert(0, 'c\n== s0 ==\nc\n')
-        self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
+        ae('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
         s0 = wt.sections[1]
-        self.assertEqual('== s0 ==\nc\n', s0.string)
-        self.assertEqual('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
+        ae('== s0 ==\nc\n', s0.string)
+        ae('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
         s1.insert(len(wt.string), '=== s2 ===\nc\n')
-        self.assertEqual(
+        ae(
             'c\n'
             '== s0 ==\n'
             'c\n'
@@ -1049,10 +1005,9 @@ class Sections(TestCase):
             'c\n'
             '=== s2 ===\n'
             'c\n',
-            wt.string
-        )
+            wt.string)
         s3 = wt.sections[3]
-        self.assertEqual('=== s2 ===\nc\n', s3.string)
+        ae('=== s2 ===\nc\n', s3.string)
 
     def test_insert_parse(self):
         """Test that insert parses the inserted part."""
@@ -1061,27 +1016,17 @@ class Sections(TestCase):
         self.assertEqual(len(wt.templates), 1)
 
     def test_subsection(self):
+        ae = self.assertEqual
         a = parse('0\n== a ==\n1\n=== b ===\n2\n==== c ====\n3\n').sections[1]
-        self.assertEqual(
-            '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a.string
-        )
+        ae('== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a.string)
         a_sections = a.sections
-        self.assertEqual('', a_sections[0].string)
-        self.assertEqual(
-            '== a ==\n1\n=== b ===\n2\n==== c ====\n3\n',
-            a_sections[1].string,
-        )
+        ae('', a_sections[0].string)
+        ae('== a ==\n1\n=== b ===\n2\n==== c ====\n3\n', a_sections[1].string)
         b = a_sections[2]
-        self.assertEqual(
-            '=== b ===\n2\n==== c ====\n3\n',
-            b.string,
-        )
+        ae('=== b ===\n2\n==== c ====\n3\n', b.string,)
         # Sections use the same span object
         self.assertTrue(b.sections[1]._span is b._span)
-        self.assertEqual(
-            '==== c ====\n3\n',
-            b.sections[2].string,
-        )
+        ae('==== c ====\n3\n', b.sections[2].string)
 
     def test_tabs_in_heading(self):
         """Test that insert parses the inserted part."""
@@ -1095,52 +1040,56 @@ class Sections(TestCase):
 
     def test_section_templates(self):
         """section.templates returns templates only from that section."""
+        ae = self.assertEqual
         templates = parse('{{t1}}\n==section==\n{{t2}}').sections[1].templates
-        self.assertEqual(len(templates), 1)
-        self.assertEqual(templates[0].string, '{{t2}}')
+        ae(len(templates), 1)
+        ae(templates[0].string, '{{t2}}')
 
 
 class WikiList(TestCase):
 
     def test_get_lists_with_no_pattern(self):
+        ae = self.assertEqual
         wikitext = '*a\n#b\n;c:d'
         parsed = parse(wikitext)
         lists = parsed.lists()
-        self.assertEqual(len(lists), 3)
-        self.assertEqual(lists[2].items, ['c', 'd'])
+        ae(len(lists), 3)
+        ae(lists[2].items, ['c', 'd'])
 
 
 class Tags(TestCase):
 
     def test_unicode_attr_values(self):
+        ae = self.assertEqual
         wikitext = (
             'متن۱<ref name="نام۱" group="گ">یاد۱</ref>\n\n'
             'متن۲<ref name="نام۲" group="گ">یاد۲</ref>\n\n'
-            '<references group="گ"/>'
-        )
+            '<references group="گ"/>')
         parsed = parse(wikitext)
         ref1, ref2 = parsed.tags('ref')
-        self.assertEqual(ref1.string, '<ref name="نام۱" group="گ">یاد۱</ref>')
-        self.assertEqual(ref2.string, '<ref name="نام۲" group="گ">یاد۲</ref>')
+        ae(ref1.string, '<ref name="نام۱" group="گ">یاد۱</ref>')
+        ae(ref2.string, '<ref name="نام۲" group="گ">یاد۲</ref>')
 
     def test_defferent_nested_tags(self):
+        ae = self.assertEqual
         parsed = parse('<s><b>strikethrough-bold</b></s>')
         b = parsed.tags('b')[0].string
-        self.assertEqual(b, '<b>strikethrough-bold</b>')
+        ae(b, '<b>strikethrough-bold</b>')
         s = parsed.tags('s')[0].string
-        self.assertEqual(s, '<s><b>strikethrough-bold</b></s>')
+        ae(s, '<s><b>strikethrough-bold</b></s>')
         s2, b2 = parsed.tags()
-        self.assertEqual(b2.string, b)
-        self.assertEqual(s2.string, s)
+        ae(b2.string, b)
+        ae(s2.string, s)
 
     def test_same_nested_tags(self):
+        ae = self.assertEqual
         parsed = parse('<b><b>bold</b></b>')
         tags_by_name = parsed.tags('b')
-        self.assertEqual(tags_by_name[0].string, '<b><b>bold</b></b>')
-        self.assertEqual(tags_by_name[1].string, '<b>bold</b>')
+        ae(tags_by_name[0].string, '<b><b>bold</b></b>')
+        ae(tags_by_name[1].string, '<b>bold</b>')
         all_tags = parsed.tags()
-        self.assertEqual(all_tags[0].string, tags_by_name[0].string)
-        self.assertEqual(all_tags[1].string, tags_by_name[1].string)
+        ae(all_tags[0].string, tags_by_name[0].string)
+        ae(all_tags[1].string, tags_by_name[1].string)
 
     def test_self_closing(self):
         parsed = parse('<references />')
@@ -1161,38 +1110,40 @@ class Tags(TestCase):
         self.assertEqual(tags[0].string, '<li>')
 
     def test_inner_tag(self):
+        ae = self.assertEqual
         parsed = parse('<br><s><b>sb</b></s>')
         s = parsed.tags('s')[0]
-        self.assertEqual(s.string, '<s><b>sb</b></s>')
+        ae(s.string, '<s><b>sb</b></s>')
         b = s.tags()[1]
-        self.assertEqual(b.string, '<b>sb</b>')
+        ae(b.string, '<b>sb</b>')
 
     def test_extension_tags_are_not_lost_in_shadows(self):
+        ae = self.assertEqual
         parsed = parse(
             'text<ref name="c">citation</ref>\n'
-            '<references/>'
-        )
+            '<references/>')
         ref, references = parsed.tags()
         ref.set_attr('name', 'z')
-        self.assertEqual(ref.string, '<ref name="z">citation</ref>')
-        self.assertEqual(references.string, '<references/>')
+        ae(ref.string, '<ref name="z">citation</ref>')
+        ae(references.string, '<references/>')
 
 
 class Ancestors(TestCase):
 
     def test_ancestors_and_parent(self):
+        ae = self.assertEqual
         parsed = parse('{{a|{{#if:{{b{{c<!---->}}}}}}}}')
-        self.assertEqual(parsed.parent(), None)
-        self.assertEqual(parsed.ancestors(), [])
+        ae(parsed.parent(), None)
+        ae(parsed.ancestors(), [])
         c = parsed.comments[0]
         c_parent = c.parent()
-        self.assertEqual(c_parent.string, '{{c<!---->}}')
-        self.assertEqual(c_parent.parent().string, '{{b{{c<!---->}}}}')
-        self.assertEqual(len(c.ancestors()), 4)
-        self.assertEqual(len(c.ancestors(type_='Template')), 3)
-        self.assertEqual(len(c.ancestors(type_='ParserFunction')), 1)
+        ae(c_parent.string, '{{c<!---->}}')
+        ae(c_parent.parent().string, '{{b{{c<!---->}}}}')
+        ae(len(c.ancestors()), 4)
+        ae(len(c.ancestors(type_='Template')), 3)
+        ae(len(c.ancestors(type_='ParserFunction')), 1)
         t = Template('{{a}}')
-        self.assertEqual(t.ancestors(), [])
+        ae(t.ancestors(), [])
         self.assertIsNone(t.parent())
 
     def test_not_every_sooner_starting_span_is_a_parent(self):
