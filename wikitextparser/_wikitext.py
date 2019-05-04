@@ -212,11 +212,7 @@ class WikiText:
                 'stop index out of range or start is after the stop')
         return start + ss, stop + ss
 
-    def __setitem__(
-        self,
-        key: Union[slice, int],
-        value: str,
-    ) -> None:
+    def __setitem__(self, key: Union[slice, int], value: str) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.

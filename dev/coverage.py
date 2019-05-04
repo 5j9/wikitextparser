@@ -1,6 +1,8 @@
 from subprocess import check_call
-from path import Path  # requires path.py
 from webbrowser import open_new_tab
+
+from path import Path  # requires path.py
+
 
 repo = Path(__file__).parent.parent
 repo.cd()

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 from subprocess import check_call
+
 from path import Path  # requires path.py
+
 
 wtp_dir = Path(__file__).parent.parent
 wtp_dir.cd()
