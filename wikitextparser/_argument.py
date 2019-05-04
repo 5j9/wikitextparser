@@ -120,6 +120,15 @@ class Argument(SubWikiText):
         else:
             self[1:] = newvalue
 
+    @value.deleter
+    def value(self) -> None:
+        """Delete self.value."""
+        shadow_match = self._shadow_match
+        if shadow_match['eq']:
+            del self[shadow_match.start('eq'):]
+            return
+        del self[1:]
+
     @property
     def _lists_shadow_ss(self):
         shadow_match = self._shadow_match
