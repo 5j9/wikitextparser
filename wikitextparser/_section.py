@@ -41,8 +41,8 @@ class Section(SubWikiText):
             return ''
         lf = self._shadow.find(10)
         if lf == -1:
-            return self(None, None).rstrip(WS)[level:-level]
-        return self(None, lf).rstrip(WS)[level:-level]
+            return self(0, None).rstrip(WS)[level:-level]
+        return self(0, lf).rstrip(WS)[level:-level]
 
     @title.setter
     def title(self, value: str) -> None:
@@ -59,7 +59,7 @@ class Section(SubWikiText):
     def contents(self) -> str:
         """Return contents of this section."""
         if self.level == 0:
-            return self(None, None)
+            return self(0, None)
         lf = self._shadow.find(10)
         if lf == -1:
             return ''

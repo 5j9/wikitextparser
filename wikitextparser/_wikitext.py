@@ -165,13 +165,16 @@ class WikiText:
         return e - s
 
     def __call__(
-        self, start: int = None, stop: Optional[int] = False, step: int = None
+        self, start: int, stop: Optional[int] = False, step: int = None
     ) -> str:
         """Return `self.string[start]` or `self.string[start:stop]`.
 
         Return self.string[start] if stop is False.
         Otherwise return self.string[start:stop:step].
         """
+        if start is None:
+            warn('Using None as the start value is deprecated; use 0 instead.',
+                 DeprecationWarning)
         if stop is False:
             if start >= 0:
                 return self._lststr[0][self._span[0] + start]
@@ -188,7 +191,7 @@ class WikiText:
              'Use WikiText.__call__ instead.', DeprecationWarning)
         if isinstance(key, int):
             return self(key)
-        return self(key.start, key.stop, key.step)
+        return self(key.start, key.stop)
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.

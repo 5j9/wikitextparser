@@ -35,6 +35,7 @@ class TestWikiText(TestCase):
         with self.assertWarns(DeprecationWarning):
             ae(wt[0], 'a')
             ae(wt[-1:4], 'a')
+            ae(wt[None:None], 'a')
 
     def test_setitem(self):
         ae = self.assertEqual

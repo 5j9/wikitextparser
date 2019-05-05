@@ -1,3 +1,7 @@
+v0.25.1
+-------
+- Deprecate using None as the start value of ``__call__``.
+
 v0.25.0
 -------
 - Added fragment property to ``WikiLink`` class (#18)
