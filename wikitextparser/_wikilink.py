@@ -29,7 +29,7 @@ class WikiLink(SubWikiText):
 
     @target.deleter
     def target(self) -> None:
-        """Delete link target AND pipe.
+        """Delete link target, including the | character.
 
         In case only deleting the target is desired, use `self.target = ''`.
         """
@@ -63,7 +63,7 @@ class WikiLink(SubWikiText):
 
     @text.deleter
     def text(self):
-        """Delete self.text."""
+        """Delete self.text, including the | character."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             return
@@ -103,7 +103,7 @@ class WikiLink(SubWikiText):
 
     @fragment.deleter
     def fragment(self):
-        """Delete fragment."""
+        """Delete fragment, including the # character."""
         shadow_find = self._shadow.find
         hash_ = shadow_find(35)
         if hash_ == -1:

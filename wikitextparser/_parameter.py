@@ -60,6 +60,7 @@ class Parameter(SubWikiText):
 
     @default.deleter
     def default(self) -> None:
+        """Delete self.default, including the | character."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             return

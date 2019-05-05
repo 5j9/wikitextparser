@@ -64,7 +64,7 @@ class ExternalLink(SubWikiText):
 
     @text.deleter
     def text(self) -> None:
-        """Delete self.text."""
+        """Delete self.text, including the space before it."""
         string = self.string
         if string[0] != '[':
             return
