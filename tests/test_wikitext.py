@@ -21,14 +21,20 @@ class TestWikiText(TestCase):
     def test_repr(self):
         self.assertEqual(repr(parse('')), "WikiText('')")
 
-    def test_getitem(self):
+    def test_call(self):
         ae = self.assertEqual
-        s = '{{t1|{{t2}}}}'
-        t1, t2 = WikiText(s).templates
+        t1, t2 = WikiText('{{t1|{{t2}}}}').templates
         ae(t2(2), 't')
         ae(t2(2, 4), 't2')
         ae(t2(-4, -2), 't2')
         ae(t2(-3), '2')
+
+    def test_getitem(self):
+        ae = self.assertEqual
+        wt = WikiText('a')
+        with self.assertWarns(DeprecationWarning):
+            ae(wt[0], 'a')
+            ae(wt[-1:4], 'a')
 
     def test_setitem(self):
         ae = self.assertEqual
