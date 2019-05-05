@@ -1,5 +1,5 @@
-v0.25.0.dev0
-------------
+v0.25.0
+-------
 - Added fragment property to ``WikiLink`` class (#18)
 - Added deleter method for ``WikiLink.text`` property.
 - Deprecated: Setting ``WikiLink.text`` to ``None``. Use ``del WikiLink.text`` instead.
