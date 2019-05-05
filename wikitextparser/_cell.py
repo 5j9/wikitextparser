@@ -195,7 +195,7 @@ class Cell(SubWikiTextWithAttrs):
         m = self._match
         offset = m.start()
         s, e = m.span('data')
-        return self[s - offset:e - offset]
+        return self(s - offset, e - offset)
 
     @value.setter
     def value(self, new_value: str) -> None:

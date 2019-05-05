@@ -17,14 +17,14 @@ class ExternalLink(SubWikiText):
     @property
     def url(self) -> str:
         """Return the url."""
-        if self[0] == '[':
-            return self[1:URL_MATCH(self._ext_link_shadow, 1).end()]
+        if self(0) == '[':
+            return self(1, URL_MATCH(self._ext_link_shadow, 1).end())
         return self.string
 
     @url.setter
     def url(self, newurl: str) -> None:
         """Set a new url."""
-        if self[0] == '[':
+        if self(0) == '[':
             self[1:len('[' + self.url)] = newurl
         else:
             self[0:len(self.url)] = newurl
@@ -75,4 +75,4 @@ class ExternalLink(SubWikiText):
     @property
     def in_brackets(self) -> bool:
         """Return true if the ExternalLink is in brackets. False otherwise."""
-        return self[0] == '['
+        return self(0) == '['

@@ -16,8 +16,8 @@ class Parameter(SubWikiText):
         """Return current parameter's name."""
         pipe = self._shadow.find(124)
         if pipe == -1:
-            return self[3:-3]
-        return self[3:pipe]
+            return self(3, -3)
+        return self(3, pipe)
 
     @name.setter
     def name(self, newname: str) -> None:
@@ -42,7 +42,7 @@ class Parameter(SubWikiText):
         pipe = self._shadow.find(124)
         if pipe == -1:
             return None
-        return self[pipe + 1:-3]
+        return self(pipe + 1, -3)
 
     @default.setter
     def default(self, newdefault: str) -> None:

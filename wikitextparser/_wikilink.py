@@ -15,8 +15,8 @@ class WikiLink(SubWikiText):
         """Return target of this WikiLink."""
         pipe = self._shadow.find(124)
         if pipe == -1:
-            return self[2:-2]
-        return self[2:pipe]
+            return self(2, -2)
+        return self(2, pipe)
 
     @target.setter
     def target(self, newtarget: str) -> None:
@@ -45,7 +45,7 @@ class WikiLink(SubWikiText):
         pipe = self._shadow.find(124)
         if pipe == -1:
             return None
-        return self[pipe + 1:-2]
+        return self(pipe + 1, -2)
 
     @text.setter
     def text(self, newtext: str) -> None:
@@ -78,10 +78,10 @@ class WikiLink(SubWikiText):
         if pipe == -1:
             if hash_ == -1:
                 return None
-            return self[hash_ + 1:-2]
+            return self(hash_ + 1, -2)
         if hash_ == -1 or pipe < hash_:
             return None
-        return self[hash_ + 1:pipe]
+        return self(hash_ + 1, pipe)
 
     @fragment.setter
     def fragment(self, value: str):

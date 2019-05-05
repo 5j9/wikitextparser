@@ -11,4 +11,4 @@ class Comment(SubWikiText):
     @property
     def contents(self) -> str:
         """Return contents of this comment."""
-        return self[4:-3]
+        return self(4, -3)

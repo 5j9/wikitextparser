@@ -7,7 +7,8 @@ v0.25.0.dev0
 - Added deleter method for ``ExternalLink.text`` property.
 - Added deleter method for ``Parameter.default`` property.
 - Deprecated: Setting ``Parameter.default`` to ``None``. Use ``del Parameter.default`` instead.
-
+- Defined ``WikiText.__call__`` to get a slice of wikitext as string.
+- Deprecated ``WikiText.__getitem__``. Use ``WikiText.__call__`` or ``WikiText.string`` instead.
 
 v0.24.4
 -------

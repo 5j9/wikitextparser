@@ -67,8 +67,8 @@ class SubWikiTextWithArgs(SubWikiText):
         """Return template's name (includes whitespace)."""
         sep = self._shadow.find(self._first_arg_sep)
         if sep == -1:
-            return self[2:-2]
-        return self[2:sep]
+            return self(2, -2)
+        return self(2, sep)
 
     @name.setter
     def name(self, newname: str) -> None:

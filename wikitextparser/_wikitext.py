@@ -164,19 +164,31 @@ class WikiText:
         s, e = self._span
         return e - s
 
-    def __getitem__(self, key: Union[slice, int]) -> str:
-        """Return self.string[item]."""
-        if isinstance(key, int):
-            if key >= 0:
-                return self._lststr[0][self._span[0] + key]
-            return self._lststr[0][self._span[1] + key]
-        ss, se = self._span
-        ks = key.start
-        ke = key.stop
+    def __call__(
+        self, start: int = None, stop: Optional[int] = False, step: int = None
+    ) -> str:
+        """Return `self.string[start]` or `self.string[start:stop]`.
+
+        Return self.string[start] if stop is False.
+        Otherwise return self.string[start:stop:step].
+        """
+        if stop is False:
+            if start >= 0:
+                return self._lststr[0][self._span[0] + start]
+            return self._lststr[0][self._span[1] + start]
+        s, e = self._span
         return self._lststr[0][
-            ss if ks is None else (ss + ks if ks >= 0 else se + ks):
-            se if ke is None else (ss + ke if ke >= 0 else se + ke):
-            key.step]
+            s if start is None else (s + start if start >= 0 else e + start):
+            e if stop is None else (s + stop if stop >= 0 else e + stop):
+            step]
+
+    def __getitem__(self, key: Union[slice, int]) -> str:
+        """Return self.string[key]."""
+        warn('WikiText.__getitem__ is deprecated; '
+             'Use WikiText.__call__ instead.', DeprecationWarning)
+        if isinstance(key, int):
+            return self(key)
+        return self(key.start, key.stop, key.step)
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.

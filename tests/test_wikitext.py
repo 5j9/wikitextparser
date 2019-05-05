@@ -25,10 +25,10 @@ class TestWikiText(TestCase):
         ae = self.assertEqual
         s = '{{t1|{{t2}}}}'
         t1, t2 = WikiText(s).templates
-        ae(t2[2], 't')
-        ae(t2[2:4], 't2')
-        ae(t2[-4:-2], 't2')
-        ae(t2[-3], '2')
+        ae(t2(2), 't')
+        ae(t2(2, 4), 't2')
+        ae(t2(-4, -2), 't2')
+        ae(t2(-3), '2')
 
     def test_setitem(self):
         ae = self.assertEqual
@@ -53,20 +53,20 @@ class TestWikiText(TestCase):
         ae = self.assertEqual
         w = WikiText('a')
         self.assertRaises(IndexError, w.__setitem__, -2, 'b')
-        ae('a', w[-9:9])
+        ae('a', w(-9, 9))
         self.assertRaises(IndexError, w.__setitem__, 1, 'c')
         self.assertRaises(
             NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
-        ae('a', w[-1:])
-        ae(w[-2:], 'a')
+        ae('a', w(-1, None))
+        ae(w(-2, None), 'a')
         self.assertRaises(IndexError, w.__setitem__, slice(-2, None), 'e')
-        ae(w[0:-2], '')
+        ae(w(0, -2), '')
         self.assertRaises(IndexError, w.__setitem__, slice(0, -2), 'f')
         w[0] = 'gg'
         w[1] = 'hh'
         ae(w.string, 'ghh')
         # stop and start in range but stop is before start
-        ae(w[1:0], '')
+        ae(w(1, 0), '')
         self.assertRaises(IndexError, w.__setitem__, slice(1, 0), 'h')
 
     def test_insert(self):

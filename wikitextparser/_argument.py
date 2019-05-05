@@ -108,8 +108,8 @@ class Argument(SubWikiText):
         """Return value of a keyword argument."""
         shadow_match = self._shadow_match
         if shadow_match['eq']:
-            return self[shadow_match.start('post_eq'):]
-        return self[1:]
+            return self(shadow_match.start('post_eq'), None)
+        return self(1, None)
 
     @value.setter
     def value(self, newvalue: str) -> None:
