@@ -116,7 +116,7 @@ WikiLinks
     >>> wl
     WikiLink('[[T#F]]'
 
-All WikiLinks properties support get, set, and delete operations.
+All WikiLink properties support get, set, and delete operations.
 
 Sections
 --------
