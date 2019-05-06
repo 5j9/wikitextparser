@@ -104,14 +104,19 @@ WikiLinks
 
 .. code:: python
 
-    >>> parsed = wtp.parse('text [[A|B]] text')
-    >>> wl = parsed.wikilinks[0]
+    >>> wtp.parse('... [[title#fragmet|text]] ...').wikilinks[0]
     >>> wl
-    WikiLink('[[A|B]]')
-    >>> wl.target = 'Z'
+    WikiLink('[[title#fragmet|text]]')
+    >>> wl.title = 'T'
+    >>> wl.fragment = 'F'
     >>> wl.text = 'X'
-    >>> parsed
-    WikiText('text [[Z|X]] text')
+    >>> wl.target
+    'T#F'
+    >>> del wl.text
+    >>> wl
+    WikiLink('[[T#F]]'
+
+All WikiLinks properties support get, set, and delete operations.
 
 Sections
 --------
