@@ -317,18 +317,20 @@ class WikiText:
 
     @property
     def string(self) -> str:
-        """Return str(self)."""
+        """Return str(self). Support get, set, and delete operations.
+
+        getter and delter: Note that this will overwrite the current string,
+            emptying any object that points to the old string.
+        """
         start, end = self._span
         return self._lststr[0][start:end]
 
     @string.setter
     def string(self, newstring: str) -> None:
-        """Set a new string for this object. Note the old data will be lost."""
         self[:] = newstring
 
     @string.deleter
     def string(self) -> None:
-        """Set a new string for this object. Note the old data will be lost."""
         del self[:]
 
     def _subspans(self, type_: str) -> List[List[int]]:

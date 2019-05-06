@@ -205,12 +205,11 @@ class Tag(SubWikiTextWithAttrs):
 
     @property
     def name(self) -> str:
-        """Return tag name."""
+        """Tag's name. Support both get and set operations."""
         return self._match['name'].decode()
 
     @name.setter
     def name(self, name: str) -> None:
-        """Set a new tag name."""
         # The name in the end tag should be replaced first because the spans
         # of the match object change after each replacement.
         span = self._match.span
@@ -222,21 +221,22 @@ class Tag(SubWikiTextWithAttrs):
 
     @property
     def contents(self) -> Optional[str]:
-        """Return tag contents."""
+        """Tag contents. Support both get and set operations.
+
+        setter:
+            Set contents to a new value.
+            Note that if the tag is self-closing, then it will be expanded to
+            have a start tag and an end tag. For example:
+            >>> t = Tag('<t/>')
+            >>> t.contents = 'n'
+            >>> t.string
+            '<t>n</t>'
+        """
         s, e = self._match.span('contents')
         return self(s, e)
 
     @contents.setter
     def contents(self, contents: str) -> None:
-        """Set new contents.
-
-        Note that if the tag is self-closing, then it will be expanded to
-        have a start tag and an end tag. For example:
-        >>> t = Tag('<t/>')
-        >>> t.contents = 'n'
-        >>> t.string
-        '<t>n</t>'
-        """
         match = self._match
         start, end = match.span('contents')
         if start != -1:

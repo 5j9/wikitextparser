@@ -13,7 +13,11 @@ class Parameter(SubWikiText):
 
     @property
     def name(self) -> str:
-        """Return current parameter's name."""
+        """Current parameter's name.
+
+        getter: Return current parameter's name.
+        setter: set a new name for the current parameter.
+        """
         pipe = self._shadow.find(124)
         if pipe == -1:
             return self(3, -3)
@@ -21,7 +25,6 @@ class Parameter(SubWikiText):
 
     @name.setter
     def name(self, newname: str) -> None:
-        """Set the new name."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             self[3:-3] = newname
@@ -38,7 +41,12 @@ class Parameter(SubWikiText):
 
     @property
     def default(self) -> Optional[str]:
-        """Return the default value. Return None if there is no default."""
+        """The default value of current parameter.
+
+        getter: Return None if there is no default.
+        setter: Set a new default value.
+        deleter: Delete the default value, including the pipe character.
+        """
         pipe = self._shadow.find(124)
         if pipe == -1:
             return None
@@ -46,7 +54,6 @@ class Parameter(SubWikiText):
 
     @default.setter
     def default(self, newdefault: str) -> None:
-        """Set a new default value."""
         if newdefault is None:
             warn('Setting Argument.default to None is deprecated. '
                  'Use `del Argument.default` instead.', DeprecationWarning)
@@ -60,7 +67,6 @@ class Parameter(SubWikiText):
 
     @default.deleter
     def default(self) -> None:
-        """Delete self.default, including the | character."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             return

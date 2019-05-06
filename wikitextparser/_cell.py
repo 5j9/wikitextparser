@@ -191,7 +191,11 @@ class Cell(SubWikiTextWithAttrs):
 
     @property
     def value(self) -> str:
-        """Return cell's value."""
+        """Cell's value.
+
+        getter: Return this cell's value.
+        setter: Assign new_value to self.
+        """
         m = self._match
         offset = m.start()
         s, e = m.span('data')
@@ -199,7 +203,6 @@ class Cell(SubWikiTextWithAttrs):
 
     @value.setter
     def value(self, new_value: str) -> None:
-        """Assign new_value to self."""
         m = self._match
         offset = m.start()
         s, e = m.span('data')

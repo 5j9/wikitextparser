@@ -238,7 +238,7 @@ class Table(SubWikiTextWithAttrs):
 
     @property
     def caption(self) -> Optional[str]:
-        """Return caption of the table."""
+        """Caption of the table. Support get and set."""
         m = CAPTION_MATCH(self.string)
         if m:
             return m['caption']
@@ -246,7 +246,6 @@ class Table(SubWikiTextWithAttrs):
 
     @caption.setter
     def caption(self, newcaption: str) -> None:
-        """Set a new caption."""
         m = CAPTION_MATCH(self.string)
         if m:
             preattrs = m['preattrs']
@@ -274,7 +273,7 @@ class Table(SubWikiTextWithAttrs):
 
     @property
     def caption_attrs(self) -> Optional[str]:
-        """Return caption attributes."""
+        """Caption attributes. Support get and set operations."""
         m = CAPTION_MATCH(self.string)
         if m:
             return m['attrs']
@@ -282,7 +281,6 @@ class Table(SubWikiTextWithAttrs):
 
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
-        """Set new caption attributes."""
         string = self.string
         h, s, t = string.partition('\n')
         m = CAPTION_MATCH(string)

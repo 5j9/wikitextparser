@@ -34,9 +34,10 @@ class Argument(SubWikiText):
 
     @property
     def name(self) -> str:
-        """Return argument's name.
+        """Argument's name.
 
-        For positional arguments return the position as a string.
+        getter: return the position as a string, for positional arguments.
+        setter: convert it to keyword argument if positional.
         """
         lststr0 = self._lststr[0]
         ss = self._span[0]
@@ -66,10 +67,6 @@ class Argument(SubWikiText):
 
     @name.setter
     def name(self, newname: str) -> None:
-        """Set the name for this argument.
-
-        If this is a positional argument, convert it to keyword argument.
-        """
         oldname = self.name
         if self._shadow_match['eq']:
             self[1:1 + len(oldname)] = newname
@@ -78,15 +75,17 @@ class Argument(SubWikiText):
 
     @property
     def positional(self) -> bool:
-        """Return True if there is an equal sign in the argument else False."""
+        """True if self is positional, False if keyword.
+
+        setter:
+            If set to False, convert self to keyword argumentn.
+            Raise ValueError on trying to convert positional to keyword
+            argument.
+        """
         return False if self._shadow_match['eq'] else True
 
     @positional.setter
     def positional(self, to_positional: bool) -> None:
-        """Change to keyword or positional accordingly.
-
-        Raise ValueError on trying to convert positional to keyword argument.
-        """
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             # Keyword argument
@@ -105,7 +104,14 @@ class Argument(SubWikiText):
 
     @property
     def value(self) -> str:
-        """Return value of a keyword argument."""
+        """Value of self.
+
+        Support both keyword or positional arguments.
+        getter:
+            Return value of self.
+        setter:
+            Assign a new value to self.
+        """
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             return self(shadow_match.start('post_eq'), None)
@@ -113,7 +119,6 @@ class Argument(SubWikiText):
 
     @value.setter
     def value(self, newvalue: str) -> None:
-        """Assign the newvalue to self."""
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             self[shadow_match.start('post_eq'):] = newvalue

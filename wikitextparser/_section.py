@@ -15,9 +15,11 @@ class Section(SubWikiText):
 
     @property
     def level(self) -> int:
-        """Return level of this section.
+        """The level of this section.
 
-        Level is in range(1,7) or 0 for the lead section.
+        getter: Return level which as an int in range(1,7) or 0 for the lead
+            section.
+        setter: Change the level.
         """
         m = HEADER_MATCH(self._shadow)
         if m:
@@ -26,7 +28,6 @@ class Section(SubWikiText):
 
     @level.setter
     def level(self, value: int) -> None:
-        """Change level of this section."""
         old_level = self.level
         title = self.title
         new_equals = '=' * value
@@ -35,7 +36,11 @@ class Section(SubWikiText):
 
     @property
     def title(self) -> str:
-        """Return title of this section. Return '' for lead sections."""
+        """The title of this section.
+
+         getter: Return the title, '' for lead sections.
+         setter: Set a new title.
+         """
         level = self.level
         if level == 0:
             return ''
@@ -46,7 +51,6 @@ class Section(SubWikiText):
 
     @title.setter
     def title(self, value: str) -> None:
-        """Set the new title for this section and update self.lststr."""
         level = self.level
         if level == 0:
             raise RuntimeError(
@@ -57,7 +61,11 @@ class Section(SubWikiText):
 
     @property
     def contents(self) -> str:
-        """Return contents of this section."""
+        """Contents of this section.
+
+        getter: return the contents
+        setter: Set contents to a new string value.
+        """
         if self.level == 0:
             return self(0, None)
         lf = self._shadow.find(10)
@@ -67,7 +75,6 @@ class Section(SubWikiText):
 
     @contents.setter
     def contents(self, value: str) -> None:
-        """Set value as the contents of this section."""
         level = self.level
         if level == 0:
             self[:] = value

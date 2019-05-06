@@ -64,7 +64,11 @@ class SubWikiTextWithArgs(SubWikiText):
 
     @property
     def name(self) -> str:
-        """Return template's name (includes whitespace)."""
+        """Template's name (includes whitespace).
+
+        getter: Return the name.
+        setter: Set a new name.
+        """
         sep = self._shadow.find(self._first_arg_sep)
         if sep == -1:
             return self(2, -2)
@@ -72,7 +76,6 @@ class SubWikiTextWithArgs(SubWikiText):
 
     @name.setter
     def name(self, newname: str) -> None:
-        """Set the new name."""
         self[2:2 + len(self.name)] = newname
 
 

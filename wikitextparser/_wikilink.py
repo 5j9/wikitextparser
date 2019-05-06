@@ -25,7 +25,6 @@ class WikiLink(SubWikiText):
 
     @target.setter
     def target(self, newtarget: str) -> None:
-        """Set a new target."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             self[2:-2] = newtarget

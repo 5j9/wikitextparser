@@ -16,14 +16,18 @@ class ExternalLink(SubWikiText):
 
     @property
     def url(self) -> str:
-        """Return the url."""
+        """URL of the current ExternalLink object.
+
+        getter: Return the URL.
+        setter: Set a new value for URL. Convert add brackets for bare
+            external links.
+        """
         if self(0) == '[':
             return self(1, URL_MATCH(self._ext_link_shadow, 1).end())
         return self.string
 
     @url.setter
     def url(self, newurl: str) -> None:
-        """Set a new url."""
         if self(0) == '[':
             self[1:len('[' + self.url)] = newurl
         else:
@@ -31,9 +35,12 @@ class ExternalLink(SubWikiText):
 
     @property
     def text(self) -> Optional[str]:
-        """Return the text part (the part after the first space).
+        """The text part (the part after the first space).
 
-        Return None if this is a bare link or has no associated text.
+        getter: Return None if this is a bare link or has no associated text.
+        setter: Automatically put the ExternalLink in brackets if it's not
+            already.
+        deleter: Delete self.text, including the space before it.
         """
         string = self.string
         if string[0] == '[':
@@ -47,10 +54,6 @@ class ExternalLink(SubWikiText):
 
     @text.setter
     def text(self, newtext: str) -> None:
-        """Set a new text.
-
-        Automatically put the ExternalLink in brackets if it's not already.
-        """
         string = self.string
         if string[0] == '[':
             text = self.text
@@ -64,7 +67,6 @@ class ExternalLink(SubWikiText):
 
     @text.deleter
     def text(self) -> None:
-        """Delete self.text, including the space before it."""
         string = self.string
         if string[0] != '[':
             return
