@@ -10,9 +10,8 @@ class TestWikiLink(TestCase):
 
     """Test WikiLink functionalities."""
 
-    def test_basic(self):
-        wl = WikiLink('[[a]]')
-        self.assertEqual("WikiLink('[[a]]')", repr(wl))
+    def test_repr(self):
+        self.assertEqual("WikiLink('[[a]]')", repr(WikiLink('[[a]]')))
 
     def test_wikilink_target_text(self):
         wl = WikiLink('[[A | faf a\n\nfads]]')
@@ -81,65 +80,121 @@ class TestWikiLink(TestCase):
         # https://en.wikipedia.org/wiki/Help:Pipe_trick#Reverse_pipe_trick
         self.assertEqual(WikiLink('[[|t]]').text, 't')
 
-    def test_fragment_getter(self):
+    def test_title_and_fragment_getters(self):
         ae = self.assertEqual
-        ae(WikiLink('[[a<!--#1-->#<!--#2-->f|x]]').fragment, '<!--#2-->f')
-        ae(WikiLink('[[a<!--#1-->#<!--#2-->f]]').fragment, '<!--#2-->f')
-        ae(WikiLink('[[{{#if:||t}}#{{#if:||s}}|x]]').fragment, '{{#if:||s}}')
-        ae(WikiLink('[[{{#if:||t}}#{{#if:||s}}]]').fragment, '{{#if:||s}}')
-        ae(WikiLink('[[t|x]]').fragment, None)
-        ae(WikiLink('[[t]]').fragment, None)
-        ae(WikiLink('[[t|#]]').fragment, None)
-        ae(WikiLink('[[t#|x]]').fragment, '')
-        ae(WikiLink('[[t#]]').fragment, '')
 
-    def test_fragment_setter(self):
+        wl = WikiLink('[[a<!--#1-->#<!--#2-->f|x]]')
+        ae(wl.title, 'a<!--#1-->')
+        ae(wl.fragment, '<!--#2-->f')
+
+        wl = WikiLink('[[a<!--#1-->#<!--#2-->f]]')
+        ae(wl.title, 'a<!--#1-->')
+        ae(wl.fragment, '<!--#2-->f')
+
+        wl = WikiLink('[[{{#if:||t}}#{{#if:||f}}|x]]')
+        ae(wl.title, '{{#if:||t}}')
+        ae(wl.fragment, '{{#if:||f}}')
+
+        wl = WikiLink('[[{{#if:||t}}#{{#if:||f}}]]')
+        ae(wl.title, '{{#if:||t}}')
+        ae(wl.fragment, '{{#if:||f}}')
+
+        wl = WikiLink('[[t|x]]')
+        ae(wl.title, 't')
+        ae(wl.fragment, None)
+
+        wl = WikiLink('[[t]]')
+        ae(wl.title, 't')
+        ae(wl.fragment, None)
+
+        wl = WikiLink('[[t|#]]')
+        ae(wl.title, 't')
+        ae(wl.fragment, None)
+
+        wl = WikiLink('[[t#|x]]')
+        ae(wl.title, 't')
+        ae(wl.fragment, '')
+
+        wl = WikiLink('[[t#]]')
+        ae(wl.title, 't')
+        ae(wl.fragment, '')
+
+    def test_title_and_fragment_setters(self):
         ae = self.assertEqual
+
         # no frag, no pipe
         wl = WikiLink('[[a]]')
-        wl.fragment = 'b'
-        ae(wl.string, '[[a#b]]')
+        wl.title = 'b'
+        ae(wl.string, '[[b]]')
+        wl.fragment = 'c'
+        ae(wl.string, '[[b#c]]')
 
         # frag, no pipe
         wl.fragment = 'c'
+        ae(wl.string, '[[b#c]]')
+        wl.title = 'a'
         ae(wl.string, '[[a#c]]')
 
         # frag, pipe
-        wl.text = ''  # [[a#c|]]
-        wl.fragment = 'd'
-        ae(wl.string, '[[a#d|]]')
+        wl.text = ''  # [[d#c|]]
+        wl.fragment = 'e'
+        ae(wl.string, '[[a#e|]]')
+        wl.title = 'b'
+        ae(wl.string, '[[b#e|]]')
 
         # no frag, pipe
         del wl.fragment
         wl.fragment = 'e'
-        ae(wl.string, '[[a#e|]]')
+        ae(wl.string, '[[b#e|]]')
+        del wl.fragment
+        wl.title = 'a'
+        ae(wl.string, '[[a|]]')
 
         # no frag after pipe
         wl = WikiLink('[[a|#]]')
+        wl.title = 'b'
+        ae(wl.string, '[[b|#]]')
         wl.fragment = 'f'
-        ae(wl.string, '[[a#f|#]]')
+        ae(wl.string, '[[b#f|#]]')
 
-    def test_fragment_deleter(self):
+    def test_title_and_fragment_deleters(self):
         ae = self.assertEqual
+
+        # no pipe, no frag
         wl = WikiLink('[[a]]')
         del wl.fragment
         ae(wl.string, '[[a]]')
+        del wl.title
+        ae(wl.string, '[[]]')
 
+        # no pipe, frag
         wl = WikiLink('[[a#]]')
         del wl.fragment
         ae(wl.string, '[[a]]')
+        wl.fragment = 'f'
+        del wl.title
+        ae(wl.string, '[[f]]')
 
+        # pipe, no frag
         wl = WikiLink('[[a|]]')
         del wl.fragment
         ae(wl.string, '[[a|]]')
+        del wl.title
+        ae(wl.string, '[[|]]')
 
+        # pipe, frag
         wl = WikiLink('[[a#|]]')
         del wl.fragment
         ae(wl.string, '[[a|]]')
+        wl.fragment = 'f'
+        del wl.title
+        ae(wl.string, '[[f|]]')
 
+        # pipe, no frag, special case
         wl = WikiLink('[[a|#]]')
         del wl.fragment
-        ae(wl.string, '[[a|#]]')
+        del wl.title
+        ae(wl.string, '[[|#]]')
 
 
 if __name__ == '__main__':

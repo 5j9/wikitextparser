@@ -12,7 +12,12 @@ class WikiLink(SubWikiText):
 
     @property
     def target(self) -> str:
-        """Return target of this WikiLink."""
+        """WikiLink's target, including the fragment, without the linktrail.
+
+        Do not include the pipe (|) in setter and getter.
+        Deleter: delete the link target, including the pipe character.
+        Use `self.target = ''` if you don't want to remove the pipe.
+        """
         pipe = self._shadow.find(124)
         if pipe == -1:
             return self(2, -2)
@@ -29,10 +34,6 @@ class WikiLink(SubWikiText):
 
     @target.deleter
     def target(self) -> None:
-        """Delete link target, including the | character.
-
-        In case only deleting the target is desired, use `self.target = ''`.
-        """
         pipe = self._shadow.find(124)
         if pipe == -1:
             del self[2:-2]
@@ -41,7 +42,11 @@ class WikiLink(SubWikiText):
 
     @property
     def text(self) -> Optional[str]:
-        """Return the text of this WikiLink. Do not include linktrail."""
+        """The [[inner text| of WikiLink ]] (not including the [[link]]trail).
+
+        setter: set a new value for self.text. Do not include the pipe.
+        deleter: delete self.text, including the pipe.
+        """
         pipe = self._shadow.find(124)
         if pipe == -1:
             return None
@@ -49,7 +54,6 @@ class WikiLink(SubWikiText):
 
     @text.setter
     def text(self, newtext: str) -> None:
-        """Set self.text to newtext. Do not change the linktrail."""
         if newtext is None:
             warn('Using None as a value for text is deprecated; '
                  'Use `del WikiLink.text` instead', DeprecationWarning)
@@ -63,7 +67,6 @@ class WikiLink(SubWikiText):
 
     @text.deleter
     def text(self):
-        """Delete self.text, including the | character."""
         pipe = self._shadow.find(124)
         if pipe == -1:
             return
@@ -71,7 +74,12 @@ class WikiLink(SubWikiText):
 
     @property
     def fragment(self) -> Optional[str]:
-        """Return the fragment identifier."""
+        """Fragment identifier.
+
+        getter: target's fragment identifier (do not include the # character)
+        setter: set a new fragment (do not include the # character)
+        deleter: delete fragment, including the # character.
+        """
         shadow_find = self._shadow.find
         pipe = shadow_find(124)
         hash_ = shadow_find(35)
@@ -85,7 +93,6 @@ class WikiLink(SubWikiText):
 
     @fragment.setter
     def fragment(self, value: str):
-        """Set a new fragment."""
         shadow_find = self._shadow.find
         pipe = shadow_find(124)
         hash_ = shadow_find(35)
@@ -103,7 +110,6 @@ class WikiLink(SubWikiText):
 
     @fragment.deleter
     def fragment(self):
-        """Delete fragment, including the # character."""
         shadow_find = self._shadow.find
         hash_ = shadow_find(35)
         if hash_ == -1:
@@ -114,3 +120,62 @@ class WikiLink(SubWikiText):
         if pipe < hash_:
             return
         del self[hash_:pipe]
+
+    @property
+    def title(self) -> str:
+        """Target's title
+
+        getter: get target's title (do not include the # character)
+        setter: set a new title (do not include the # character)
+        deleter: return new title, including the # character.
+        """
+        shadow_find = self._shadow.find
+        hash_ = shadow_find(35)
+        pipe = shadow_find(124)
+        if hash_ == -1:
+            if pipe == -1:
+                return self(2, -2)
+            return self(2, pipe)
+        if pipe == -1:
+            return self(2, hash_)
+        if hash_ < pipe:
+            return self(2, hash_)
+        return self(2, pipe)
+
+    @title.setter
+    def title(self, newtitle) -> None:
+        shadow_find = self._shadow.find
+        hash_ = shadow_find(35)
+        pipe = shadow_find(124)
+        if hash_ == -1:
+            if pipe == -1:
+                self[2:-2] = newtitle
+                return
+            self[2:pipe] = newtitle
+            return
+        if pipe == -1:
+            self[2:hash_] = newtitle
+            return
+        if hash_ < pipe:
+            self[2:hash_] = newtitle
+            return
+        self[2:pipe] = newtitle
+
+    @title.deleter
+    def title(self) -> None:
+        shadow_find = self._shadow.find
+        hash_ = shadow_find(35)
+        pipe = shadow_find(124)
+        if hash_ == -1:
+            if pipe == -1:
+                del self[2:-2]
+                return
+            del self[2:pipe]
+            return
+        if pipe == -1:
+            del self[2:hash_ + 1]
+            return
+        if hash_ < pipe:
+            del self[2:hash_ + 1]
+            return
+        del self[2:pipe]
