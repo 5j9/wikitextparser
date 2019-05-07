@@ -1,4 +1,5 @@
-"""Define the class for List objects."""
+"""Define the WikiList class."""
+
 
 from typing import List, Union, Tuple, Dict, MutableSequence, Match
 
@@ -21,8 +22,7 @@ LIST_PATTERN_FORMAT = (
     rb'(?<item>.*+)'
     rb'(?>\n|\Z)' + SUBLIST_PATTERN +
     rb')'
-    rb')++'
-)
+    rb')++')
 
 
 class WikiList(SubWikiText):
@@ -59,8 +59,7 @@ class WikiList(SubWikiText):
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode()),
             self._shadow,
-            MULTILINE,
-        )
+            MULTILINE)
         self._match_cache = cache_match, string
         return cache_match
 

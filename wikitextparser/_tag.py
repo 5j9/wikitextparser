@@ -1,6 +1,6 @@
 ﻿"""Define the Tag class and tag-related regular expressions.
 
-Although MediaWiki has a very strict HTML restrictions by default, this regexes
+Although MediaWiki has a very strict HTML restrictions by default, regexes
 defined in this module don't follow those restrictions and allow most finding
 most HTML tags.
 

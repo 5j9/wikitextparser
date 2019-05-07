@@ -49,23 +49,19 @@ class TestPattern(TestCase):
 
     def test_abc_or_dbc(self):
         self.assertEqual(
-            _pattern(_plant_trie(['abc', 'dbc'])), '[da]bc',
-        )
+            _pattern(_plant_trie(['abc', 'dbc'])), '[da]bc')
 
     def test_null_or_ab(self):
         self.assertEqual(
-            _pattern({'': None, 'a': {'b': {'': None}}}), '(?:ab)?+',
-        )
+            _pattern({'': None, 'a': {'b': {'': None}}}), '(?:ab)?+')
 
     def test_a_or_abc(self):
         self.assertEqual(
-            _pattern(_plant_trie(['a', 'abc'])), 'a(?:bc)?+',
-        )
+            _pattern(_plant_trie(['a', 'abc'])), 'a(?:bc)?+')
 
     def test_a_or_abc_or_null(self):
         self.assertEqual(
-            _pattern(_plant_trie(['', 'a', 'bc'])), '(?>bc|a)?+',
-        )
+            _pattern(_plant_trie(['', 'a', 'bc'])), '(?>bc|a)?+')
 
 
 class RegexPattern(TestCase):

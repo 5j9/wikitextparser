@@ -1,4 +1,4 @@
-﻿"""The WikiLink class."""
+﻿"""Define the WikiLink class."""
 
 
 from typing import Optional
