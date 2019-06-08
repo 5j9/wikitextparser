@@ -1,6 +1,7 @@
 master
 ------
 - Fix a bug in setting ``Section.contents`` which only occurred when the title had trailing whitespace.
+- Setting ``Section.level`` will not overwrite ``Section.title`` anymore.
 
 v0.25.1
 -------

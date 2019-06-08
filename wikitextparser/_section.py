@@ -40,11 +40,18 @@ class Section(SubWikiText):
 
     @level.setter
     def level(self, value: int) -> None:
-        old_level = self.level
-        title = self.title
-        new_equals = '=' * value
-        self[0:old_level + len(title) + old_level] =\
-            new_equals + title + new_equals
+        m = self._header_match
+        level_diff = len(m[1]) - value
+        if level_diff == 0:
+            return
+        if level_diff < 0:
+            new_equals = '=' * abs(level_diff)
+            self.insert(0, new_equals)
+            self.insert(m.end(2) + 1, new_equals)
+            return
+        del self[:level_diff]
+        del self[m.end(2):m.end(2) + level_diff]
+
 
     @property
     def title(self) -> str:

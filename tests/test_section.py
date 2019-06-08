@@ -80,9 +80,17 @@ class TestSection(TestCase):
 
     def test_setting_lead_section_contents(self):
         s = Section('a\nb')
-        assert s.level == 0
         s.contents = 'c'
         self.assertEqual('c', s.string)
+
+    def test_level_setter_does_not_overwrite_title(self):
+        ae = self.assertEqual
+        s = Section('={{t}}=\nb')
+        t = s.templates[0]
+        s.level = 1  # testing for no effect
+        s.level = 2
+        ae('=={{t}}==\nb', s.string)
+        ae('{{t}}', t.string)
 
 
 if __name__ == '__main__':
