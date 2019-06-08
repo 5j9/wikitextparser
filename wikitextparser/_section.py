@@ -1,12 +1,12 @@
 ﻿"""Define the Section class."""
 
 
-from regex import compile as regex_compile, MULTILINE
+from regex import compile as regex_compile
 
-from ._wikitext import WS, SubWikiText
+from ._wikitext import SubWikiText
 
 
-HEADER_MATCH = regex_compile(rb'(={1,6})[^\n]+?\1[ \t]*(\n|\Z)').match
+HEADER_MATCH = regex_compile(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
 
 
 class Section(SubWikiText):
@@ -53,23 +53,19 @@ class Section(SubWikiText):
          getter: Return the title, '' for lead sections.
          setter: Set a new title.
          """
-        level = self.level
-        if level == 0:
+        m = self._header_match
+        if m is None:
             return ''
-        lf = self._shadow.find(10)
-        if lf == -1:
-            return self(0, None).rstrip(WS)[level:-level]
-        return self(0, lf).rstrip(WS)[level:-level]
+        return self(m.start(2), m.end(2))
 
     @title.setter
     def title(self, value: str) -> None:
-        level = self.level
-        if level == 0:
+        m = self._header_match
+        if m is None:
             raise RuntimeError(
                 "Can't set title for a lead section. "
                 "Try adding it to contents.")
-        title = self.title
-        self[level:level + len(title)] = value
+        self[m.start(2):m.end(2)] = value
 
     @property
     def contents(self) -> str:
