@@ -114,7 +114,7 @@ WikiLinks
     'T#F'
     >>> del wl.text
     >>> wl
-    WikiLink('[[T#F]]'
+    WikiLink('[[T#F]]')
 
 All WikiLink properties support get, set, and delete operations.
 
