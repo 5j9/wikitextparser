@@ -13,6 +13,18 @@ class Section(SubWikiText):
 
     """Section class is used to represent page sections."""
 
+    _header_match_cache = (None, None)
+
+    @property
+    def _header_match(self):
+        cached_match, cached_shadow = self._header_match_cache
+        shadow = self._shadow
+        if cached_shadow == shadow:
+            return cached_match
+        m = HEADER_MATCH(shadow)
+        self._header_match_cache = m, shadow
+        return m
+
     @property
     def level(self) -> int:
         """The level of this section.
@@ -21,7 +33,7 @@ class Section(SubWikiText):
             section.
         setter: Change the level.
         """
-        m = HEADER_MATCH(self._shadow)
+        m = self._header_match
         if m:
             return len(m[1])
         return 0
@@ -66,14 +78,14 @@ class Section(SubWikiText):
         getter: return the contents
         setter: Set contents to a new string value.
         """
-        m = HEADER_MATCH(self._shadow)
+        m = self._header_match
         if m is None:
             return self(0, None)
         return self(m.end(), None)
 
     @contents.setter
     def contents(self, value: str) -> None:
-        m = HEADER_MATCH(self._shadow)
+        m = self._header_match
         if m is None:
             self[:] = value
             return
