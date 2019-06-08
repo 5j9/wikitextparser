@@ -73,6 +73,17 @@ class TestSection(TestCase):
         self.assertEqual(s.title, '\tt\t')
         self.assertEqual(s.contents, '')
 
+    def test_trailing_space_setter(self):
+        s = Section('=t= \no')
+        s.contents = 'n'
+        self.assertEqual('=t= \nn', s.string)
+
+    def test_setting_lead_section_contents(self):
+        s = Section('a\nb')
+        assert s.level == 0
+        s.contents = 'c'
+        self.assertEqual('c', s.string)
+
 
 if __name__ == '__main__':
     main()

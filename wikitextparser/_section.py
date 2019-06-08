@@ -6,7 +6,7 @@ from regex import compile as regex_compile, MULTILINE
 from ._wikitext import WS, SubWikiText
 
 
-HEADER_MATCH = regex_compile(rb'(={1,6})[^\n]+?\1[ \t]*$', MULTILINE).match
+HEADER_MATCH = regex_compile(rb'(={1,6})[^\n]+?\1[ \t]*(\n|\Z)').match
 
 
 class Section(SubWikiText):
@@ -66,18 +66,15 @@ class Section(SubWikiText):
         getter: return the contents
         setter: Set contents to a new string value.
         """
-        if self.level == 0:
+        m = HEADER_MATCH(self._shadow)
+        if m is None:
             return self(0, None)
-        lf = self._shadow.find(10)
-        if lf == -1:
-            return ''
-        return self(lf + 1, None)
+        return self(m.end(), None)
 
     @contents.setter
     def contents(self, value: str) -> None:
-        level = self.level
-        if level == 0:
+        m = HEADER_MATCH(self._shadow)
+        if m is None:
             self[:] = value
             return
-        start = level + len(self.title) + level + 1
-        self[start:start + len(self.contents)] = value
+        self[m.end():] = value

@@ -1,3 +1,7 @@
+master
+------
+- Fix a bug in setting ``Section.contents`` which only occurred when the title had trailing whitespace.
+
 v0.25.1
 -------
 - Deprecate using None as the start value of ``__call__``.
