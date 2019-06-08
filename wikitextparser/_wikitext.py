@@ -282,8 +282,6 @@ class WikiText:
         This method has the same effect as ``self[index:index] = string``;
         it only avoids some condition checks as it rules out the possibility
         of the key being an slice, or the need to shrink any of the sub-spans.
-
-        If parse is False, don't parse the inserted string.
         """
         ss, se = self._span
         lststr = self._lststr

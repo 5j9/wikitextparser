@@ -52,7 +52,6 @@ class Section(SubWikiText):
         del self[:level_diff]
         del self[m.end(2):m.end(2) + level_diff]
 
-
     @property
     def title(self) -> str:
         """The title of this section.
