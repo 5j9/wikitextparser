@@ -16,7 +16,7 @@ class WikiLink(SubWikiText):
 
         Do not include the pipe (|) in setter and getter.
         Deleter: delete the link target, including the pipe character.
-        Use `self.target = ''` if you don't want to remove the pipe.
+            Use `self.target = ''` if you don't want to remove the pipe.
         """
         pipe = self._shadow.find(124)
         if pipe == -1:

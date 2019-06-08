@@ -1,7 +1,11 @@
-master
-------
+v0.26.1
+-------
 - Fix a bug in setting ``Section.contents`` which only occurred when the title had trailing whitespace.
 - Setting ``Section.level`` will not overwrite ``Section.title`` anymore.
+
+v0.26.0
+------
+* Define ``WikiLink.title`` property. It is similar to ``WikiLink.target`` but will not include the ``#fragment``.
 
 v0.25.1
 -------
