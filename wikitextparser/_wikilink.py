@@ -12,7 +12,7 @@ class WikiLink(SubWikiText):
 
     @property
     def target(self) -> str:
-        """WikiLink's target, including the fragment, without the linktrail.
+        """WikiLink's target, including the fragment.
 
         Do not include the pipe (|) in setter and getter.
         Deleter: delete the link target, including the pipe character.
