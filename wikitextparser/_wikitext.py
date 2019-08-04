@@ -873,6 +873,7 @@ class WikiText:
                     spans.append(span)
                     tables_append(Table(lststr, type_to_spans, span, 'Table'))
                     shadow[ms:me] = b'_' * (me - ms)
+            tables.sort(key=attrgetter('_span'))
             return tables
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
@@ -1019,7 +1020,8 @@ class WikiText:
             else:
                 span = old_span
             tags_append(Tag(lststr, type_to_spans, span, 'Tag'))
-        return sorted(tags, key=attrgetter('_span'))
+        tags.sort(key=attrgetter('_span'))
+        return tags
 
     @staticmethod
     def parent(type_: Optional[str] = None) -> None:
