@@ -1,6 +1,5 @@
 ﻿"""Test the functions of wikitext.py module."""
-
-
+from operator import attrgetter
 from unittest import expectedFailure, main, TestCase
 
 from wikitextparser import WikiText, parse, Template, ParserFunction
@@ -559,6 +558,62 @@ class Tables(TestCase):
         s = '{{t|1}}\n{|class=wikitable\n|a\n|}\n{{t|1}}'
         p = parse(s)
         self.assertEqual([['a']], p.tables[0].data())
+
+    def test_nested_tables_sorted(self):
+        ae = self.assertEqual
+        s = (
+            '{| style="border: 1px solid black;"\n'
+            '| style="border: 1px solid black;" | 0\n'
+            '| style="border: 1px solid black; text-align:center;" | 1\n'
+            '{| style="border: 2px solid black; background: green;" '
+            '<!-- The nested table must be on a new line -->\n'
+            '| style="border: 2px solid darkgray;" | 1_G00\n'
+            '|-\n'
+            '| style="border: 2px solid darkgray;" | 1_G10\n'
+            '|}\n'
+            '| style="border: 1px solid black; vertical-align: bottom;" '
+            '| 2\n'
+            '| style="border: 1px solid black; width:100px" |\n'
+            '{| style="border: 2px solid black; background: yellow"\n'
+            '| style="border: 2px solid darkgray;" | 3_Y00\n'
+            '|}\n'
+            '{| style="border: 2px solid black; background: Orchid"\n'
+            '| style="border: 2px solid darkgray;" | 3_O00\n'
+            '| style="border: 2px solid darkgray;" | 3_O01\n'
+            '|}\n'
+            '| style="border: 1px solid black; width: 50px" |\n'
+            '{| style="border: 2px solid black; background:blue; float:left"\n'
+            '| style="border: 2px solid darkgray;" | 4_B00\n'
+            '|}\n'
+            '{| style="border: 2px solid black; background:red; float:right"\n'
+            '| style="border: 2px solid darkgray;" | 4_R00\n'
+            '|}\n'
+            '|}')
+        tables = parse(s).tables
+        ae(6, len(tables))
+        ae(tables, sorted(tables, key=attrgetter('span')))
+        t0 = tables[0]
+        ae(s, t0.string)
+        ae(t0.data(strip=False), [[
+            ' 0',
+            ' 1\n'
+            '{| style="border: 2px solid black; background: green;" '
+            '<!-- The nested table must be on a new line -->\n'
+            '| style="border: 2px solid darkgray;" | 1_G00\n|-\n'
+            '| style="border: 2px solid darkgray;" | 1_G10\n'
+            '|}',
+            ' 2',
+            '\n{| style="border: 2px solid black; background: yellow"\n'
+            '| style="border: 2px solid darkgray;" | 3_Y00\n|}\n'
+            '{| style="border: 2px solid black; background: Orchid"\n'
+            '| style="border: 2px solid darkgray;" | 3_O00\n'
+            '| style="border: 2px solid darkgray;" | 3_O01\n|}',
+            '\n{| style="border: 2px solid black; background:blue; float:left"'
+            '\n| style="border: 2px solid darkgray;" | 4_B00\n|}\n'
+            '{| style="border: 2px solid black; background:red; float:right"\n'
+            '| style="border: 2px solid darkgray;" | 4_R00\n|}'
+        ]])
+        ae(tables[3].data(), [['3_O00', '3_O01']])
 
 
 class IndentLevel(TestCase):

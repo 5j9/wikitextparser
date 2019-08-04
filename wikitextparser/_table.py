@@ -56,26 +56,37 @@ class Table(SubWikiTextWithAttrs):
     _attrs_match_cache = None, None
 
     @property
+    def _table_shadow(self) -> bytearray:
+        """Remove Table spans from shadow and return it."""
+        shadow = self._shadow[:]
+        ss = self._span[0]
+        for s, e in self._subspans('Table'):
+            if s == ss:
+                continue
+            shadow[s - ss:e - ss] = b'#' * (e - s)
+        return shadow
+
+    @property
     def _match_table(self) -> List[List[Any]]:
         """Return match_table."""
-        shadow = self._shadow
+        table_shadow = self._table_shadow
         # Remove table-start and table-end marks.
-        pos = shadow.find(10)  # ord('\n')
-        lsp = _lstrip_increase(shadow, pos)
+        pos = table_shadow.find(10)  # ord('\n')
+        lsp = _lstrip_increase(table_shadow, pos)
         # Remove everything until the first row
-        while shadow[lsp] not in b'!|':
-            nlp = shadow.find(10, lsp)  # ord('\n')
+        while table_shadow[lsp] not in b'!|':
+            nlp = table_shadow.find(10, lsp)  # ord('\n')
             pos = nlp
-            lsp = _lstrip_increase(shadow, pos)
+            lsp = _lstrip_increase(table_shadow, pos)
         # Start of the first row
         match_table = []
-        pos = _semi_caption_increase(shadow, pos)
-        rsp = _row_separator_increase(shadow, pos)
+        pos = _semi_caption_increase(table_shadow, pos)
+        rsp = _row_separator_increase(table_shadow, pos)
         pos = -1
         while pos != rsp:
             pos = rsp
             # We have a new row.
-            m = NEWLINE_CELL_MATCH(shadow, pos)
+            m = NEWLINE_CELL_MATCH(table_shadow, pos)
             # Don't add a row if there are no new cells.
             if m:
                 match_row = []  # type: List[Any]
@@ -85,20 +96,20 @@ class Table(SubWikiTextWithAttrs):
                     sep = m['sep']
                     pos = m.end()
                     if sep == b'|':
-                        m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
+                        m = INLINE_NONHAEDER_CELL_MATCH(table_shadow, pos)
                         while m:
                             match_row.append(m)
                             pos = m.end()
-                            m = INLINE_NONHAEDER_CELL_MATCH(shadow, pos)
+                            m = INLINE_NONHAEDER_CELL_MATCH(table_shadow, pos)
                     elif sep == b'!':
-                        m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
+                        m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
                         while m:
                             match_row.append(m)
                             pos = m.end()
-                            m = INLINE_HAEDER_CELL_MATCH(shadow, pos)
-                    pos = _semi_caption_increase(shadow, pos)
-                    m = NEWLINE_CELL_MATCH(shadow, pos)
-            rsp = _row_separator_increase(shadow, pos)
+                            m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
+                    pos = _semi_caption_increase(table_shadow, pos)
+                    m = NEWLINE_CELL_MATCH(table_shadow, pos)
+            rsp = _row_separator_increase(table_shadow, pos)
         return match_table
 
     def data(
