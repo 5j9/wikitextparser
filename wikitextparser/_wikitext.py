@@ -4,7 +4,7 @@
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using separate strings for each node.
 
-from bisect import bisect, insort
+from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
 from operator import attrgetter
 from typing import (
@@ -257,7 +257,7 @@ class WikiText:
             bytearray(value, 'ascii', 'replace')
         ).items():
             for s, e in spans:
-                insort(type_to_spans[type_], [s + start, e + start])
+                insort_right(type_to_spans[type_], [s + start, e + start])
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
@@ -306,7 +306,7 @@ class WikiText:
             bytearray(string, 'ascii', 'replace')
         ).items():
             for s, e in spans:
-                insort(type_to_spans[type_], [index + s, index + e])
+                insort_right(type_to_spans[type_], [index + s, index + e])
 
     @property
     def span(self) -> tuple:
@@ -339,8 +339,8 @@ class WikiText:
         """Close all sub-spans of (start, stop)."""
         ss, se = self._span
         for spans in self._type_to_spans.values():
-            b = bisect(spans, [start])
-            for i, (s, e) in enumerate(spans[b:bisect(spans, [stop], b)]):
+            b = bisect_left(spans, [start])
+            for i, (s, e) in enumerate(spans[b:bisect_right(spans, [stop], b)]):
                 if e <= stop:
                     if ss != s or se != e:
                         spans.pop(i + b)[:] = -1, -1
@@ -427,7 +427,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         for type_ in ('Template', 'ParserFunction'):
             spans = type_to_spans[type_]
-            for s, e in spans[:bisect(spans, [ss + 1])]:
+            for s, e in spans[:bisect_right(spans, [ss + 1])]:
                 if se <= e:
                     level += 1
         return level
@@ -502,7 +502,7 @@ class WikiText:
             return deepcopy(self._type_to_spans)
         return {
             type_: [
-                [s - ss, e - ss] for s, e in spans[bisect(spans, [ss]):]
+                [s - ss, e - ss] for s, e in spans[bisect_left(spans, [ss]):]
                 if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
@@ -783,7 +783,7 @@ class WikiText:
             span = s, e = [s + ss, e + ss]
             old_span = span_tuple_to_span_get((s, e))
             if old_span is None:
-                insort(spans, span)
+                insort_right(spans, span)
             else:
                 span = old_span
             external_links_append(
@@ -845,7 +845,7 @@ class WikiText:
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
                 span = [s, e]
-                insort(type_spans, span)
+                insort_right(type_spans, span)
             else:
                 span = old_span
             sections_append(Section(lststr, type_to_spans, span, 'Section'))
@@ -888,7 +888,7 @@ class WikiText:
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
                     span = [s, e]
-                    insort(spans, span)
+                    insort_right(spans, span)
                 else:
                     span = old_span
                 tables_append(Table(lststr, type_to_spans, span, 'Table'))
@@ -945,7 +945,7 @@ class WikiText:
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
                     span = [s, e]
-                    insort(spans, span)
+                    insort_right(spans, span)
                 else:
                     span = old_span
                 lists_append(WikiList(
@@ -1071,8 +1071,8 @@ class SubWikiText(WikiText):
         # Do not yield self._span by bisecting for s < ss.
         # The second bisect is an optimization and should be on [se + 1],
         # but empty spans are not desired thus [se] is used.
-        b = bisect(spans, [ss])
-        for span in spans[b:bisect(spans, [se], b)]:
+        b = bisect_left(spans, [ss])
+        for span in spans[b:bisect_right(spans, [se], b)]:
             if span[1] <= se:
                 yield span
 
@@ -1097,7 +1097,7 @@ class SubWikiText(WikiText):
         for type_ in types:
             cls = globals()[type_]
             spans = type_to_spans[type_]
-            for span in spans[:bisect(spans, [ss])]:
+            for span in spans[:bisect_right(spans, [ss])]:
                 if se < span[1]:
                     ancestors_append(cls(lststr, type_to_spans, span, type_))
         return sorted(ancestors, key=lambda i: ss - i._span[0])
