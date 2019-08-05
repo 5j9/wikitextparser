@@ -512,8 +512,7 @@ class Tables(TestCase):
 
     def test_match_index_is_none(self):
         ae = self.assertEqual
-        s = '{|\n| b\n|}\n'
-        wt = parse(s)
+        wt = parse('{|\n| b\n|}\n')
         assert len(wt.tables) == 1
         wt.insert(0, '{|\n| a\n|}\n')
         tables = wt.tables
@@ -1055,6 +1054,7 @@ class Sections(TestCase):
         s1 = wt.sections[1]
         s1.insert(0, 'c\n== s0 ==\nc\n')
         ae('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
+        ae('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
         s0 = wt.sections[1]
         ae('== s0 ==\nc\n', s0.string)
         ae('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)

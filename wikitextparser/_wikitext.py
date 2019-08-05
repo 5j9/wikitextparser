@@ -340,7 +340,9 @@ class WikiText:
         ss, se = self._span
         for spans in self._type_to_spans.values():
             b = bisect_left(spans, [start])
-            for i, (s, e) in enumerate(spans[b:bisect_right(spans, [stop], b)]):
+            for i, (s, e) in enumerate(
+                spans[b:bisect_right(spans, [stop], b)]
+            ):
                 if e <= stop:
                     if ss != s or se != e:
                         spans.pop(i + b)[:] = -1, -1
@@ -854,13 +856,12 @@ class WikiText:
     @property
     def tables(self) -> List['Table']:
         """Return a list of found table objects."""
-        tables = []  # type: List['Table']
-        tables_append = tables.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow = self._shadow[:]
         ss, se = self._span
         spans = type_to_spans.setdefault('Table', [])
+        spans_append = spans.append
         if not spans:
             # All the added spans will be new.
             m = True  # type: Any
@@ -870,13 +871,14 @@ class WikiText:
                     ms, me = m.span()
                     # Ignore leading whitespace using len(m[1]).
                     span = [ss + ms + len(m[1]), ss + me]
-                    spans.append(span)
-                    tables_append(Table(lststr, type_to_spans, span, 'Table'))
+                    spans_append(span)
                     shadow[ms:me] = b'_' * (me - ms)
-            tables.sort(key=attrgetter('_span'))
-            return tables
+            spans.sort()
+            return [Table(lststr, type_to_spans, sp, 'Table') for sp in spans]
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
+        tables = []
+        tables_append = tables.append
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         m = True
         while m:
