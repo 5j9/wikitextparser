@@ -14,11 +14,9 @@ from ._wikitext import WS
 
 COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
 
-BAR_SPLITS_FULLMATCH = regex_compile(
-    rb'{{'
+TL_NAME_ARGS_FULLMATCH = regex_compile(
     rb'[^|}]*+'  # name
-    rb'(?<arg>\|[^|}]*+)*+'
-    rb'}}'
+    rb'(?<arg>\|[^|]*+)*+'
 ).fullmatch
 STARTING_WS_MATCH = regex_compile(r'\s*+').match
 ENDING_WS_MATCH = regex_compile(r'(?>\n[ \t]*)*+', REVERSE).match
@@ -34,7 +32,7 @@ class Template(SubWikiTextWithArgs):
     The string should start with {{ and end with }}.
     """
 
-    _args_matcher = BAR_SPLITS_FULLMATCH
+    _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
 
     def normal_name(

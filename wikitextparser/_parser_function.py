@@ -9,11 +9,9 @@ from ._argument import Argument
 from ._wikilist import WikiList
 
 
-BAR_SPLITS_FULLMATCH = regex.compile(
-    rb'{{'
+PF_NAME_ARGS_FULLMATCH = regex.compile(
     rb'[^:|}]*+'  # name
-    rb'(?<arg>:[^|}]*+)?+(?<arg>\|[^|}]*+)*+'
-    rb'}}'
+    rb'(?<arg>:[^|]*+)?+(?<arg>\|[^|]*+)*+'
 ).fullmatch
 
 
@@ -21,14 +19,14 @@ class SubWikiTextWithArgs(SubWikiText):
 
     """Define common attributes for `Template` and `ParserFunction`."""
 
-    _args_matcher = NotImplemented
+    _name_args_matcher = NotImplemented
     _first_arg_sep = 0
 
     @property
     def arguments(self) -> List[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         shadow = self._shadow
-        split_spans = self._args_matcher(shadow).spans('arg')
+        split_spans = self._name_args_matcher(shadow, 2, -2).spans('arg')
         if not split_spans:
             return []
         arguments = []
@@ -83,5 +81,5 @@ class ParserFunction(SubWikiTextWithArgs):
 
     """Create a new ParserFunction object."""
 
-    _args_matcher = BAR_SPLITS_FULLMATCH
+    _name_args_matcher = PF_NAME_ARGS_FULLMATCH
     _first_arg_sep = 58

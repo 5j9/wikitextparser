@@ -10,6 +10,9 @@ class TestTemplate(TestCase):
 
     """Test the Template class."""
 
+    def test_args_containing_braces(self):
+        self.assertEqual(4, len(Template('{{t|\n{|2\n|3\n|}\n}}').arguments))
+
     def test_named_parameters(self):
         s = '{{یادکرد کتاب|عنوان = ش{{--}}ش|سال=۱۳۴۵}}'
         t = Template(s)

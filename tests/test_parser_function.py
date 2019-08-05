@@ -12,6 +12,10 @@ class TestParserFunction(TestCase):
 
     """Test the ParserFunction class."""
 
+    def test_args_containing_braces(self):
+        self.assertEqual(
+            4, len(ParserFunction('{{#pf:\n{|2\n|3\n|}\n}}').arguments))
+
     def test_repr(self):
         pf = ParserFunction('{{#if:a|b}}')
         self.assertEqual(repr(pf), "ParserFunction('{{#if:a|b}}')")
