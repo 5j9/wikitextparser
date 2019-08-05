@@ -19,7 +19,7 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'\{\{'
     rb'(?>'
     # param
-    rb'\{[^{}]*+\}\}\}()'
+    rb'\{(?>[^{}]*+|}(?!})|{(?!{))*+\}\}\}()'
     rb'|'
     # parser function
     rb'\s*+'
@@ -37,18 +37,18 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'ORYSORT))|CASCADINGSOURCES|BASEPAGENAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE'
     rb'?+))'
     # end of generated part
-    rb':[^{}]*+\}\}()'
+    rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
     rb'|'
     # invalid template name
     rb'[\s_]*+'  # invalid name
-    rb'(?>\|[^{}]*+)?+'  # args
+    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
     rb'\}\}()'
     rb'|'
     # template
     rb'\s*+'
     + VALID_TITLE_CHARS_PATTERN +  # template name
     rb'\s*+'
-    rb'(?>\|[^{}]*+)?+'  # args
+    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
     rb'\}\}'
     rb')').finditer
 # External links
@@ -128,10 +128,6 @@ EXTENSION_TAGS_FINDITER = regex_compile(
     TAG_BY_NAME_PATTERN, IGNORECASE | VERBOSE).finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN.encode()).finditer
-SINGLE_BRACES_FINDITER = regex_compile(
-    rb'(?<!{){(?![{|])'
-    rb'|'
-    rb'(?<![|}])}(?!})').finditer
 
 
 def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
@@ -264,10 +260,6 @@ def parse_pm_pf_tl(
 
     """
     while True:
-        # Single braces will interfere with detection of other elements and
-        # should be removed beforehand.
-        for m in SINGLE_BRACES_FINDITER(byte_array, start, end):
-            byte_array[m.start()] = 95  # 95 == ord('_')
         match = None
         for match in PM_PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()

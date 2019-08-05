@@ -290,7 +290,7 @@ class Spans(TestCase):
     def test_single_brace_after_pf_remove(self):
         self.assertEqual({
             'Parameter': [], 'ParserFunction': [[4, 17]],
-            'Template': [[1, 21]], 'WikiLink': [], 'Comment': [],
+            'Template': [], 'WikiLink': [], 'Comment': [],
             'ExtensionTag': []
         }, parse_to_spans(bytearray(b'{{{ {{#if:v|y|n}}} }}')))
 
@@ -328,6 +328,13 @@ class Spans(TestCase):
             'Comment': [], 'ExtensionTag': [], 'Parameter': [[0, 9]],
             'ParserFunction': [], 'Template': [], 'WikiLink': []
         }, parse_to_spans(bytearray(b'{{{_|2}}}')))
+
+    def test_invalid_table_in_template(self):
+        self.assertEqual({
+            'Comment': [], 'ExtensionTag': [], 'Parameter': [],
+            'ParserFunction': [], 'Template': [[0, 17]], 'WikiLink': []
+        }, parse_to_spans(
+            bytearray(b'{{t|\n{|a\n|b\n|}\n}}')))
 
 
 if __name__ == '__main__':
