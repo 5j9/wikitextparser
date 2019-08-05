@@ -500,10 +500,10 @@ class Tables(TestCase):
         ae = self.assertEqual
         s = 'text1\n{|class=wikitable\n|a\n|\n' \
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
-        p = parse(s)
-        ae(2, len(p.tables))
-        ae(s[6:-6], p.tables[1].string)
-        ae('{|class=wikitable\n|b\n|}', p.tables[0].string)
+        tables = parse(s).tables
+        ae(2, len(tables))
+        ae(s[6:-6], tables[0].string)
+        ae('{|class=wikitable\n|b\n|}', tables[1].string)
 
     def test_tables_in_different_sections(self):
         s = '{|\n| a\n|}\n\n= s =\n{|\n| b\n|}\n'
@@ -590,7 +590,7 @@ class Tables(TestCase):
             '|}')
         tables = parse(s).tables
         ae(6, len(tables))
-        ae(tables, sorted(tables, key=attrgetter('span')))
+        ae(tables, sorted(tables, key=attrgetter('_span')))
         t0 = tables[0]
         ae(s, t0.string)
         ae(t0.data(strip=False), [[

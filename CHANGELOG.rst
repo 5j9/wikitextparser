@@ -1,6 +1,6 @@
 v0.27.0.dev
 -----------
-- Improve support nested tables.
+- Fix a bug in detecting nested tables. (#21)
 - Fix a few bug in detecting tables and tempalte arguments.
 - Changed the ``comments`` property of ``Comment`` objects to return an empty list.
 - Changed the ``external_links`` property of ``ExternalLink`` objects to return an empty list.
@@ -11,7 +11,7 @@ v0.26.1
 - Setting ``Section.level`` will not overwrite ``Section.title`` anymore.
 
 v0.26.0
-------
+-------
 * Define ``WikiLink.title`` property. It is similar to ``WikiLink.target`` but will not include the ``#fragment``.
 
 v0.25.1

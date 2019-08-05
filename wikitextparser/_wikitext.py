@@ -896,6 +896,7 @@ class WikiText:
                     span = old_span
                 tables_append(Table(lststr, type_to_spans, span, 'Table'))
                 shadow[ms:me] = b'_' * (me - ms)
+        tables.sort(key=attrgetter('_span'))
         return tables
 
     @property
