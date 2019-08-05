@@ -3,6 +3,7 @@ v0.27.0.dev
 - Improve support nested tables.
 - Fix a few bug in detecting tables and tempalte arguments.
 - Changed the ``comments`` property of ``Comment`` objects to return an empty list.
+- Changed the ``external_links`` property of ``ExternalLink`` objects to return an empty list.
 
 v0.26.1
 -------

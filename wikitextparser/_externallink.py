@@ -1,6 +1,6 @@
 ﻿"""Define the ExternalLink class."""
 
-from typing import Optional
+from typing import Optional, List
 
 from regex import compile as regex_compile
 
@@ -78,3 +78,7 @@ class ExternalLink(SubWikiText):
     def in_brackets(self) -> bool:
         """Return true if the ExternalLink is in brackets. False otherwise."""
         return self(0) == '['
+
+    @property
+    def external_links(self) -> List['ExternalLink']:
+        return []

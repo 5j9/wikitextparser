@@ -9,9 +9,13 @@ from wikitextparser import ExternalLink
 class TestExternalLink(TestCase):
     """Test capturing of external links."""
 
+    def test_externallinks(self):
+        self.assertEqual(ExternalLink('http://example.org').external_links, [])
+
     def test_repr(self):
-        el = ExternalLink('HTTP://mediawiki.org')
-        self.assertEqual(repr(el), "ExternalLink('HTTP://mediawiki.org')")
+        self.assertEqual(
+            repr(ExternalLink('HTTP://mediawiki.org')),
+            "ExternalLink('HTTP://mediawiki.org')")
 
     def test_numberedmailto_change_none_to_empty(self):
         ae = self.assertEqual
