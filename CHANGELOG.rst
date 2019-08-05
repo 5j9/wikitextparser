@@ -1,5 +1,5 @@
-v0.27.0.dev
------------
+v0.27.0
+-------
 - Fix a bug in detecting nested tables. (#21)
 - Fix a few bug in detecting tables and tempalte arguments.
 - Changed the ``comments`` property of ``Comment`` objects to return an empty list.
