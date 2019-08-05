@@ -129,9 +129,9 @@ EXTENSION_TAGS_FINDITER = regex_compile(
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN.encode()).finditer
 SINGLE_BRACES_FINDITER = regex_compile(
-    rb'(?<!{){(?=[^{|])'
+    rb'(?<!{){(?![{|])'
     rb'|'
-    rb'(?<![|}])}(?=[^}])').finditer
+    rb'(?<![|}])}(?!})').finditer
 
 
 def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
