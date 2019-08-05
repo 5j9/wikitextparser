@@ -3,16 +3,18 @@
 
 from unittest import TestCase, main
 
-import wikitextparser as wtp
+from wikitextparser import Comment
 
 
-class Comment(TestCase):
+class CommentTest(TestCase):
 
     """Argument test class."""
 
     def test_basic(self):
-        c = wtp.Comment('<!-- c -->')
-        self.assertEqual(repr(c), "Comment('<!-- c -->')")
+        ae = self.assertEqual
+        c = Comment('<!-- c -->')
+        ae(repr(c), "Comment('<!-- c -->')")
+        ae(c.comments, [])
 
 
 if __name__ == '__main__':
