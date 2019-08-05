@@ -17,16 +17,15 @@ class TestParserFunction(TestCase):
             4, len(ParserFunction('{{#pf:\n{|2\n|3\n|}\n}}').arguments))
 
     def test_repr(self):
-        pf = ParserFunction('{{#if:a|b}}')
-        self.assertEqual(repr(pf), "ParserFunction('{{#if:a|b}}')")
+        self.assertEqual(
+            repr(ParserFunction('{{#if:a|b}}')),
+            "ParserFunction('{{#if:a|b}}')")
 
     def test_name_and_args(self):
-        pf = ParserFunction('{{ #if: test | true | false }}')
-        self.assertEqual(' #if', pf.name)
-        self.assertEqual(
-            [': test ', '| true ', '| false '],
-            [a.string for a in pf.arguments]
-        )
+        ae = self.assertEqual
+        f = ParserFunction('{{ #if: test | true | false }}')
+        ae(' #if', f.name)
+        ae([': test ', '| true ', '| false '], [a.string for a in f.arguments])
 
     def test_set_name(self):
         pf = ParserFunction('{{   #if: test | true | false }}')
@@ -34,33 +33,33 @@ class TestParserFunction(TestCase):
         self.assertEqual('{{#if: test | true | false }}', pf.string)
 
     def test_pipes_inside_params_or_templates(self):
+        ae = self.assertEqual
         pf = ParserFunction('{{ #if: test | {{ text | aaa }} }}')
-        self.assertEqual([], pf.parameters)
-        self.assertEqual(2, len(pf.arguments))
+        ae([], pf.parameters)
+        ae(2, len(pf.arguments))
         pf = ParserFunction('{{ #if: test | {{{ text | aaa }}} }}')
-        self.assertEqual(1, len(pf.parameters))
-        self.assertEqual(2, len(pf.arguments))
+        ae(1, len(pf.parameters))
+        ae(2, len(pf.arguments))
 
     def test_default_parser_function_without_hash_sign(self):
-        wt = WikiText("{{formatnum:text|R}}")
-        self.assertEqual(1, len(wt.parser_functions))
+        self.assertEqual(
+            1, len(WikiText("{{formatnum:text|R}}").parser_functions))
 
     @expectedFailure
     def test_parser_function_alias_without_hash_sign(self):
         """‍`آرایش‌عدد` is an alias for `formatnum` on Persian Wikipedia.
 
         See: //translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-
         """
         self.assertEqual(
-            1, len(WikiText("{{آرایش‌عدد:text|R}}").parser_functions)
-        )
+            1, len(WikiText("{{آرایش‌عدد:text|R}}").parser_functions))
 
     def test_argument_with_existing_span(self):
         """Test when the span is already in type_to_spans."""
+        ae = self.assertEqual
         pf = WikiText("{{formatnum:text}}").parser_functions[0]
-        self.assertEqual(pf.arguments[0].value, 'text')
-        self.assertEqual(pf.arguments[0].value, 'text')
+        ae(pf.arguments[0].value, 'text')
+        ae(pf.arguments[0].value, 'text')
 
 
 if __name__ == '__main__':
