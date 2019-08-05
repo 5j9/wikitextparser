@@ -613,6 +613,7 @@ class Tables(TestCase):
             '| style="border: 2px solid darkgray;" | 4_R00\n|}'
         ]])
         ae(tables[3].data(), [['3_O00', '3_O01']])
+        ae(5, len(tables[0].tables))
 
 
 class IndentLevel(TestCase):

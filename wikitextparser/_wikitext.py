@@ -862,12 +862,13 @@ class WikiText:
         ss, se = self._span
         spans = type_to_spans.setdefault('Table', [])
         spans_append = spans.append
+        skip_self_span = self._type == 'Table'
         if not spans:
             # All the added spans will be new.
             m = True  # type: Any
             while m:
                 m = False
-                for m in TABLE_FINDITER(shadow):
+                for m in TABLE_FINDITER(shadow, skip_self_span):
                     ms, me = m.span()
                     # Ignore leading whitespace using len(m[1]).
                     span = [ss + ms + len(m[1]), ss + me]
@@ -883,7 +884,7 @@ class WikiText:
         m = True
         while m:
             m = False
-            for m in TABLE_FINDITER(shadow):
+            for m in TABLE_FINDITER(shadow, skip_self_span):
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
                 s, e = ss + ms + len(m[1]), ss + me
