@@ -500,7 +500,9 @@ class Tables(TestCase):
         ae = self.assertEqual
         s = 'text1\n{|class=wikitable\n|a\n|\n' \
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
-        tables = parse(s).tables
+        p = parse(s)
+        ae(1, len(p.get_tables()))  # non-recursive
+        tables = p.tables
         ae(2, len(tables))
         table0 = tables[0]
         ae(s[6:-6], table0.string)
@@ -592,7 +594,9 @@ class Tables(TestCase):
             '| style="border: 2px solid darkgray;" | 4_R00\n'
             '|}\n'
             '|}')
-        tables = parse(s).tables
+        p = parse(s)
+        ae(1, len(p.get_tables()))  # non-recursive
+        tables = p.tables
         ae(6, len(tables))
         ae(tables, sorted(tables, key=attrgetter('_span')))
         t0 = tables[0]

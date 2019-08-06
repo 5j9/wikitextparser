@@ -1,6 +1,6 @@
 ﻿"""Define the WikiText and SubWikiText classes."""
 
-
+# Todo: see if it is possible to use shadow position instead of using subpsans
 # Todo: consider using a tree structure (interval or segment tree).
 # Todo: Consider using separate strings for each node.
 
@@ -852,7 +852,8 @@ class WikiText:
         """Return a list of all tables."""
         return self.get_tables(True)
 
-    def get_tables(self, recursive=False):
+    def get_tables(self, recursive=False) -> List['Table']:
+        """Return tables. Include nested tables if `recursive` is `True`."""
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow = self._shadow[:]
@@ -862,22 +863,45 @@ class WikiText:
         skip_self_span = self._type == 'Table'
         if not spans:
             # All the added spans will be new.
-            for m in TABLES_FINDITER(shadow, skip_self_span):
-                for (ms, me), lead in zip(m.spans(1), m.captures(2)):
-                    # Ignore leading whitespace using len(m[1]).
-                    span = [ss + ms + len(lead), ss + me]
+            if recursive:
+                for m in TABLES_FINDITER(shadow, skip_self_span):
+                    m_spans = m.spans
+                    for (ms, me), (ls, le) in zip(m_spans(1), m_spans(2)):
+                        # Ignore leading whitespace using len(m[1]).
+                        span = [ss + ms + le - ls, ss + me]
+                        spans_append(span)
+                spans.sort()  # only required in recursive mode
+            else:
+                for m in TABLES_FINDITER(shadow, skip_self_span):
+                    ls, le = m.span(2)
+                    ms, me = m.span()
+                    span = [ss + ms + le - ls, ss + me]
                     spans_append(span)
-            spans.sort()
             return [Table(lststr, type_to_spans, sp, 'Table') for sp in spans]
         # There are already exists some spans. Try to use the already existing
         # before appending new spans.
         tables = []
         tables_append = tables.append
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        for m in TABLES_FINDITER(shadow, skip_self_span):
-            for (ms, me), lead in zip(m.spans(1), m.captures(2)):
-                # Ignore leading whitespace using len(m[1]).
-                s, e = ss + ms + len(lead), ss + me
+        if recursive:
+            for m in TABLES_FINDITER(shadow, skip_self_span):
+                m_spans = m.spans
+                for (ms, me), (ls, le) in zip(m_spans(1), m_spans(2)):
+                    # Ignore leading whitespace using len(m[1]).
+                    s, e = ss + ms + le - ls, ss + me
+                    old_span = span_tuple_to_span_get((s, e))
+                    if old_span is None:
+                        span = [s, e]
+                        insort_right(spans, span)
+                    else:
+                        span = old_span
+                    tables_append(Table(lststr, type_to_spans, span, 'Table'))
+            tables.sort(key=attrgetter('_span'))
+        else:
+            for m in TABLES_FINDITER(shadow, skip_self_span):
+                ls, le = m.span(2)
+                ms, me = m.span()
+                s, e = ss + ms + le - ls, ss + me
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
                     span = [s, e]
@@ -885,7 +909,6 @@ class WikiText:
                 else:
                     span = old_span
                 tables_append(Table(lststr, type_to_spans, span, 'Table'))
-        tables.sort(key=attrgetter('_span'))
         return tables
 
     @property
