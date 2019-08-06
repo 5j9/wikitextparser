@@ -54,23 +54,23 @@ SECTIONS_FULLMATCH = regex_compile(
 ).fullmatch
 
 # Tables
-TABLE_FINDITER = regex_compile(
-    rb"""
-    # Table-start
-    # Always starts on a new line with optional leading spaces or indentation.
-    ^
+TABLES_FINDITER = regex_compile(
+    # tables start on a new line with optional leading spaces or indentation.
     # Group the leading spaces or colons so that we can ignore them later.
-    ([ :]*+)
-    {\| # Table contents
-    (?:
-        # Any character, as long as it is not indicating another table-start
-        (?!^\ *+\{\|).
-    )*?
-    # Table-end
-    \n\s*+
-    (?> \|} | \Z )
-    """,
-    DOTALL | MULTILINE | VERBOSE
+    rb'('
+    rb'^([ :]*+)'
+    # table start
+    rb'{\|'
+    # Table contents
+    rb'(?:'
+    # Any character, as long as it is not indicating another table-start
+    rb'(?:(?R)|.)'
+    rb')*?'
+    # table end
+    rb'\n\s*+'
+    rb'(?>\|}|\Z)'
+    rb')',
+    DOTALL | MULTILINE
 ).finditer
 
 # Types which are detected by parse_to_spans
@@ -849,7 +849,10 @@ class WikiText:
 
     @property
     def tables(self) -> List['Table']:
-        """Return a list of found table objects."""
+        """Return a list of all tables."""
+        return self.get_tables(True)
+
+    def get_tables(self, recursive=False):
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow = self._shadow[:]
@@ -859,15 +862,11 @@ class WikiText:
         skip_self_span = self._type == 'Table'
         if not spans:
             # All the added spans will be new.
-            m = True  # type: Any
-            while m:
-                m = False
-                for m in TABLE_FINDITER(shadow, skip_self_span):
-                    ms, me = m.span()
+            for m in TABLES_FINDITER(shadow, skip_self_span):
+                for (ms, me), lead in zip(m.spans(1), m.captures(2)):
                     # Ignore leading whitespace using len(m[1]).
-                    span = [ss + ms + len(m[1]), ss + me]
+                    span = [ss + ms + len(lead), ss + me]
                     spans_append(span)
-                    shadow[ms:me] = b'_' * (me - ms)
             spans.sort()
             return [Table(lststr, type_to_spans, sp, 'Table') for sp in spans]
         # There are already exists some spans. Try to use the already existing
@@ -875,13 +874,10 @@ class WikiText:
         tables = []
         tables_append = tables.append
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        m = True
-        while m:
-            m = False
-            for m in TABLE_FINDITER(shadow, skip_self_span):
-                ms, me = m.span()
+        for m in TABLES_FINDITER(shadow, skip_self_span):
+            for (ms, me), lead in zip(m.spans(1), m.captures(2)):
                 # Ignore leading whitespace using len(m[1]).
-                s, e = ss + ms + len(m[1]), ss + me
+                s, e = ss + ms + len(lead), ss + me
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
                     span = [s, e]
@@ -889,7 +885,6 @@ class WikiText:
                 else:
                     span = old_span
                 tables_append(Table(lststr, type_to_spans, span, 'Table'))
-                shadow[ms:me] = b'_' * (me - ms)
         tables.sort(key=attrgetter('_span'))
         return tables
 
