@@ -160,8 +160,7 @@ class ShrinkSpanUpdate(TestCase):
         self.assertEqual('|1=2', a.string)
 
     def test_opcodes_in_spans_should_be_referenced_based_on_self_lststr0(self):
-        wt = WikiText('{{a}}{{ b\n|d=}}')
-        template = wt.templates[1]
+        template = WikiText('{{a}}{{ b\n|d=}}').templates[1]
         arg = template.arguments[0]
         template.name = template.name.strip(WS)
         self.assertEqual('|d=', arg.string)
@@ -235,38 +234,32 @@ class Templates(TestCase):
     """Test WikiText.templates."""
 
     def test_template_inside_wikilink(self):
-        wt = WikiText("{{text |  [[ A | {{text|b}} ]] }}")
-        self.assertEqual(2, len(wt.templates))
+        self.assertEqual(2, len(WikiText(
+            "{{text |  [[ A | {{text|b}} ]] }}").templates))
 
     def test_wikilink_in_template(self):
         s1 = "{{text |[[A|}}]]}}"
-        wt = WikiText(s1)
-        self.assertEqual(s1, str(wt.templates[0]))
+        self.assertEqual(s1, str(WikiText(s1).templates[0]))
 
     def test_wikilink_containing_closing_braces_in_template(self):
         s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.templates[0]))
+        self.assertEqual(s, str(WikiText(s).templates[0]))
 
     def test_ignore_comments(self):
         s1 = "{{text |<!-- }} -->}}"
-        wt = WikiText(s1)
-        self.assertEqual(s1, str(wt.templates[0]))
+        self.assertEqual(s1, str(WikiText(s1).templates[0]))
 
     def test_ignore_nowiki(self):
-        wt = WikiText("{{text |<nowiki>}} A </nowiki> }} B")
-        self.assertEqual(
-            "{{text |<nowiki>}} A </nowiki> }}", str(wt.templates[0]))
+        self.assertEqual("{{text |<nowiki>}} A </nowiki> }}", str(WikiText(
+            "{{text |<nowiki>}} A </nowiki> }} B").templates[0]))
 
     def test_template_inside_extension_tags(self):
         s = "<includeonly>{{t}}</includeonly>"
-        wt = WikiText(s)
-        self.assertEqual('{{t}}', str(wt.templates[0]))
+        self.assertEqual('{{t}}', str(WikiText(s).templates[0]))
 
     def test_dont_parse_source_tag(self):
         s = "<source>{{t}}</source>"
-        wt = WikiText(s)
-        self.assertEqual(0, len(wt.templates))
+        self.assertEqual(0, len(WikiText(s).templates))
 
 
 class ParserFunctions(TestCase):
@@ -275,8 +268,7 @@ class ParserFunctions(TestCase):
 
     def test_comment_in_parserfunction_name(self):
         s = "{{<!--c\n}}-->#if:|a}}"
-        wt = WikiText(s)
-        self.assertEqual(1, len(wt.parser_functions))
+        self.assertEqual(1, len(WikiText(s).parser_functions))
 
 
 class WikiLinks(TestCase):
@@ -284,18 +276,16 @@ class WikiLinks(TestCase):
     """Test WikiText.wikilinks."""
 
     def test_wikilink_inside_parser_function(self):
-        wt = WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
-        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", wt.wikilinks[0].string)
+        self.assertEqual("[[u:{{{3}}}|{{{3}}}]]", WikiText(
+            "{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}").wikilinks[0].string)
 
     def test_template_in_wikilink(self):
         s = '[[A|{{text|text}}]]'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.wikilinks[0]))
+        self.assertEqual(s, str(WikiText(s).wikilinks[0]))
 
     def test_wikilink_target_may_contain_newline(self):
         s = '[[A | faf a\n\nfads]]'
-        wt = WikiText(s)
-        self.assertEqual(s, str(wt.wikilinks[0]))
+        self.assertEqual(s, str(WikiText(s).wikilinks[0]))
 
 
 class Comments(TestCase):
@@ -303,10 +293,8 @@ class Comments(TestCase):
     """Test the WikiText.commonts."""
 
     def test_getting_comment(self):
-        wt = WikiText('text1 <!--\n\ncomment\n{{A}}\n-->text2')
-        self.assertEqual(
-            "\n\ncomment\n{{A}}\n",
-            wt.comments[0].contents)
+        self.assertEqual("\n\ncomment\n{{A}}\n", WikiText(
+            'text1 <!--\n\ncomment\n{{A}}\n-->text2').comments[0].contents)
 
 
 class ExternalLinks(TestCase):

@@ -83,13 +83,12 @@ WIKILINK_FINDITER = regex_compile(
         |
         \| # Text of the wikilink
         (?> # Any character that is not the start of another wikilink
-            [^[\]]+
+            [^[\]]++
             |
             \[(?!\[)
             |
-            # this group is lazy, therefore \] is not followed by another \]
-            \]
-        )*?
+            \](?!\])
+        )*+
         \]\]
     )
     ''',
@@ -142,7 +141,6 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         'Template': template_spans,
         'WikiLink': wikilink_spans,
     }
-
     """
     comment_spans = []  # type: List[List[int]]
     comment_spans_append = comment_spans.append
@@ -219,7 +217,6 @@ def parse_tag_extensions(
     start that indicates the starting start of the given byte_array.
     `byte_array`s that are passed to this function are the contents of
     PARSABLE_TAG_EXTENSIONS.
-
     """
     while True:
         match = None
@@ -257,7 +254,6 @@ def parse_pm_pf_tl(
     If the byte_array passed to parse_to_spans contains n WikiLinks, then
     this function will be called n + 1 times. One time for the whole byte_array
     and n times for each of the n WikiLinks.
-
     """
     while True:
         match = None
