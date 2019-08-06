@@ -1,7 +1,7 @@
 ﻿"""Define the Table class."""
 
 
-from bisect import insort, bisect_right
+from bisect import insort_right
 from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 from regex import compile as regex_compile, VERBOSE
@@ -232,7 +232,7 @@ class Table(SubWikiTextWithAttrs):
                     )))
                 old_span = next((s for s in spans if s == cell_span), None)
                 if old_span is None:
-                    insort(spans, cell_span)
+                    insort_right(spans, cell_span)
                 else:
                     cell_span = old_span
                 row_cells.append(
