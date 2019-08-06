@@ -1,7 +1,7 @@
 ﻿"""Define the Table class."""
 
 
-from bisect import insort
+from bisect import insort, bisect_right
 from typing import List, Any, Union, Optional, TypeVar, Dict, Tuple
 
 from regex import compile as regex_compile, VERBOSE
@@ -54,6 +54,15 @@ class Table(SubWikiTextWithAttrs):
     """Create a new Table object."""
 
     _attrs_match_cache = None, None
+
+    @property
+    def nesting_level(self) -> int:
+        """Return the nesting level of self.
+
+        The minimum nesting_level is 0. Being part of any Table increases
+        the level by one.
+        """
+        return self._nesting_level(('Table',)) - 1
 
     @property
     def _table_shadow(self) -> bytearray:

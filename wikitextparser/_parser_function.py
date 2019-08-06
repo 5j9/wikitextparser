@@ -1,5 +1,5 @@
 """Define the ParserFunction class."""
-from bisect import insort
+from bisect import insort, bisect_right
 from typing import List
 
 import regex
@@ -21,6 +21,15 @@ class SubWikiTextWithArgs(SubWikiText):
 
     _name_args_matcher = NotImplemented
     _first_arg_sep = 0
+
+    @property
+    def nesting_level(self) -> int:
+        """Return the nesting level of self.
+
+        The minimum nesting_level is 0. Being part of any Template or
+        ParserFunction increases the level by one.
+        """
+        return self._nesting_level(('Template', 'ParserFunction'))
 
     @property
     def arguments(self) -> List[Argument]:

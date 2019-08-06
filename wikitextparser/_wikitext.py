@@ -417,17 +417,11 @@ class WikiText:
                     if index < span[0] or span[0] == index != ss:
                         span[0] += length
 
-    @property
-    def nesting_level(self) -> int:
-        """Return the nesting level of self.
-
-        The minimum nesting_level is 0. Being part of any Template or
-        ParserFunction increases the level by one.
-        """
+    def _nesting_level(self, parent_types) -> int:
         ss, se = self._span
         level = 0
         type_to_spans = self._type_to_spans
-        for type_ in ('Template', 'ParserFunction'):
+        for type_ in parent_types:
             spans = type_to_spans[type_]
             for s, e in spans[:bisect_right(spans, [ss + 1])]:
                 if se <= e:

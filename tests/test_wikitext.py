@@ -502,8 +502,12 @@ class Tables(TestCase):
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
         tables = parse(s).tables
         ae(2, len(tables))
-        ae(s[6:-6], tables[0].string)
-        ae('{|class=wikitable\n|b\n|}', tables[1].string)
+        table0 = tables[0]
+        ae(s[6:-6], table0.string)
+        ae(0, table0.nesting_level)
+        table1 = tables[1]
+        ae('{|class=wikitable\n|b\n|}', table1.string)
+        ae(1, table1.nesting_level)
 
     def test_tables_in_different_sections(self):
         s = '{|\n| a\n|}\n\n= s =\n{|\n| b\n|}\n'
