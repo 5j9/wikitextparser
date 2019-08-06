@@ -238,8 +238,11 @@ class Templates(TestCase):
             "{{text |  [[ A | {{text|b}} ]] }}").templates))
 
     def test_wikilink_in_template(self):
+        ae = self.assertEqual
         s1 = "{{text |[[A|}}]]}}"
-        self.assertEqual(s1, str(WikiText(s1).templates[0]))
+        ts = str(WikiText(s1).templates[0])
+        ae(s1, ts)
+        ae(ts, str(WikiText('<ref>{{text |[[A|}}]]}}</ref>').templates[0]))
 
     def test_wikilink_containing_closing_braces_in_template(self):
         s = '{{text|[[  A   |\n|}}[]<>]]\n}}'

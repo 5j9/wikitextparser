@@ -75,24 +75,27 @@ BARE_EXTERNAL_LINK = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    \[\[
-    (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
-    + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
-    (?:
-        \]\]
-        |
-        \| # Text of the wikilink
-        (?> # Any character that is not the start of another wikilink
-            [^[\]]++
+    (
+        \[\[
+        (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
+        + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
+        (?:
+            \]\]
             |
-            \[(?!\[)
-            |
-            \](?!\])
-        )*+
-        \]\]
+            \| # Text of the wikilink
+            (?> # Any character that is not the start of another wikilink
+                [^[\]]++
+                |
+                (?R)
+                |
+                \[(?!\[)
+                |
+                \](?!\])
+            )*+
+            \]\]
+        )
     )
-    ''',
-    IGNORECASE | VERBOSE).finditer
+    ''', IGNORECASE | VERBOSE).finditer
 
 # generated pattern: _config.regex_pattern(_config._parsable_tag_extensions)
 PARSABLE_TAG_EXTENSIONS_PATTERN = (
@@ -175,10 +178,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     # WikiLinks may contain braces that interfere with
     # detection of templates. For example when parsing `{{text |[[A|}}]] }}`,
     # the span of the template should be the whole byte_array.
-    while True:
-        match = None
-        for match in WIKILINK_FINDITER(byte_array):
-            ms, me = match.span()
+    for match in WIKILINK_FINDITER(byte_array):
+        for ms, me in match.spans(1):
             wikilink_spans_append([ms, me])
             parse_pm_pf_tl(
                 byte_array, ms, me,
@@ -186,8 +187,6 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
                 parser_function_spans_append,
                 template_spans_append)
             byte_array[ms:me] = b'_' * (me - ms)
-        if match is None:
-            break
     parse_pm_pf_tl(
         byte_array, 0, None,
         parameter_spans_append,
@@ -218,10 +217,8 @@ def parse_tag_extensions(
     `byte_array`s that are passed to this function are the contents of
     PARSABLE_TAG_EXTENSIONS.
     """
-    while True:
-        match = None
-        for match in WIKILINK_FINDITER(byte_array, start, end):
-            ms, me = match.span()
+    for match in WIKILINK_FINDITER(byte_array, start, end):
+        for ms, me in match.spans(1):
             wikilink_spans_append([ms, me])
             # See if the other WIKILINK_FINDITER call can help.
             parse_pm_pf_tl(
@@ -230,8 +227,6 @@ def parse_tag_extensions(
                 pfunction_spans_append,
                 template_spans_append)
             byte_array[ms:me] = b'_' * (me - ms)
-        if match is None:
-            break
     parse_pm_pf_tl(
         byte_array, start, end,
         parameter_spans_append,
