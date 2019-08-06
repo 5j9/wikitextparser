@@ -19,7 +19,9 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'\{\{'
     rb'(?>'
     # param
-    rb'\{(?>[^{}]*+|}(?!})|{(?!{))*+\}\}\}()'
+    rb'\{'
+    rb'(?>[^{}]*+|}(?!})|{(?!{))*+'
+    rb'\}\}\}()'
     rb'|'
     # parser function
     rb'\s*+'
@@ -259,7 +261,7 @@ def parse_pm_pf_tl(
             elif match[2] is not None:
                 pfunction_spans_append([ms, me])
             elif match[3] is not None:  # invalid template name
-                byte_array[ms:me] = b'_' * (me - ms)
+                byte_array[me - 1] = byte_array[ms] = 0
                 continue
             else:
                 template_spans_append([ms, me])

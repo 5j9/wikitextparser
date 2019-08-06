@@ -12,12 +12,12 @@ class Spans(TestCase):
     """Test the spans."""
 
     def test_template_name_cannot_be_empty(self):
-        self.assertEqual(WikiText('{{_}}')._type_to_spans['Template'], [])
-        self.assertEqual(WikiText('{{_|text}}')._type_to_spans['Template'], [])
-        self.assertEqual(len(WikiText(
-            '{{text| {{_}} }}')._type_to_spans['Template']), 1)
-        self.assertEqual(len(WikiText(
-            '{{ {{_|text}} | a }}')._type_to_spans['Template']), 0)
+        ae = self.assertEqual
+        ae(WikiText('{{_}}')._type_to_spans['Template'], [])
+        ae(WikiText('{{_|text}}')._type_to_spans['Template'], [])
+        ae(len(WikiText('{{text| {{_}} }}')._type_to_spans['Template']), 1)
+        ae(len(WikiText('{{ {{_|text}} | a }}')._type_to_spans['Template']), 0)
+        ae(len(WikiText('{{a{{_|text}} | a }}')._type_to_spans['Template']), 0)
 
     def test_template_in_template(self):
         template_spans = WikiText('{{cite|{{t1}}|{{t2}}}}')._type_to_spans[
