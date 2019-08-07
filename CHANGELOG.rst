@@ -1,7 +1,7 @@
-v0.28.0.dev0
-------------
+v0.28.0
+-------
 - Add ``get_tables`` as a new method to ``WikiText`` objects. It allows extracting tables in a non-recursive manner.
-- The ``nesting_level`` property is only meaningful for tables, templates, and parser functions, remove it from other types.
+- The ``nesting_level`` property was only meaningful for tables, templates, and parser functions, remove it from other types.
 
 v0.27.0
 -------
