@@ -15,19 +15,19 @@ VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
+NOT_PM_PF_TL_CHARS = rb'(?>[^{}]+|}(?!})|{(?:(?!{)|{[_ ]+}})|(?R))*+'
 PM_PF_TL_FINDITER = regex_compile(
     rb'\{\{'
     rb'(?>'
     # param
-    rb'\{'
-    rb'(?>[^{}]*+|}(?!})|{(?!{))*+'
-    rb'\}\}\}()'
+    rb'\{(' + NOT_PM_PF_TL_CHARS + rb'\}\}\})'
     rb'|'
     # parser function
+    rb'('
     rb'\s*+'
     # generated pattern: _config.regex_pattern(_config._parser_functions)
-    # with \#[^{}\s:]++ added manually.
-    rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?:first)?+)|s(?>ubst|afesubst)|raw|p(?>l'
+    # with \#[^{}\s:]+ added manually.
+    rb'(?>\#[^{}\s:]+|u(?>rlencode|c(?:first)?+)|s(?>ubst|afesubst)|raw|p(?>l'
     rb'ural|ad(?>right|left))|nse?+|msg(?:nw)?+|l(?>ocalurl|c(?:first)?+)|int|'
     rb'g(?>rammar|ender)|f(?>ullurl|ormatnum|ilepath)|canonicalurl|anchorencod'
     rb'e|TALK(?>SPACEE?+|PAGENAMEE?+)|SUB(?>PAGENAMEE?+|JECT(?>SPACEE?+|PAGENA'
@@ -39,19 +39,22 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'ORYSORT))|CASCADINGSOURCES|BASEPAGENAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE'
     rb'?+))'
     # end of generated part
-    rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
-    rb'|'
-    # invalid template name
-    rb'[\s_]*+'  # invalid name
-    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
-    rb'\}\}()'
+    rb':'
+    + NOT_PM_PF_TL_CHARS +
+    rb'\}\}'
+    rb')'
     rb'|'
     # template
-    rb'\s*+'
+    rb'('
+    rb'[\s_]*+'
+    rb'(?>'
     + VALID_TITLE_CHARS_PATTERN +  # template name
+    rb'|(?R)'
+    rb')++'
     rb'\s*+'
-    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
+    rb'(?:\|' + NOT_PM_PF_TL_CHARS + rb')?+'  # args
     rb'\}\}'
+    rb')'
     rb')').finditer
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
@@ -77,26 +80,24 @@ BARE_EXTERNAL_LINK = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    (
-        \[\[
-        (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
-        + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
-        (?:
-            \]\]
+    (\[\[
+    (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
+    + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
+    (?:
+        \]\]
+        |
+        \| # Text of the wikilink
+        (?> # Any character that is not the start of another wikilink
+            [^[\]]++
             |
-            \| # Text of the wikilink
-            (?> # Any character that is not the start of another wikilink
-                [^[\]]++
-                |
-                (?R)
-                |
-                \[(?!\[)
-                |
-                \](?!\])
-            )*+
-            \]\]
-        )
-    )
+            (?R)
+            |
+            \[(?!\[)
+            |
+            \](?!\])
+        )*+
+        \]\]
+    ))
     ''', IGNORECASE | VERBOSE).finditer
 
 # generated pattern: _config.regex_pattern(_config._parsable_tag_extensions)
@@ -252,21 +253,13 @@ def parse_pm_pf_tl(
     this function will be called n + 1 times. One time for the whole byte_array
     and n times for each of the n WikiLinks.
     """
-    while True:
-        match = None
-        for match in PM_PF_TL_FINDITER(byte_array, start, end):
-            ms, me = match.span()
-            if match[1] is not None:
-                parameter_spans_append([ms, me])
-            elif match[2] is not None:
-                pfunction_spans_append([ms, me])
-            elif match[3] is not None:  # invalid template name
-                byte_array[me - 1] = byte_array[ms] = 0
-                continue
-            else:
-                template_spans_append([ms, me])
-            # pm, pf, and tl spans usually are part of a valid template name.
-            # Thus, not using b'_' or b' '.
-            byte_array[ms:me] = b'X' * (me - ms)
-        if match is None:
-            return
+    for match in PM_PF_TL_FINDITER(byte_array, start, end):
+        spans = match.spans
+        for (ms, me) in spans(1):
+            parameter_spans_append([ms - 3, me])
+        for (ms, me) in spans(2):
+            pfunction_spans_append([ms - 2, me])
+        for (ms, me) in spans(3):
+            template_spans_append([ms - 2, me])
+        ms, me = match.span()
+        byte_array[ms:me] = b'X' * (me - ms)
