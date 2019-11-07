@@ -1,3 +1,7 @@
+v0.28.1
+-------
+- Implemented a workaround for a catastrophic backtracking condition when parsing tables. (#22)
+
 v0.28.0
 -------
 - Add ``get_tables`` as a new method to ``WikiText`` objects. It allows extracting tables in a non-recursive manner.
