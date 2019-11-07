@@ -62,7 +62,7 @@ TABLES_FINDITER = regex_compile(
     rb'^([ :]*+){\|'
     # Table contents
     # Any character, as long as it is not indicating another table-start
-    rb'(?>(?R)|.)*?'
+    rb'(*PRUNE)(?>(?R)|.)*?'
     # table end
     rb'\n\s*+(?>\|}|\Z)'
     rb')',
