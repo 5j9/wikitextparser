@@ -557,6 +557,7 @@ class Tables(TestCase):
 
     def test_nested_tables_sorted(self):
         ae = self.assertEqual
+        ai = self.assertIs
         s = (
             '{| style="border: 1px solid black;"\n'
             '| style="border: 1px solid black;" | 0\n'
@@ -588,7 +589,6 @@ class Tables(TestCase):
         p = parse(s)
         ae(1, len(p.get_tables()))  # non-recursive
         tables = p.tables
-        ae(6, len(tables))
         ae(tables, sorted(tables, key=attrgetter('_span')))
         t0 = tables[0]
         ae(s, t0.string)
@@ -613,6 +613,15 @@ class Tables(TestCase):
         ]])
         ae(tables[3].data(), [['3_O00', '3_O01']])
         ae(5, len(tables[0].tables))
+        dynamic_spans = p._type_to_spans['Table']
+        ae(len(dynamic_spans), 6)
+        pre_insert_spans = dynamic_spans[:]
+        p.insert(0, '{|\na\n|}\n')
+        ae(len(dynamic_spans), 6)
+        ae(2, len(p.get_tables()))  # non-recursive for the second time
+        ae(len(dynamic_spans), 7)
+        for os, ns in zip(dynamic_spans[1:], pre_insert_spans):
+            ai(os, ns)
 
 
 class IndentLevel(TestCase):
@@ -1052,8 +1061,8 @@ class Sections(TestCase):
         ae = self.assertEqual
         wt = WikiText('== s1 ==\nc\n')
         s1 = wt.sections[1]
-        s1.insert(0, 'c\n== s0 ==\nc\n')
-        ae('c\n== s0 ==\nc\n== s1 ==\nc\n', s1.string)
+        wt.insert(0, 'c\n== s0 ==\nc\n')
+        ae('== s1 ==\nc\n', s1.string)
         ae('c\n== s0 ==\nc\n== s1 ==\nc\n', wt.string)
         s0 = wt.sections[1]
         ae('== s0 ==\nc\n', s0.string)
