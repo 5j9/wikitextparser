@@ -8,7 +8,7 @@ from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
 from operator import attrgetter
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Generator, Any, Optional)
+    MutableSequence, Dict, List, Tuple, Union, Generator, Optional)
 from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
