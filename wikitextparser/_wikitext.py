@@ -58,17 +58,13 @@ TABLES_FINDITER = regex_compile(
     # tables start on a new line with optional leading spaces or indentation.
     # Group the leading spaces or colons so that we can ignore them later.
     rb'('
-    rb'^([ :]*+)'
     # table start
-    rb'{\|'
+    rb'^([ :]*+){\|'
     # Table contents
-    rb'(?:'
     # Any character, as long as it is not indicating another table-start
-    rb'(?:(?R)|.)'
-    rb')*?'
+    rb'(?>(?R)|.)*?'
     # table end
-    rb'\n\s*+'
-    rb'(?>\|}|\Z)'
+    rb'\n\s*+(?>\|}|\Z)'
     rb')',
     DOTALL | MULTILINE
 ).finditer
