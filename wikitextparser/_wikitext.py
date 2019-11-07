@@ -365,9 +365,9 @@ class WikiText:
                     span[:] = s - rmlength, e - rmlength
                     i -= 1
                     continue
-                break
+                break  # pragma: no cover
             else:
-                continue
+                continue  # pragma: no cover
             while True:
                 if rmstart <= s:
                     if rmstop < e:
@@ -385,7 +385,7 @@ class WikiText:
                         break
                     s, e = span = spans[i]
                     continue
-                break
+                break  # pragma: no cover
             while i >= 0:
                 if e <= rmstart:
                     # s <= e <= rmstart <= rmstop
