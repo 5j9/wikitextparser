@@ -23,7 +23,7 @@ setup(
     author='5j9',
     author_email='5j9@users.noreply.github.com',
     license='GNU General Public License v3 (GPLv3)',
-    packages=find_packages(exclude='tests'),
+    packages=find_packages(exclude=['tests']),
     python_requires='>=3.4',
     install_requires=[
         'regex',
