@@ -31,10 +31,8 @@ class TestWikiText(TestCase):
     def test_getitem(self):
         ae = self.assertEqual
         wt = WikiText('a')
-        with self.assertWarns(DeprecationWarning):
+        with self.assertRaises(NotImplementedError):
             ae(wt[0], 'a')
-            ae(wt[-1:4], 'a')
-            ae(wt[None:None], 'a')
 
     def test_setitem(self):
         ae = self.assertEqual

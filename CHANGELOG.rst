@@ -1,3 +1,7 @@
+v0.29.0
+-------
+- The previously deprecated ``WikiText.__getitem__`` now raises NotImplementedError.
+
 v0.28.1
 -------
 - Implemented a workaround for a catastrophic backtracking condition when parsing tables. (#22)
