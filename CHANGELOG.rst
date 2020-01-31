@@ -1,6 +1,8 @@
 v0.29.0
 -------
 - The previously deprecated ``WikiText.__getitem__`` now raises NotImplementedError.
+- WikiText.__call__: Remove the deprecated support for start is None.
+- Optimize a little and use more robust algorithms.
 
 v0.28.1
 -------
