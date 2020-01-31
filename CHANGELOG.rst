@@ -1,3 +1,7 @@
+v0.29.1
+-------
+- Properly exclude the ``test`` package from the source distribution.
+
 v0.29.0
 -------
 - The previously deprecated ``WikiText.__getitem__`` now raises NotImplementedError.
