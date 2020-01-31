@@ -1127,16 +1127,10 @@ class SubWikiText(WikiText):
 def _filter_inner_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
     """Yield the outermost intervals."""
     for i, span in enumerate(sorted_spans):
-        ss, se = span
-        for ps, pe in islice(sorted_spans, None, i + 1):
-            if ps < ss:
-                if se < pe:
-                    break
-            else:
-                # none of the previous spans included this span
-                yield span
+        for ps, pe in islice(sorted_spans, None, i):
+            if span[1] < pe:
                 break
-        else:
+        else:  # none of the previous spans included span
             yield span
 
 
