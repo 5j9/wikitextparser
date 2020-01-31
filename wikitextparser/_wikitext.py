@@ -174,9 +174,6 @@ class WikiText:
         Return self.string[start] if stop is False.
         Otherwise return self.string[start:stop:step].
         """
-        if start is None:
-            warn('Using None as the start value is deprecated; use 0 instead.',
-                 DeprecationWarning)
         if stop is False:
             if start >= 0:
                 return self._lststr[0][self._span[0] + start]
