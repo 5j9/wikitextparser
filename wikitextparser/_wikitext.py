@@ -6,9 +6,11 @@
 
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
+from itertools import islice
 from operator import attrgetter
 from typing import (
-    MutableSequence, Dict, List, Tuple, Union, Generator, Optional)
+    Any, Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple,
+    Union)
 from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
@@ -54,19 +56,23 @@ SECTIONS_FULLMATCH = regex_compile(
 ).fullmatch
 
 # Tables
-TABLES_FINDITER = regex_compile(
-    # tables start on a new line with optional leading spaces or indentation.
+TABLE_FINDITER = regex_compile(
+    rb"""
+    # Table-start
+    # Always starts on a new line with optional leading spaces or indentation.
+    ^
     # Group the leading spaces or colons so that we can ignore them later.
-    rb'('
-    # table start
-    rb'^([ :]*+){\|'
-    # Table contents
-    # Any character, as long as it is not indicating another table-start
-    rb'(*PRUNE)(?>(?R)|.)*?'
-    # table end
-    rb'\n\s*+(?>\|}|\Z)'
-    rb')',
-    DOTALL | MULTILINE
+    ([ :]*+)
+    {\| # Table contents
+    (?:
+        # Any character, as long as it is not indicating another table-start
+        (?!^\ *+\{\|).
+    )*?
+    # Table-end
+    \n\s*+
+    (?> \|} | \Z )
+    """,
+    DOTALL | MULTILINE | VERBOSE
 ).finditer
 
 # Types which are detected by parse_to_spans
@@ -860,53 +866,43 @@ class WikiText:
         skip_self_span = self._type == 'Table'
         if not spans:
             # All the added spans will be new.
-            if recursive:
-                for m in TABLES_FINDITER(shadow, skip_self_span):
-                    m_spans = m.spans
-                    for (ms, me), (ls, le) in zip(m_spans(1), m_spans(2)):
-                        # Ignore leading whitespace using len(m[1]).
-                        span = [ss + ms + le - ls, ss + me]
-                        spans_append(span)
-                spans.sort()  # only required in recursive mode
-            else:
-                for m in TABLES_FINDITER(shadow, skip_self_span):
-                    ls, le = m.span(2)
+            m = True  # type: Any
+            while m:
+                m = False
+                for m in TABLE_FINDITER(shadow, skip_self_span):
                     ms, me = m.span()
-                    span = [ss + ms + le - ls, ss + me]
-                    spans_append(span)
-            return [Table(lststr, type_to_spans, sp, 'Table') for sp in spans]
-        # There are already exists some spans. Try to use the already existing
-        # before appending new spans.
-        tables = []
-        tables_append = tables.append
-        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        if recursive:
-            for m in TABLES_FINDITER(shadow, skip_self_span):
-                m_spans = m.spans
-                for (ms, me), (ls, le) in zip(m_spans(1), m_spans(2)):
                     # Ignore leading whitespace using len(m[1]).
-                    s, e = ss + ms + le - ls, ss + me
+                    span = [ss + ms + len(m[1]), ss + me]
+                    spans_append(span)
+                    shadow[ms:me] = b'_' * (me - ms)
+            return_spans = spans
+        else:
+            # There are already exists some spans. Try to use the already
+            # existing before appending new spans.
+            span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
+            return_spans = []
+            return_spans_append = return_spans.append
+            m = True
+            while m:
+                m = False
+                for m in TABLE_FINDITER(shadow, skip_self_span):
+                    ms, me = m.span()
+                    # Ignore leading whitespace using len(m[1]).
+                    s, e = ss + ms + len(m[1]), ss + me
                     old_span = span_tuple_to_span_get((s, e))
                     if old_span is None:
                         span = [s, e]
-                        insort_right(spans, span)
+                        spans_append(span)
+                        return_spans_append(span)
                     else:
-                        span = old_span
-                    tables_append(Table(lststr, type_to_spans, span, 'Table'))
-            tables.sort(key=attrgetter('_span'))
-        else:
-            for m in TABLES_FINDITER(shadow, skip_self_span):
-                ls, le = m.span(2)
-                ms, me = m.span()
-                s, e = ss + ms + le - ls, ss + me
-                old_span = span_tuple_to_span_get((s, e))
-                if old_span is None:
-                    span = [s, e]
-                    insort_right(spans, span)
-                else:
-                    span = old_span
-                tables_append(Table(lststr, type_to_spans, span, 'Table'))
-        return tables
+                        return_spans_append(old_span)
+                    shadow[ms:me] = b'_' * (me - ms)
+            return_spans.sort()
+        spans.sort()
+        if not recursive:
+            return_spans = _filter_inner_spans(return_spans)
+        return [
+            Table(lststr, type_to_spans, sp, 'Table') for sp in return_spans]
 
     @property
     def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
@@ -1129,6 +1125,22 @@ class SubWikiText(WikiText):
         if ancestors:
             return ancestors[0]
         return None
+
+
+def _filter_inner_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
+    """Yield the outermost intervals."""
+    for i, span in enumerate(sorted_spans):
+        ss, se = span
+        for ps, pe in islice(sorted_spans, None, i + 1):
+            if ps < ss:
+                if se < pe:
+                    break
+            else:
+                # none of the previous spans included this span
+                yield span
+                break
+        else:
+            yield span
 
 
 if __name__ == '__main__':

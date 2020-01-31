@@ -491,7 +491,7 @@ class Tables(TestCase):
             '{|class=wikitable\n|b\n|}\n|}\ntext2'
         p = parse(s)
         ae(1, len(p.get_tables()))  # non-recursive
-        tables = p.tables
+        tables = p.tables  # recursive
         ae(2, len(tables))
         table0 = tables[0]
         ae(s[6:-6], table0.string)
