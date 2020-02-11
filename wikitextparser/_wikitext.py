@@ -897,7 +897,7 @@ class WikiText:
             return_spans.sort()
         spans.sort()
         if not recursive:
-            return_spans = _filter_inner_spans(return_spans)
+            return_spans = _outer_spans(return_spans)
         return [
             Table(lststr, type_to_spans, sp, 'Table') for sp in return_spans]
 
@@ -1124,11 +1124,12 @@ class SubWikiText(WikiText):
         return None
 
 
-def _filter_inner_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
+def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
     """Yield the outermost intervals."""
     for i, span in enumerate(sorted_spans):
+        se = span[1]
         for ps, pe in islice(sorted_spans, None, i):
-            if span[1] < pe:
+            if se < pe:
                 break
         else:  # none of the previous spans included span
             yield span
