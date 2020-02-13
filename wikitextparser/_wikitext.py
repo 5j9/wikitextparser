@@ -788,10 +788,18 @@ class WikiText:
 
     @property
     def sections(self) -> List['Section']:
-        """Return a list of section in current wikitext.
+        """Return self.get_section(include_subsections=True)."""
+        return self.get_sections()
+
+    # Todo: add parameters to get by title and number.
+    def get_sections(self, include_subsections=True) -> List['Section']:
+        """Return a list of sections in current wikitext.
 
         The first section will always be the lead section, even if it is an
         empty string.
+
+        :param include_subsections: only return the leading part of each
+            section if False.
         """
         sections = []  # type: List['Section']
         sections_append = sections.append
@@ -802,12 +810,11 @@ class WikiText:
         full_match = SECTIONS_FULLMATCH(self._shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('equals')]
-        if not type_spans:
-            # All spans are new
-            spans_append = type_spans.append
-            for current_index, (current_level, (s, e)) in enumerate(
-                zip(levels, section_spans), 1
-            ):
+        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
+        for current_index, (current_level, (s, e)) in enumerate(
+            zip(levels, section_spans), 1
+        ):
+            if include_subsections:
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.
                 for section_index, section_level in enumerate(
@@ -817,26 +824,6 @@ class WikiText:
                         e = section_spans[section_index][1]
                     else:
                         break
-                span = [ss + s, ss + e]
-                spans_append(span)
-                sections_append(
-                    Section(lststr, type_to_spans, span, 'Section'))
-            return sections
-        # There are already some spans. Instead of appending new spans
-        # use them when the detected span already exists.
-        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
-        for current_index, (current_level, (s, e)) in enumerate(
-            zip(levels, section_spans), 1
-        ):
-            # Add text of the current_section to any parent section.
-            # Note that section 0 is not a parent for any subsection.
-            for section_index, section_level in enumerate(
-                levels[current_index:], current_index
-            ):
-                if current_level and section_level > current_level:
-                    e = section_spans[section_index][1]
-                else:
-                    break
             s, e = ss + s, ss + e
             old_span = span_tuple_to_span((s, e))
             if old_span is None:

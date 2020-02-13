@@ -1115,6 +1115,35 @@ class Sections(TestCase):
         ae(templates[0].string, '{{t2}}')
 
 
+class GetSection(TestCase):
+
+    def test_by_heading_pattern(self):
+        ae = self.assertEqual
+        wt = parse(
+            'lead\n'
+            '= h1 =\n'
+            '== h2 ==\n'
+            't2\n'
+            '=== h3 ===\n'
+            '3\n'
+            '= h =\n'
+            'end'
+        )
+        lead, h1, h2, h3, h = wt.get_sections(include_subsections=False)
+        ae(lead.string, 'lead\n')
+        ae(h1.string, '= h1 =\n')
+        ae(h2.string, '== h2 ==\nt2\n')
+        ae(h3.string, '=== h3 ===\n3\n')
+        ae(h.string, '= h =\nend')
+        # return the same span when returning same section
+        lead_, h1_, h2_, h3_, h_ = wt.get_sections(include_subsections=False)
+        ai = self.assertIs
+        ai(lead._span, lead_._span)
+        ai(h._span, h_._span)
+        # do not create repeated spans
+        ae(len(wt._type_to_spans['Section']), 5)
+
+
 class WikiList(TestCase):
 
     def test_get_lists_with_no_pattern(self):
