@@ -336,6 +336,10 @@ class Spans(TestCase):
         }, parse_to_spans(
             bytearray(b'{{t|\n{|a\n|b\n|}\n}}')))
 
+    def test_nested_template_with_unmatched_leading_brace(self):
+        self.assertEqual([0, 21], parse_to_spans(
+            bytearray(b'{{text|{{{text|a}} }}'))['Template'][0])
+
 
 if __name__ == '__main__':
     main()

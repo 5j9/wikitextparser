@@ -4,6 +4,7 @@ v0.29.1
 
 v0.29.0
 -------
+- Fix a regression in parsing some corner cases of nested templates. (#26)
 - The previously deprecated ``WikiText.__getitem__`` now raises NotImplementedError.
 - WikiText.__call__: Remove the deprecated support for start is None.
 - Optimize a little and use more robust algorithms.
