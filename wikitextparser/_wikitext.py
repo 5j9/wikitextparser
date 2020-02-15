@@ -1011,7 +1011,7 @@ class WikiText:
                     end_match = search(
                         END_TAG_PATTERN.replace(
                             b'{name}', start_match['name']),
-                        shadow_copy)
+                        shadow_copy, pos=start_match.end())
                 if end_match:
                     s, e = end_match.span()
                     shadow_copy[s:e] = b'_' * (e - s)
