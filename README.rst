@@ -278,7 +278,7 @@ Accessing HTML tags:
 .. code:: python
 
         >>> p = wtp.parse('text<ref name="c">citation</ref>\n<references/>')
-        >>> ref, references = p.tags()
+        >>> ref, references = p.get_tags()
         >>> ref.name = 'X'
         >>> ref
         Tag('<X name="c">citation</X>')
