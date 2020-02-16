@@ -135,7 +135,7 @@ class TagTest(TestCase):
 
     def test_parsed_content_offset(self):
         self.assertEqual(
-            parse('t<a>1</a>t').tags()[0].parsed_contents.string, '1')
+            parse('t<a>1</a>t').get_tags()[0].parsed_contents.string, '1')
 
     def test_attrs(self):
         self.assertEqual(Tag('<t n1=v1 n2="v2" n3>c</t>').attrs, {

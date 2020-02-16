@@ -959,6 +959,13 @@ class WikiText:
         return lists
 
     def tags(self, name=None) -> List['Tag']:
+        """Deprecated, use self.get_tags instead."""
+        warn(
+            '`tags` method is deprecated, use `get_tags` instead.',
+            DeprecationWarning)
+        return self.get_tags(name)
+
+    def get_tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
         lststr = self._lststr
         type_to_spans = self._type_to_spans

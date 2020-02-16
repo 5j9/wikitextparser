@@ -1,3 +1,7 @@
+unreleased
+----------
+- Rename ``WikiText.tags()`` method to ``WikiText.get_tags()`` and deprecate the old name.
+
 v0.29.2
 -------
 - Fix a bug in detecting the end-tag of two consecutive same-name tags. (#27)
