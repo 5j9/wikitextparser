@@ -1196,6 +1196,9 @@ class Tags(TestCase):
         ae(ref.string, '<ref name="z">citation</ref>')
         ae(references.string, '<references/>')
 
+    def test_same_tags_end(self):
+        self.assertEqual(WikiText('<s></s><s></s>').tags()[0]._span, [0, 7])
+
 
 class Ancestors(TestCase):
 
