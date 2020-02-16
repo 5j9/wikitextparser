@@ -986,7 +986,7 @@ class WikiText:
                 START_TAG_PATTERN.replace(
                     rb'{name}', rb'(?P<name>' + name.encode() + rb')')
             ).finditer(shadow)])
-            end_search = regex_compile(END_TAG_PATTERN .replace(
+            end_search = regex_compile(END_TAG_PATTERN.replace(
                 b'{name}', name.encode())).search
         else:
             reversed_start_matches = reversed(
@@ -1002,24 +1002,24 @@ class WikiText:
                 span = [ss + s, ss + e]
             else:
                 # look for the end-tag
+                start_start, start_end = start_match.span()
                 if name:
                     # the end_search is already available
                     # noinspection PyUnboundLocalVariable
-                    end_match = end_search(shadow_copy, start_match.end())
+                    end_match = end_search(shadow_copy, start_end)
                 else:
                     # build end_search according to start tag name
                     end_match = search(
                         END_TAG_PATTERN.replace(
                             b'{name}', start_match['name']),
-                        shadow_copy, pos=start_match.end())
+                        shadow_copy, pos=start_end)
                 if end_match:
                     s, e = end_match.span()
                     shadow_copy[s:e] = b'_' * (e - s)
-                    span = [ss + start_match.start(), ss + e]
+                    span = [ss + start_start, ss + e]
                 else:
                     # Assume start-only tag.
-                    s, e = start_match.span()
-                    span = [ss + s, ss + e]
+                    span = [ss + start_start, ss + start_end]
             old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)
