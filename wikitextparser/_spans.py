@@ -89,7 +89,7 @@ WIKILINK_FINDITER = regex_compile(
             |
             \](?!\])
         )*+
-        \]\]
+        \]{2,3}
     )
     ''',
     IGNORECASE | VERBOSE).finditer
