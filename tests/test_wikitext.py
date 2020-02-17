@@ -1135,34 +1135,35 @@ class Tags(TestCase):
             'متن۲<ref name="نام۲" group="گ">یاد۲</ref>\n\n'
             '<references group="گ"/>')
         parsed = parse(wikitext)
-        ref1, ref2 = parsed.tags('ref')
+        with self.assertWarns(DeprecationWarning):
+            ref1, ref2 = parsed.tags('ref')
         ae(ref1.string, '<ref name="نام۱" group="گ">یاد۱</ref>')
         ae(ref2.string, '<ref name="نام۲" group="گ">یاد۲</ref>')
 
     def test_defferent_nested_tags(self):
         ae = self.assertEqual
         parsed = parse('<s><b>strikethrough-bold</b></s>')
-        b = parsed.tags('b')[0].string
+        b = parsed.get_tags('b')[0].string
         ae(b, '<b>strikethrough-bold</b>')
-        s = parsed.tags('s')[0].string
+        s = parsed.get_tags('s')[0].string
         ae(s, '<s><b>strikethrough-bold</b></s>')
-        s2, b2 = parsed.tags()
+        s2, b2 = parsed.get_tags()
         ae(b2.string, b)
         ae(s2.string, s)
 
     def test_same_nested_tags(self):
         ae = self.assertEqual
         parsed = parse('<b><b>bold</b></b>')
-        tags_by_name = parsed.tags('b')
+        tags_by_name = parsed.get_tags('b')
         ae(tags_by_name[0].string, '<b><b>bold</b></b>')
         ae(tags_by_name[1].string, '<b>bold</b>')
-        all_tags = parsed.tags()
+        all_tags = parsed.get_tags()
         ae(all_tags[0].string, tags_by_name[0].string)
         ae(all_tags[1].string, tags_by_name[1].string)
 
     def test_self_closing(self):
         parsed = parse('<references />')
-        tags = parsed.tags()
+        tags = parsed.get_tags()
         self.assertEqual(tags[0].string, '<references />')
 
     def test_start_only(self):
@@ -1175,15 +1176,15 @@ class Tags(TestCase):
         See: https://www.w3.org/TR/html51/syntax.html#optional-tags
         """
         parsed = parse('<li>')
-        tags = parsed.tags()
+        tags = parsed.get_tags()
         self.assertEqual(tags[0].string, '<li>')
 
     def test_inner_tag(self):
         ae = self.assertEqual
         parsed = parse('<br><s><b>sb</b></s>')
-        s = parsed.tags('s')[0]
+        s = parsed.get_tags('s')[0]
         ae(s.string, '<s><b>sb</b></s>')
-        b = s.tags()[1]
+        b = s.get_tags()[1]
         ae(b.string, '<b>sb</b>')
 
     def test_extension_tags_are_not_lost_in_shadows(self):
@@ -1191,10 +1192,13 @@ class Tags(TestCase):
         parsed = parse(
             'text<ref name="c">citation</ref>\n'
             '<references/>')
-        ref, references = parsed.tags()
+        ref, references = parsed.get_tags()
         ref.set_attr('name', 'z')
         ae(ref.string, '<ref name="z">citation</ref>')
         ae(references.string, '<references/>')
+
+    def test_same_tags_end(self):
+        self.assertEqual(WikiText('<s></s><s></s>').get_tags()[0]._span, [0, 7])
 
 
 class Ancestors(TestCase):
