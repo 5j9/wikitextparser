@@ -1,4 +1,4 @@
-unreleased
+v0.30.0
 ----------
 - Fixed a bug in parsing wikilinks contianing ``[.*]`` (#29)
 - Fixed: wikilinks are not allowed to be preceded by ``[`` anymore.
