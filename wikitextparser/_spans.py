@@ -75,7 +75,7 @@ BARE_EXTERNAL_LINK = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    \[\[
+    (?<!\[)\[\[
     (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
     + VALID_TITLE_CHARS_PATTERN.replace(rb'\{\}', rb'', 1) + rb'''
     (?:
@@ -83,9 +83,11 @@ WIKILINK_FINDITER = regex_compile(
         |
         \| # Text of the wikilink
         (?> # Any character that is not the start of another wikilink
-            [^[\]]++
+            [^\[\]]++
             |
-            \[(?!\[)
+            \[(?!\[) # optionally followed by a single closing bracket:
+            [^\[\]]*+
+            (?:\](?>(?!\])|(?=\]\])))?
             |
             \](?!\])
         )*+

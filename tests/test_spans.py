@@ -340,6 +340,14 @@ class Spans(TestCase):
         self.assertEqual([0, 21], parse_to_spans(
             bytearray(b'{{text|{{{text|a}} }}'))['Template'][0])
 
+    def test_wikilink_with_extra_brackets(self):
+        ae = self.assertEqual
+        ae([0, 7], parse_to_spans(bytearray(b'[[a|b]]]'))['WikiLink'][0])
+        ae([0, 9], parse_to_spans(bytearray(b'[[a|[b]]]'))['WikiLink'][0])
+        af = self.assertFalse
+        af(parse_to_spans(bytearray(b'[[[a|b]]'))['WikiLink'])
+        af(parse_to_spans(bytearray(b'[[[a]|b]]'))['WikiLink'])
+
 
 if __name__ == '__main__':
     main()
