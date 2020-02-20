@@ -1,5 +1,9 @@
-v0.30.0
+unreleased
 ----------
+- Rename ``WikiText.lists()`` method to ``WikiText.get_lists()`` and deprecate the old name.
+
+v0.30.0
+-------
 - Fixed a bug in parsing wikilinks contianing ``[.*]`` (#29)
 - Fixed: wikilinks are not allowed to be preceded by ``[`` anymore.
 - Rename ``WikiText.tags()`` method to ``WikiText.get_tags()`` and deprecate the old name.

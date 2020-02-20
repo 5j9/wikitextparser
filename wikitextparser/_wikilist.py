@@ -115,13 +115,13 @@ class WikiList(SubWikiText):
         patterns = (r'\#', r'\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         self_pattern = self.pattern
-        lists = self.lists
+        get_lists = self.get_lists
         sublists = []  # type: List['WikiList']
         sublists_append = sublists.append
         if i is None:
             # Any sublist is acceptable
             for pattern in patterns:
-                for lst in lists(self_pattern + pattern):
+                for lst in get_lists(self_pattern + pattern):
                     sublists_append(lst)
             return sublists
         # Only return sub-lists that are within the given item
@@ -133,7 +133,7 @@ class WikiList(SubWikiText):
         e -= ms - ss
         s -= ms - ss
         for pattern in patterns:
-            for lst in lists(self_pattern + pattern):
+            for lst in get_lists(self_pattern + pattern):
                 # noinspection PyProtectedMember
                 ls, le = lst._span
                 if s < ls and le <= e:

@@ -119,12 +119,12 @@ class TestArgument(TestCase):
 
     def test_lists(self):
         ae = self.assertEqual
-        ae(Argument('|list=*a\n*b').lists()[0].items, ['a', 'b'])
-        ae(Argument('|lst= *a\n*b').lists()[0].items, ['a', 'b'])
-        ae(Argument('|*a\n*b').lists()[0].items, ['a', 'b'])
+        ae(Argument('|list=*a\n*b').get_lists()[0].items, ['a', 'b'])
+        ae(Argument('|lst= *a\n*b').get_lists()[0].items, ['a', 'b'])
+        ae(Argument('|*a\n*b').get_lists()[0].items, ['a', 'b'])
         # the space at the beginning of a positional argument should not be
         # ignored. (?)
-        ae(Argument('| *a\n*b').lists()[0].items, ['b'])
+        ae(Argument('| *a\n*b').get_lists()[0].items, ['b'])
 
 
 if __name__ == '__main__':

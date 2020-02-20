@@ -188,7 +188,7 @@ class TestTemplate(TestCase):
 
     def test_lists(self):
         ae = self.assertEqual
-        l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').templates[0].lists()
+        l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').templates[0].get_lists()
         ae(l1.items, ['a', 'b'])
         ae(l2.items, ['c', 'd'])
 

@@ -907,6 +907,13 @@ class WikiText:
         return self._shadow, self._span[0]
 
     def lists(self, pattern: str = None) -> List['WikiList']:
+        """Deprecated, use self.get_lists instead."""
+        warn(
+            '`lists` method is deprecated, use `get_lists` instead.',
+            DeprecationWarning)
+        return self.get_lists(pattern)
+
+    def get_lists(self, pattern: str = None) -> List['WikiList']:
         r"""Return a list of WikiList objects.
 
         :param pattern: The starting pattern for list items.

@@ -60,14 +60,15 @@ class SubWikiTextWithArgs(SubWikiText):
             arguments_append(arg)
         return arguments
 
-    def lists(self, pattern: str = None) -> List[WikiList]:
+    def get_lists(self, pattern: str = None) -> List[WikiList]:
         """Return the lists in all arguments.
 
         For performance reasons it is usually preferred to get a specific
-        Argument and use the `lists` method of that argument instead.
+        Argument and use the `get_lists` method of that argument instead.
         """
         return [
-            lst for arg in self.arguments for lst in arg.lists(pattern) if lst]
+            lst for arg in self.arguments
+            for lst in arg.get_lists(pattern) if lst]
 
     @property
     def name(self) -> str:

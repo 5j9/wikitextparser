@@ -1121,7 +1121,8 @@ class WikiList(TestCase):
         ae = self.assertEqual
         wikitext = '*a\n#b\n;c:d'
         parsed = parse(wikitext)
-        lists = parsed.lists()
+        with self.assertWarns(DeprecationWarning):
+            lists = parsed.lists()
         ae(len(lists), 3)
         ae(lists[2].items, ['c', 'd'])
 

@@ -66,7 +66,7 @@ class WikiListTest(TestCase):
             '** sub-list of b\n'
             '* list item c\n'
             'text')
-        wikilist = parsed.lists(pattern=r'\*')[0]
+        wikilist = parsed.get_lists(pattern=r'\*')[0]
         self.assertEqual(
             wikilist.items, [' list item a', ' list item b', ' list item c'])
         sublist = wikilist.sublists(1, r'\*')[0]

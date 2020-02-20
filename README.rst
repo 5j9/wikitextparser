@@ -206,12 +206,12 @@ Calling the ``cells`` method of a ``Table`` returns table cells as ``Cell`` obje
     |}
 
 HTML attributes of Table, Cell, and Tag objects are accessible via
-`get_attr`, `set_attr`, `has_attr`, and  `del_attr` methods.
+``get_attr``, ``set_attr``, ``has_attr``, and  ``del_attr`` methods.
 
 Lists
 -----
 
-The `lists` method provides access to lists within the wikitext.
+The ``get_lists`` method provides access to lists within the wikitext.
 
 .. code:: python
 
@@ -224,11 +224,11 @@ The `lists` method provides access to lists within the wikitext.
     ...     '** sub-list of b\n'
     ...     'text'
     ... )
-    >>> wikilist = parsed.lists()[0]
+    >>> wikilist = parsed.get_lists()[0]
     >>> wikilist.items
     [' list item a', ' list item b', ' list item c']
 
-The `sublists` method can be used to get all sub-lists of the current list or just sub-lists of specific items:
+The ``sublists`` method can be used to get all sub-lists of the current list or just sub-lists of specific items:
 
 .. code:: python
 
@@ -237,7 +237,7 @@ The `sublists` method can be used to get all sub-lists of the current list or ju
     >>> wikilist.sublists(1)[0].items
     [' sub-list of b']
 
-It also has an optional `pattern` argument that works similar to `lists`, except that the current list pattern will be automatically added to it as a prefix:
+It also has an optional ``pattern`` argument that works similar to ``lists``, except that the current list pattern will be automatically added to it as a prefix:
 
 .. code:: python
 
@@ -322,20 +322,20 @@ To delete/remove any object from its parents use ``del object[:]`` or ``del obje
 Compared with mwparserfromhell
 ==============================
 
-`mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as `wikitextparser`. The main reason leading me to create `wikitextparser` was that `mwparserfromhell` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation `wikitextparser` may be able to give you more acceptable results.
+`mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as ``wikitextparser``. The main reason leading me to create ``wikitextparser`` was that ``mwparserfromhell`` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation ``wikitextparser`` may be able to give you more acceptable results.
 
 But if you need to
 
 * use Python 2
-* parse style tags like `'''bold'''` and ''italics'' (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
+* parse style tags like ``'''bold'''`` and ``''italics''`` (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
 * extract `HTML entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
 
-then `mwparserfromhell` or maybe other libraries will be the way to go. Also note that `wikitextparser` is still under heavy development and the API may change drastically in the future versions.
+then ``mwparserfromhell`` or maybe other libraries will be the way to go. Also note that ``wikitextparser`` is still under heavy development and the API may change drastically in the future versions.
 
-Of-course `wikitextparser` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
+Of-course ``wikitextparser`` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
 
-The tokenizer in `mwparserfromhell` is written in C. Tokenization in `wikitextparser` is mostly done using the `regex` library which is also in C.
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, `wikitextparser` has a decent performance and should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+The tokenizer in ``mwparserfromhell`` is written in C. Tokenization in ``wikitextparser`` is mostly done using the ``regex`` library which is also in C.
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, ``wikitextparser`` has a decent performance and should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
 
 If you have had a chance to compare these libraries in terms of performance please share your experience by opening an issue on github.
 
@@ -344,7 +344,7 @@ Known issues and limitations
 ============================
 
 * Syntax elements produced by a template transclusion cannot be detected by offline parsers.
-* Localized namespace names are unknown, so for example `[[File:...]]` links are treated as normal wikilinks. `mwparserfromhell` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
+* Localized namespace names are unknown, so for example ``[[File:...]]`` links are treated as normal wikilinks. ``mwparserfromhell`` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
 * `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it should be trivial to compute a WikiLink's linktrail.
 * Templates adjacent to external links, are never considered part of the link. In reality, this depends on the contents of the template. Example: ``parse('http://example.com{{dead link}}').external_links[0].url == 'http://example.com'``
 * While MediaWiki recognizes only a finite number of tags and they are extension-dependent, the ``tags`` method returns anything that looks like an HTML tag. A configuration option might be added in the future to address this issue.
