@@ -1,6 +1,7 @@
-unreleased
-----------
+v0.31.0
+-------
 - Rename ``WikiText.lists()`` method to ``WikiText.get_lists()`` and deprecate the old name.
+- Add ``get_sections()`` method with ``include_subsections`` parameter which allows getting section without including subsections. (#23)
 
 v0.30.0
 -------
