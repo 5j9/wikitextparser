@@ -761,18 +761,6 @@ class WikiText:
         lststr = self._lststr
         ss, se = self._span
         spans = type_to_spans.setdefault('ExternalLink', [])
-        if not spans:
-            # All the added spans will be new.
-            spans_append = spans.append
-            for m in EXTERNAL_LINK_FINDITER(self._ext_link_shadow):
-                s, e = m.span()
-                span = [ss + s, ss + e]
-                spans_append(span)
-                external_links_append(
-                    ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
-            return external_links
-        # There are already some ExternalLink spans. Use the already existing
-        # ones when the detected span is one of those.
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         for m in EXTERNAL_LINK_FINDITER(self._ext_link_shadow):
             s, e = m.span()
@@ -791,7 +779,6 @@ class WikiText:
         """Return self.get_section(include_subsections=True)."""
         return self.get_sections()
 
-    # Todo: add parameters to get by title and number.
     def get_sections(self, include_subsections=True) -> List['Section']:
         """Return a list of sections in current wikitext.
 
@@ -848,40 +835,25 @@ class WikiText:
         spans = type_to_spans.setdefault('Table', [])
         spans_append = spans.append
         skip_self_span = self._type == 'Table'
-        if not spans:
-            # All the added spans will be new.
-            m = True  # type: Any
-            while m:
-                m = False
-                for m in TABLE_FINDITER(shadow, skip_self_span):
-                    ms, me = m.span()
-                    # Ignore leading whitespace using len(m[1]).
-                    span = [ss + ms + len(m[1]), ss + me]
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
+        return_spans = []
+        return_spans_append = return_spans.append
+        m = True
+        while m:
+            m = False
+            for m in TABLE_FINDITER(shadow, skip_self_span):
+                ms, me = m.span()
+                # Ignore leading whitespace using len(m[1]).
+                s, e = ss + ms + len(m[1]), ss + me
+                old_span = span_tuple_to_span_get((s, e))
+                if old_span is None:
+                    span = [s, e]
                     spans_append(span)
-                    shadow[ms:me] = b'_' * (me - ms)
-            return_spans = spans
-        else:
-            # There are already exists some spans. Try to use the already
-            # existing before appending new spans.
-            span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-            return_spans = []
-            return_spans_append = return_spans.append
-            m = True
-            while m:
-                m = False
-                for m in TABLE_FINDITER(shadow, skip_self_span):
-                    ms, me = m.span()
-                    # Ignore leading whitespace using len(m[1]).
-                    s, e = ss + ms + len(m[1]), ss + me
-                    old_span = span_tuple_to_span_get((s, e))
-                    if old_span is None:
-                        span = [s, e]
-                        spans_append(span)
-                        return_spans_append(span)
-                    else:
-                        return_spans_append(old_span)
-                    shadow[ms:me] = b'_' * (me - ms)
-            return_spans.sort()
+                    return_spans_append(span)
+                else:
+                    return_spans_append(old_span)
+                shadow[ms:me] = b'_' * (me - ms)
+        return_spans.sort()
         spans.sort()
         if not recursive:
             return_spans = _outer_spans(return_spans)
