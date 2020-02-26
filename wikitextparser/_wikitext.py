@@ -922,6 +922,7 @@ class WikiText:
                     span = old_span
                 lists_append(WikiList(
                     lststr, pattern, m, type_to_spans, span, 'WikiList'))
+        lists.sort(key=attrgetter('_span'))
         return lists
 
     def tags(self, name=None) -> List['Tag']:

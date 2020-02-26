@@ -1148,12 +1148,12 @@ class WikiList(TestCase):
 
     def test_get_lists_with_no_pattern(self):
         ae = self.assertEqual
-        wikitext = '*a\n#b\n;c:d'
+        wikitext = '*a\n;c:d\n#b'
         parsed = parse(wikitext)
         with self.assertWarns(DeprecationWarning):
             lists = parsed.lists()
         ae(len(lists), 3)
-        ae(lists[2].items, ['c', 'd'])
+        ae(lists[1].items, ['c', 'd'])
 
 
 class Tags(TestCase):
