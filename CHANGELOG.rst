@@ -1,3 +1,7 @@
+v0.32.0
+-------
+Fixed a bug in ``WikiText.get_lists()`` which was causing it to sometimes return items in an unordered fashion. (#31)
+
 v0.31.0
 -------
 - Rename ``WikiText.lists()`` method to ``WikiText.get_lists()`` and deprecate the old name.
