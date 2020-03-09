@@ -50,14 +50,16 @@ class Spans(TestCase):
         self.assertEqual([], WikiText('{{[[a]]}}')._type_to_spans['Template'])
 
     def test_template_inside_parameter(self):
+        ae = self.assertEqual
         wt = WikiText('{{{1|{{colorbox|yellow|text1}}}}}')
-        self.assertEqual([[5, 30]], wt._type_to_spans['Template'])
-        self.assertEqual([[0, 33]], wt._type_to_spans['Parameter'])
+        ae([[5, 30]], wt._type_to_spans['Template'])
+        ae([[0, 33]], wt._type_to_spans['Parameter'])
 
     def test_parameter_inside_template(self):
+        ae = self.assertEqual
         wt = WikiText('{{colorbox|yellow|{{{1|defualt_text}}}}}')
-        self.assertEqual([[0, 40]], wt._type_to_spans['Template'])
-        self.assertEqual([[18, 38]], wt._type_to_spans['Parameter'])
+        ae([[0, 40]], wt._type_to_spans['Template'])
+        ae([[18, 38]], wt._type_to_spans['Parameter'])
 
     def test_template_name_cannot_contain_newline(self):
         self.assertEqual([], WikiText(
@@ -100,15 +102,15 @@ class Spans(TestCase):
                 "[[Wikilink2]].]]")._type_to_spans['WikiLink'])
 
     def test_extracting_sections(self):
+        ae = self.assertEqual
         sections = WikiText(
             '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22').sections
-        self.assertEqual(4, len(sections))
-        self.assertEqual(0, sections[0].level)
-        self.assertEqual('', sections[0].title)
-        self.assertEqual('', sections[0].contents)
-        self.assertEqual(
-            '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1]))
-        self.assertEqual(
+        ae(4, len(sections))
+        ae(0, sections[0].level)
+        ae('', sections[0].title)
+        ae('', sections[0].contents)
+        ae('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1]))
+        ae(
             "[Section('\\n'), Section('== 1 ==\\n'), "
             "Section('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
             "===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n"
@@ -124,43 +126,45 @@ class Spans(TestCase):
                 '\n==== 2.3.1 ====\n2.3.1\n== 3 ==\n').sections))
 
     def test_section_title_may_contain_template_newline_etc(self):
+        ae = self.assertEqual
         sections = WikiText(
             '=== h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw'
             '\n</nowiki> ===\nt3').sections
-        self.assertEqual(2, len(sections))
-        self.assertEqual(
+        ae(2, len(sections))
+        ae(
             ' h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
             sections[1].title)
-        self.assertEqual('t3', sections[1].contents)
+        ae('t3', sections[1].contents)
 
     def test_keyword_and_positional_args_removal(self):
+        ae = self.assertEqual
         wt = WikiText("text{{t1|kw=a|1=|pa|kw2=a|pa2}}{{t2|a|1|1=}}text")
         t1, t2 = wt.templates
         t1_args = t1.arguments
         t2_args = t2.arguments
-        self.assertEqual('1', t1_args[2].name)
-        self.assertEqual('kw2', t1_args[3].name)
-        self.assertEqual('2', t1_args[4].name)
-        self.assertEqual('1', t2_args[0].name)
-        self.assertEqual('2', t2_args[1].name)
-        self.assertEqual('1', t2_args[2].name)
+        ae('1', t1_args[2].name)
+        ae('kw2', t1_args[3].name)
+        ae('2', t1_args[4].name)
+        ae('1', t2_args[0].name)
+        ae('2', t2_args[1].name)
+        ae('1', t2_args[2].name)
         del t1_args[0][:]
         t1_args = t1.arguments
         t2_args = t2.arguments
-        self.assertEqual('1', t1_args[0].name)
-        self.assertEqual('kw2', t1_args[2].name)
-        self.assertEqual('|pa2', t1_args[3].string)
-        self.assertEqual('1', t2_args[0].name)
-        self.assertEqual('2', t2_args[1].name)
-        self.assertEqual('1', t2_args[2].name)
+        ae('1', t1_args[0].name)
+        ae('kw2', t1_args[2].name)
+        ae('|pa2', t1_args[3].string)
+        ae('1', t2_args[0].name)
+        ae('2', t2_args[1].name)
+        ae('1', t2_args[2].name)
         del t1_args[1][:]
         t1_args = t1.arguments
         t2_args = t2.arguments
-        self.assertEqual("text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text", wt.string)
-        self.assertEqual('pa2', t1_args[2].value)
-        self.assertEqual('1', t1_args[2].name)
-        self.assertEqual('a', t2_args[0].value)
-        self.assertEqual('1', t2_args[0].name)
+        ae("text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text", wt.string)
+        ae('pa2', t1_args[2].value)
+        ae('1', t1_args[2].name)
+        ae('a', t2_args[0].value)
+        ae('1', t2_args[0].name)
 
     def test_parser_function_regex(self):
         finditer = PM_PF_TL_FINDITER
