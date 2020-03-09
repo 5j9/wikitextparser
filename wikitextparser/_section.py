@@ -77,7 +77,7 @@ class Section(SubWikiText):
     def title(self) -> None:
         m = self._header_match
         if m is None:
-            raise RuntimeError('section does not have title')
+            return
         del self[m.start():m.end()]
 
     @property

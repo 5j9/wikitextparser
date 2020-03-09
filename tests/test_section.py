@@ -49,8 +49,7 @@ class TestSection(TestCase):
         del s.title
         ae('text.', s.string)
         ae('', s.title)
-        with self.assertRaises(RuntimeError):
-            del s.title
+        del s.title  # no change, no exception
 
     @expectedFailure
     def test_lead_set_title(self):

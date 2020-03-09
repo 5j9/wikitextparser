@@ -1,3 +1,7 @@
+v0.34.0
+-------
+- Invoking the deleter of ``Section.title`` won't raise a RuntimeError anymore if the section does not have a title already.
+
 v0.33.0
 -------
 - Add a deleter for ``Section.title`` property. (#32)
