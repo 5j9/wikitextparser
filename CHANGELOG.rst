@@ -1,6 +1,10 @@
+v0.33.0
+-------
+- Add a deleter for ``Section.title`` property. (#32)
+
 v0.32.0
 -------
-Fixed a bug in ``WikiText.get_lists()`` which was causing it to sometimes return items in an unordered fashion. (#31)
+- Fixed a bug in ``WikiText.get_lists()`` which was causing it to sometimes return items in an unordered fashion. (#31)
 
 v0.31.0
 -------

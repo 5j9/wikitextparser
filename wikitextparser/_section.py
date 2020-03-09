@@ -73,6 +73,13 @@ class Section(SubWikiText):
                 "Try adding it to contents.")
         self[m.start(2):m.end(2)] = value
 
+    @title.deleter
+    def title(self) -> None:
+        m = self._header_match
+        if m is None:
+            raise RuntimeError('section does not have title')
+        del self[m.start():m.end()]
+
     @property
     def contents(self) -> str:
         """Contents of this section.

@@ -43,6 +43,15 @@ class TestSection(TestCase):
         s.title = ' newtitle '
         self.assertEqual(' newtitle ', s.title)
 
+    def test_del_title(self):
+        ae = self.assertEqual
+        s = Section('== section ==\ntext.')
+        del s.title
+        ae('text.', s.string)
+        ae('', s.title)
+        with self.assertRaises(RuntimeError):
+            del s.title
+
     @expectedFailure
     def test_lead_set_title(self):
         s = Section('lead text')

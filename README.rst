@@ -152,6 +152,18 @@ Sections
     t22
     {{text|value3}}
     [[Z|X]]
+    >>> del parsed.sections[1].title
+    >>>> print(parsed)
+
+    t2
+    === h3 ===
+    t3
+    === h3 ===
+    t3
+    == h22 ==
+    t22
+    {{text|value3}}
+    [[Z|X]]
 
 Tables
 ------
