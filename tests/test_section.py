@@ -36,7 +36,7 @@ class TestSection(TestCase):
     def test_leadsection(self):
         s = Section('lead text. \n== section ==\ntext.')
         self.assertEqual(0, s.level)
-        self.assertEqual('', s.title)
+        self.assertIsNone(s.title)
 
     def test_set_title(self):
         s = Section('== section ==\ntext.')
@@ -44,11 +44,10 @@ class TestSection(TestCase):
         self.assertEqual(' newtitle ', s.title)
 
     def test_del_title(self):
-        ae = self.assertEqual
         s = Section('== section ==\ntext.')
         del s.title
-        ae('text.', s.string)
-        ae('', s.title)
+        self.assertEqual('text.', s.string)
+        self.assertIsNone(s.title)
         del s.title  # no change, no exception
 
     @expectedFailure

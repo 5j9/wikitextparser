@@ -61,7 +61,7 @@ class Section(SubWikiText):
          """
         m = self._header_match
         if m is None:
-            return ''
+            return None
         return self(m.start(2), m.end(2))
 
     @title.setter

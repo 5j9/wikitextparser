@@ -107,7 +107,7 @@ class Spans(TestCase):
             '== h2 ==\nt2\n\n=== h3 ===\nt3\n\n== h22 ==\nt22').sections
         ae(4, len(sections))
         ae(0, sections[0].level)
-        ae('', sections[0].title)
+        self.assertIsNone(sections[0].title)
         ae('', sections[0].contents)
         ae('== h2 ==\nt2\n\n=== h3 ===\nt3\n\n', str(sections[1]))
         ae(

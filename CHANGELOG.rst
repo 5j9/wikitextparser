@@ -1,3 +1,7 @@
+Unreleased
+----------
+- ``Section.title`` will return None instead of ``''`` when the section does not have any title.
+
 v0.34.0
 -------
 - Invoking the deleter of ``Section.title`` won't raise a RuntimeError anymore if the section does not have a title already.
