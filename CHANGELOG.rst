@@ -52,7 +52,7 @@ v0.28.0
 v0.27.0
 -------
 - Fix a bug in detecting nested tables. (#21)
-- Fix a few bug in detecting tables and tempalte arguments.
+- Fix a few bug in detecting tables and template arguments.
 - Changed the ``comments`` property of ``Comment`` objects to return an empty list.
 - Changed the ``external_links`` property of ``ExternalLink`` objects to return an empty list.
 
