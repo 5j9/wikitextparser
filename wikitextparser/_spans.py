@@ -6,6 +6,10 @@ from typing import Dict, List, Callable, Optional
 from regex import VERBOSE, IGNORECASE
 from regex import compile as regex_compile
 
+from ._config import (
+    _parsable_tag_extensions, regex_pattern, _unparsable_tag_extensions,
+    _bare_external_link_schemes, _parser_functions)
+
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
@@ -23,19 +27,7 @@ PM_PF_TL_FINDITER = regex_compile(
     rb'|'
     # parser function
     rb'\s*+'
-    # generated pattern: _config.regex_pattern(_config._parser_functions)
-    # with \#[^{}\s:]++ added manually.
-    rb'(?>\#[^{}\s:]++|u(?>rlencode|c(?:first)?+)|s(?>ubst|afesubst)|raw|p(?>l'
-    rb'ural|ad(?>right|left))|nse?+|msg(?:nw)?+|l(?>ocalurl|c(?:first)?+)|int|'
-    rb'g(?>rammar|ender)|f(?>ullurl|ormatnum|ilepath)|canonicalurl|anchorencod'
-    rb'e|TALK(?>SPACEE?+|PAGENAMEE?+)|SUB(?>PAGENAMEE?+|JECT(?>SPACEE?+|PAGENA'
-    rb'MEE?+))|R(?>OOTPAGENAMEE?+|EVISION(?>YEAR|USER|TIMESTAMP|MONTH1?+|ID|DA'
-    rb'Y2?+))|P(?>ROTECTION(?>LEVEL|EXPIRY)|AGE(?>SI(?>ZE|N(?>N(?>S|AMESPACE)|'
-    rb'CAT(?:EGORY)?+))|NAMEE?+|ID))|N(?>UM(?>INGROUP|BER(?>OF(?>VIEWS|USERS|P'
-    rb'AGES|FILES|EDITS|A(?>RTICLES|DMINS|CTIVEUSERS))|INGROUP))|AMESPACE(?>NU'
-    rb'MBER|E)?+)|FULLPAGENAMEE?+|D(?>ISPLAYTITLE|EFAULT(?>SORT(?:KEY)?+|CATEG'
-    rb'ORYSORT))|CASCADINGSOURCES|BASEPAGENAMEE?+|ARTICLE(?>SPACEE?+|PAGENAMEE'
-    rb'?+))'
+    rb'(?>\#[^{}\s:]++|' + regex_pattern(_parser_functions).encode()[3:] +
     # end of generated part
     rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
     rb'|'
@@ -60,13 +52,9 @@ VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
 # https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
 LITERAL_IPV6_AND_TAIL = \
     rb'\[[0-9a-fA-F:.]++\][^' + INVALID_EXTLINK_CHARS + rb']*+'
-# generated pattern: _config.regex_pattern(_config._bare_external_link_schemes)
 # A \b is added to the beginning.
 BARE_EXTERNAL_LINK_SCHEMES = (
-    rb'\b(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s'
-    rb':|:)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc('
-    rb'?>s://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bi'
-    rb'tcoin:)')
+    rb'\b' + regex_pattern(_bare_external_link_schemes).encode())
 EXTERNAL_LINK_URL_TAIL = (
     rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
 BARE_EXTERNAL_LINK = (
@@ -96,14 +84,11 @@ WIKILINK_FINDITER = regex_compile(
     ''',
     IGNORECASE | VERBOSE).finditer
 
-# generated pattern: _config.regex_pattern(_config._parsable_tag_extensions)
-PARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>section|ref(?:erences)?+|poem|i(?>n(?>putbox|dicator|cludeonly)|mage'
-    rb'map)|gallery|categorytree)')
-# generated pattern: _config.regex_pattern(_config._unparsable_tag_extensions)
-UNPARSABLE_TAG_EXTENSIONS_PATTERN = (
-    rb'(?>t(?>imeline|emplatedata)|s(?>yntaxhighlight|ource|core)|pre|nowiki|m'
-    rb'ath|hiero|graph|charinsert)')
+# todo: make regex_pattern return bytes?
+PARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
+    _parsable_tag_extensions).encode()
+UNPARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
+    _unparsable_tag_extensions).encode()
 TAG_BY_NAME_PATTERN = (
     rb'< (' + UNPARSABLE_TAG_EXTENSIONS_PATTERN + rb'|(' +
     PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')) \b [^>]*+ (?<!/)>
