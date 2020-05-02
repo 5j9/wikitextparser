@@ -1158,7 +1158,7 @@ class WikiList(TestCase):
 
     def test_multiline_tags(self):
         ae = self.assertEqual
-        items = parse('#1<br /\n>\n#2<s\n>s</s\n>\n#3').get_lists()[0].items
+        items = parse('#1<br\n/\n>\n#2<s\n>s</s\n>\n#3').get_lists()[0].items
         ae(len(items), 3)
         ae(items[1], '2<s\n>s</s\n>')
         ae(items[2], '3')

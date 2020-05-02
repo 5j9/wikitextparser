@@ -28,7 +28,7 @@ class Argument(SubWikiText):
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match
-        shadow_match = ARG_SHADOW_FULLMATCH(self._tagless_shadow)
+        shadow_match = ARG_SHADOW_FULLMATCH(self._shadow)
         self._shadow_match_cache = shadow_match, self_string
         return shadow_match
 

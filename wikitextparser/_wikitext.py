@@ -865,7 +865,7 @@ class WikiText:
     @property
     def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
         """Return appropriate shadow and its offset to be used by `lists`."""
-        return self._tagless_shadow, self._span[0]
+        return self._shadow, self._span[0]
 
     def lists(self, pattern: str = None) -> List['WikiList']:
         """Deprecated, use self.get_lists instead."""
@@ -873,22 +873,6 @@ class WikiText:
             '`lists` method is deprecated, use `get_lists` instead.',
             DeprecationWarning)
         return self.get_lists(pattern)
-
-    @property
-    def _tagless_shadow(self) -> bytearray:
-        """Return shadow with start and end tags removed."""
-        # todo: cache
-        shadow = self._shadow
-        # todo: extension tags
-        # for s, e in self.type_to_spans['ExtensionTag']:
-        #     shadow[s:e] = b'_' * (e - s)
-        # for m in VALID_HTML_START_TAG_FINDITER(shadow):
-        #     s, e = m.span()
-        #     shadow[s:e] = b'_' * (e - s)
-        # for m in VALID_HTML_END_TAG_FINDITER(shadow):
-        #     s, e = m.span()
-        #     shadow[s:e] = b'_' * (e - s)
-        return shadow
 
     def get_lists(self, pattern: str = None) -> List['WikiList']:
         r"""Return a list of WikiList objects.
