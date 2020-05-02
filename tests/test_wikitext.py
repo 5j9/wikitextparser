@@ -1158,10 +1158,11 @@ class WikiList(TestCase):
 
     def test_multiline_tags(self):
         ae = self.assertEqual
-        items = parse('#1<br\n/\n>\n#2<s\n>s</s\n>\n#3').get_lists()[0].items
-        ae(len(items), 3)
-        ae(items[1], '2<s\n>s</s\n>')
-        ae(items[2], '3')
+        i1, i2, i3 = parse(
+            '#1<br\n/>{{note}}\n#2<s\n>s</s\n>\n#3').get_lists()[0].items
+        ae(i1, '1<br\n/>{{note}}')
+        ae(i2, '2<s\n>s</s\n>')
+        ae(i3, '3')
         # an invalid tag name containing newlines will break the list
         ae(len(parse('#1<br/\n>\n#2<abc\n>\n#3').get_lists()[0].items), 2)
 
