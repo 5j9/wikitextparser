@@ -2,10 +2,10 @@
 
 
 from collections import defaultdict as _defaultdict
-from typing import List as _List
+from typing import Iterable as _Iterable
 
 
-def _plant_trie(strings: _List[str]) -> dict:
+def _plant_trie(strings: _Iterable[str]) -> dict:
     """Create a Trie out of a list of words and return an atomic regex pattern.
 
     The corresponding Regex should match much faster than a simple Regex union.
@@ -60,7 +60,7 @@ def _pattern(trie: dict) -> str:
     return result
 
 
-def regex_pattern(words: _List[str]) -> str:
+def regex_pattern(words: _Iterable[str]) -> str:
     """Convert words to a regex pattern that matches any of them."""
     return _pattern(_plant_trie(words))
 
@@ -120,6 +120,17 @@ _bare_external_link_schemes = {
     'nntp://', 'redis://', 'sftp://', 'sip:', 'sips:', 'sms:', 'ssh://',
     'svn://', 'tel:', 'telnet://', 'urn:', 'worldwind://', 'xmpp:',  # '//'
 }
+
+# generated using dev/html_tag_names.py
+_valid_html_tag_names = {
+    's', 'ins', 'code', 'b', 'ol', 'i', 'h5', 'th', 'dt', 'td',
+    'wbr', 'div', 'big', 'p', 'small', 'h4', 'tt', 'span', 'font',
+    'ruby', 'h3', 'dfn', 'rb', 'li', 'h1', 'cite', 'dl', 'rtc', 'em',
+    'q', 'h2', 'samp', 'strike', 'time', 'blockquote', 'bdi', 'del',
+    'br', 'rp', 'hr', 'abbr', 'sub', 'u', 'kbd', 'table', 'rt', 'dd',
+    'var', 'pre', 'ul', 'tr', 'center', 'data', 'strong', 'mark',
+    'h6', 'bdo', 'caption', 'sup'}
+_HTML_TAG_NAME = regex_pattern(_valid_html_tag_names).encode()
 
 _parser_functions = {
     'ARTICLEPAGENAME',
