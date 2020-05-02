@@ -17,7 +17,9 @@ from regex import compile as regex_compile
 from wcwidth import wcswidth
 
 # noinspection PyProtectedMember
-from ._config import _tag_extensions, _HTML_TAG_NAME
+from ._config import (
+    _tag_extensions, _HTML_TAG_NAME, _bare_external_link_schemes,
+    regex_pattern)
 from ._spans import (
     START_TAG_PATTERN,
     END_TAG_PATTERN,
@@ -31,12 +33,8 @@ NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(
         b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
 # External links
-# _config.regex_pattern(_config._bare_external_link_schemes | {'//'})
-BRACKET_EXTERNAL_LINK_SCHEMES = (
-    rb'(?>xmpp:|worldwind://|urn:|tel(?>net://|:)|s(?>vn://|sh://|ms:|ip(?>s:|'
-    rb':)|ftp://)|redis://|n(?>ntp://|ews:)|m(?>ms://|a(?>ilto:|gnet:))|irc(?>'
-    rb's://|://)|http(?>s://|://)|g(?>opher://|it://|eo:)|ftp(?>s://|://)|bitc'
-    rb'oin:|//)')
+BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
+    _bare_external_link_schemes | {'//'}).encode()
 BRACKET_EXTERNAL_LINK_URL = (
     BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
 BRACKET_EXTERNAL_LINK = (
