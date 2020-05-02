@@ -1207,9 +1207,11 @@ class Tags(TestCase):
         ae(all_tags[1].string, tags_by_name[1].string)
 
     def test_self_closing(self):
-        parsed = parse('<references />')
-        tags = parsed.get_tags()
-        self.assertEqual(tags[0].string, '<references />')
+        ae = self.assertEqual
+        # extension tag
+        ae(parse('<references />').get_tags()[0].string, '<references />')
+        # HTML tag
+        ae(parse('<s / >').get_tags()[0].string, '<s / >')
 
     def test_start_only(self):
         """Some elements' end tag may be omitted in certain conditions.
