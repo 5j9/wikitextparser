@@ -1,5 +1,6 @@
-Unreleased
-----------
+v0.35.0
+-------
+- Fixed a rare bug in handling lists and template arguments when there is newline or a pipe inside a starting or closing tag.
 - ``Section.title`` will return None instead of ``''`` when the section does not have any title.
 
 v0.34.0
