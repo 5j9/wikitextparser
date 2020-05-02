@@ -12,7 +12,8 @@ from ._cell import (
     INLINE_HAEDER_CELL_MATCH,
     INLINE_NONHAEDER_CELL_MATCH
 )
-from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
+from ._tag import SubWikiTextWithAttrs
+from ._spans import ATTRS_MATCH
 from ._wikitext import WS
 
 

@@ -236,11 +236,12 @@ class Templates(TestCase):
             "{{text |  [[ A | {{text|b}} ]] }}").templates))
 
     def test_wikilink_in_template(self):
+        # todo: merge with test_spans?
         ae = self.assertEqual
-        s1 = "{{text |[[A|}}]]}}"
-        ts = str(WikiText(s1).templates[0])
-        ae(s1, ts)
-        ae(ts, str(WikiText('<ref>{{text |[[A|}}]]}}</ref>').templates[0]))
+        s = "{{text |[[A|}}]]}}"
+        ts = str(WikiText(s).templates[0])
+        ae(s, ts)
+        ae(s, str(WikiText('<ref>{{text |[[A|}}]]}}</ref>').templates[0]))
 
     def test_wikilink_containing_closing_braces_in_template(self):
         s = '{{text|[[  A   |\n|}}[]<>]]\n}}'
@@ -1155,8 +1156,22 @@ class WikiList(TestCase):
         ae(len(lists), 3)
         ae(lists[1].items, ['c', 'd'])
 
+    def test_multiline_tags(self):
+        ae = self.assertEqual
+        items = parse('#1<br /\n>\n#2<s\n>s</s\n>\n#3').get_lists()[0].items
+        ae(len(items), 3)
+        ae(items[1], '2<s\n>s</s\n>')
+        ae(items[2], '3')
+        # an invalid tag name containing newlines will break the list
+        ae(len(parse('#1<br/\n>\n#2<abc\n>\n#3').get_lists()[0].items), 2)
+
 
 class Tags(TestCase):
+
+    def test_assume_that_templates_do_not_exist(self):
+        # this is actually an invalid <s> tag on English Wikipedia, i.e the
+        # result of {{para}} makes it invalid.
+        self.assertEqual(len(parse('<s {{para|a}}></s>').get_tags('s')), 1)
 
     def test_unicode_attr_values(self):
         ae = self.assertEqual
@@ -1228,7 +1243,8 @@ class Tags(TestCase):
         ae(references.string, '<references/>')
 
     def test_same_tags_end(self):
-        self.assertEqual(WikiText('<s></s><s></s>').get_tags()[0]._span, [0, 7])
+        self.assertEqual(
+            WikiText('<s></s><s></s>').get_tags()[0]._span, [0, 7])
 
 
 class Ancestors(TestCase):

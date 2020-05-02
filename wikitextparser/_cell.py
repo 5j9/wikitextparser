@@ -5,7 +5,8 @@ from typing import Match, MutableSequence, Union, Dict, List
 
 from regex import compile as regex_compile, VERBOSE, DOTALL
 
-from ._tag import ATTRS_MATCH, SubWikiTextWithAttrs
+from ._tag import SubWikiTextWithAttrs
+from ._spans import ATTRS_MATCH
 
 
 # https://regex101.com/r/hB4dX2/17

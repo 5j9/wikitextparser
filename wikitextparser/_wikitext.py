@@ -9,8 +9,7 @@ from copy import deepcopy
 from itertools import islice
 from operator import attrgetter
 from typing import (
-    Any, Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple,
-    Union)
+    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union)
 from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
@@ -18,14 +17,19 @@ from regex import compile as regex_compile
 from wcwidth import wcswidth
 
 # noinspection PyProtectedMember
-from ._config import _tag_extensions
+from ._config import _tag_extensions, _HTML_TAG_NAME
 from ._spans import (
+    START_TAG_PATTERN,
+    END_TAG_PATTERN,
     parse_to_spans,
     INVALID_EXTLINK_CHARS,
     BARE_EXTERNAL_LINK,
     EXTERNAL_LINK_URL_TAIL)
 
 
+NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
+    START_TAG_PATTERN.replace(
+        b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
 # External links
 # _config.regex_pattern(_config._bare_external_link_schemes | {'//'})
 BRACKET_EXTERNAL_LINK_SCHEMES = (
@@ -863,7 +867,7 @@ class WikiText:
     @property
     def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
         """Return appropriate shadow and its offset to be used by `lists`."""
-        return self._shadow, self._span[0]
+        return self._tagless_shadow, self._span[0]
 
     def lists(self, pattern: str = None) -> List['WikiList']:
         """Deprecated, use self.get_lists instead."""
@@ -871,6 +875,22 @@ class WikiText:
             '`lists` method is deprecated, use `get_lists` instead.',
             DeprecationWarning)
         return self.get_lists(pattern)
+
+    @property
+    def _tagless_shadow(self) -> bytearray:
+        """Return shadow with start and end tags removed."""
+        # todo: cache
+        shadow = self._shadow
+        # todo: extension tags
+        # for s, e in self.type_to_spans['ExtensionTag']:
+        #     shadow[s:e] = b'_' * (e - s)
+        # for m in VALID_HTML_START_TAG_FINDITER(shadow):
+        #     s, e = m.span()
+        #     shadow[s:e] = b'_' * (e - s)
+        # for m in VALID_HTML_END_TAG_FINDITER(shadow):
+        #     s, e = m.span()
+        #     shadow[s:e] = b'_' * (e - s)
+        return shadow
 
     def get_lists(self, pattern: str = None) -> List['WikiList']:
         r"""Return a list of WikiList objects.
@@ -939,10 +959,11 @@ class WikiText:
         if name:
             if name in _tag_extensions:
                 string = lststr[0]
+                startswith = '<' + name + ' '
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')
                     for span in type_to_spans['ExtensionTag']
-                    if string.startswith('<' + name, span[0])]
+                    if string.startswith(startswith, span[0])]
             tags = []  # type: List['Tag']
         else:
             # There is no name, add all extension tags. Before using shadow.
@@ -964,7 +985,7 @@ class WikiText:
                 b'{name}', name.encode())).search
         else:
             reversed_start_matches = reversed(
-                [m for m in START_TAG_FINDITER(shadow)])
+                [m for m in NAME_CAPTURING_HTML_START_TAG_FINDITER(shadow)])
         shadow_copy = shadow[:]
         spans = type_to_spans.setdefault('Tag', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
@@ -1111,8 +1132,7 @@ def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
 
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
-    from ._tag import (
-        Tag, START_TAG_PATTERN, END_TAG_PATTERN, START_TAG_FINDITER)
+    from ._tag import Tag
     from ._parser_function import ParserFunction
     from ._template import Template
     from ._wikilink import WikiLink

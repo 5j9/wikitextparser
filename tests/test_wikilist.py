@@ -146,3 +146,5 @@ class WikiListTest(TestCase):
 
 if __name__ == '__main__':
     main()
+
+# todo: check if ref tags can contain lists and add a test for it.

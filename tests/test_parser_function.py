@@ -61,6 +61,10 @@ class TestParserFunction(TestCase):
         ae(pf.arguments[0].value, 'text')
         ae(pf.arguments[0].value, 'text')
 
+    def test_tag_containing_pipe(self):
+        self.assertEqual(len(
+            ParserFunction("{{text|a<s |>b</s>c}}").arguments), 1)
+
 
 if __name__ == '__main__':
     main()

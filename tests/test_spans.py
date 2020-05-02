@@ -4,8 +4,15 @@
 from unittest import expectedFailure, main, TestCase
 
 # noinspection PyProtectedMember
-from wikitextparser._spans import PM_PF_TL_FINDITER, parse_to_spans
+from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 from wikitextparser import WikiText, parse
+
+
+def bytearray_parse_to_spans(bytes_: bytes):
+    return parse_to_spans(bytearray(bytes_))
+
+
+bpts = bytearray_parse_to_spans
 
 
 class Spans(TestCase):
@@ -47,7 +54,7 @@ class Spans(TestCase):
             'cite|{{t1}}|{{t2}}}}')._type_to_spans['Template'])
 
     def test_no_template_for_braces_around_wikilink(self):
-        self.assertEqual([], WikiText('{{[[a]]}}')._type_to_spans['Template'])
+        self.assertFalse(WikiText('{{[[a]]}}')._type_to_spans['Template'])
 
     def test_template_inside_parameter(self):
         ae = self.assertEqual
@@ -128,11 +135,11 @@ class Spans(TestCase):
     def test_section_title_may_contain_template_newline_etc(self):
         ae = self.assertEqual
         sections = WikiText(
-            '=== h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw'
+            '=== h3 {{z\n\n|text}}<!-- \nc --><nowiki>\nnw'
             '\n</nowiki> ===\nt3').sections
         ae(2, len(sections))
         ae(
-            ' h3 {{text\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
+            ' h3 {{z\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ',
             sections[1].title)
         ae('t3', sections[1].contents)
 
@@ -167,7 +174,7 @@ class Spans(TestCase):
         ae('1', t2_args[0].name)
 
     def test_parser_function_regex(self):
-        finditer = PM_PF_TL_FINDITER
+        finditer = PF_TL_FINDITER
         parser_functions = (
             # Technical metadata variables
             b'{{PROTECTIONLEVEL:action}}',
@@ -273,84 +280,125 @@ class Spans(TestCase):
 
     def test_single_brace_in_tl(self):
         self.assertEqual(
-            [[0, 12]],
-            parse_to_spans(bytearray(b'{{text|i}n}}'))['Template'])
+            [[0, 12]], bpts(b'{{text|i}n}}')['Template'])
 
     def test_single_brace_after_first_tl_removal(self):
         self.assertEqual(
-            [[0, 20], [7, 16]],
-            parse_to_spans(bytearray(b'{{text|{{text|}}} }}'))['Template'])
+            [[0, 20], [7, 16]], bpts(b'{{text|{{text|}}} }}')['Template'])
 
     def test_parse_inner_contents_of_wikilink_inside_ref(self):
         self.assertEqual(
-            [[7, 20]],
-            parse_to_spans(bytearray(
-                b'<ref>[[{{text|link}}]]</ref>'))['Template'])
+            [[7, 17]], bpts(b'<ref>[[{{z|link}}]]</ref>')['Template'])
 
     def test_params_are_extracted_before_parser_functions(self):
-        self.assertEqual([[0, 17]], parse_to_spans(bytearray(
-            b'{{{#expr:1+1|3}}}'))['Parameter'])
+        self.assertEqual([[0, 17]], bpts(b'{{{#expr:1+1|3}}}')['Parameter'])
 
     def test_single_brace_after_pf_remove(self):
         self.assertEqual({
             'Parameter': [], 'ParserFunction': [[4, 17]],
             'Template': [], 'WikiLink': [], 'Comment': [],
-            'ExtensionTag': []
-        }, parse_to_spans(bytearray(b'{{{ {{#if:v|y|n}}} }}')))
+            'ExtensionTag': []}, bpts(b'{{{ {{#if:v|y|n}}} }}'))
 
     def test_nested_wikilinks_in_ref(self):
         self.assertEqual({
             'Parameter': [], 'ParserFunction': [], 'Template': [],
             'WikiLink': [[5, 40], [30, 38]], 'Comment': [],
             'ExtensionTag': [[0, 46]]
-        }, parse_to_spans(bytearray(
-                b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>')))
+        }, bpts(b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>'))
 
     @expectedFailure
     def test_invalid_nested_wikilinks(self):
         self.assertEqual({
             'Parameter': [], 'ParserFunction': [], 'Template': [],
             'WikiLink': [[10, 15]], 'Comment': [], 'ExtTag': [[0, 24]]
-        }, parse_to_spans(bytearray(b'<ref>[[L| [[S]] ]]</ref>')))
+        }, bpts(b'<ref>[[L| [[S]] ]]</ref>'))
 
     @expectedFailure
     def test_invalid_nested_wikilinks_in_ref(self):
         self.assertEqual({
             'Parameter': [], 'ParserFunction': [], 'Template': [],
             'WikiLink': [[0, 13]], 'Comment': [], 'ExtTag': []
-        }, parse_to_spans(bytearray(b'[[L| [[S]] ]]')))
+        }, bpts(b'[[L| [[S]] ]]'))
 
     def test_nested_parser_functions_containing_param(self):
         self.assertEqual({
             'Comment': [], 'ExtensionTag': [], 'Parameter': [[18, 25]],
             'ParserFunction': [[0, 31], [9, 28]], 'Template': [],
-            'WikiLink': []
-        }, parse_to_spans(bytearray(b'{{#if: | {{#expr: {{{p}}} }} }}')))
+            'WikiLink': []}, bpts(b'{{#if: | {{#expr: {{{p}}} }} }}'))
 
     def test_eliminate_invalid_templates_after_extracting_params(self):
         self.assertEqual({
             'Comment': [], 'ExtensionTag': [], 'Parameter': [[0, 9]],
             'ParserFunction': [], 'Template': [], 'WikiLink': []
-        }, parse_to_spans(bytearray(b'{{{_|2}}}')))
+        }, bpts(b'{{{_|2}}}'))
 
     def test_invalid_table_in_template(self):
         self.assertEqual({
             'Comment': [], 'ExtensionTag': [], 'Parameter': [],
             'ParserFunction': [], 'Template': [[0, 17]], 'WikiLink': []
-        }, parse_to_spans(
-            bytearray(b'{{t|\n{|a\n|b\n|}\n}}')))
+        }, bpts(b'{{t|\n{|a\n|b\n|}\n}}'))
 
     def test_nested_template_with_unmatched_leading_brace(self):
-        self.assertEqual([0, 21], parse_to_spans(
-            bytearray(b'{{text|{{{text|a}} }}'))['Template'][0])
+        self.assertEqual([0, 21], bpts(
+            b'{{text|{{{text|a}} }}')['Template'][0])
 
     def test_wikilink_with_extra_brackets(self):
         ae = self.assertEqual
-        ae([0, 7], parse_to_spans(bytearray(b'[[a|b]]]'))['WikiLink'][0])
-        ae([0, 9], parse_to_spans(bytearray(b'[[a|[b]]]'))['WikiLink'][0])
+        ae([0, 7], bpts(b'[[a|b]]]')['WikiLink'][0])
+        ae([0, 9], bpts(b'[[a|[b]]]')['WikiLink'][0])
         af = self.assertFalse
-        af(parse_to_spans(bytearray(b'[[[a|b]]'))['WikiLink'])
-        af(parse_to_spans(bytearray(b'[[[a]|b]]'))['WikiLink'])
+        af(bpts(b'[[[a|b]]')['WikiLink'])
+        af(bpts(b'[[[a]|b]]')['WikiLink'])
+
+    def test_templates_before_tags(self):
+        # wikitextparser assumes that templates do not exist
+        # todo: or should it be the other way around?
+        ae = self.assertEqual
+        ae(bpts(b'{{z|<s }}>a</s>c}}')['Template'][0], [0, 9])
+        ae(bpts(b'{{z|<s>}}</s>}}')['Template'][0], [0, 9])
+        ae(bpts(b'{{z<s }}>}}</s }}>}}')['Template'], [])
+        ae(bpts(b'<s {{z|a}}></s>')['Template'][0], [3, 10])
+
+    def test_wikilinks_priority(self):
+        ae = self.assertEqual
+        af = self.assertFalse
+
+        ae(bpts(  # wikilinks are valid inside templates, params, pfs, or tags
+            b'<s>{{text|{{ #if: {{{3|}}} || {{{1|[[a|a]]}}} }}}}</s>'
+        )['WikiLink'][0], [35, 42])
+        # but the tag must be valid
+        ae(bpts(b'[[target|t<z ]]|>e</z x|]]>t]]')['WikiLink'][0], [0, 15])
+
+        # tags before wikilinks (tags are allowed in the text part)
+        ae(bpts(b'[[target|<s>t]]</s>')['WikiLink'][0], [0, 15])
+        # the end of a wikilink cannot be inside a tag (start and end tags
+        # are tokenized before wikilinks)
+        ae(bpts(b'[[a|b<s ]]|>c</s d|]]>e]]')['WikiLink'][0], [0, 25])
+
+        # wikilinks before templates
+        ae(bpts(b'[[w|{{z]]}}')['WikiLink'][0], [0, 9])
+        # Non-existing templates are not valid inside wikilinks. Ignore them.
+        # todo: an option to not ignore templates?
+        ae(bpts(b'[[a|{{z}}]]')['WikiLink'][0], [0, 11])
+
+        # params are *processed* before wikilinks
+        # todo: an option to not ignore params?
+        ae(bpts(b'[[a{{{1}}}]]')['WikiLink'][0], [0, 12])
+        ae(bpts(b'[[a|{{{1}}}]]')['WikiLink'][0], [0, 13])
+        # it's hard to tell if the wikilink should span till 13 or 10
+        ae(bpts(b'[[a{{{1|]]}}}]]')['WikiLink'][0], [0, 10])
+        # todo: interesting linktrail case
+        # the end of span could be at 14
+        ae(bpts(b'[[a|{{{1|]]}}}]]')['WikiLink'][0], [0, 11])
+
+        # pfs are *processed* before wikilinks
+        # todo: an option to not ignore pfs?
+        # the outer one is not a wikilink actually
+        ae(bpts(b'[[a[[a{{#if:||}}]]]]')['WikiLink'][1], [3, 18])
+
+
+# todo: check all {{text}} tests and make sure they are treated as if they do
+#  not exist
 
 
 if __name__ == '__main__':
