@@ -1,5 +1,5 @@
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-__version__ = '0.35.0'
+__version__ = '0.35.1.dev0'
 
 from ._parameter import Parameter
 from ._argument import Argument
