@@ -245,10 +245,10 @@ def parse_pm_pf_tl(
     this function will be called n + 1 times. One time for the whole byte_array
     and n times for each of the n WikiLinks.
     """
-    for match in HTML_START_TAG_FINDITER(byte_array, start, end):
-        ms, me = match.span()
-        byte_array[ms:me] = blank_brackets(byte_array[ms:me])
-    for match in HTML_END_TAG_FINDITER(byte_array, start, end):
+    start_and_end_tags = list(
+        HTML_START_TAG_FINDITER(byte_array, start, end)
+    ) + list(HTML_END_TAG_FINDITER(byte_array, start, end))
+    for match in start_and_end_tags:
         ms, me = match.span()
         byte_array[ms:me] = blank_brackets(byte_array[ms:me])
     while True:
@@ -284,9 +284,6 @@ def parse_pm_pf_tl(
                 byte_array[ms:me] = b'X' * (me - ms)
         if match is None:
             break
-    for match in HTML_START_TAG_FINDITER(byte_array, start, end):
-        ms, me = match.span()
-        byte_array[ms:me] = blank_sensitive_chars(byte_array[ms:me])
-    for match in HTML_END_TAG_FINDITER(byte_array, start, end):
+    for match in start_and_end_tags:
         ms, me = match.span()
         byte_array[ms:me] = blank_sensitive_chars(byte_array[ms:me])
