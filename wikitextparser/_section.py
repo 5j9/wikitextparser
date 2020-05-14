@@ -1,5 +1,5 @@
 ﻿"""Define the Section class."""
-
+from typing import Optional
 
 from regex import compile as regex_compile
 
@@ -53,11 +53,14 @@ class Section(SubWikiText):
         del self[m.end(2):m.end(2) + level_diff]
 
     @property
-    def title(self) -> str:
+    def title(self) -> Optional[str]:
         """The title of this section.
 
-         getter: Return the title, '' for lead sections.
+         getter: Return the title or None for lead sections or sections that
+            don't have any title.
          setter: Set a new title.
+         deleter: Remove the title, including the equal sign and the newline
+            after it.
          """
         m = self._header_match
         if m is None:
