@@ -1,5 +1,5 @@
-0.35.1.dev0
------------
+0.36.0
+------
 - Add a new parameter, ``level``, for the ``get_sections`` method.
 
 v0.35.0
