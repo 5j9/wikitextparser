@@ -1143,6 +1143,9 @@ class GetSection(TestCase):
         ai(h._span, h_._span)
         # do not create repeated spans
         ae(len(wt._type_to_spans['Section']), 5)
+        h1, h = wt.get_sections(include_subsections=False, level=1)
+        ae(h1.string, '= h1 =\n')
+        ae(h.string, '= h =\nend')
 
 
 class WikiList(TestCase):

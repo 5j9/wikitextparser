@@ -781,7 +781,9 @@ class WikiText:
         """Return self.get_section(include_subsections=True)."""
         return self.get_sections()
 
-    def get_sections(self, include_subsections=True) -> List['Section']:
+    def get_sections(
+        self, include_subsections=True, level=None
+    ) -> List['Section']:
         """Return a list of sections in current wikitext.
 
         The first section will always be the lead section, even if it is an
@@ -789,6 +791,8 @@ class WikiText:
 
         :param include_subsections: only return the leading part of each
             section if False.
+        :param level: only return sections where selection.level == level.
+            Ignore if None (default).
         """
         sections = []  # type: List['Section']
         sections_append = sections.append
@@ -803,6 +807,8 @@ class WikiText:
         for current_index, (current_level, (s, e)) in enumerate(
             zip(levels, section_spans), 1
         ):
+            if level is not None and current_level != level:
+                continue
             if include_subsections:
                 # Add text of the current_section to any parent section.
                 # Note that section 0 is not a parent for any subsection.

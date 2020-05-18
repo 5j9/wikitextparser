@@ -1,3 +1,7 @@
+0.35.1.dev0
+-----------
+- Add a new parameter, ``level``, for the ``get_sections`` method.
+
 v0.35.0
 -------
 - Fixed a rare bug in handling lists and template arguments when there is newline or a pipe inside a starting or closing tag.
