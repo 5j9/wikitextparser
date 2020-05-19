@@ -789,10 +789,10 @@ class WikiText:
         The first section will always be the lead section, even if it is an
         empty string.
 
-        :param include_subsections: only return the leading part of each
+        :param include_subsections: Only return the leading part of each
             section if False.
-        :param level: only return sections where selection.level == level.
-            Ignore if None (default).
+        :param level: Only return sections where section.level == level.
+            Return all levels if None (default).
         """
         sections = []  # type: List['Section']
         sections_append = sections.append
