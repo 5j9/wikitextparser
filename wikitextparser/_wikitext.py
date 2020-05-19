@@ -504,14 +504,6 @@ class WikiText:
                 if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
-    def pprint(self, indent: str = '    ', remove_comments=False):
-        """Deprecated, use self.pformat instead."""
-        warn(
-            'pprint method is deprecated, use pformat instead.',
-            DeprecationWarning,
-        )
-        return self.pformat(indent, remove_comments)
-
     def pformat(self, indent: str = '    ', remove_comments=False) -> str:
         """Return a pretty-print of self.string as string.
 

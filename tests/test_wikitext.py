@@ -977,10 +977,6 @@ class TestPformat(TestCase):
         """
         self.assertEqual('{{ {{t}} }}', WikiText('{{{{t}} }}').pformat())
 
-    def test_deprecated_pprint(self):
-        # noinspection PyDeprecation
-        self.assertWarns(DeprecationWarning, WikiText('').pprint, '  ', True)
-
     def test_last_arg_last_char_is_newline(self):
         """Do not add comment_indent when it has no effect."""
         ae = self.assertEqual
