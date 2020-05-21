@@ -1,9 +1,9 @@
-0.37.dev0
----------
+v0.37.dev0
+----------
 - Remove the deprecated ``pprint`` method. Users should use ``pformat`` instead.
 
-0.36.0
-------
+v0.36.0
+-------
 - Add a new parameter, ``level``, for the ``get_sections`` method.
 
 v0.35.0
