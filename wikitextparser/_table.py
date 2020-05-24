@@ -439,7 +439,7 @@ def _apply_attr_spans(
 def _lstrip_increase(shadow: bytearray, pos: int) -> int:
     """Return the new position to lstrip the shadow."""
     length = len(shadow)
-    while pos < length and shadow[pos:pos + 1].isspace():
+    while pos < length and shadow[pos] in {0, 9, 10, 32}:  # \0 \t \n space
         pos += 1
     return pos
 

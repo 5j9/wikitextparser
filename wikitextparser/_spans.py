@@ -12,7 +12,7 @@ from ._config import (
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
+VALID_TITLE_CHARS_PATTERN = rb'[^\|\{\}\[\]<>\n]++'
 # Parameters
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
@@ -21,15 +21,16 @@ VALID_TITLE_CHARS_PATTERN = rb'[^\x00-\x1f\|\{\}\[\]<>\n]++'
 PARAMS_FINDITER = regex_compile(
     rb'\{\{\{(?>[^{}]*+|}(?!})|{(?!{))*+\}\}\}').finditer
 PF_TL_FINDITER = regex_compile(
-    rb'\{\{'
+    rb'\{\{'  # todo add \0 between
     rb'(?>'
     # parser function
-    rb'\s*+'
+    rb'[\s\0]*+'
     rb'(?>\#[^{}\s:]++|' + regex_pattern(_parser_functions).encode()[3:] +
     # end of generated part
     rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
     rb'|'
     # invalid template name
+    # todo: add \n
     rb'[\s_]*+'  # invalid name
     rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
     rb'\}\}()'
@@ -39,7 +40,7 @@ PF_TL_FINDITER = regex_compile(
     + VALID_TITLE_CHARS_PATTERN +  # template name
     rb'\s*+'
     rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
-    rb'\}\}'
+    rb'\}\}'  # todo add \0 between
     rb')').finditer
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
@@ -207,7 +208,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     for match in COMMENT_FINDITER(byte_array):
         ms, me = match.span()
         cms_append([ms, me])
-        byte_array[ms:me] = b' ' * (me - ms)
+        byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
         ms, me = match.span()

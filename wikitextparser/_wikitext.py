@@ -64,7 +64,7 @@ TABLE_FINDITER = regex_compile(
     # Always starts on a new line with optional leading spaces or indentation.
     ^
     # Group the leading spaces or colons so that we can ignore them later.
-    ([ :]*+)
+    ([ :\0]*+)
     {\| # Table contents
     (?:
         # Any character, as long as it is not indicating another table-start

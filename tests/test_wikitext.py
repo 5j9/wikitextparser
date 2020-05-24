@@ -269,8 +269,8 @@ class ParserFunctions(TestCase):
     """Test WikiText.parser_functions."""
 
     def test_comment_in_parserfunction_name(self):
-        s = "{{<!--c\n}}-->#if:|a}}"
-        self.assertEqual(1, len(WikiText(s).parser_functions))
+        self.assertEqual(
+            1, len(WikiText("{{<!--c\n}}-->#if:|a}}").parser_functions))
 
 
 class WikiLinks(TestCase):
@@ -531,9 +531,9 @@ class Tables(TestCase):
         self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
 
     def test_comments_between_indentation_after_them(self):
-        s = ':<!-- c -->: <!-- c -->{|class=wikitable\n|a\n|}'
-        wt = parse(s)
-        self.assertEqual(wt.tables[0].string, '{|class=wikitable\n|a\n|}')
+        self.assertEqual(parse(
+            ':<!-- c -->: <!-- c -->{|class=wikitable\n|a\n|}'
+        ).tables[0].string, '{|class=wikitable\n|a\n|}')
 
     def test_indentation_cannot_be_inside_nowiki(self):
         """A very unusual case. It would be OK to have false positives here.
