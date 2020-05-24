@@ -1,5 +1,6 @@
 v0.37.dev0
 ----------
+- Drop support for Python 3.4.
 - Remove the deprecated ``pprint`` method. Users should use ``pformat`` instead.
 
 v0.36.0

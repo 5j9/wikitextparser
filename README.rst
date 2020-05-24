@@ -19,7 +19,7 @@ The purpose is to allow users easily extract and/or manipulate templates, templa
 Installation
 ============
 
-- Python 3.4+ is required
+- Python 3.5+ is required
 - ``pip install 'setuptools>=36.2.1'``
 - ``pip install wikitextparser``
 
