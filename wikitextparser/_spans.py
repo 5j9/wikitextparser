@@ -62,28 +62,33 @@ BARE_EXTERNAL_LINK = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    (?<!\[)\[\[
-    (?!\ *+''' + BARE_EXTERNAL_LINK + rb')'
+    (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
+    \[\0*\[
+    (?![\ \0]*+''' + BARE_EXTERNAL_LINK + rb')'
     + VALID_TITLE_CHARS_PATTERN + rb'''
     (?:
-        \]\]
+        \]\0*\]
         |
         \| # Text of the wikilink
         (?> # Any character that is not the start of another wikilink
             [^\[\]]++
             |
-            \[(?!\[) # optionally followed by a single closing bracket:
+            \[(?!\0*\[)
             [^\[\]]*+
-            (?:\](?>(?!\])|(?=\]\])))?
+            # single matching brackets are allowed in text e.g. [[a|[b]]]
+            (?:\](?>
+                (?!\0*\])
+                |(?=\0*\]\0*\]))
+            )?
             |
-            \](?!\])
+            \](?!\0*\])
         )*+
-        \]\]
+        \]\0*\]
     )
     ''',
     IGNORECASE | VERBOSE).finditer
 
-# these characters iterfere with detection of (args|tls|wlinks|wlists)
+# these characters interfere with detection of (args|tls|wlinks|wlists)
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
 blank_brackets = partial(regex_compile(br'[\[\]]').sub, br' ')
 
@@ -118,7 +123,8 @@ EXTENSION_TAGS_FINDITER = regex_compile(
             </\1\s*+>
         )''', IGNORECASE | VERBOSE).finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
-COMMENT_FINDITER = regex_compile(COMMENT_PATTERN.encode()).finditer
+COMMENT_PATTERN_B = COMMENT_PATTERN.encode()
+COMMENT_FINDITER = regex_compile(COMMENT_PATTERN_B).finditer
 
 # HTML tags
 # Tags:

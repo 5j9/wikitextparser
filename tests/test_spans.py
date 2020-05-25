@@ -361,8 +361,6 @@ class Spans(TestCase):
 
     def test_wikilinks_priority(self):
         ae = self.assertEqual
-        af = self.assertFalse
-
         ae(bpts(  # wikilinks are valid inside templates, params, pfs, or tags
             b'<s>{{text|{{ #if: {{{3|}}} || {{{1|[[a|a]]}}} }}}}</s>'
         )['WikiLink'][0], [35, 42])
@@ -395,6 +393,35 @@ class Spans(TestCase):
         # todo: an option to not ignore pfs?
         # the outer one is not a wikilink actually
         ae(bpts(b'[[a[[a{{#if:||}}]]]]')['WikiLink'][1], [3, 18])
+
+    def test_comments_in_between_tokens(self):
+        ae = self.assertEqual
+        af = self.assertFalse
+
+        def aw(w: bytes, r: bytes):
+            s, e = bpts(w)['WikiLink'][0]
+            ae(w[s:e], r)
+
+        def afw(w: bytes):
+            af(bpts(w)['WikiLink'])
+
+        # test every \0 used in WIKILINK_FINDITER
+        aw(b'[<!--c-->[[[w]]', b'[[w]]')  # first \0
+        afw(b'[[<!--c-->[[[w]]')  # second \0
+        afw(b'[[[<!--c-->[[w]]')  # third \0
+        aw(b'[<!--c-->[w]]', b'[<!--c-->[w]]')  # fourth \0
+        afw(b'[[<!--c-->https://en.wikipedia.org/ w]]')  # fifth \0
+        aw(b'[[w]<!--c-->]', b'[[w]<!--c-->]')  # sixth \0
+        aw(b'[[w|[<!--c-->[w]]', b'[<!--c-->[w]]')  # seventh \0
+        aw(b'[[a|[b]<!--c-->] c]]', b'[[a|[b]<!--c-->]')  # 8th 11th 12th \0
+        aw(b'[[a|[b]<!--c-->]]', b'[[a|[b]<!--c-->]]')  # ninth \0
+        aw(b'[[a|[b]]<!--c-->]', b'[[a|[b]]<!--c-->]')  # tenth \0
+
+    @expectedFailure
+    def test_T253476(self):
+        af = self.assertFalse
+        af(bpts(b'[[A (D)|]<!---->]')['WikiLink'])
+        af(bpts(b'[<!---->[A (D)|]]')['WikiLink'])
 
 
 # todo: check all {{text}} tests and make sure they are treated as if they do

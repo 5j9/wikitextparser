@@ -1,5 +1,7 @@
 v0.37.dev0
 ----------
+- Improve handling of comments within wikilinks.
+- ``WikiLink.text.setter`` no longer accepts None values. This was marked as deprecated since v0.25.0.
 - Drop support for Python 3.4.
 - Remove the deprecated ``pprint`` method. Users should use ``pformat`` instead.
 

@@ -14,32 +14,32 @@ class TestWikiLink(TestCase):
         self.assertEqual("WikiLink('[[a]]')", repr(WikiLink('[[a]]')))
 
     def test_wikilink_target_text(self):
-        wl = WikiLink('[[A | faf a\n\nfads]]')
-        self.assertEqual('A ', wl.target)
-        self.assertEqual(' faf a\n\nfads', wl.text)
+        ae = self.assertEqual
+        wl = WikiLink('[[A | c c\n\ncc]]')
+        ae('A ', wl.target)
+        ae(' c c\n\ncc', wl.text)
 
     def test_set_target(self):
+        ae = self.assertEqual
         wl = WikiLink('[[A | B]]')
         wl.target = ' C '
-        self.assertEqual('[[ C | B]]', wl.string)
+        ae('[[ C | B]]', wl.string)
         del wl.target
-        self.assertEqual('[[ B]]', wl.string)
+        ae('[[ B]]', wl.string)
         del wl.target
-        self.assertEqual('[[]]', wl.string)
+        ae('[[]]', wl.string)
         wl = WikiLink('[[A]]')
         wl.target = ' C '
-        self.assertEqual('[[ C ]]', wl.string)
+        ae('[[ C ]]', wl.string)
 
     def test_text_settter(self):
         ae = self.assertEqual
         wl = WikiLink('[[A | B]]')
         wl.text = ' C '
         ae('[[A | C ]]', wl.string)
-        with self.assertWarns(DeprecationWarning):
-            wl.text = None
+        del wl.text
         ae('[[A ]]', wl.string)
-        with self.assertWarns(DeprecationWarning):
-            wl.text = None
+        del wl.text
         ae('[[A ]]', wl.string)
 
     def test_test_deleter(self):
@@ -51,15 +51,17 @@ class TestWikiLink(TestCase):
         ae(wl.string, '[[t]]')
 
     def test_set_text_when_there_is_no_text(self):
+        ae = self.assertEqual
         wl = WikiLink('[[ A ]]')
-        self.assertEqual(wl.text, None)
+        ae(wl.text, None)
         wl.text = ' C '
-        self.assertEqual('[[ A | C ]]', wl.string)
+        ae('[[ A | C ]]', wl.string)
 
     def test_dont_confuse_pipe_in_target_template_with_wl_pipe(self):
+        ae = self.assertEqual
         wl = WikiLink('[[ {{text|target}} | text ]]')
-        self.assertEqual(' {{text|target}} ', wl.target)
-        self.assertEqual(' text ', wl.text)
+        ae(' {{text|target}} ', wl.target)
+        ae(' text ', wl.text)
 
     def test_tricks(self):
         """Test unsupported wikilink tricks.
@@ -67,29 +69,30 @@ class TestWikiLink(TestCase):
         Currently WikiLink.text returns the piped text literally and does not
         expand these tricks (which by the way do not always work as expected).
         """
+        ae = self.assertEqual
         # Pipe trick
         # Note that pipe trick does not work in ref or gallery tags (T4700),
         # also not with links that have anchors, or edit summery links; see:
         # https://en.wikipedia.org/wiki/Help:Pipe_trick#Where_it_doesn't_work
         # https://en.wikipedia.org/wiki/Help:Pipe_trick
-        self.assertEqual(WikiLink('[[L|]]').text, '')
+        ae(WikiLink('[[L|]]').text, '')
         # Slash trick
         # https://en.wikipedia.org/wiki/Help:Pipe_trick#Slash_trick
-        self.assertEqual(WikiLink('[[/Subpage/]]').text, None)
+        ae(WikiLink('[[/Subpage/]]').text, None)
         # Reverse pipe trick (depends on page title)
         # https://en.wikipedia.org/wiki/Help:Pipe_trick#Reverse_pipe_trick
-        self.assertEqual(WikiLink('[[|t]]').text, 't')
+        ae(WikiLink('[[|t]]').text, 't')
 
     def test_title_and_fragment_getters(self):
         ae = self.assertEqual
 
-        wl = WikiLink('[[a<!--#1-->#<!--#2-->f|x]]')
-        ae(wl.title, 'a<!--#1-->')
-        ae(wl.fragment, '<!--#2-->f')
+        wl = WikiLink('[[a<!--1-->#<!--2-->f|x]]')
+        ae(wl.title, 'a<!--1-->')
+        ae(wl.fragment, '<!--2-->f')
 
-        wl = WikiLink('[[a<!--#1-->#<!--#2-->f]]')
-        ae(wl.title, 'a<!--#1-->')
-        ae(wl.fragment, '<!--#2-->f')
+        wl = WikiLink('[[a<!--1-->#<!--2-->f]]')
+        ae(wl.title, 'a<!--1-->')
+        ae(wl.fragment, '<!--2-->f')
 
         wl = WikiLink('[[{{#if:||t}}#{{#if:||f}}|x]]')
         ae(wl.title, '{{#if:||t}}')
@@ -99,9 +102,10 @@ class TestWikiLink(TestCase):
         ae(wl.title, '{{#if:||t}}')
         ae(wl.fragment, '{{#if:||f}}')
 
-        wl = WikiLink('[[t|x]]')
+        wl = WikiLink('[<!--1-->[t|x]<!--2-->]')
         ae(wl.title, 't')
         ae(wl.fragment, None)
+        ae(wl.comments[1].string, '<!--2-->')
 
         wl = WikiLink('[[t]]')
         ae(wl.title, 't')

@@ -2,13 +2,33 @@
 
 
 from typing import Optional
-from warnings import warn
+
+from regex import DOTALL, compile
 
 from ._wikitext import SubWikiText
 
 
+FULLMATCH = compile(
+    rb'\[\0*+\['
+    rb'('  # 1: target
+    rb'([^|#\]]*+)'  # 2: title
+    rb'(?>#([^|\]]*+))?'  # 3: fragment
+    rb')'
+    rb'(?:\|(.*))?'  # 4: text
+    rb'\]\0*+\]', DOTALL).fullmatch
+
+
 class WikiLink(SubWikiText):
     """Define a class to represent WikiLinks."""
+
+    @property
+    def _match(self):
+        shadow = self._shadow
+        cached_match = getattr(self, '_cached_match', None)
+        if cached_match is not None and cached_match.string == shadow:
+            return cached_match
+        self._cached_match = match = FULLMATCH(shadow)
+        return match
 
     @property
     def target(self) -> str:
@@ -18,26 +38,22 @@ class WikiLink(SubWikiText):
         Deleter: delete the link target, including the pipe character.
             Use `self.target = ''` if you don't want to remove the pipe.
         """
-        pipe = self._shadow.find(124)
-        if pipe == -1:
-            return self(2, -2)
-        return self(2, pipe)
+        b, e = self._match.span(1)
+        return self(b, e)
 
     @target.setter
-    def target(self, newtarget: str) -> None:
-        pipe = self._shadow.find(124)
-        if pipe == -1:
-            self[2:-2] = newtarget
-            return
-        self[2:pipe] = newtarget
+    def target(self, s: str) -> None:
+        b, e = self._match.span(1)
+        self[b:e] = s
 
     @target.deleter
     def target(self) -> None:
-        pipe = self._shadow.find(124)
-        if pipe == -1:
-            del self[2:-2]
+        m = self._match
+        b, e = m.span(1)
+        if m[4] is None:
+            del self[b:e]
             return
-        del self[2:pipe + 1]
+        del self[b:e + 1]
 
     @property
     def text(self) -> Optional[str]:
@@ -46,30 +62,26 @@ class WikiLink(SubWikiText):
         setter: set a new value for self.text. Do not include the pipe.
         deleter: delete self.text, including the pipe.
         """
-        pipe = self._shadow.find(124)
-        if pipe == -1:
+        b, e = self._match.span(4)
+        if b == -1:
             return None
-        return self(pipe + 1, -2)
+        return self(b, e)
 
     @text.setter
-    def text(self, newtext: str) -> None:
-        if newtext is None:
-            warn('Using None as a value for text is deprecated; '
-                 'Use `del WikiLink.text` instead', DeprecationWarning)
-            del self.text
+    def text(self, s: str) -> None:
+        m = self._match
+        b, e = m.span(4)
+        if b == -1:
+            self.insert(m.end(1), '|' + s)
             return
-        pipe = self._shadow.find(124)
-        if pipe == -1:
-            self.insert(-2, '|' + newtext)
-            return
-        self[pipe + 1:-2] = newtext
+        self[b:e] = s
 
     @text.deleter
     def text(self):
-        pipe = self._shadow.find(124)
-        if pipe == -1:
+        b, e = self._match.span(4)
+        if b == -1:
             return
-        del self[pipe:-2]
+        del self[b - 1:e]
 
     @property
     def fragment(self) -> Optional[str]:
@@ -79,46 +91,26 @@ class WikiLink(SubWikiText):
         setter: set a new fragment (do not include the # character)
         deleter: delete fragment, including the # character.
         """
-        shadow_find = self._shadow.find
-        pipe = shadow_find(124)
-        hash_ = shadow_find(35)
-        if pipe == -1:
-            if hash_ == -1:
-                return None
-            return self(hash_ + 1, -2)
-        if hash_ == -1 or pipe < hash_:
+        b, e = self._match.span(3)
+        if b == -1:
             return None
-        return self(hash_ + 1, pipe)
+        return self(b, e)
 
     @fragment.setter
-    def fragment(self, value: str):
-        shadow_find = self._shadow.find
-        pipe = shadow_find(124)
-        hash_ = shadow_find(35)
-        if pipe == -1:
-            if hash_ == -1:
-                self.insert(-2, '#' + value)
-                return
-            self[hash_ + 1:-2] = value
+    def fragment(self, s: str):
+        m = self._match
+        b, e = m.span(3)
+        if b == -1:
+            self.insert(m.end(2), '#' + s)
             return
-        if hash_ == -1 or hash_ > pipe:
-            self.insert(pipe, '#' + value)
-            return
-        self[hash_ + 1:pipe] = value
-        return
+        self[b:e] = s
 
     @fragment.deleter
     def fragment(self):
-        shadow_find = self._shadow.find
-        hash_ = shadow_find(35)
-        if hash_ == -1:
+        b, e = self._match.span(3)
+        if b == -1:
             return
-        pipe = shadow_find(124)
-        if pipe == -1:
-            del self[hash_:-2]
-        if pipe < hash_:
-            return
-        del self[hash_:pipe]
+        del self[b - 1:e]
 
     @property
     def title(self) -> str:
@@ -128,53 +120,19 @@ class WikiLink(SubWikiText):
         setter: set a new title (do not include the # character)
         deleter: return new title, including the # character.
         """
-        shadow_find = self._shadow.find
-        hash_ = shadow_find(35)
-        pipe = shadow_find(124)
-        if hash_ == -1:
-            if pipe == -1:
-                return self(2, -2)
-            return self(2, pipe)
-        if pipe == -1:
-            return self(2, hash_)
-        if hash_ < pipe:
-            return self(2, hash_)
-        return self(2, pipe)
+        s, e = self._match.span(2)
+        return self(s, e)
 
     @title.setter
-    def title(self, newtitle) -> None:
-        shadow_find = self._shadow.find
-        hash_ = shadow_find(35)
-        pipe = shadow_find(124)
-        if hash_ == -1:
-            if pipe == -1:
-                self[2:-2] = newtitle
-                return
-            self[2:pipe] = newtitle
-            return
-        if pipe == -1:
-            self[2:hash_] = newtitle
-            return
-        if hash_ < pipe:
-            self[2:hash_] = newtitle
-            return
-        self[2:pipe] = newtitle
+    def title(self, s) -> None:
+        b, e = self._match.span(2)
+        self[b:e] = s
 
     @title.deleter
     def title(self) -> None:
-        shadow_find = self._shadow.find
-        hash_ = shadow_find(35)
-        pipe = shadow_find(124)
-        if hash_ == -1:
-            if pipe == -1:
-                del self[2:-2]
-                return
-            del self[2:pipe]
-            return
-        if pipe == -1:
-            del self[2:hash_ + 1]
-            return
-        if hash_ < pipe:
-            del self[2:hash_ + 1]
-            return
-        del self[2:pipe]
+        m = self._match
+        s, e = m.span(2)
+        if m[3] is None:
+            del self[s:e]
+        else:
+            del self[s:e + 1]

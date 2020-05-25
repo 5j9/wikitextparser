@@ -6,6 +6,7 @@
 
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
+from functools import partial
 from itertools import islice
 from operator import attrgetter
 from typing import (
@@ -26,7 +27,8 @@ from ._spans import (
     parse_to_spans,
     INVALID_EXTLINK_CHARS,
     BARE_EXTERNAL_LINK,
-    EXTERNAL_LINK_URL_TAIL)
+    EXTERNAL_LINK_URL_TAIL,
+    COMMENT_PATTERN_B)
 
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
@@ -82,6 +84,10 @@ SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
     'ExtensionTag'}
 
+HEAD_TAIL_FINDALL = regex_compile(
+    rb'^.(?:' + COMMENT_PATTERN_B + b')*.|.(?:' + COMMENT_PATTERN_B + b')*.$'
+).findall
+MARKUP_CHARS_SUB = partial(regex_compile(rb'[][{}]', ).sub, b' ')
 WS = '\r\n\t '
 
 
@@ -127,15 +133,26 @@ class WikiText:
             # string with '_'. Also, we can't just modify it before passing
             # because the generated _type_to_spans will lack self._span.
             # As a workaround we can add the missed span after parsing.
-            head = byte_array[:2]
-            tail = byte_array[-2:]
-            byte_array[-2:] = byte_array[:2] = b'__'
+            if type(self) is Parameter:
+                head = byte_array[:2]
+                tail = byte_array[-2:]
+                byte_array[:2] = b'__'
+                byte_array[-2:] = b'__'
+            else:
+                head = byte_array[0]
+                tail = byte_array[-1]
+                byte_array[0] = 3
+                byte_array[-1] = 32
             type_to_spans = parse_to_spans(byte_array)
             self._shadow_cache = string, byte_array
             type_to_spans[_type].insert(0, span)
             self._type_to_spans = type_to_spans
-            byte_array[:2] = head
-            byte_array[-2:] = tail
+            if type(self) is Parameter:
+                byte_array[:2] = head
+                byte_array[-2:] = tail
+            else:
+                byte_array[0] = head
+                byte_array[-1] = tail
 
     def __str__(self) -> str:
         """Return self-object as a string."""
