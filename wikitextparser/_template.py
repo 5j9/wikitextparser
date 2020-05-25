@@ -204,7 +204,7 @@ class Template(SubWikiTextWithArgs):
           argument. Ignore `preserve_spacing` if positional is True.
           If it's None, do what seems more appropriate.
         """
-        args = list(reversed(self.arguments))
+        args = *reversed(self.arguments),
         arg = get_arg(name, args)
         # Updating an existing argument.
         if arg:
