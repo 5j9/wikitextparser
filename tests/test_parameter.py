@@ -10,6 +10,11 @@ class ParameterTest(TestCase):
 
     """The parameters test class."""
 
+    def test_parameters(self):
+        self.assertEqual(
+            repr(Parameter('{{{a|{{{b}}}}}}').parameters[0]),
+            "Parameter('{{{b}}}')")
+
     def test_basic(self):
         ae = self.assertEqual
         p = Parameter('{{{P}}}')

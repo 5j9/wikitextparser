@@ -1,7 +1,7 @@
 ﻿"""Define the Parameter class."""
 
 
-from typing import Optional
+from typing import List, Optional
 from warnings import warn
 
 from ._wikitext import SubWikiText, WS
@@ -107,3 +107,7 @@ class Parameter(SubWikiText):
                 len('{{{' + name + '|'):
                 len('{{{' + name + '|' + innermost_default)
             ] = '{{{' + new_default_name + '|' + innermost_default + '}}}'
+
+    @property
+    def parameters(self) -> List['Parameter']:
+        return super().parameters[1:]

@@ -1,7 +1,7 @@
 ﻿"""Define the WikiLink class."""
 
 
-from typing import Optional
+from typing import List, Optional
 
 from regex import DOTALL, compile
 
@@ -136,3 +136,7 @@ class WikiLink(SubWikiText):
             del self[s:e]
         else:
             del self[s:e + 1]
+
+    @property
+    def wikilinks(self) -> List['WikiLink']:
+        return super().wikilinks[1:]

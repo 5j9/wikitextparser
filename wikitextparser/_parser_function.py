@@ -86,6 +86,10 @@ class SubWikiTextWithArgs(SubWikiText):
     def name(self, newname: str) -> None:
         self[2:2 + len(self.name)] = newname
 
+    @property
+    def parser_functions(self) -> List['ParserFunction']:
+        return super().parser_functions[1:]
+
 
 class ParserFunction(SubWikiTextWithArgs):
 

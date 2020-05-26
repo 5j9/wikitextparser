@@ -10,6 +10,10 @@ class TestTemplate(TestCase):
 
     """Test the Template class."""
 
+    def test_templates(self):
+        self.assertEqual(
+            repr(Template('{{a|b={{c}}}}').templates), "[Template('{{c}}')]")
+
     def test_args_containing_braces(self):
         self.assertEqual(4, len(Template('{{t|\n{|2\n|3\n|}\n}}').arguments))
 
@@ -188,7 +192,7 @@ class TestTemplate(TestCase):
 
     def test_lists(self):
         ae = self.assertEqual
-        l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').templates[0].get_lists()
+        l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').get_lists()
         ae(l1.items, ['a', 'b'])
         ae(l2.items, ['c', 'd'])
 

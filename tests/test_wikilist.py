@@ -6,6 +6,12 @@ from wikitextparser import WikiList, parse
 class WikiListTest(TestCase):
     """Test the WikiList class."""
 
+    def test_lists(self):
+        ae = self.assertEqual
+        ae(repr(WikiList('# a\n## b', '#').get_lists()), "[WikiList('## b')]")
+        with self.assertWarns(DeprecationWarning):
+            ae(repr(WikiList('# a\n## b', '#').lists()), "[WikiList('## b')]")
+
     def test_subitem_are_part_of_item(self):
         """A few basic examples from [[mw:Help:Lists]]."""
         ae = self.assertEqual

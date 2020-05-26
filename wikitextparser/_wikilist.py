@@ -115,7 +115,7 @@ class WikiList(SubWikiText):
         patterns = (r'\#', r'\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
         self_pattern = self.pattern
-        get_lists = self.get_lists
+        get_lists = super().get_lists
         sublists = []  # type: List['WikiList']
         sublists_append = sublists.append
         if i is None:
@@ -147,3 +147,6 @@ class WikiList(SubWikiText):
         for s, e in reversed(match.spans('pattern')):
             self[s - ms:e - ms] = newstart
         self.pattern = escape(newstart)
+
+    def get_lists(self, pattern: str = None) -> List['WikiList']:
+        return self.sublists(pattern)

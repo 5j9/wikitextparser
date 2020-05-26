@@ -15,6 +15,10 @@ class TagTest(TestCase):
 
     """Test the Tag module."""
 
+    def test_get_tags(self):
+        self.assertEqual(
+            repr(Tag('<b><s></s></b>').get_tags()), "[Tag('<s></s>')]")
+
     def test_start_tag_patterns(self):
         ae = self.assertEqual
         ae(start_tag_finder(b'<b>').groupdict(), {

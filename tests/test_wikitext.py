@@ -1231,8 +1231,7 @@ class Tags(TestCase):
         parsed = parse('<br><s><b>sb</b></s>')
         s = parsed.get_tags('s')[0]
         ae(s.string, '<s><b>sb</b></s>')
-        b = s.get_tags()[1]
-        ae(b.string, '<b>sb</b>')
+        ae(s.get_tags()[0].string, '<b>sb</b>')
 
     def test_extension_tags_are_not_lost_in_shadows(self):
         ae = self.assertEqual

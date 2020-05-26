@@ -9,7 +9,7 @@ For more info see:
 
 """
 
-from typing import Dict, Optional, Any
+from typing import Dict, List, Optional, Any
 
 from regex import compile as regex_compile, VERBOSE, DOTALL
 
@@ -201,3 +201,6 @@ class Tag(SubWikiTextWithAttrs):
         type_to_spans = self._type_to_spans
         span = type_to_spans.setdefault('SubWikiText', [se + s, se + e])
         return SubWikiText(self._lststr, type_to_spans, span, 'SubWikiText')
+
+    def get_tags(self, name=None) -> List['Tag']:
+        return super().get_tags(name)[1:]

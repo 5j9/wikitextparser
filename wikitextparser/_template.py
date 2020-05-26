@@ -317,6 +317,10 @@ class Template(SubWikiTextWithArgs):
             if arg.name.strip(WS) == name.strip(WS):
                 del arg[:]
 
+    @property
+    def templates(self) -> List['Template']:
+        return super().templates[1:]
+
 
 def mode(list_: List[T]) -> T:
     """Return the most common item in the list.

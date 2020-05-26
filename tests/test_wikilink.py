@@ -10,6 +10,11 @@ class TestWikiLink(TestCase):
 
     """Test WikiLink functionalities."""
 
+    def test_wikilinks(self):
+        self.assertEqual(
+            repr(WikiLink('[[File:example.jpg|frame|[[caption]]]]').wikilinks),
+            "[WikiLink('[[caption]]')]")
+
     def test_repr(self):
         self.assertEqual("WikiLink('[[a]]')", repr(WikiLink('[[a]]')))
 

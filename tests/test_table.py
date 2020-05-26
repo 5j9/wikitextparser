@@ -462,5 +462,13 @@ class Cells(TestCase):
             '{|class=wikitable\n|a=b|c\n|}').cells(span=False)), 1)
 
 
+class Tables(TestCase):
+
+    def test_get_get_tables(self):
+        self.assertEqual(
+            repr(Table('{|\n|a\n|-\n{|\n|b\n|}\n|}').get_tables()),
+            "[Table('{|\\n|b\\n|}')]")
+
+
 if __name__ == '__main__':
     main()
