@@ -6,7 +6,7 @@ from ._argument import Argument
 from ._externallink import ExternalLink
 from ._wikilink import WikiLink
 from ._section import Section
-from ._comment import Comment
+from ._comment_bold_italic import Comment, Bold, Italic
 from . import _wikitext
 from ._table import Table
 from ._template import Template
@@ -20,6 +20,8 @@ _wikitext.ExternalLink = ExternalLink
 _wikitext.WikiLink = WikiLink
 _wikitext.Template = Template
 _wikitext.Comment = Comment
+_wikitext.Bold = Bold
+_wikitext.Italic = Italic
 _wikitext.ParserFunction = ParserFunction
 _wikitext.Parameter = Parameter
 _wikitext.Table = Table

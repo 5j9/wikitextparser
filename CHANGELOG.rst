@@ -1,5 +1,6 @@
 v0.37.dev0
 ----------
+- Add ``get_bolds`` method.
 - ``WikiLink.wikilinks``, ``WikiList.get_lists()``, ``Template.templates``, ``Tag.get_tags()``, ``ParserFunction.parser_functions``, and ``Parameter.parameters`` won't return objects equal to ``self`` anymore, only sub-elements will be returned.
 - Improve handling of comments within wikilinks.
 - ``WikiLink.text.setter`` no longer accepts None values. This was marked as deprecated since v0.25.0.

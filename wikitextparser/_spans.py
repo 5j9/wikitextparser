@@ -183,6 +183,7 @@ HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
 HTML_END_TAG_FINDITER = regex_compile(
     END_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
+PARAMS_SUB = partial(regex_compile(rb"['|]").sub, b'P')
 
 
 def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
@@ -264,8 +265,7 @@ def parse_pm_pf_tl(
                 ms, me = match.span()
                 params_append([ms, me])
                 byte_array[ms:me] = \
-                    b'PPP' + byte_array[ms + 3:me - 3].replace(b'|', b'P') \
-                    + b'PPP'
+                    b'PPP' + PARAMS_SUB(byte_array[ms + 3:me - 3]) + b'PPP'
             if match is None:
                 break
         match = None

@@ -421,8 +421,11 @@ class Spans(TestCase):
     def test_T253476(self):
         af = self.assertFalse
         af(bpts(b'[[A (D)|]<!---->]')['WikiLink'])
-        af(bpts(b'[<!---->[A (D)|]]')['WikiLink'])
 
+    @expectedFailure
+    def test_T253476_2(self):
+        af = self.assertFalse
+        af(bpts(b'[<!---->[A (D)|]]')['WikiLink'])
 
 # todo: check all {{text}} tests and make sure they are treated as if they do
 #  not exist

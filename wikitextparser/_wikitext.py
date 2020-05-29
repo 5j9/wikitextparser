@@ -79,6 +79,25 @@ TABLE_FINDITER = regex_compile(
     DOTALL | MULTILINE | VERBOSE
 ).finditer
 
+# Bolds
+BOLDS_FINDITER = regex_compile(
+    rb"""
+    (?>
+        '\0*+'\0*+(?<s>)'\0*+'\0*+'  # bold-italic start
+        |(?<s>)'\0*+'\0*+'
+    )
+    # contents
+    \0*+[^'\n]++.*?
+    # bold end
+    (?>
+        '\0*+'\0*+'(?<e>)
+        (?(1)(?:\0*+'\0*+')?+)
+        \0*+(?>[^']|$)
+        |$(?<e>)
+    )
+    """,
+    MULTILINE | VERBOSE).finditer
+
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
@@ -749,6 +768,30 @@ class WikiText:
             for span in self._subspans('Comment')]
 
     @property
+    def _relative_contents_end(self) -> int:
+        return self._span[1]
+
+    def get_bolds(self, recursive=True) -> List['Bold']:
+        """Return bold parts of self."""
+        _lststr = self._lststr
+        _type_to_spans = self._type_to_spans
+        s = self._span[0]
+        re = self._relative_contents_end
+        bolds = [
+            Bold(_lststr, _type_to_spans, [
+                s + match.start('s'), s + match.start('e')], 'Bold')
+            for match in BOLDS_FINDITER(self._shadow, endpos=re)]
+        if not recursive:
+            return bolds
+        for t in (
+            'templates', 'parser_functions', 'parameters', '_extension_tags',
+            'wikilinks'
+        ):
+            for e in getattr(self, t):
+                bolds += e.get_bolds(True)
+        return bolds
+
+    @property
     def external_links(self) -> List['ExternalLink']:
         """Return a list of found external link objects.
 
@@ -949,6 +992,14 @@ class WikiText:
             DeprecationWarning)
         return self.get_tags(name)
 
+    @property
+    def _extension_tags(self):
+        lststr = self._lststr
+        type_to_spans = self._type_to_spans
+        return [
+            Tag(lststr, type_to_spans, span, 'ExtensionTag')
+            for span in type_to_spans['ExtensionTag']]
+
     def get_tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
         lststr = self._lststr
@@ -964,9 +1015,7 @@ class WikiText:
             tags = []  # type: List['Tag']
         else:
             # There is no name, add all extension tags. Before using shadow.
-            tags = [
-                Tag(lststr, type_to_spans, span, 'ExtensionTag')
-                for span in type_to_spans['ExtensionTag']]
+            tags = self._extension_tags
         tags_append = tags.append
         # Get the left-most start tag, match it to right-most end tag
         # and so on.
@@ -1133,7 +1182,7 @@ if __name__ == '__main__':
     from ._parser_function import ParserFunction
     from ._template import Template
     from ._wikilink import WikiLink
-    from ._comment import Comment
+    from ._comment_bold_italic import Comment, Bold, Italic
     from ._externallink import ExternalLink
     from ._section import Section
     from ._wikilist import WikiList, LIST_PATTERN_FORMAT

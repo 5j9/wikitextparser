@@ -111,3 +111,7 @@ class Parameter(SubWikiText):
     @property
     def parameters(self) -> List['Parameter']:
         return super().parameters[1:]
+
+    @property
+    def _relative_contents_end(self) -> int:
+        return -3

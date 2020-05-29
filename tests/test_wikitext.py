@@ -1248,6 +1248,53 @@ class Tags(TestCase):
             WikiText('<s></s><s></s>').get_tags()[0]._span, [0, 7])
 
 
+class Bolds(TestCase):
+
+    def test_get_bolds(self):
+        ae = self.assertEqual
+        af = self.assertFalse
+
+        def ab(s: str, o: str, r: bool = True):
+            ae(parse(s).get_bolds(r)[0].string, o)
+
+        def anb(s: str):
+            af(parse(s).get_bolds(True))
+
+        ab("'''b'''", "'''b'''")
+        anb("<!--'''b'''-->")
+        ab("a'''<!--b-->'''BI", "'''BI")
+        ab(
+            "a<!---->'<!---->'<!---->'<!---->"
+            "b<!---->'<!---->'<!---->'<!---->d",
+            "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'")
+        ab("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
+        ab("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
+        ab("{{text|'''b'''}}", "'''b'''")
+        ab("{{text|'''b}}", "'''b")  # ?
+        ab("[[a|'''b]] c", "'''b")
+        ab("{{{PARAM|'''b}}} c", "'''b")  # ?
+        ae(
+            repr(parse("'''b\na'''c").get_bolds()),
+            """[Bold("'''b"), Bold("'''c")]""")
+        ab("''''''a''''''", "'''a''''")
+        ab("'''<S>b</S>'''", "'''<S>b</S>'''")
+        ab("'''b<S>r'''c</S>", "'''b<S>r'''")
+        ab("'''''b'''i", "'''b'''")
+        ae(
+            repr(parse("'''b<ref>r'''c</ref>a").get_bolds()),
+            """[Bold("'''b<ref>r'''c</ref>a"), Bold("'''c")]""")
+        ae(
+            repr(parse("'''b<ref>r'''c</ref>a").get_bolds(False)),
+            """[Bold("'''b<ref>r'''c</ref>a")]""")
+        ab("'''b{{{p|'''}}}", "'''b{{{p|'''}}}")  # ?
+        ab("<nowiki>'''a</nowiki>'''b", "'''b")
+        anb("' ' ' a ' ' '")
+        ab("A''''''''''B", "'''B")
+        ab("x''' '''y", "''' '''")
+        ab("x''''''y", "'''y")
+        ab("{{text|{{text|'''b'''}}}}", "'''b'''")
+
+
 class Ancestors(TestCase):
 
     def test_ancestors_and_parent(self):

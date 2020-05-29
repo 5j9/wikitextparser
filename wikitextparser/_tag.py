@@ -202,5 +202,13 @@ class Tag(SubWikiTextWithAttrs):
         span = type_to_spans.setdefault('SubWikiText', [se + s, se + e])
         return SubWikiText(self._lststr, type_to_spans, span, 'SubWikiText')
 
+    @property
+    def _extension_tags(self):
+        return super()._extension_tags[1:]
+
     def get_tags(self, name=None) -> List['Tag']:
         return super().get_tags(name)[1:]
+
+    @property
+    def _relative_contents_end(self) -> int:
+        return self._match.end('contents')

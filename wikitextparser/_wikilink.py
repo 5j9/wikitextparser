@@ -140,3 +140,7 @@ class WikiLink(SubWikiText):
     @property
     def wikilinks(self) -> List['WikiLink']:
         return super().wikilinks[1:]
+
+    @property
+    def _relative_contents_end(self) -> int:
+        return self._match.end(4)

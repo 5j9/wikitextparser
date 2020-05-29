@@ -90,6 +90,12 @@ class SubWikiTextWithArgs(SubWikiText):
     def parser_functions(self) -> List['ParserFunction']:
         return super().parser_functions[1:]
 
+    def get_bolds(self, recursive=False):
+        bolds = []
+        for a in self.arguments:
+            bolds += a.get_bolds(recursive)
+        return bolds
+
 
 class ParserFunction(SubWikiTextWithArgs):
 
