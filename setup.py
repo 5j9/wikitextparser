@@ -32,6 +32,7 @@ setup(
     extras_require={
         'dev': ['path.py', 'coverage', 'twine'],
     },
+    tests_require=['pytest'],
     zip_safe=True,
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
