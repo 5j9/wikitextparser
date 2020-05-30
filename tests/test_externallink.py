@@ -36,7 +36,7 @@ def test_inbracket_with_text():
     el = ExternalLink('[ftp://mediawiki.org mediawiki ftp]')
     assert 'ftp://mediawiki.org' == el.url
     assert 'mediawiki ftp' == el.text
-    assert True == el.in_brackets
+    assert el.in_brackets is True
 
 
 def test_text_setter():

@@ -18,9 +18,9 @@ def test_template_name_cannot_be_empty():
     assert WikiText('{{_|text}}')._type_to_spans['Template'] == []
     assert len(WikiText('{{text| {{_}} }}')._type_to_spans['Template']) == 1
     assert len(WikiText('{{ {{_|text}} | a }}')._type_to_spans['Template']) \
-           == 0
+        == 0
     assert len(WikiText('{{a{{_|text}} | a }}')._type_to_spans['Template']) \
-           == 0
+        == 0
 
 
 # noinspection PyProtectedMember

@@ -4,6 +4,7 @@ from pytest import mark
 from wikitextparser import Tag, parse
 # noinspection PyProtectedMember
 from wikitextparser._tag import TAG_FULLMATCH, END_TAG_PATTERN
+# noinspection PyProtectedMember
 from wikitextparser._wikitext import NAME_CAPTURING_HTML_START_TAG_FINDITER
 
 

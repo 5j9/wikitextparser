@@ -27,7 +27,8 @@ def test_each_row_on_a_newline():
         '|-\n'
         '|Butter\n'
         '|Ice cream \n'
-        '|}').data() == [['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']]
+        '|}').data() == [
+        ['Orange', 'Apple'], ['Bread', 'Pie'], ['Butter', 'Ice cream']]
 
 
 def test_with_optional_rowseprator_on_first_row():

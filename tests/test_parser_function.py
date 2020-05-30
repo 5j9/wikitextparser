@@ -15,14 +15,15 @@ def test_args_containing_braces():
 
 
 def test_repr():
-    assert  repr(ParserFunction('{{#if:a|b}}')) ==\
+    assert repr(ParserFunction('{{#if:a|b}}')) ==\
             "ParserFunction('{{#if:a|b}}')"
 
 
 def test_name_and_args():
     f = ParserFunction('{{ #if: test | true | false }}')
     assert ' #if' == f.name
-    assert [': test ', '| true ', '| false '] == [a.string for a in f.arguments]
+    assert [': test ', '| true ', '| false '] ==\
+           [a.string for a in f.arguments]
 
 
 def test_set_name():

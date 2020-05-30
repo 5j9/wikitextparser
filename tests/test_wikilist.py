@@ -6,6 +6,7 @@ from wikitextparser import WikiList, parse
 def test_lists():
     assert repr(WikiList('# a\n## b', '#').get_lists()) == "[WikiList('## b')]"
     with warns(DeprecationWarning):
+        # noinspection PyDeprecation
         assert repr(WikiList('# a\n## b', '#').lists()) == "[WikiList('## b')]"
 
 

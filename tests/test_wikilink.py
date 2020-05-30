@@ -4,7 +4,9 @@ from wikitextparser import WikiLink
 
 
 def test_wikilinks():
-    assert repr(WikiLink('[[File:example.jpg|frame|[[caption]]]]').wikilinks) == "[WikiLink('[[caption]]')]"
+    assert repr(
+        WikiLink('[[File:example.jpg|frame|[[caption]]]]').wikilinks
+    ) == "[WikiLink('[[caption]]')]"
 
 
 def test_repr():
