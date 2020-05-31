@@ -20,28 +20,24 @@ VALID_TITLE_CHARS_PATTERN = rb'[^\|\{\}\[\]<>\n]++'
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 PARAMS_FINDITER = regex_compile(
     rb'\{\{\{(?>[^{}]*+|}(?!})|{(?!{))*+\}\}\}').finditer
-PF_TL_FINDITER = regex_compile(
-    rb'\{\{'  # todo add \0 between
-    rb'(?>'
-    # parser function
-    rb'[\s\0]*+'
-    rb'(?>\#[^{}\s:]++|' + regex_pattern(_parser_functions).encode()[3:] +
-    # end of generated part
-    rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
-    rb'|'
-    # invalid template name
-    # todo: add \n
-    rb'[\s_]*+'  # invalid name
-    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
-    rb'\}\}()'
-    rb'|'
-    # template
-    rb'\s*+'
-    + VALID_TITLE_CHARS_PATTERN +  # template name
-    rb'\s*+'
-    rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'  # args
-    rb'\}\}'  # todo add \0 between
-    rb')').finditer
+PF_TL_FINDITER = regex_compile(  # noqa
+    rb'''
+    \{\{(?>
+        [\s\0]*+  # parser function
+        (?>\#[^{}\s:]++
+        |''' + regex_pattern(_parser_functions).encode()[3:] + rb'''
+        :(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()
+        |  # invalid template name
+        [\s_\n]*+  # invalid name
+        (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
+        \}\}()
+        |  # template
+        \s*+
+        ''' + VALID_TITLE_CHARS_PATTERN + rb'''  # template name
+        \s*+
+        (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
+    \}\})
+    ''', VERBOSE).finditer
 # External links
 INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
 VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
@@ -62,8 +58,8 @@ BARE_EXTERNAL_LINK = (
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
     \[\0*\[
+    (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
     (?![\ \0]*+''' + BARE_EXTERNAL_LINK + rb')'
     + VALID_TITLE_CHARS_PATTERN + rb'''
     (?:
