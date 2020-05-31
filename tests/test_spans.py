@@ -410,10 +410,10 @@ def test_wikilinks_priority():
     assert bpts(b'[[a{{{1}}}]]')['WikiLink'][0] == [0, 12]
     assert bpts(b'[[a|{{{1}}}]]')['WikiLink'][0] == [0, 13]
     # it's hard to tell if the wikilink should span till 13 or 10
-    assert bpts(b'[[a{{{1|]]}}}]]')['WikiLink'][0] == [0, 10]
+    assert bpts(b'[[a{{{1|]]}}}]]')['WikiLink'][0] == [0, 15]  # ?
     # todo: interesting linktrail case
-    # the end of span could be at 14
-    assert bpts(b'[[a|{{{1|]]}}}]]')['WikiLink'][0] == [0, 11]
+    # the end of span could be at 11, depends on the value of {{{1}}}
+    assert bpts(b'[[a|{{{1|]]}}}]]')['WikiLink'][0] == [0, 16]  # ?
 
     # pfs are *processed* before wikilinks
     # todo: an option to not ignore pfs?
@@ -459,7 +459,7 @@ def test_wikilinks_and_params_cannot_overlap():
     assert not d['Parameter']
     # param prevents wikilink
     d = bpts(b'[[a|{{{P|]]b}}}')
-    assert d['Parameters'] == [[4, 15]]
+    assert d['Parameter'] == [[4, 15]]
     assert not d['WikiLink']
     # -> whichever comes last is processes first
 

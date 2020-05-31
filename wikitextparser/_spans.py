@@ -52,18 +52,16 @@ EXTERNAL_LINK_URL_TAIL = (
 BARE_EXTERNAL_LINK = (
     BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
 # Parameters
-PARAMS_FINDITER = regex_compile(
-    rb'''
+PARAM_PATTERN = rb'''
     \{\{\{(
         [^{}]*+
         |(?!})}
         |(?!{){
     )++\}\}\}
-    ''', REVERSE | VERBOSE
-).finditer
+'''
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_FINDITER = regex_compile(
+WIKILINK_PARAM_FINDITER = regex_compile(
     rb'''
     (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
     \[\0*\[
@@ -90,7 +88,7 @@ WIKILINK_FINDITER = regex_compile(
         [^\[\]\|]*+
     )*+
     \]\0*+\]
-    ''',
+    |''' + PARAM_PATTERN,
     IGNORECASE | VERBOSE | REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)
@@ -266,21 +264,18 @@ def parse_pm_pf_tl(
     while True:
         while True:
             match = None
-            for match in PARAMS_FINDITER(byte_array, start, end):
+            for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
-                params_append([ms, me])
-                byte_array[ms:me] = \
-                    b'PPP' + PARAMS_SUB(byte_array[ms + 3:me - 3]) + b'PPP'
+                if match[1] is None:
+                    wikilinks_append([ms, me])
+                else:
+                    params_append([ms, me])
+                parse_pm_pf_tl(
+                    byte_array, ms + 2, me - 2,
+                    params_append, pfs_append, tls_append, wikilinks_append)
+                byte_array[ms:me] = b'_' * (me - ms)
             if match is None:
                 break
-        match = None
-        for match in WIKILINK_FINDITER(byte_array, start, end):
-            ms, me = match.span()
-            wikilinks_append([ms, me])
-            parse_pm_pf_tl(
-                byte_array, ms + 2, me - 2,
-                params_append, pfs_append, tls_append, wikilinks_append)
-            byte_array[ms:me] = b'_' * (me - ms)
         for match in PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()
             if match[1] is not None:
