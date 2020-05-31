@@ -106,7 +106,6 @@ SPAN_PARSER_TYPES = {
 HEAD_TAIL_FINDALL = regex_compile(
     rb'^.(?:' + COMMENT_PATTERN_B + b')*.|.(?:' + COMMENT_PATTERN_B + b')*.$'
 ).findall
-MARKUP_CHARS_SUB = partial(regex_compile(rb'[][{}]', ).sub, b' ')
 WS = '\r\n\t '
 
 

@@ -186,12 +186,12 @@ HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
 HTML_END_TAG_FINDITER = regex_compile(
     END_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
-PARAMS_SUB = partial(regex_compile(rb"['|]").sub, b'P')
 
 
 def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
     """Calculate and set self._type_to_spans.
 
+    Extracted spans will be removed from byte_array.
     The result is a dictionary containing lists of spans:
     {
         'Comment': comment_spans,
@@ -224,14 +224,12 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         ms, me = match.span()
         ets_append([ms, me])
         if match[2]:  # parsable tag extension group
-            parse_pm_pf_tl(
+            _parse_sub_spans(
                 byte_array, ms, me,
                 pms_append, pfs_append, tls_append, wls_append)
         byte_array[ms:me] = b'_' * (me - ms)
-    parse_pm_pf_tl(
-        byte_array, 0, None,
-        pms_append, pfs_append,
-        tls_append, wls_append)
+    _parse_sub_spans(
+        byte_array, 0, None, pms_append, pfs_append, tls_append, wls_append)
     return {
         'Comment': comment_spans,
         'ExtensionTag': extension_tag_spans,
@@ -241,21 +239,11 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         'WikiLink': sorted(wikilink_spans)}
 
 
-def parse_pm_pf_tl(
+def _parse_sub_spans(
     byte_array: bytearray, start: int, end: Optional[int],
     params_append: Callable, pfs_append: Callable,
     tls_append: Callable, wikilinks_append: Callable,
 ) -> None:
-    """Find the spans of parameters, parser functions, and templates.
-
-    :byte_array: The byte_array or part of byte_array that is being parsed.
-    :start: Add to every returned start.
-
-    This is the innermost loop of the parse_to_spans function.
-    If the byte_array passed to parse_to_spans contains n WikiLinks, then
-    this function will be called n + 1 times. One time for the whole byte_array
-    and n times for each of the n WikiLinks.
-    """
     start_and_end_tags = *HTML_START_TAG_FINDITER(byte_array, start, end),\
         *HTML_END_TAG_FINDITER(byte_array, start, end)
     for match in start_and_end_tags:
@@ -270,7 +258,7 @@ def parse_pm_pf_tl(
                     wikilinks_append([ms, me])
                 else:
                     params_append([ms, me])
-                parse_pm_pf_tl(
+                _parse_sub_spans(
                     byte_array, ms + 2, me - 2,
                     params_append, pfs_append, tls_append, wikilinks_append)
                 byte_array[ms:me] = b'_' * (me - ms)
