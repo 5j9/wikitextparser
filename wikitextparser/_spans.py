@@ -233,8 +233,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         pms_append, pfs_append,
         tls_append, wls_append)
     return {
-        'Comment': sorted(comment_spans),
-        'ExtensionTag': sorted(extension_tag_spans),
+        'Comment': comment_spans,
+        'ExtensionTag': extension_tag_spans,
         'Parameter': sorted(parameter_spans),
         'ParserFunction': sorted(parser_function_spans),
         'Template': sorted(template_spans),
