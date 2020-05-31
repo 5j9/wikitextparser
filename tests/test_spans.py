@@ -1,11 +1,12 @@
-﻿from pytest import main, mark
+﻿from typing import Dict, List
+from pytest import main, mark
 
 # noinspection PyProtectedMember
 from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 from wikitextparser import WikiText, parse
 
 
-def bytearray_parse_to_spans(bytes_: bytes):
+def bytearray_parse_to_spans(bytes_: bytes) -> Dict[str, List[List[int]]]:
     return parse_to_spans(bytearray(bytes_))
 
 
@@ -428,17 +429,17 @@ def test_comments_in_between_tokens():
     def afw(w: bytes):
         assert not bpts(w)['WikiLink']
 
-    # test every \0 used in WIKILINK_FINDITER
-    aw(b'[<!--c-->[[[w]]', b'[[w]]')  # first \0
-    afw(b'[[<!--c-->[[[w]]')  # second \0
-    afw(b'[[[<!--c-->[[w]]')  # third \0
-    aw(b'[<!--c-->[w]]', b'[<!--c-->[w]]')  # fourth \0
-    afw(b'[[<!--c-->https://en.wikipedia.org/ w]]')  # fifth \0
-    aw(b'[[w]<!--c-->]', b'[[w]<!--c-->]')  # sixth \0
-    aw(b'[[w|[<!--c-->[w]]', b'[<!--c-->[w]]')  # seventh \0
-    aw(b'[[a|[b]<!--c-->] c]]', b'[[a|[b]<!--c-->]')  # 8th 11th 12th \0
-    aw(b'[[a|[b]<!--c-->]]', b'[[a|[b]<!--c-->]]')  # ninth \0
-    aw(b'[[a|[b]]<!--c-->]', b'[[a|[b]]<!--c-->]')  # tenth \0
+    # test every \0 used in the old WIKILINK_FINDITER
+    aw(b'[<!---->[[[w]]', b'[[w]]')  # first \0
+    afw(b'[[<!---->[[[w]]')  # second \0
+    afw(b'[[[<!---->[[w]]')  # third \0
+    aw(b'[<!---->[w]]', b'[<!---->[w]]')  # fourth \0
+    afw(b'[[<!---->https://en.wikipedia.org/ w]]')  # fifth \0
+    aw(b'[[w]<!---->]', b'[[w]<!---->]')  # sixth \0
+    aw(b'[[w|[<!---->[w]]', b'[<!---->[w]]')  # seventh \0
+    aw(b'[[a|[b]<!---->] c]]', b'[[a|[b]<!---->]')  # 8th 11th 12th \0
+    aw(b'[[a|[b]<!---->]]', b'[[a|[b]<!---->]]')  # ninth \0
+    aw(b'[[a|[b]]<!---->]', b'[[a|[b]]<!---->]')  # tenth \0
 
 
 @mark.xfail
@@ -450,8 +451,17 @@ def test_t253476():
 def test_t253476_2():
     assert not bpts(b'[<!---->[A (D)|]]')['WikiLink']
 
-# todo: check all {{text}} tests and make sure they are treated as if they do
-#  not exist
+
+def test_wikilinks_and_params_cannot_overlap():
+    # wikilink prevents param
+    d = bpts(b'{{{P|[[a|b}}}]]')
+    assert d['WikiLink'] == [[5, 15]]
+    assert not d['Parameter']
+    # param prevents wikilink
+    d = bpts(b'[[a|{{{P|]]b}}}')
+    assert d['Parameters'] == [[4, 15]]
+    assert not d['WikiLink']
+    # -> whichever comes last is processes first
 
 
 if __name__ == '__main__':

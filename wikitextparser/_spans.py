@@ -2,7 +2,7 @@
 from functools import partial
 from typing import Dict, List, Callable, Optional
 
-from regex import VERBOSE, IGNORECASE
+from regex import VERBOSE, IGNORECASE, REVERSE
 from regex import compile as regex_compile
 
 from ._config import (
@@ -12,14 +12,11 @@ from ._config import (
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS_PATTERN = rb'[^\|\{\}\[\]<>\n]++'
-# Parameters
+VALID_TITLE_CHARS = rb'[^\|\{\}\[\]<>\n]++'
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
-PARAMS_FINDITER = regex_compile(
-    rb'\{\{\{(?>[^{}]*+|}(?!})|{(?!{))*+\}\}\}').finditer
 PF_TL_FINDITER = regex_compile(  # noqa
     rb'''
     \{\{(?>
@@ -33,7 +30,7 @@ PF_TL_FINDITER = regex_compile(  # noqa
         \}\}()
         |  # template
         \s*+
-        ''' + VALID_TITLE_CHARS_PATTERN + rb'''  # template name
+        ''' + VALID_TITLE_CHARS + rb'''  # template name
         \s*+
         (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
     \}\})
@@ -54,35 +51,47 @@ EXTERNAL_LINK_URL_TAIL = (
     rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
 BARE_EXTERNAL_LINK = (
     BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
+# Parameters
+PARAMS_FINDITER = regex_compile(
+    rb'''
+    \{\{\{(
+        [^{}]*+
+        |(?!})}
+        |(?!{){
+    )++\}\}\}
+    ''', REVERSE | VERBOSE
+).finditer
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_FINDITER = regex_compile(
     rb'''
-    \[\0*\[
     (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
+    \[\0*\[
     (?![\ \0]*+''' + BARE_EXTERNAL_LINK + rb')'
-    + VALID_TITLE_CHARS_PATTERN + rb'''
-    (?:
-        \]\0*\]
-        |
-        \| # Text of the wikilink
-        (?> # Any character that is not the start of another wikilink
-            [^\[\]]++
-            |
-            \[(?!\0*\[)
-            [^\[\]]*+
-            # single matching brackets are allowed in text e.g. [[a|[b]]]
-            (?:\](?>
-                (?!\0*\])
-                |(?=\0*\]\0*\]))
-            )?
-            |
-            \](?!\0*\])
-        )*+
-        \]\0*\]
-    )
+    + VALID_TITLE_CHARS + rb'''
+    (?>
+        \|
+        (?>
+            (?<!\[\0*+)
+            \[
+        )?+
+        (?>
+            (?<!\]\0*+)
+            \]
+        )?+
+        # single matching brackets are allowed in text e.g. [[a|[b]]]
+        (?>
+            [^\[\]\|]*+
+            \[
+            [^\[\]\|]*+
+            \]
+            (?!(?:\0*+\]){3})
+        )?+
+        [^\[\]\|]*+
+    )*+
+    \]\0*+\]
     ''',
-    IGNORECASE | VERBOSE).finditer
+    IGNORECASE | VERBOSE | REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
