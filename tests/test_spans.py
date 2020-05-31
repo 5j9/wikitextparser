@@ -378,8 +378,8 @@ def test_wikilink_with_extra_brackets():
 
 
 def test_templates_before_tags():
-    # wikitextparser assumes that templates do not exist
-    # todo: or should it be the other way around?
+    # assuming that templates do not exist
+    # could be the other way around
     assert bpts(b'{{z|<s }}>a</s>c}}')['Template'][0] == [0, 9]
     assert bpts(b'{{z|<s>}}</s>}}')['Template'][0] == [0, 9]
     assert bpts(b'{{z<s }}>}}</s }}>}}')['Template'] == []
