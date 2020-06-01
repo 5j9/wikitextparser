@@ -10,7 +10,7 @@ from ._wikitext import SubWikiText
 
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'
-        rb'(?<pattern>{pattern})'
+        rb'(?&pattern)'
         rb'[:;#*].*+'
         rb'(?>\n|\Z)'
     rb')*+')
@@ -48,7 +48,8 @@ class WikiList(SubWikiText):
             self._match_cache = _match, self.string
         else:
             self._match_cache = fullmatch(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
+                LIST_PATTERN_FORMAT.replace(
+                    b'{pattern}', pattern.encode(), 1),
                 self._shadow,
                 MULTILINE,
             ), self.string
@@ -61,7 +62,8 @@ class WikiList(SubWikiText):
         if cache_string == string:
             return cache_match
         cache_match = fullmatch(
-            LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode()),
+            LIST_PATTERN_FORMAT.replace(
+                b'{pattern}', self.pattern.encode(), 1),
             self._shadow,
             MULTILINE)
         self._match_cache = cache_match, string

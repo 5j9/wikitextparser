@@ -965,7 +965,7 @@ class WikiText:
         for pattern in \
                 (r'\#', r'\*', '[:;]') if pattern is None else (pattern,):
             for m in finditer(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode()),
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode(), 1),
                 shadow, MULTILINE
             ):
                 ms, me = m.span()
