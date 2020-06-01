@@ -8,20 +8,24 @@ from regex import escape, fullmatch, MULTILINE
 from ._wikitext import SubWikiText
 
 
-SUBLIST_PATTERN = rb'(?>^(?<pattern>{pattern})[:;#*].*+(?>\n|\Z))*+'
-LIST_PATTERN_FORMAT = (
-    rb'(?<fullitem>'
-    rb'^'
-    rb'(?<pattern>{pattern})'
-    rb'(?(?<=;\s*+)'
-    # mark inline definition as an item
-    rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
-    rb'(?>\n|\Z)' + SUBLIST_PATTERN +
-    rb'|'
-    # non-definition
-    rb'(?<item>.*+)'
-    rb'(?>\n|\Z)' + SUBLIST_PATTERN +
-    rb')'
+SUBLIST_PATTERN = (  # noqa
+    rb'(?>^'
+        rb'(?<pattern>{pattern})'
+        rb'[:;#*].*+'
+        rb'(?>\n|\Z)'
+    rb')*+')
+LIST_PATTERN_FORMAT = (  # noqa
+    rb'(?<fullitem>^'
+        rb'(?<pattern>{pattern})'
+        rb'(?(?<=;\s*+)'
+            # mark inline definition as an item
+            rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
+            rb'(?>\n|\Z)' + SUBLIST_PATTERN +
+            rb'|'
+            # non-definition
+            rb'(?<item>.*+)'
+            rb'(?>\n|\Z)' + SUBLIST_PATTERN +
+        rb')'
     rb')++')
 
 
