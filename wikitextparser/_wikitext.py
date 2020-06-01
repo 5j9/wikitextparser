@@ -954,9 +954,6 @@ class WikiText:
                 - Use `\*+` as a pattern and nested unordered lists will be
                     treated as flat.
                 - Use `\*\s*` as pattern to rtstrip `items` of the list.
-
-                Although the pattern parameter is optional, but specifying it
-                can improve the performance.
         """
         lists = []
         lists_append = lists.append
