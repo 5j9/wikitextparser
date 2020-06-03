@@ -19,6 +19,8 @@ class SubWikiTextWithArgs(SubWikiText):
 
     """Define common attributes for `Template` and `ParserFunction`."""
 
+    __slots__ = ()
+
     _name_args_matcher = NotImplemented
     _first_arg_sep = 0
 
@@ -99,7 +101,7 @@ class SubWikiTextWithArgs(SubWikiText):
 
 class ParserFunction(SubWikiTextWithArgs):
 
-    """Create a new ParserFunction object."""
+    __slots__ = ()
 
     _name_args_matcher = PF_NAME_ARGS_FULLMATCH
     _first_arg_sep = 58

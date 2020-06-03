@@ -19,7 +19,8 @@ FULLMATCH = compile(
 
 
 class WikiLink(SubWikiText):
-    """Define a class to represent WikiLinks."""
+
+    __slots__ = '_cached_match'
 
     @property
     def _match(self):

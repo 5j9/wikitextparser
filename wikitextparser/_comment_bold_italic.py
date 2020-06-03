@@ -18,8 +18,7 @@ ITALIC_NOEND_FULLMATCH = regex_compile(
 
 
 class Comment(SubWikiText):
-
-    """Create a new <!-- comment --> object."""
+    __slots__ = ()
 
     @property
     def contents(self) -> str:
@@ -32,6 +31,7 @@ class Comment(SubWikiText):
 
 
 class BoldItalic(SubWikiText):
+    __slots__ = ()
 
     @property
     def text(self) -> str:
@@ -47,8 +47,7 @@ class BoldItalic(SubWikiText):
 
 
 class Bold(BoldItalic):
-
-    """Define a class for a '''bold''' objects."""
+    __slots__ = ()
 
     @property
     def _match(self):
@@ -61,8 +60,7 @@ class Bold(BoldItalic):
 
 
 class Italic(BoldItalic):
-
-    """Define a class for a ''italic'' objects."""
+    __slots__ = 'end_token',
 
     def __init__(
         self,

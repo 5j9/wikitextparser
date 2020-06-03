@@ -32,6 +32,8 @@ class Template(SubWikiTextWithArgs):
     The string should start with {{ and end with }}.
     """
 
+    __slots__ = ()
+
     _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
 

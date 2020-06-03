@@ -9,7 +9,7 @@ from ._wikitext import SubWikiText, WS
 
 class Parameter(SubWikiText):
 
-    """Create a new {{{parameters}}} object."""
+    __slots__ = ()
 
     @property
     def name(self) -> str:

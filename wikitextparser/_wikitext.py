@@ -126,12 +126,12 @@ WS = '\r\n\t '
 
 class WikiText:
 
-    """The WikiText class."""
-
     # In subclasses of WikiText _type is used as the key for _type_to_spans
     # Therefore: self._span can be found in self._type_to_spans[self._type].
-    # The following acts as a default value.
+    # The following class attribute acts as a default value.
     _type = 'WikiText'
+
+    __slots__ = '_type_to_spans', '_lststr', '_span', '_shadow_cache'
 
     def __init__(
         self,
@@ -1148,6 +1148,8 @@ class SubWikiText(WikiText):
 
     Allow to focus on a particular part of WikiText.
     """
+
+    __slots__ = '_type'
 
     def __init__(
         self,

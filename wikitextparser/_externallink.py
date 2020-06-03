@@ -12,7 +12,7 @@ URL_MATCH = regex_compile(BRACKET_EXTERNAL_LINK_URL).match
 
 class ExternalLink(SubWikiText):
 
-    """Create a new ExternalLink object."""
+    __slots__ = ()
 
     @property
     def url(self) -> str:

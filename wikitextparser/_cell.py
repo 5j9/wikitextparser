@@ -140,7 +140,7 @@ INLINE_NONHAEDER_CELL_MATCH = regex_compile(
 
 class Cell(SubWikiTextWithAttrs):
 
-    """Create a new Cell object."""
+    __slots__ = '_header', '_match_cache', '_attrs_match_cache'
 
     def __init__(
         self,

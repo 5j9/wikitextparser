@@ -58,7 +58,7 @@ class SubWikiTextWithAttrs(SubWikiText):
     It's usually a good idea to cache the _attrs_match property.
     """
 
-    _attrs_match = None  # type: Any
+    __slots__ = '_attrs_match'
 
     @property
     def attrs(self) -> Dict[str, str]:
@@ -133,9 +133,11 @@ class SubWikiTextWithAttrs(SubWikiText):
 
 class Tag(SubWikiTextWithAttrs):
 
-    """Create a new Tag object."""
+    __slots__ = '_match_cache'
 
-    _match_cache = None, None  # type: Any
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._match_cache = None, None
 
     @property
     def _match(self) -> Any:

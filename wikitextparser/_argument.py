@@ -21,10 +21,15 @@ class Argument(SubWikiText):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
+    __slots__ = '_shadow_match_cache'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._shadow_match_cache = None, None
+
     @property
     def _shadow_match(self):
-        cached_shadow_match, cache_string = getattr(
-            self, '_shadow_match_cache', (None, None))
+        cached_shadow_match, cache_string = self._shadow_match_cache
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match

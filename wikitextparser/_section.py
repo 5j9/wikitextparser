@@ -11,9 +11,11 @@ HEADER_MATCH = regex_compile(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
 
 class Section(SubWikiText):
 
-    """Section class is used to represent page sections."""
+    __slots__ = '_header_match_cache'
 
-    _header_match_cache = (None, None)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._header_match_cache = None, None
 
     @property
     def _header_match(self):

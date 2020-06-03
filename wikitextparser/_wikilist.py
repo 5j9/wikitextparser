@@ -30,6 +30,8 @@ class WikiList(SubWikiText):
 
     """Class to represent ordered, unordered, and definition lists."""
 
+    __slots__ = 'pattern', '_match_cache'
+
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],

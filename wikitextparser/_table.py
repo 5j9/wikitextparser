@@ -52,9 +52,11 @@ T = TypeVar('T')
 
 class Table(SubWikiTextWithAttrs):
 
-    """Create a new Table object."""
+    __slots__ = '_attrs_match_cache'
 
-    _attrs_match_cache = None, None
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._attrs_match_cache = None, None
 
     @property
     def nesting_level(self) -> int:
