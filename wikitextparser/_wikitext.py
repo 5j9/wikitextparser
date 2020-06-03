@@ -1133,7 +1133,7 @@ class WikiText:
         return tags
 
     @staticmethod
-    def parent(type_: Optional[str] = None) -> None:
+    def parent(type_: Optional[str] = None) -> Optional['WikiText']:
         """Return None (The parent of the root node is None)."""
         return None
 
