@@ -236,12 +236,6 @@ class WikiText:
             e if stop is None else (s + stop if stop >= 0 else e + stop):
             step]
 
-    def __getitem__(self, key: Union[slice, int]) -> str:
-        """Return self.string[key]."""
-        raise NotImplementedError(
-            'WikiText.__getitem__ has been removed; '
-            'Use WikiText.__call__ instead.')
-
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
 
