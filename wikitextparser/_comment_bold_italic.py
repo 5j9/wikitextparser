@@ -72,6 +72,11 @@ class Italic(BoldItalic):
         _type: Optional[Union[str, int]] = None,
         end_token: bool = True,
     ):
+        """Initialize the Italic object.
+
+        :param end_token: set to True if the italic object ends with a '' token
+            False otherwise.
+        """
         super().__init__(string, _type_to_spans, _span, _type)
         self.end_token: bool = end_token
 
