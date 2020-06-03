@@ -17,6 +17,25 @@ def test_bold():
 def test_italic():
     assert Italic("'''''i'''''").text == "'''i'''"
     assert Italic("''i<!---->'<!---->'").text == "i<!---->"
+    assert Italic("''i'''").text == "i'"
+    # searching "''' ''i'''" for italics gives "''i'''", but it has not end
+    assert Italic("''i'''", end_token=False).text == "i'''"
+
+
+def test_sub_bolds():
+    b = Bold("'''A{{{text|'''b'''}}}C'''")
+    assert b.get_bolds(recursive=False) == []
+    recursive_subbolds = b.get_bolds()
+    assert len(recursive_subbolds) == 1  # ?
+    assert recursive_subbolds[0]._span == [12, 19]
+
+
+def test_sub_italics():
+    i = Italic("''A{{{text|''b''}}}C''")
+    assert i.get_italics(recursive=False) == []
+    recursive_subitalics = i.get_italics()
+    assert len(recursive_subitalics) == 1  # ?
+    assert recursive_subitalics[0]._span == [11, 16]
 
 
 if __name__ == '__main__':

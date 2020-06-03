@@ -1277,6 +1277,37 @@ def test_get_bolds():
     ab("{{text|{{text|'''b'''}}}}", "'''b'''")
 
 
+def test_get_italics():
+    def ai(s: str, o: str, r: bool = True):
+        assert parse(s).get_italics(r)[0].string == o
+
+    ai("''i''", "''i''")
+    ai("'''''i'''''", "'''''i'''''")
+    ai(
+        "A<!---->"
+        "'<!---->'<!---->'<!---->'<!---->'"
+        "<!---->i<!---->"
+        "'<!---->'<!---->'<!---->'<!---->'"
+        "<!---->B",
+        "'<!---->'<!---->'<!---->'<!---->'"
+        "<!---->i<!---->"
+        "'<!---->'<!---->'<!---->'<!---->'")
+    ai("a'' ''' ib ''' ''c", "'' ''' ib ''' ''")
+    ai("a''' '' bi '' '''c", "'' bi ''")
+    ai("''' ''i'''", "''i'''")
+    ai("''i'''", "''i'''")
+
+
+def test_bold_italic_index_change():
+    p = parse("'''b1''' ''i1'' '''b2'''")
+    b1, b2 = p.get_bolds(recursive=False)
+    i1 = p.get_italics(recursive=False)[0]
+    b1.text = '1'
+    assert p.string == "'''1''' ''i1'' '''b2'''"
+    assert i1.string == "''i1''"
+    assert b2.text == "b2"
+
+
 def test_ancestors_and_parent():
     parsed = parse('{{a|{{#if:{{b{{c<!---->}}}}}}}}')
     assert parsed.parent() is None

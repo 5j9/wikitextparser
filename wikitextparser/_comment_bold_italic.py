@@ -1,5 +1,5 @@
 ﻿"""Define the Comment class."""
-from typing import List
+from typing import Dict, List, MutableSequence, Optional, Union
 
 from regex import compile as regex_compile
 
@@ -13,6 +13,8 @@ BOLD_FULLMATCH = regex_compile(
     COMMA_COMMENT * 2 + "'(.*)'" + COMMENT_COMMA * 2).fullmatch
 ITALIC_FULLMATCH = regex_compile(
     COMMA_COMMENT + "'(.*)'" + COMMENT_COMMA).fullmatch
+ITALIC_NOEND_FULLMATCH = regex_compile(
+    COMMA_COMMENT + "'(.*)").fullmatch
 
 
 class Comment(SubWikiText):
@@ -29,21 +31,55 @@ class Comment(SubWikiText):
         return []
 
 
-class Bold(SubWikiText):
-
-    """Define a class for a '''bold''' objects."""
+class BoldItalic(SubWikiText):
 
     @property
     def text(self) -> str:
         """Return text value of self (without triple quotes)."""
-        return BOLD_FULLMATCH(self.string)[1]
+        return self._match[1]
+
+    @text.setter
+    def text(self, s: str):
+        b, e = self._match.span(1)
+        self[b:e] = s
 
 
-class Italic(SubWikiText):
+class Bold(BoldItalic):
+
+    """Define a class for a '''bold''' objects."""
+
+    @property
+    def _match(self):
+        return BOLD_FULLMATCH(self.string)
+
+    def get_bolds(self, recursive=True) -> List['Bold']:
+        if not recursive:
+            return []
+        return super().get_bolds(True)[1:]
+
+
+class Italic(BoldItalic):
 
     """Define a class for a ''italic'' objects."""
 
+    def __init__(
+        self,
+        string: Union[str, MutableSequence[str]],
+        _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
+        _span: Optional[List[int]] = None,
+        _type: Optional[Union[str, int]] = None,
+        end_token: bool = True,
+    ):
+        super().__init__(string, _type_to_spans, _span, _type)
+        self.end_token: bool = end_token
+
     @property
-    def text(self) -> str:
-        """Return text value of self (without double quotes)."""
-        return ITALIC_FULLMATCH(self.string)[1]
+    def _match(self):
+        if self.end_token:
+            return ITALIC_FULLMATCH(self.string)
+        return ITALIC_NOEND_FULLMATCH(self.string)
+
+    def get_italics(self, recursive=True) -> List['Bold']:
+        if not recursive:
+            return []
+        return super().get_italics(True)[1:]

@@ -6,7 +6,6 @@
 
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
-from functools import partial
 from itertools import islice
 from operator import attrgetter
 from typing import (
@@ -82,18 +81,34 @@ TABLE_FINDITER = regex_compile(
 # Bolds
 BOLDS_FINDITER = regex_compile(
     rb"""
-    (?>
-        '\0*+'\0*+(?<s>)'\0*+'\0*+'  # bold-italic start
-        |(?<s>)'\0*+'\0*+'
-    )
+    (?>(
+        (?<=('\0*+'\0*+))'\0*+'\0*+'  # bold-italic start
+        |'\0*+'\0*+'
+    ))
     # contents
     \0*+[^'\n]++.*?
     # bold end
+    (
+        '\0*+'\0*+'
+        (?=
+            (?(2)
+                (?:\0*+'\0*+')?+
+            )
+            (?>\0*+[^']|$)
+        )
+        |$
+    )
+    """,
+    MULTILINE | VERBOSE).finditer
+
+ITALICS_FINDITER = regex_compile(
+    rb"""
+    '\0*+'
+    # contents
+    \0*+[^'\n]++.*?
     (?>
-        '\0*+'\0*+'(?<e>)
-        (?(1)(?:\0*+'\0*+')?+)
-        \0*+(?>[^']|$)
-        |$(?<e>)
+        '\0*+'(?!0*')
+        |()$
     )
     """,
     MULTILINE | VERBOSE).finditer
@@ -771,15 +786,29 @@ class WikiText:
         return self._span[1]
 
     def get_bolds(self, recursive=True) -> List['Bold']:
-        """Return bold parts of self."""
+        """Return bold parts of self.
+
+        :param recursive: if True also look inside templates, parser functions,
+            extension tags, etc.
+        """
         _lststr = self._lststr
-        _type_to_spans = self._type_to_spans
+        type_to_spans = self._type_to_spans
         s = self._span[0]
-        re = self._relative_contents_end
-        bolds = [
-            Bold(_lststr, _type_to_spans, [
-                s + match.start('s'), s + match.start('e')], 'Bold')
-            for match in BOLDS_FINDITER(self._shadow, endpos=re)]
+        spans = type_to_spans.setdefault('Bold', [])
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
+        bolds = []
+        bolds_append = bolds.append
+        for match in BOLDS_FINDITER(
+            self._shadow, endpos=self._relative_contents_end
+        ):
+            b, e = s + match.start(1), s + match.end(3)
+            old_span = span_tuple_to_span_get((b, e))
+            if old_span is None:
+                span = [b, e]
+                insort_right(spans, span)
+            else:
+                span = old_span
+            bolds_append(Bold(_lststr, type_to_spans, span, 'Bold'))
         if not recursive:
             return bolds
         for t in (
@@ -789,6 +818,49 @@ class WikiText:
             for e in getattr(self, t):
                 bolds += e.get_bolds(True)
         return bolds
+
+    def get_italics(self, recursive=True):
+        """Return italic parts of self.
+
+        :param recursive: if True also look inside templates, parser functions,
+            extension tags, etc.
+        """
+        shadow_copy = self._shadow[:]
+        # remove bolds
+        for match in BOLDS_FINDITER(shadow_copy):
+            s, e = match.span(1)
+            shadow_copy[s:e] = b'B' * (e - s)
+            s, e = match.span(3)
+            shadow_copy[s:e] = b'B' * (e - s)
+        type_to_spans = self._type_to_spans
+        s = self._span[0]
+        _lststr = self._lststr
+        spans = type_to_spans.setdefault('Italic', [])
+        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
+        italics = []
+        italics_append = italics.append
+        for match in ITALICS_FINDITER(
+            shadow_copy, endpos=self._relative_contents_end
+        ):
+            b, e = match.span()
+            b, e = span = s + b, s + e
+            old_span = span_tuple_to_span_get(span)
+            if old_span is None:
+                span = [b, e]
+                insort_right(spans, span)
+            else:
+                span = old_span
+            italics_append(Italic(
+                _lststr, type_to_spans, span, 'Bold', bool(match[1])))
+        if not recursive:
+            return italics
+        for t in (
+            'templates', 'parser_functions', 'parameters', '_extension_tags',
+            'wikilinks'
+        ):
+            for e in getattr(self, t):
+                italics += e.get_italics(True)
+        return italics
 
     @property
     def external_links(self) -> List['ExternalLink']:
