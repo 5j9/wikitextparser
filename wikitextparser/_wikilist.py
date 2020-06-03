@@ -1,6 +1,3 @@
-"""Define the WikiList class."""
-
-
 from typing import List, Union, Tuple, Dict, MutableSequence, Match
 
 from regex import escape, fullmatch, MULTILINE
@@ -110,13 +107,9 @@ class WikiList(SubWikiText):
         """Return the Lists inside the item with the given index.
 
         :param i: The index if the item which its sub-lists are desired.
-            The performance is likely to be better if `i` is None.
-
         :param pattern: The starting symbol for the desired sub-lists.
             The `pattern` of the current list will be automatically added
             as prefix.
-            Although this parameter is optional, but specifying it can improve
-            the performance.
         """
         patterns = (r'\#', r'\*', '[:;]') if pattern is None \
             else (pattern,)  # type: Tuple[str, ...]
