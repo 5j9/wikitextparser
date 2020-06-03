@@ -36,10 +36,12 @@ class BoldItalic(SubWikiText):
     @property
     def text(self) -> str:
         """Return text value of self (without triple quotes)."""
+        # noinspection PyUnresolvedReferences
         return self._match[1]
 
     @text.setter
     def text(self, s: str):
+        # noinspection PyUnresolvedReferences
         b, e = self._match.span(1)
         self[b:e] = s
 

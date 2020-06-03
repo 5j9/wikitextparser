@@ -27,12 +27,6 @@ def test_call():
     assert t2(-3) == '2'
 
 
-def test_getitem():
-    wt = WikiText('a')
-    with raises(NotImplementedError):
-        assert wt[0] == 'a'
-
-
 def test_setitem():
     s = '{{t1|{{t2}}}}'
     wt = WikiText(s)
