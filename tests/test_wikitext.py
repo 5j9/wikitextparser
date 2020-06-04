@@ -941,7 +941,7 @@ def test_pf_one_kw_arg():
 
 
 def test_pformat_inner_template():
-    c, b, a = WikiText('{{a|{{b|{{c}}}}}}').templates
+    a, b, c = WikiText('{{a|{{b|{{c}}}}}}').templates
     assert (
         '{{b\n'
         '    | 1 = {{c}}\n'

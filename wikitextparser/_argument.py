@@ -44,12 +44,12 @@ class Argument(SubWikiText):
         getter: return the position as a string, for positional arguments.
         setter: convert it to keyword argument if positional.
         """
-        lststr0 = self._lststr[0]
+        lststr = self._lststr
         ss = self._span[0]
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             s, e = shadow_match.span('pre_eq')
-            return lststr0[ss + s:ss + e]
+            return ''.join(lststr[ss + s:ss + e])
         # positional argument
         position = 1
         # Todo: if we had the index of self._span, we could only look-up
@@ -57,7 +57,7 @@ class Argument(SubWikiText):
         for s, e in self._type_to_spans[self._type]:
             if ss <= s:
                 break
-            arg_str = lststr0[s:e]
+            arg_str = ''.join(lststr[s:e])
             if '=' in arg_str:
                 # The argument may is still be positional if the equal sign is
                 # inside an atomic sub-spans.
