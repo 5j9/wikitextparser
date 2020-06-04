@@ -1,5 +1,6 @@
 v0.37.0.dev0
 ------------
+- Add ``wikitextparser.remove_markup`` function and ``WikiText.plain_text`` method.
 - Improve detection of parameters and wikilinks.
 - Add ``get_bolds`` and ``get_italics`` methods.
 - ``WikiLink.wikilinks``, ``WikiList.get_lists()``, ``Template.templates``, ``Tag.get_tags()``, ``ParserFunction.parser_functions``, and ``Parameter.parameters`` won't return objects equal to ``self`` anymore, only sub-elements will be returned.

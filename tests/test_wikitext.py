@@ -2,7 +2,8 @@ from operator import attrgetter
 
 from pytest import main, warns, mark, raises
 
-from wikitextparser import WikiText, parse, Template, ParserFunction
+from wikitextparser import WikiText, parse, Template, ParserFunction,\
+    remove_markup
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import WS
 
@@ -1273,7 +1274,9 @@ def test_get_bolds():
 
 def test_get_italics():
     def ai(s: str, o: str, r: bool = True):
-        assert parse(s).get_italics(r)[0].string == o
+        italics = parse(s).get_italics(r)
+        assert len(italics) == 1
+        assert italics[0].string == o
 
     ai("''i''", "''i''")
     ai("'''''i'''''", "'''''i'''''")
@@ -1321,6 +1324,29 @@ def test_ancestors_and_parent():
 def test_not_every_sooner_starting_span_is_a_parent():
     a, b = parse('[[a]][[b]]').wikilinks
     assert b.ancestors() == []
+
+
+def test_italic_end_token():
+    assert parse("''i''").get_italics(False)[0].end_token is True
+
+
+def test_plaintext():
+    def ap(s, p):
+        assert parse(s).plain_text() == p
+    ap('t [[a|b]] t', 't b t')
+    ap('t [[a]] t', 't a t')
+    ap('&Sigma; &#931; &#x3a3; Σ', 'Σ Σ Σ Σ')
+    ap('[https://wikimedia.org/ wm]', 'wm')
+    ap('[https://wikimedia.org/]', '')
+    ap('<s>text</s>', 'text')
+    ap('{{template|argument}}', '')
+    ap('{{#if:a|y|n}}', '')
+    ap("'''b'''", 'b')
+    ap("''i''", 'i')
+
+
+def test_remove_markup():
+    assert remove_markup("''a'' {{b}} c <!----> '''d'''") == "a  c  d"
 
 
 if __name__ == '__main__':

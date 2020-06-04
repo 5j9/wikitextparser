@@ -6,6 +6,7 @@
 
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
+from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
@@ -107,7 +108,7 @@ ITALICS_FINDITER = regex_compile(
     # contents
     \0*+[^'\n]++.*?
     (?>
-        '\0*+'(?!0*')
+        '\0*+'(?!\0*')
         |()$
     )
     """,
@@ -122,6 +123,26 @@ HEAD_TAIL_FINDALL = regex_compile(
     rb'^.(?:' + COMMENT_PATTERN_B + b')*.|.(?:' + COMMENT_PATTERN_B + b')*.$'
 ).findall
 WS = '\r\n\t '
+
+
+def remove(obj: 'WikiText'):
+    del obj.string
+
+
+def parameter_to_text(parameter: 'Parameter'):
+    parameter.string = parameter.default
+
+
+def tag_to_text(tag: 'Tag'):
+    tag.string = tag.contents
+
+
+def template_to_text(parameter: 'Parameter'):
+    parameter.string = parameter.default
+
+
+def parser_function_to_text(tag: 'Tag'):
+    tag.string = tag.contents
 
 
 class WikiText:
@@ -270,7 +291,9 @@ class WikiText:
                 'stop index out of range or start is after the stop')
         return start + ss, stop + ss
 
-    def __setitem__(self, key: Union[slice, int], value: str) -> None:
+    def __setitem__(
+        self, key: Union[slice, int], value: Union[str, 'WikiText']
+    ) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -278,11 +301,15 @@ class WikiText:
         `_shrink_update` functions will be called and the performance
         will improve.
         """
+        if isinstance(value, str):
+            new_string = value
+        else:
+            new_string = value.string
         start, stop = self._check_index(key)
         # Update lststr
         lststr = self._lststr
         lststr0 = lststr[0]
-        lststr[0] = lststr0[:start] + value + lststr0[stop:]
+        lststr[0] = lststr0[:start] + new_string + lststr0[stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
         self._close_subspans(start, stop)
@@ -533,7 +560,7 @@ class WikiText:
             byte_array[s:e] = (e - s) * b'_'
         return byte_array
 
-    def _pp_type_to_spans(self) -> Dict[str, List[List[int]]]:
+    def _inner_type_to_spans_copy(self) -> Dict[str, List[List[int]]]:
         """Create the arguments for the parse function used in pformat method.
 
         Only return sub-spans and change the them to fit the new scope, i.e
@@ -548,6 +575,60 @@ class WikiText:
                 if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
+    def plain_text(
+        self, *,
+        replace_templates=True,
+        replace_parser_functions=True,
+        replace_parameters=True,
+        replace_tags=True,
+        replace_external_links=True,
+        replace_wikilinks=True,
+        unescape_html_entities=True,
+        replace_bolds=True,
+        replace_italics=True,
+    ) -> str:
+        """Return a plain text string representation of self."""
+        parsed = WikiText([self.string], self._inner_type_to_spans_copy())
+        parsed._span = self._span.copy()
+        tts = parsed._type_to_spans
+        for (b, e) in tts['Comment']:
+            del parsed[b:e]
+        if replace_templates:
+            for (b, e) in tts['Template']:
+                del parsed[b:e]
+        if replace_parser_functions:
+            for (b, e) in tts['ParserFunction']:
+                del parsed[b:e]
+        if replace_parameters:
+            for p in parsed.parameters:
+                default = p.default
+                if default is not None:
+                    p.string = default
+                else:
+                    del p.string
+        if replace_tags:
+            for t in parsed.get_tags():
+                t[:] = t.contents
+        if replace_external_links:
+            for e in parsed.external_links:
+                if e.in_brackets:
+                    e[:] = e.text or ''
+        if replace_bolds:
+            for b in parsed.get_bolds():
+                b[:] = b.text
+        if replace_italics:
+            for i in parsed.get_italics():
+                i[:] = i.text
+        if replace_wikilinks:
+            for w in parsed.wikilinks:
+                # this makes the wikilinks invalid, so it should be done
+                # berfore get_bolds and get_italics which rely on wikilinks.
+                w[:] = w.text or w.target
+        string = parsed.string
+        if unescape_html_entities:
+            string = unescape(string)
+        return string
+
     def pformat(self, indent: str = '    ', remove_comments=False) -> str:
         """Return a pretty-print of self.string as string.
 
@@ -559,7 +640,7 @@ class WikiText:
         ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
         string = self.string
-        parsed = WikiText([string], self._pp_type_to_spans())
+        parsed = WikiText([string], self._inner_type_to_spans_copy())
         # Since _type_to_spans arg of WikiText has been used, parsed._span
         # is not set yet.
         span = [0, len(string)]
@@ -813,7 +894,7 @@ class WikiText:
                 bolds += e.get_bolds(True)
         return bolds
 
-    def get_italics(self, recursive=True):
+    def get_italics(self, recursive=True) -> List['Italic']:
         """Return italic parts of self.
 
         :param recursive: if True also look inside templates, parser functions,
@@ -845,7 +926,7 @@ class WikiText:
             else:
                 span = old_span
             italics_append(Italic(
-                _lststr, type_to_spans, span, 'Bold', bool(match[1])))
+                _lststr, type_to_spans, span, 'Bold', match[1] is None))
         if not recursive:
             return italics
         for t in (
@@ -1239,6 +1320,33 @@ def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
         else:  # none of the previous spans included span
             yield span
 
+
+def remove_markup(
+    s: str, **kwargs
+) -> str:
+    """Return a string with wiki markup removed/replaced."""
+    return WikiText(s).plain_text(**kwargs)
+
+
+plain_text_doc = """
+
+        Comments are always removed.
+        :keyword replace_templates: Replace `{{template|argument}}` with ``.
+        :keyword replace_parser_functions: Replace `{{#if:a|y|n}}` with ``.
+        :keyword replace_parameters: Replace `{{{a}}}` with `` and {{{a|b}}}
+            with `b`.
+        :keyword replace_tags: Replace `<s>text</s>` with `text`.
+        :keyword replace_external_links: Replace `[https://wikimedia.org/ wm]`
+            with `wm`, and `[https://wikimedia.org/]` with ``.
+        :keyword replace_wikilinks: Replace wikilinks with their text
+            representation, e.g. `[[a|b]]` with `b` and `[[a]]` with `a`.
+        :keyword unescape_html_entities: Replace HTML entities like `&Sigma;`,
+            `&#931;`, and `&#x3a3;` with `Σ`.
+        :keyword replace_bolds: replace `'''b'''` with `b`.
+        :keyword replace_italics: replace `''i''` with `i`.
+"""
+WikiText.plain_text.__doc__ += plain_text_doc
+remove_markup.__doc__ += plain_text_doc
 
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090

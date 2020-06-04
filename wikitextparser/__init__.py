@@ -32,3 +32,4 @@ _wikitext.Tag = _wikitext.ExtensionTag = Tag
 
 WikiText = _wikitext.WikiText
 parse = WikiText
+remove_markup = _wikitext.remove_markup
