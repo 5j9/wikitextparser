@@ -330,6 +330,16 @@ Use the optional ``type_`` argument if looking for ancestors of a specific type:
 
 To delete/remove any object from its parents use ``del object[:]`` or ``del object.string``.
 
+The ``remove_markup`` function or ``plain_text`` method can be used to remove wiki markup:
+
+.. code:: python
+
+    >>> from wikitextparser import remove_markup, parse
+    >>> s = "'''a'''<!--comment--> [[b|c]] [[d]]"
+    >>> remove_markup(s)
+    'a c d'
+    >>>> parse(s).plain_text()
+    'a c d'
 
 Compared with mwparserfromhell
 ==============================
