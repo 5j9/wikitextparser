@@ -1,6 +1,6 @@
 """Define the ParserFunction class."""
-from bisect import insort, bisect_right
-from typing import List
+from bisect import insort
+from typing import Iterable, List, Union
 
 import regex
 
@@ -61,7 +61,9 @@ class SubWikiTextWithArgs(SubWikiText):
             arguments_append(arg)
         return arguments
 
-    def get_lists(self, pattern: str = None) -> List[WikiList]:
+    def get_lists(
+        self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
+    ) -> List[WikiList]:
         """Return the lists in all arguments.
 
         For performance reasons it is usually preferred to get a specific

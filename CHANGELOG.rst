@@ -8,6 +8,7 @@ v0.37.0.dev0
 - ``WikiLink.text.setter`` no longer accepts None values. This was marked as deprecated since v0.25.0.
 - Drop support for Python 3.4.
 - Remove the deprecated ``pprint`` method. Users should use ``pformat`` instead.
+- Allow a tuple of patterns in ``get_list`` and ``sublists`` method. The default ``None`` is now deprecated and a tuple is used instead.
 
 v0.36.0
 -------

@@ -1051,30 +1051,39 @@ class WikiText:
             DeprecationWarning)
         return self.get_lists(pattern)
 
-    def get_lists(self, pattern: str = None) -> List['WikiList']:
+    def get_lists(
+        self, pattern: Union[str, Tuple[str]] = (r'\#', r'\*', '[:;]')
+    ) -> List['WikiList']:
         r"""Return a list of WikiList objects.
 
         :param pattern: The starting pattern for list items.
-            Return all types of lists (ol, ul, and dl) if pattern is None.
             If pattern is not None, it will be passed to the regex engine,
-            remember to escape the `*` character. Examples:
+            so remember to escape the `*` character. Examples:
 
-                - `\#` means top-level ordered lists
-                - `\#\*` means unordred lists inside an ordered one
+                - `'\#'` means top-level ordered lists
+                - `'\#\*'` means unordred lists inside an ordered one
                 - Currently definition lists are not well supported, but you
-                    can use `[:;]` as their pattern.
+                    can use `'[:;]'` as their pattern.
 
             Tips and tricks:
 
                 Be careful when using the following patterns as they will
                 probably cause malfunction in the `sublists` method of the
                 resultant List. (However don't worry about them if you are
-                not going to use the `sublists` method.)
+                not going to use the `sublists` or `List.get_lists` method.)
 
-                - Use `\*+` as a pattern and nested unordered lists will be
+                - Use `'\*+'` as a pattern and nested unordered lists will be
                     treated as flat.
-                - Use `\*\s*` as pattern to rtstrip `items` of the list.
+                - Use `'\*\s*'` as pattern to rtstrip `items` of the list.
         """
+        if pattern is None:
+            warn('calling get_lists with None pattern is deprecated; '
+                 'Use the default value instead.', DeprecationWarning)
+            patterns = (r'\#', r'\*', '[:;]')
+        elif isinstance(pattern, str):
+            patterns = (pattern,)
+        else:
+            patterns = pattern
         lists = []
         lists_append = lists.append
         lststr = self._lststr
@@ -1082,8 +1091,7 @@ class WikiText:
         spans = type_to_spans.setdefault('WikiList', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         shadow, ss = self._lists_shadow_ss
-        for pattern in \
-                (r'\#', r'\*', '[:;]') if pattern is None else (pattern,):
+        for pattern in patterns:
             for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode(), 1),
                 shadow, MULTILINE

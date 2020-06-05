@@ -1150,6 +1150,15 @@ def test_multiline_tags():
     assert len(parse('#1<br/\n>\n#2<abc\n>\n#3').get_lists()[0].items) == 2
 
 
+def test_get_lists_deprecation():
+    with warns(DeprecationWarning):
+        list_ = ParserFunction('{{#if:|*a\n*b}}').get_lists(None)[0]
+    with warns(DeprecationWarning):
+        list_.get_lists(None)
+    with warns(DeprecationWarning):
+        list_.sublists(pattern=None)
+
+
 def test_assume_that_templates_do_not_exist():
     # this is actually an invalid <s> tag on English Wikipedia, i.e the
     # result of {{para}} makes it invalid.

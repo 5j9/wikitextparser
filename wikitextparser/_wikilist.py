@@ -1,4 +1,5 @@
-from typing import List, Union, Tuple, Dict, MutableSequence, Match
+from typing import Iterable, List, Union, Dict, MutableSequence, Match
+from warnings import warn
 
 from regex import escape, fullmatch, MULTILINE
 
@@ -104,7 +105,8 @@ class WikiList(SubWikiText):
         return len(self._match['pattern'])
 
     def sublists(
-        self, i: int = None, pattern: str = None
+        self, i: int = None,
+        pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 
@@ -113,8 +115,14 @@ class WikiList(SubWikiText):
             The `pattern` of the current list will be automatically added
             as prefix.
         """
-        patterns = (r'\#', r'\*', '[:;]') if pattern is None \
-            else (pattern,)  # type: Tuple[str, ...]
+        if pattern is None:
+            warn('calling sublists with None pattern is deprecated; '
+                 'Use the default value instead.', DeprecationWarning)
+            patterns = (r'\#', r'\*', '[:;]')
+        elif isinstance(pattern, str):
+            patterns = (pattern,)
+        else:
+            patterns = pattern
         self_pattern = self.pattern
         get_lists = super().get_lists
         sublists = []  # type: List['WikiList']
@@ -149,5 +157,11 @@ class WikiList(SubWikiText):
             self[s - ms:e - ms] = newstart
         self.pattern = escape(newstart)
 
-    def get_lists(self, pattern: str = None) -> List['WikiList']:
-        return self.sublists(pattern)
+    def get_lists(
+        self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
+    ) -> List['WikiList']:
+        if pattern is None:
+            warn('calling get_lists with None pattern is deprecated; '
+                 'Use the default value instead.', DeprecationWarning)
+            pattern = (r'\#', r'\*', '[:;]')
+        return self.sublists(pattern=pattern)
