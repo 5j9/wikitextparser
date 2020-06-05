@@ -27,8 +27,7 @@ from ._spans import (
     parse_to_spans,
     INVALID_EXTLINK_CHARS,
     BARE_EXTERNAL_LINK,
-    EXTERNAL_LINK_URL_TAIL,
-    COMMENT_PATTERN_B)
+    EXTERNAL_LINK_URL_TAIL)
 
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
@@ -119,30 +118,7 @@ SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
     'ExtensionTag'}
 
-HEAD_TAIL_FINDALL = regex_compile(
-    rb'^.(?:' + COMMENT_PATTERN_B + b')*.|.(?:' + COMMENT_PATTERN_B + b')*.$'
-).findall
 WS = '\r\n\t '
-
-
-def remove(obj: 'WikiText'):
-    del obj.string
-
-
-def parameter_to_text(parameter: 'Parameter'):
-    parameter.string = parameter.default
-
-
-def tag_to_text(tag: 'Tag'):
-    tag.string = tag.contents
-
-
-def template_to_text(parameter: 'Parameter'):
-    parameter.string = parameter.default
-
-
-def parser_function_to_text(tag: 'Tag'):
-    tag.string = tag.contents
 
 
 class WikiText:
