@@ -267,9 +267,7 @@ class WikiText:
                 'stop index out of range or start is after the stop')
         return start + ss, stop + ss
 
-    def __setitem__(
-        self, key: Union[slice, int], value: Union[str, 'WikiText']
-    ) -> None:
+    def __setitem__(self, key: Union[slice, int], value: str) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -277,14 +275,10 @@ class WikiText:
         `_shrink_update` functions will be called and the performance
         will improve.
         """
-        if isinstance(value, str):
-            new_string = value
-        else:
-            new_string = value.string
         start, stop = self._check_index(key)
         # Update lststr
         lststr = self._lststr
-        lststr[start:stop] = list(new_string)
+        lststr[start:stop] = list(value)
         # Set the length of all subspans to zero because
         # they are all being replaced.
         self._close_subspans(start, stop)
