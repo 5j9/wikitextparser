@@ -1352,6 +1352,8 @@ def test_plaintext():
     ap('{{#if:a|y|n}}', '')
     ap("'''b'''", 'b')
     ap("''i''", 'i')
+    ap("{{{a}}}", '')
+    ap("{{{1|a}}}", 'a')
 
 
 def test_remove_markup():
