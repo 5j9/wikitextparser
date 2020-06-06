@@ -346,7 +346,7 @@ Compared with mwparserfromhell
 
 `mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as ``wikitextparser``. The main reason leading me to create ``wikitextparser`` was that ``mwparserfromhell`` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation ``wikitextparser`` may be able to give you more acceptable results.
 
-Also note that ``wikitextparser`` is still under heavy development and the API may change in the future versions.
+Also note that ``wikitextparser`` is still using 0.x.y version `meaning <https://semver.org/>`_ that the API is not stable and may change in the future versions.
 
 The tokenizer in ``mwparserfromhell`` is written in C. Tokenization in ``wikitextparser`` is mostly done using the ``regex`` library which is also in C.
 I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, ``wikitextparser`` has a decent performance in realistic cases and should be able to compete and may even have little performance benefits in some situations.
