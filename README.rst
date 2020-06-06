@@ -358,11 +358,11 @@ Some of the unique features of ``wikitextparser`` are: Providing access to indiv
 Known issues and limitations
 ============================
 
-* Syntax elements produced by a template transclusion cannot be detected by offline parsers.
+* The contents of templates/parameters are not known to offline parsers. For example an offline parser cannot know if the markup ``[[{{z|a}}]]`` should be treated as wikilink or not, it depends on the inner-workings of the ``{{z}}`` template. In these situations ``wikitextparser`` tries to use a best guess. ``[[{{z|a}}]]`` is treated as a wikilink (why else would anyone call a templated inside wikilink markup, and even if it is not a wikilink, usually no harm is done).
 * Localized namespace names are unknown, so for example ``[[File:...]]`` links are treated as normal wikilinks. ``mwparserfromhell`` has similar issue, see `#87 <https://github.com/earwig/mwparserfromhell/issues/87>`_ and `#136 <https://github.com/earwig/mwparserfromhell/issues/136>`_. As a workaround, `Pywikibot <https://www.mediawiki.org/wiki/Manual:Pywikibot>`_ can be used for determining the namespace.
-* `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it should be trivial to compute a WikiLink's linktrail.
+* `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it is possible to compute a WikiLink's linktrail.
 * Templates adjacent to external links, are never considered part of the link. In reality, this depends on the contents of the template. Example: ``parse('http://example.com{{dead link}}').external_links[0].url == 'http://example.com'``
-* While MediaWiki recognizes only a finite number of tags and they are extension-dependent, the ``tags`` method returns anything that looks like an HTML tag. A configuration option might be added in the future to address this issue.
+* List of valid `extension tags <https://www.mediawiki.org/wiki/Parser_extension_tags>`_ depends on the extensions intalled on the wiki. The ``tags`` currently only supports the ones on English Wikipedia. A configuration option might be added in the future to address this issue.
 * wikitextparser currently does not provide a `ast.walk <https://docs.python.org/3/library/ast.html#ast.walk>`_-like method yielding all descendant nodes.
 
 
