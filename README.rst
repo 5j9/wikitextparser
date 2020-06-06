@@ -346,21 +346,14 @@ Compared with mwparserfromhell
 
 `mwparserfromhell <https://github.com/earwig/mwparserfromhell>`_ is a mature and widely used library with nearly the same purposes as ``wikitextparser``. The main reason leading me to create ``wikitextparser`` was that ``mwparserfromhell`` could not parse wikitext in certain situations that I needed it for. See mwparserfromhell's issues `40 <https://github.com/earwig/mwparserfromhell/issues/40>`_, `42 <https://github.com/earwig/mwparserfromhell/issues/42>`_, `88 <https://github.com/earwig/mwparserfromhell/issues/88>`_, and other related issues. In many of those situation ``wikitextparser`` may be able to give you more acceptable results.
 
-But if you need to
-
-* use Python 2
-* parse style tags like ``'''bold'''`` and ``''italics''`` (with some `limitations <https://github.com/earwig/mwparserfromhell#caveats>`_ of-course)
-* extract `HTML entities <https://mwparserfromhell.readthedocs.io/en/latest/api/mwparserfromhell.nodes.html#module-mwparserfromhell.nodes.html_entity>`_
-
-then ``mwparserfromhell`` or maybe other libraries will be the way to go. Also note that ``wikitextparser`` is still under heavy development and the API may change drastically in the future versions.
-
-Of-course ``wikitextparser`` has its own unique features, too: Providing access to individual cells of each table, pretty-printing templates, and a few other advanced functions.
+Also note that ``wikitextparser`` is still under heavy development and the API may change drastically in the future versions.
 
 The tokenizer in ``mwparserfromhell`` is written in C. Tokenization in ``wikitextparser`` is mostly done using the ``regex`` library which is also in C.
-I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, ``wikitextparser`` has a decent performance and should able to compete and may even have little performance benefits in many situations. However if you are working with on-line data, any difference is usually negligible as the main bottleneck will be the network latency.
+I have not rigorously compared the two libraries in terms of performance, i.e. execution time and memory usage. In my limited experience, ``wikitextparser`` has a decent performance in realistic cases and should be able to compete and may even have little performance benefits in some situations.
 
-If you have had a chance to compare these libraries in terms of performance please share your experience by opening an issue on github.
+If you have had a chance to compare these libraries in terms of performance or capabilities please share your experience by opening an issue on github.
 
+Some of the unique features of ``wikitextparser`` are: Providing access to individual cells of each table, pretty-printing templates, a WikiList class with rudimentary methods to work with `lists <https://www.mediawiki.org/wiki/Help:Lists>`_, and a few other functions.
 
 Known issues and limitations
 ============================
