@@ -363,7 +363,8 @@ Known issues and limitations
 * `Linktrails <https://www.mediawiki.org/wiki/Help:Links>`_ are language dependant and are not supported. `Also not supported by mwparserfromhell <https://github.com/earwig/mwparserfromhell/issues/82>`_. However given the trail pattern and knowing that ``wikilink.span[1]`` is the ending position of a wikilink, it is possible to compute a WikiLink's linktrail.
 * Templates adjacent to external links, are never considered part of the link. In reality, this depends on the contents of the template. Example: ``parse('http://example.com{{dead link}}').external_links[0].url == 'http://example.com'``
 * List of valid `extension tags <https://www.mediawiki.org/wiki/Parser_extension_tags>`_ depends on the extensions intalled on the wiki. The ``tags`` currently only supports the ones on English Wikipedia. A configuration option might be added in the future to address this issue.
-* wikitextparser currently does not provide a `ast.walk <https://docs.python.org/3/library/ast.html#ast.walk>`_-like method yielding all descendant nodes.
+* ``wikitextparser`` currently does not provide a `ast.walk <https://docs.python.org/3/library/ast.html#ast.walk>`_-like method yielding all descendant nodes.
+* `Parser functions <https://www.mediawiki.org/wiki/Help:Extension:ParserFunctions>`_ and `magic words <https://www.mediawiki.org/wiki/Help:Magic_words>`_ are not evaluated.
 
 
 Credits
