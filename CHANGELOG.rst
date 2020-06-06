@@ -1,5 +1,5 @@
-v0.37.0.dev0
-------------
+v0.37.0
+-------
 - Add ``wikitextparser.remove_markup`` function and ``WikiText.plain_text`` method.
 - Improve detection of parameters and wikilinks.
 - Add ``get_bolds`` and ``get_italics`` methods.
