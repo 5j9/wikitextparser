@@ -60,9 +60,9 @@ def _pattern(trie: dict) -> str:
     return result
 
 
-def regex_pattern(words: _Iterable[str]) -> str:
+def regex_pattern(words: _Iterable[str]) -> bytes:
     """Convert words to a regex pattern that matches any of them."""
-    return _pattern(_plant_trie(words))
+    return _pattern(_plant_trie(words)).encode()
 
 
 # Contents of the some of the extension tags can be parsed as wikitext.
@@ -130,7 +130,7 @@ _valid_html_tag_names = {
     'br', 'rp', 'hr', 'abbr', 'sub', 'u', 'kbd', 'table', 'rt', 'dd',
     'var', 'pre', 'ul', 'tr', 'center', 'data', 'strong', 'mark',
     'h6', 'bdo', 'caption', 'sup'}
-_HTML_TAG_NAME = regex_pattern(_valid_html_tag_names).encode()
+_HTML_TAG_NAME = regex_pattern(_valid_html_tag_names)
 
 _parser_functions = {
     'ARTICLEPAGENAME',

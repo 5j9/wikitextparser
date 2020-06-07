@@ -35,7 +35,7 @@ NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
         b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
 # External links
 BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
-    _bare_external_link_schemes | {'//'}).encode()
+    _bare_external_link_schemes | {'//'})
 BRACKET_EXTERNAL_LINK_URL = (
     BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
 BRACKET_EXTERNAL_LINK = (

@@ -22,7 +22,7 @@ PF_TL_FINDITER = regex_compile(  # noqa
     \{\{(?>
         [\s\0]*+  # parser function
         (?>\#[^{}\s:]++
-        |''' + regex_pattern(_parser_functions).encode()[3:] + rb'''
+        |''' + regex_pattern(_parser_functions)[3:] + rb'''
         :(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()
         |  # invalid template name
         [\s_\n]*+  # invalid name
@@ -46,7 +46,7 @@ LITERAL_IPV6_AND_TAIL = \
     rb'\[[0-9a-fA-F:.]++\][^' + INVALID_EXTLINK_CHARS + rb']*+'
 # A \b is added to the beginning.
 BARE_EXTERNAL_LINK_SCHEMES = (
-    rb'\b' + regex_pattern(_bare_external_link_schemes).encode())
+    rb'\b' + regex_pattern(_bare_external_link_schemes))
 EXTERNAL_LINK_URL_TAIL = (
     rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
 BARE_EXTERNAL_LINK = (
@@ -95,11 +95,10 @@ WIKILINK_PARAM_FINDITER = regex_compile(
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
 blank_brackets = partial(regex_compile(br'[\[\]]').sub, br' ')
 
-# todo: make regex_pattern return bytes?
 PARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
-    _parsable_tag_extensions).encode()
+    _parsable_tag_extensions)
 UNPARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
-    _unparsable_tag_extensions).encode()
+    _unparsable_tag_extensions)
 
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element

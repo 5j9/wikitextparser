@@ -62,7 +62,7 @@ def test_a_or_abc_or_null():
 
 
 def test_regex_pattern():
-    assert regex_pattern(['a', 'bc']) == '(?>bc|a)'
+    assert regex_pattern(['a', 'bc']) == b'(?>bc|a)'
 
 
 if __name__ == '__main__':
