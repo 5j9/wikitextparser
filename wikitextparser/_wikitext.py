@@ -528,7 +528,7 @@ class WikiText:
     def _inner_type_to_spans_copy(self) -> Dict[str, List[List[int]]]:
         """Create the arguments for the parse function used in pformat method.
 
-        Only return sub-spans and change the them to fit the new scope, i.e
+        Only return sub-spans and change them to fit the new scope, i.e
         self.string.
         """
         ss, se = self._span
@@ -556,7 +556,8 @@ class WikiText:
         """Return a plain text string representation of self."""
         if _mutate is False:
             s, e = self._span
-            parsed = WikiText(self._lststr[s:e], self._inner_type_to_spans_copy())
+            parsed = WikiText(
+                self._lststr[s:e], self._inner_type_to_spans_copy())
             parsed._span = self._span.copy()
             tts = parsed._type_to_spans
         else:
