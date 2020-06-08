@@ -734,7 +734,6 @@ class WikiText:
                 # added/removed to/from arg1.
                 # See: [[mw:Help:Extension:ParserFunctions#Miscellaneous]]
                 # All args of #invoke are also whitespace-sensitive.
-                # Todo: Instead use comments to indent.
                 continue
             args = func.arguments
             # Whitespace, including newlines, tabs, and spaces is stripped

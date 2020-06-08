@@ -53,7 +53,7 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         # Todo: if we had the index of self._span, we could only look-up
-        # the head of the self._type_to_spans.
+        #  the head of the self._type_to_spans.
         for s, e in self._type_to_spans[self._type]:
             if ss <= s:
                 break
