@@ -77,7 +77,7 @@ class Argument(SubWikiText):
         if self._shadow_match['eq']:
             self[1:1 + len(self._shadow_match['pre_eq'])] = newname
         else:
-            self[0:1] = '|' + newname + '='
+            self.insert(1, newname + '=')
 
     @property
     def positional(self) -> bool:
