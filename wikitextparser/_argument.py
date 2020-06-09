@@ -74,9 +74,8 @@ class Argument(SubWikiText):
 
     @name.setter
     def name(self, newname: str) -> None:
-        oldname = self.name
         if self._shadow_match['eq']:
-            self[1:1 + len(oldname)] = newname
+            self[1:1 + len(self._shadow_match['pre_eq'])] = newname
         else:
             self[0:1] = '|' + newname + '='
 
