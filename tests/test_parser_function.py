@@ -22,8 +22,11 @@ def test_repr():
 def test_name_and_args():
     f = ParserFunction('{{ #if: test | true | false }}')
     assert ' #if' == f.name
+    args = f.arguments
     assert [': test ', '| true ', '| false '] ==\
-           [a.string for a in f.arguments]
+           [a.string for a in args]
+    assert args[0].name == '1'
+    assert args[2].name == '3'
 
 
 def test_set_name():

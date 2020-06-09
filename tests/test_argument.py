@@ -125,5 +125,11 @@ def test_lists():
     assert Argument('| *a\n*b').get_lists()[0].items == ['b']
 
 
+def test_equal_sign_in_val():
+    a, c = Template('{{t|a==b|c}}').arguments
+    assert a.value == '=b'
+    assert c.name == '1'
+
+
 if __name__ == '__main__':
     main()
