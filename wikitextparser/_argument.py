@@ -1,9 +1,9 @@
 ﻿"""Define the Argument class."""
+from typing import Dict, List, MutableSequence, Optional, Union
 
 from regex import compile as regex_compile, MULTILINE, DOTALL
 
 from ._wikitext import SubWikiText, SECTION_HEADING
-from ._spans import parse_to_spans
 
 ARG_SHADOW_FULLMATCH = regex_compile(
     rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING +
@@ -21,10 +21,18 @@ class Argument(SubWikiText):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
-    __slots__ = '_shadow_match_cache'
+    __slots__ = '_shadow_match_cache', '_parent'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        string: Union[str, MutableSequence[str]],
+        _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
+        _span: Optional[List[int]] = None,
+        _type: Optional[Union[str, int]] = None,
+        _parent: 'SubWikiTextWithArgs' = None,
+    ):
+        super().__init__(string, _type_to_spans, _span, _type)
+        self._parent = _parent or self
         self._shadow_match_cache = None, None
 
     @property
@@ -52,20 +60,14 @@ class Argument(SubWikiText):
             return ''.join(lststr[ss + s:ss + e])
         # positional argument
         position = 1
-        # Todo: if we had the index of self._span, we could only look-up
-        #  the head of the self._type_to_spans.
+        parent_find = self._parent._shadow.find
+        parent_start = self._parent._span[0]
         for s, e in self._type_to_spans[self._type]:
             if ss <= s:
                 break
-            arg_str = ''.join(lststr[s:e])
-            if '=' in arg_str:
-                # The argument may is still be positional if the equal sign is
-                # inside an atomic sub-spans.
-                byte_array = bytearray(arg_str, 'ascii', 'replace')
-                parse_to_spans(byte_array)  # Remove sub-spans from byte_array
-                if b'=' in byte_array:
-                    # This is a keyword argument.
-                    continue
+            if parent_find(b'=', s - parent_start, e - parent_start) != -1:
+                # This is a keyword argument.
+                continue
             # This is a preceding positional argument.
             position += 1
         return str(position)
@@ -141,3 +143,7 @@ class Argument(SubWikiText):
                 self._span[0] + shadow_match.start('post_eq')
                 + len(post_eq) - len(ls_post_eq))
         return shadow_match[0][1:], self._span[0] + 1
+
+
+if __name__ == '__main__':
+    from wikitextparser._parser_function import SubWikiTextWithArgs

@@ -55,7 +55,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 insort(arg_spans, arg_span)
             else:
                 arg_span = old_span
-            arg = Argument(lststr, type_to_spans, arg_span, type_)
+            arg = Argument(lststr, type_to_spans, arg_span, type_, self)
             arg._shadow_cache = (
                 ''.join(lststr[s:e]), shadow[arg_self_start:arg_self_end])
             arguments_append(arg)
