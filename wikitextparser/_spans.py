@@ -139,7 +139,7 @@ CONTROL_CHARS = rb'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = (
     rb'(?<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'"\'>/=]++)')
-WS_EQ_WS = rb'[' + SPACE_CHARS + rb']*+=[' + SPACE_CHARS + rb']*+'
+EQ_WS = rb'=[' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = (
     rb'(?<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`]++)')
 QUOTED_ATTR_VAL = rb'(?<quote>[\'"])(?<attr_value>.+?)(?P=quote)'
@@ -149,10 +149,9 @@ ATTR_VAL = (
     # If an empty attribute is to be followed by the optional
     # "/" character, then there must be a space character separating
     # the two. This rule is ignored here.
-    rb'(?:'
-    + WS_EQ_WS + UNQUOTED_ATTR_VAL + rb'|'
-    + WS_EQ_WS + QUOTED_ATTR_VAL + rb'|'
-    + rb'[' + SPACE_CHARS + rb']*+(?<attr_value>)'  # empty attribute
+    rb'[' + SPACE_CHARS + rb']*+(?>'  # noqa
+        + EQ_WS + rb'(?>' + UNQUOTED_ATTR_VAL + rb'|' + QUOTED_ATTR_VAL + rb')'
+        + rb'|(?<attr_value>)'  # empty attribute
     + rb')')
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTR_PATTERN = (
