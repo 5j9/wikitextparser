@@ -150,8 +150,8 @@ ATTR_VAL = (
     # "/" character, then there must be a space character separating
     # the two. This rule is ignored here.
     rb'(?:'
-    + WS_EQ_WS + UNQUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
-    + WS_EQ_WS + QUOTED_ATTR_VAL + rb'[' + SPACE_CHARS + rb']*|'
+    + WS_EQ_WS + UNQUOTED_ATTR_VAL + rb'|'
+    + WS_EQ_WS + QUOTED_ATTR_VAL + rb'|'
     + rb'[' + SPACE_CHARS + rb']*+(?<attr_value>)'  # empty attribute
     + rb')')
 # Ignore ambiguous ampersand for the sake of simplicity.
@@ -177,7 +177,7 @@ ATTRS_MATCH = regex_compile(
 END_TAG_PATTERN = rb'(?<end_tag></{name}(?:>|[' + SPACE_CHARS + rb'][^>]*+>))'
 START_TAG_PATTERN = (
     rb'(?<start_tag>'
-    rb'<{name}(?:' + ATTR_PATTERN + rb')*'
+    rb'<{name}(?>' + ATTR_PATTERN + rb')*+'
     rb'[' + SPACE_CHARS + rb']*+'
     rb'(?:(?<self_closing>/[' + SPACE_CHARS + b']*+>)|>)'
     rb')')

@@ -71,7 +71,7 @@ def test_delete():
     assert c.string == '!!|'
     c = Cell('!!n=v1 m=w n="v2"|', True)
     c.del_attr('n')
-    assert c.string == '!!m=w |'
+    assert c.string == '!! m=w|'
     # Test removing a non-existing attribute
     c.del_attr('n')
 
