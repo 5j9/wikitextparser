@@ -1,3 +1,7 @@
+v0.37.1
+-------
+- Fix a catastrophic backtracking issue for wikitexts containing html tags. (#37)
+
 v0.37.0
 -------
 - Add ``wikitextparser.remove_markup`` function and ``WikiText.plain_text`` method.
