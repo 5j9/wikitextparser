@@ -138,7 +138,7 @@ SPACE_CHARS = rb' \t\n\u000C\r'  # \s - \v
 CONTROL_CHARS = rb'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = (
-    rb'(?<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'\u0000"\'>/=]++)')
+    rb'(?<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'"\'>/=]++)')
 WS_EQ_WS = rb'[' + SPACE_CHARS + rb']*+=[' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = (
     rb'(?<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`]++)')
