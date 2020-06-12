@@ -30,7 +30,7 @@ Usage
 
     >>> import wikitextparser as wtp
 
-WikiTextParser can detect sections, parser functions, templates, wiki links, external links, arguments, tables, wiki lists, and comments in your wikitext. The following sections are quick of some of these functionalities.
+WikiTextParser can detect sections, parser functions, templates, wiki links, external links, arguments, tables, wiki lists, and comments in your wikitext. The following sections are a quick overview of some of these functionalities.
 
 You may also want to have a look at the test modules for more examples and probable pitfalls (expected failures).
 
