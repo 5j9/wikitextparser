@@ -1,6 +1,6 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 from functools import partial
-from typing import Dict, List, Callable, Optional
+from typing import Dict, Callable, Optional
 
 from regex import VERBOSE, IGNORECASE, REVERSE
 from regex import compile as regex_compile
@@ -186,7 +186,7 @@ HTML_END_TAG_FINDITER = regex_compile(
     END_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
 
 
-def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
+def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     """Calculate and set self._type_to_spans.
 
     Extracted spans will be removed from byte_array.
@@ -200,27 +200,27 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
         'WikiLink': wikilink_spans,
     }
     """
-    comment_spans = []  # type: List[List[int]]
+    comment_spans = []
     cms_append = comment_spans.append
-    extension_tag_spans = []  # type: List[List[int]]
+    extension_tag_spans = []
     ets_append = extension_tag_spans.append
-    wikilink_spans = []  # type: List[List[int]]
+    wikilink_spans = []
     wls_append = wikilink_spans.append
-    parameter_spans = []  # type: List[List[int]]
+    parameter_spans = []
     pms_append = parameter_spans.append
-    parser_function_spans = []  # type: List[List[int]]
+    parser_function_spans = []
     pfs_append = parser_function_spans.append
-    template_spans = []  # type: List[List[int]]
+    template_spans = []
     tls_append = template_spans.append
     # HTML <!-- comments -->
     for match in COMMENT_FINDITER(byte_array):
         ms, me = match.span()
-        cms_append([ms, me])
+        cms_append([ms, me, None])
         byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
         ms, me = match.span()
-        ets_append([ms, me])
+        ets_append([ms, me, match])
         if match[2]:  # parsable tag extension group
             _parse_sub_spans(
                 byte_array, ms, me,
@@ -239,8 +239,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, List[List[int]]]:
 
 def _parse_sub_spans(
     byte_array: bytearray, start: int, end: Optional[int],
-    params_append: Callable, pfs_append: Callable,
-    tls_append: Callable, wikilinks_append: Callable,
+    pms_append: Callable, pfs_append: Callable,
+    tls_append: Callable, wls_append: Callable,
 ) -> None:
     start_and_end_tags = *HTML_START_TAG_FINDITER(byte_array, start, end),\
         *HTML_END_TAG_FINDITER(byte_array, start, end)
@@ -253,26 +253,26 @@ def _parse_sub_spans(
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
-                    wikilinks_append([ms, me])
+                    wls_append([ms, me, match])
                 else:
-                    params_append([ms, me])
+                    pms_append([ms, me, match])
                 _parse_sub_spans(
                     byte_array, ms + 2, me - 2,
-                    params_append, pfs_append, tls_append, wikilinks_append)
+                    pms_append, pfs_append, tls_append, wls_append)
                 byte_array[ms:me] = b'_' * (me - ms)
             if match is None:
                 break
         for match in PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()
             if match[1] is not None:
-                pfs_append([ms, me])
+                pfs_append([ms, me, match])
                 byte_array[ms:me] = b'X' * (me - ms)
             elif match[2] is not None:  # invalid template name
                 byte_array[ms:me] = b'_' * (me - ms)
                 byte_array[ms+1] = 123
                 continue
             else:
-                tls_append([ms, me])
+                tls_append([ms, me, match])
                 byte_array[ms:me] = b'X' * (me - ms)
         if match is None:
             break

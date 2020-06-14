@@ -7,7 +7,9 @@ from wikitextparser import WikiText, parse
 
 
 def bytearray_parse_to_spans(bytes_: bytes) -> Dict[str, List[List[int]]]:
-    return parse_to_spans(bytearray(bytes_))
+    return {
+        k: [i[:2] for i in v]
+        for k, v in parse_to_spans(bytearray(bytes_)).items()}
 
 
 bpts = bytearray_parse_to_spans
@@ -26,37 +28,33 @@ def test_template_name_cannot_be_empty():
 
 # noinspection PyProtectedMember
 def test_template_in_template():
-    template_spans = WikiText('{{cite|{{t1}}|{{t2}}}}')._type_to_spans[
-        'Template']
-    assert [7, 13] in template_spans
-    assert [14, 20] in template_spans
-    assert [0, 22] in template_spans
+    assert bpts(b'{{cite|{{t1}}|{{t2}}}}')['Template'] == \
+        [[0, 22], [7, 13], [14, 20]]
 
 
 # noinspection PyProtectedMember
 def test_textmixed_multitemplate():
-    assert WikiText(
-            'text1{{cite|{{t1}}|{{t2}}}}'
-            'text2{{cite|{{t3}}|{{t4}}}}text3')._type_to_spans['Template'] ==\
-        [[5, 27], [12, 18], [19, 25], [32, 54], [39, 45], [46, 52]]
+    assert bpts(
+        b'text1{{cite|{{t1}}|{{t2}}}}'
+        b'text2{{cite|{{t3}}|{{t4}}}}text3'
+    )['Template'] == [
+        [5, 27], [12, 18], [19, 25], [32, 54], [39, 45], [46, 52]]
 
 
 # noinspection PyProtectedMember
 def test_multiline_mutitemplate():
-    assert WikiText('{{cite\n    |{{t1}}\n    |{{t2}}}}')._type_to_spans[
-            'Template'] == [[0, 32], [12, 18], [24, 30]]
+    assert bpts(b'{{cite\n    |{{t1}}\n    |{{t2}}}}')['Template'] ==\
+        [[0, 32], [12, 18], [24, 30]]
 
 
 # noinspection PyProtectedMember
 def test_lacks_ending_braces():
-    assert [[7, 13], [14, 20]] == WikiText(
-        '{{cite|{{t1}}|{{t2}}')._type_to_spans['Template']
+    assert [[7, 13], [14, 20]] == bpts(b'{{cite|{{t1}}|{{t2}}')['Template']
 
 
 # noinspection PyProtectedMember
 def test_lacks_starting_braces():
-    assert [[5, 11], [12, 18]] == WikiText(
-        'cite|{{t1}}|{{t2}}}}')._type_to_spans['Template']
+    assert [[5, 11], [12, 18]] == bpts(b'cite|{{t1}}|{{t2}}}}')['Template']
 
 
 # noinspection PyProtectedMember
@@ -66,16 +64,16 @@ def test_no_template_for_braces_around_wikilink():
 
 # noinspection PyProtectedMember
 def test_template_inside_parameter():
-    wt = WikiText('{{{1|{{colorbox|yellow|text1}}}}}')
-    assert [[5 == 30]], wt._type_to_spans['Template']
-    assert [[0 == 33]], wt._type_to_spans['Parameter']
+    d = bpts(b'{{{1|{{colorbox|yellow|text1}}}}}')
+    assert [[5, 30]], d['Template']
+    assert [[0, 33]], d['Parameter']
 
 
 # noinspection PyProtectedMember
 def test_parameter_inside_template():
-    wt = WikiText('{{colorbox|yellow|{{{1|defualt_text}}}}}')
-    assert [[0 == 40]], wt._type_to_spans['Template']
-    assert [[18 == 38]], wt._type_to_spans['Parameter']
+    d = bpts(b'{{colorbox|yellow|{{{1|defualt_text}}}}}')
+    assert [[0, 40]] == d['Template']
+    assert [[18, 38]] == d['Parameter']
 
 
 # noinspection PyProtectedMember
@@ -86,8 +84,9 @@ def test_template_name_cannot_contain_newline():
 
 # noinspection PyProtectedMember
 def test_unicode_template():
-    assert [[0, 13]] == WikiText(
-        '{{\nرنگ\n|متن}}')._type_to_spans['Template']
+    (a, b, _), = WikiText('{{\nرنگ\n|متن}}')._type_to_spans['Template']
+    assert a == 0
+    assert b == 13
 
 
 # noinspection PyProtectedMember
@@ -97,9 +96,11 @@ def test_invoking_a_named_ref_is_not_a_ref_start():
     [[mw:Help:Extension:Cite]] may be helpful, too.
 
     """
-    assert [[0, 25]] == WikiText(
+    (a, b, _), = WikiText(
         '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
     )._type_to_spans['Template']
+    assert a == 0
+    assert b == 25
 
 
 # noinspection PyProtectedMember
@@ -111,21 +112,32 @@ def test_invalid_refs_that_should_not_produce_any_template():
 
 # noinspection PyProtectedMember
 def test_unicode_parser_function():
-    assert [[0, 14]] == WikiText(
-        '{{#اگر:|فلان}}')._type_to_spans['ParserFunction']
+    (a, b, _), = WikiText('{{#اگر:|فلان}}')._type_to_spans['ParserFunction']
+    assert a == 0
+    assert b == 14
 
 
 # noinspection PyProtectedMember
 def test_unicode_parameters():
-    assert [[0, 30], [9, 27]] == WikiText(
+    (a, b, _), (c, d, _) = WikiText(
         '{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')._type_to_spans['Parameter']
+    assert a == 0
+    assert b == 30
+    assert c == 9
+    assert d == 27
 
 
 # noinspection PyProtectedMember
 def test_image_containing_wikilink():
-    assert [[0, 65], [30, 43], [49, 62]] == parse(
+    (a, b, _), (c, d, _), (e, f, _) = parse(
         "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 "
         "[[Wikilink2]].]]")._type_to_spans['WikiLink']
+    assert a == 0
+    assert b == 65
+    assert c == 30
+    assert d == 43
+    assert e == 49
+    assert f == 62
 
 
 def test_extracting_sections():
@@ -295,23 +307,35 @@ def test_parser_function_regex():
 
 # noinspection PyProtectedMember
 def test_wikilinks_inside_exttags():
-    assert [[5, 10]] == WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
+    (s, e, _), = WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
+    assert s == 5
+    assert e == 10
 
 
 def test_single_brace_in_tl():
-    assert [[0, 12]] == bpts(b'{{text|i}n}}')['Template']
+    (s, e), = bpts(b'{{text|i}n}}')['Template']
+    assert s == 0
+    assert e == 12
 
 
 def test_single_brace_after_first_tl_removal():
-    assert [[0, 20], [7, 16]] == bpts(b'{{text|{{text|}}} }}')['Template']
+    (s0, e0), (s1, e1) = bpts(b'{{text|{{text|}}} }}')['Template']
+    assert s0 == 0
+    assert e0 == 20
+    assert s1 == 7
+    assert e1 == 16
 
 
 def test_parse_inner_contents_of_wikilink_inside_ref():
-    assert [[7, 17]] == bpts(b'<ref>[[{{z|link}}]]</ref>')['Template']
+    (s, e), = bpts(b'<ref>[[{{z|link}}]]</ref>')['Template']
+    assert s == 7
+    assert e == 17
 
 
 def test_params_are_extracted_before_parser_functions():
-    assert [[0, 17]] == bpts(b'{{{#expr:1+1|3}}}')['Parameter']
+    (s, e), = bpts(b'{{{#expr:1+1|3}}}')['Parameter']
+    assert s == 0
+    assert e == 17
 
 
 def test_single_brace_after_pf_remove():

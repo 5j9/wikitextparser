@@ -184,7 +184,7 @@ def test_spans_are_closed_properly():
     #     WikiText('{{text|1={{#if:|}}\n\n}}').pformat(),
     # )
     wt = WikiText('')
-    wt._type_to_spans = {'ParserFunction': [[16, 25]]}
+    wt._type_to_spans = {'ParserFunction': [[16, 25, None]]}
     # noinspection PyProtectedMember
     wt._close_subspans(16, 27)
     # noinspection PyProtectedMember
@@ -1239,7 +1239,7 @@ def test_extension_tags_are_not_lost_in_shadows():
 
 def test_same_tags_end():
     # noinspection PyProtectedMember
-    assert WikiText('<s></s><s></s>').get_tags()[0]._span == [0, 7]
+    assert WikiText('<s></s><s></s>').get_tags()[0]._span[:2] == [0, 7]
 
 
 def test_get_bolds():

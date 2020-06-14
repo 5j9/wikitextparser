@@ -41,7 +41,7 @@ class Argument(SubWikiText):
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match
-        ss, se = self._span
+        ss, se, _ = self._span
         parent = self._parent
         ps = parent._span[0]
         shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps:se - ps])
@@ -65,7 +65,7 @@ class Argument(SubWikiText):
         position = 1
         parent_find = self._parent._shadow.find
         parent_start = self._parent._span[0]
-        for s, e in self._type_to_spans[self._type]:
+        for s, e, _ in self._type_to_spans[self._type]:
             if ss <= s:
                 break
             if parent_find(b'=', s - parent_start, e - parent_start) != -1:

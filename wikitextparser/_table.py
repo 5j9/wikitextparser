@@ -72,7 +72,7 @@ class Table(SubWikiTextWithAttrs):
         """Remove Table spans from shadow and return it."""
         shadow = self._shadow[:]
         ss = self._span[0]
-        for s, e in self._subspans('Table'):
+        for s, e, _ in self._subspans('Table'):
             if s == ss:
                 continue
             shadow[s - ss:e - ss] = b'#' * (e - s)
@@ -221,7 +221,7 @@ class Table(SubWikiTextWithAttrs):
                 row_attrs_append = row_attrs.append
             for m in match_row:
                 ms, me = m.span()
-                cell_span = [ss + ms, ss + me]
+                cell_span = [ss + ms, ss + me, None]
                 if span:
                     s, e = m.span('attrs')
                     # Note: ATTRS_MATCH always matches, even to empty strings.

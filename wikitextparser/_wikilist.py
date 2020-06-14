@@ -144,7 +144,7 @@ class WikiList(SubWikiText):
         for pattern in patterns:
             for lst in get_lists(self_pattern + pattern):
                 # noinspection PyProtectedMember
-                ls, le = lst._span
+                ls, le, _ = lst._span
                 if s < ls and le <= e:
                     sublists_append(lst)
         return sublists

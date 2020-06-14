@@ -150,7 +150,7 @@ class WikiText:
             self._lststr = string  # type: MutableSequence[str]
             return
         self._lststr = list(string)
-        span = self._span = [0, len(string)]
+        span = self._span = [0, len(string), None]
         byte_array = bytearray(string, 'ascii', 'replace')
         _type = self._type
         if _type not in SPAN_PARSER_TYPES:
@@ -205,14 +205,14 @@ class WikiText:
         # isinstance(value, WikiText)
         if self._lststr is not value._lststr:
             return False
-        ps, pe = value._span
-        ss, se = self._span
+        ps, pe, _ = value._span
+        ss, se, _ = self._span
         if ss <= ps and se >= pe:
             return True
         return False
 
     def __len__(self):
-        s, e = self._span
+        s, e, _ = self._span
         return e - s
 
     def __call__(
@@ -227,7 +227,7 @@ class WikiText:
             if start >= 0:
                 return self._lststr[self._span[0] + start]
             return self._lststr[self._span[1] + start]
-        s, e = self._span
+        s, e, _ = self._span
         return ''.join(self._lststr[
             s if start is None else (s + start if start >= 0 else e + start):
             e if stop is None else (s + stop if stop >= 0 else e + stop):
@@ -238,7 +238,7 @@ class WikiText:
 
         Used in  __setitem__ and __delitem__.
         """
-        ss, se = self._span
+        ss, se, _ = self._span
         if isinstance(key, int):
             if key < 0:
                 key += se - ss
@@ -295,8 +295,8 @@ class WikiText:
         for type_, spans in parse_to_spans(
             bytearray(value, 'ascii', 'replace')
         ).items():
-            for s, e in spans:
-                insort_right(type_to_spans[type_], [s + start, e + start])
+            for s, e, _ in spans:
+                insort_right(type_to_spans[type_], [s + start, e + start, None])
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
@@ -319,7 +319,7 @@ class WikiText:
         it only avoids some condition checks as it rules out the possibility
         of the key being an slice, or the need to shrink any of the sub-spans.
         """
-        ss, se = self._span
+        ss, se, _ = self._span
         lststr = self._lststr
         if index < 0:
             index += se - ss
@@ -340,13 +340,14 @@ class WikiText:
         for type_, spans in parse_to_spans(
             bytearray(string, 'ascii', 'replace')
         ).items():
-            for s, e in spans:
-                insort_right(type_to_spans[type_], [index + s, index + e])
+            for s, e, _ in spans:
+                insort_right(
+                    type_to_spans[type_], [index + s, index + e, None])
 
     @property
     def span(self) -> tuple:
         """Return the span of self relative to the start of the root node."""
-        return tuple(self._span)
+        return *self._span[:2],
 
     @property
     def string(self) -> str:
@@ -355,7 +356,7 @@ class WikiText:
         getter and delter: Note that this will overwrite the current string,
             emptying any object that points to the old string.
         """
-        start, end = self._span
+        start, end, _ = self._span
         return ''.join(self._lststr[start:end])
 
     @string.setter
@@ -372,15 +373,15 @@ class WikiText:
 
     def _close_subspans(self, start: int, stop: int) -> None:
         """Close all sub-spans of (start, stop)."""
-        ss, se = self._span
+        ss, se, _ = self._span
         for spans in self._type_to_spans.values():
             b = bisect_left(spans, [start])
-            for i, (s, e) in enumerate(
+            for i, (s, e, _) in enumerate(
                 spans[b:bisect_right(spans, [stop], b)]
             ):
                 if e <= stop:
                     if ss != s or se != e:
-                        spans.pop(i + b)[:] = -1, -1
+                        spans.pop(i + b)[:] = -1, -1, None
                         b -= 1
 
     def _shrink_update(self, rmstart: int, rmstop: int) -> None:
@@ -397,11 +398,11 @@ class WikiText:
         for spans in self._type_to_spans.values():
             i = len(spans) - 1
             while i >= 0:
-                s, e = span = spans[i]
+                s, e, _ = span = spans[i]
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
                     rmlength = rmstop - rmstart
-                    span[:] = s - rmlength, e - rmlength
+                    span[:] = s - rmlength, e - rmlength, None
                     i -= 1
                     continue
                 break  # pragma: no cover
@@ -411,18 +412,18 @@ class WikiText:
                 if rmstart <= s:
                     if rmstop < e:
                         # rmstart < s <= rmstop < e
-                        span[:] = rmstart, e + rmstart - rmstop
+                        span[:] = rmstart, e + rmstart - rmstop, None
                         i -= 1
                         if i < 0:
                             break
-                        s, e = span = spans[i]
+                        s, e, _ = span = spans[i]
                         continue
                     # rmstart <= s <= e < rmstop
-                    spans.pop(i)[:] = -1, -1
+                    spans.pop(i)[:] = -1, -1, None
                     i -= 1
                     if i < 0:
                         break
-                    s, e = span = spans[i]
+                    s, e, _ = span = spans[i]
                     continue
                 break  # pragma: no cover
             while i >= 0:
@@ -431,22 +432,23 @@ class WikiText:
                     i -= 1
                     if i < 0:
                         break
-                    s, e = span = spans[i]
+                    s, e, _ = span = spans[i]
                     continue
                 # s <= rmstart <= rmstop <= e
                 span[1] -= rmstop - rmstart
+                span[2] = None
                 i -= 1
                 if i < 0:
                     break
-                s, e = span = spans[i]
+                s, e, _ = span = spans[i]
                 continue
 
     def _insert_update(self, index: int, length: int) -> None:
         """Update self._type_to_spans according to the added length."""
-        self_span = ss, se = self._span
+        self_span = ss, se, _ = self._span
         for spans in self._type_to_spans.values():
             for span in spans:
-                s0, s1 = span
+                s0, s1, _ = span
                 if index < s1 or s1 == index == se:
                     span[1] += length
                     # index is before s, or at s but not on self_span
@@ -456,12 +458,12 @@ class WikiText:
                         span[0] += length
 
     def _nesting_level(self, parent_types) -> int:
-        ss, se = self._span
+        ss, se, _ = self._span
         level = 0
         type_to_spans = self._type_to_spans
         for type_ in parent_types:
             spans = type_to_spans[type_]
-            for s, e in spans[:bisect_right(spans, [ss + 1])]:
+            for s, e, _ in spans[:bisect_right(spans, [ss + 1])]:
                 if se <= e:
                     level += 1
         return level
@@ -481,7 +483,7 @@ class WikiText:
         This function is called upon extracting tables or extracting the data
         inside them.
         """
-        ss, se = self._span
+        ss, se, _ = self._span
         string = ''.join(self._lststr[ss:se])
         cached_string, shadow = getattr(
             self, '_shadow_cache', (None, None))
@@ -513,15 +515,15 @@ class WikiText:
         For comments, all characters are replaced, but for ('Template',
         'ParserFunction', 'Parameter') only invalid characters are replaced.
         """
-        ss, se = self._span
+        ss, se, _ = self._span
         string = ''.join(self._lststr[ss:se])
         byte_array = bytearray(string, 'ascii', 'replace')
         subspans = self._subspans
         for type_ in 'Template', 'ParserFunction', 'Parameter':
-            for s, e in subspans(type_):
+            for s, e, _ in subspans(type_):
                 byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
                     b' ', byte_array[s + 2:e - 2]) + b'  '
-        for s, e in subspans('Comment'):
+        for s, e, _ in subspans('Comment'):
             byte_array[s:e] = (e - s) * b'_'
         return byte_array
 
@@ -531,13 +533,13 @@ class WikiText:
         Only return sub-spans and change them to fit the new scope, i.e
         self.string.
         """
-        ss, se = self._span
+        ss, se, _ = self._span
         if ss == 0 and se == len(self._lststr):
             return deepcopy(self._type_to_spans)
         return {
             type_: [
-                [s - ss, e - ss] for s, e in spans[bisect_left(spans, [ss]):]
-                if e <= se
+                [s - ss, e - ss, match] for s, e, match
+                in spans[bisect_left(spans, [ss]):] if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
     def plain_text(
@@ -555,7 +557,7 @@ class WikiText:
     ) -> str:
         """Return a plain text string representation of self."""
         if _mutate is False:
-            s, e = self._span
+            s, e, _ = self._span
             parsed = WikiText(
                 self._lststr[s:e], self._inner_type_to_spans_copy())
             parsed._span = self._span.copy()
@@ -563,13 +565,13 @@ class WikiText:
         else:
             tts = self._type_to_spans
             parsed = self
-        for (b, e) in tts['Comment']:
+        for (b, e, _) in tts['Comment']:
             del parsed[b:e]
         if replace_templates:
-            for (b, e) in tts['Template']:
+            for (b, e, _) in tts['Template']:
                 del parsed[b:e]
         if replace_parser_functions:
-            for (b, e) in tts['ParserFunction']:
+            for (b, e, _) in tts['ParserFunction']:
                 del parsed[b:e]
         if replace_parameters:
             for p in parsed.parameters:
@@ -612,11 +614,11 @@ class WikiText:
         ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
         lststr = self._lststr
-        s, e = self._span
+        s, e, _ = self._span
         parsed = WikiText(lststr[s:e], self._inner_type_to_spans_copy())
         # Since _type_to_spans arg of WikiText has been used, parsed._span
         # is not set yet.
-        span = [0, len(lststr)]
+        span = [0, len(lststr), None]
         parsed._span = span
         parsed._type_to_spans['WikiText'] = [span]
         if remove_comments:
@@ -851,7 +853,7 @@ class WikiText:
             b, e = s + match.start(1), s + match.end(3)
             old_span = span_tuple_to_span_get((b, e))
             if old_span is None:
-                span = [b, e]
+                span = [b, e, None]
                 insort_right(spans, span)
             else:
                 span = old_span
@@ -893,7 +895,7 @@ class WikiText:
             b, e = span = s + b, s + e
             old_span = span_tuple_to_span_get(span)
             if old_span is None:
-                span = [b, e]
+                span = [b, e, None]
                 insort_right(spans, span)
             else:
                 span = old_span
@@ -931,12 +933,12 @@ class WikiText:
         external_links_append = external_links.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        ss, se = self._span
+        ss, se, _ = self._span
         spans = type_to_spans.setdefault('ExternalLink', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         for m in EXTERNAL_LINK_FINDITER(self._ext_link_shadow):
             s, e = m.span()
-            span = s, e = [s + ss, e + ss]
+            span = s, e, _ = [s + ss, e + ss, None]
             old_span = span_tuple_to_span_get((s, e))
             if old_span is None:
                 insort_right(spans, span)
@@ -968,7 +970,7 @@ class WikiText:
         sections_append = sections.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
-        ss, se = _span = self._span
+        ss, se, _ = _span = self._span
         type_spans = type_to_spans.setdefault('Section', [])
         full_match = SECTIONS_FULLMATCH(self._shadow)
         section_spans = full_match.spans('section')
@@ -992,7 +994,7 @@ class WikiText:
             s, e = ss + s, ss + e
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
-                span = [s, e]
+                span = [s, e, None]
                 insort_right(type_spans, span)
             else:
                 span = old_span
@@ -1009,7 +1011,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow = self._shadow[:]
-        ss, se = self._span
+        ss, se, _ = self._span
         spans = type_to_spans.setdefault('Table', [])
         spans_append = spans.append
         skip_self_span = self._type == 'Table'
@@ -1025,7 +1027,7 @@ class WikiText:
                 s, e = ss + ms + len(m[1]), ss + me
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
-                    span = [s, e]
+                    span = [s, e, None]
                     spans_append(span)
                     return_spans_append(span)
                 else:
@@ -1099,7 +1101,7 @@ class WikiText:
                 s, e = ss + ms, ss + me
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
-                    span = [s, e]
+                    span = [s, e, None]
                     insort_right(spans, span)
                 else:
                     span = old_span
@@ -1163,7 +1165,7 @@ class WikiText:
             if start_match['self_closing']:
                 # Don't look for the end tag
                 s, e = start_match.span()
-                span = [ss + s, ss + e]
+                span = [ss + s, ss + e, None]
             else:
                 # look for the end-tag
                 start_start, start_end = start_match.span()
@@ -1180,10 +1182,10 @@ class WikiText:
                 if end_match:
                     s, e = end_match.span()
                     shadow_copy[s:e] = b'_' * (e - s)
-                    span = [ss + start_start, ss + e]
+                    span = [ss + start_start, ss + e, None]
                 else:
                     # Assume start-only tag.
-                    span = [ss + start_start, ss + start_end]
+                    span = [ss + start_start, ss + start_end, None]
             old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)
@@ -1226,7 +1228,7 @@ class SubWikiText(WikiText):
             self._type = _type = type(self).__name__
             super().__init__(string)
             if _type not in SPAN_PARSER_TYPES:
-                span = [0, len(string)]
+                span = [0, len(string), None]
                 self._type_to_spans[_type] = [span]
                 self._span = span
         else:
@@ -1238,7 +1240,7 @@ class SubWikiText(WikiText):
 
     def _subspans(self, _type: str) -> Generator[int, None, None]:
         """Yield all the sub-span indices excluding self._span."""
-        ss, se = self._span
+        ss, se, _ = self._span
         spans = self._type_to_spans[_type]
         # Do not yield self._span by bisecting for s < ss.
         # The second bisect is an optimization and should be on [se + 1],
@@ -1263,7 +1265,7 @@ class SubWikiText(WikiText):
             types = type_,
         lststr = self._lststr
         type_to_spans = self._type_to_spans
-        ss, se = self._span
+        ss, se, _ = self._span
         ancestors = []
         ancestors_append = ancestors.append
         for type_ in types:
@@ -1294,7 +1296,7 @@ def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
     """Yield the outermost intervals."""
     for i, span in enumerate(sorted_spans):
         se = span[1]
-        for ps, pe in islice(sorted_spans, None, i):
+        for ps, pe, _ in islice(sorted_spans, None, i):
             if se < pe:
                 break
         else:  # none of the previous spans included span

@@ -201,7 +201,7 @@ class Tag(SubWikiTextWithAttrs):
         se = self._span[0]
         s, e = self._match.span('contents')
         type_to_spans = self._type_to_spans
-        span = type_to_spans.setdefault('SubWikiText', [se + s, se + e])
+        span = type_to_spans.setdefault('SubWikiText', [se + s, se + e, None])
         return SubWikiText(self._lststr, type_to_spans, span, 'SubWikiText')
 
     @property
