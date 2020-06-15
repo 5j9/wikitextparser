@@ -275,30 +275,32 @@ class WikiText:
         `_shrink_update` functions will be called and the performance
         will improve.
         """
-        # todo
-        start, stop = self._check_index(key)
+        abs_start, abs_stop = self._check_index(key)
         # Update lststr
         lststr = self._lststr
-        lststr[start:stop] = list(value)
+        lststr[abs_start:abs_stop] = list(value)
         # Set the length of all subspans to zero because
         # they are all being replaced.
-        self._close_subspans(start, stop)
+        self._close_subspans(abs_start, abs_stop)
         # Update the other spans according to the new length.
-        len_change = len(value) + start - stop
+        val_ba = bytearray(value, 'ascii', 'replace')
+        len_change = len(value) + abs_start - abs_stop
         if len_change > 0:
-            self._insert_update(start, len_change)
+            self._insert_update(abs_start, len_change)
         elif len_change < 0:
             self._shrink_update(
-                rmstart=stop + len_change,  # new stop
-                rmstop=stop)  # old stop
+                rmstart=abs_stop + len_change,  # new stop
+                rmstop=abs_stop)  # old stop
         # Add the newly added spans contained in the value.
         type_to_spans = self._type_to_spans
-        byte_array = bytearray(value, 'ascii', 'replace')
-        for type_, spans in parse_to_spans(byte_array).items():
-            for s, e, _, _ in spans:
-                insort_right(
-                    type_to_spans[type_],
-                    [s + start, e + start, None, byte_array])
+        for type_, value_spans in parse_to_spans(val_ba).items():
+            tts = type_to_spans[type_]
+            for s, e, m, ba in value_spans:
+                try:
+                    insort_right(tts, [abs_start + s, abs_start + e, m, ba])
+                except TypeError:
+                    # already exists which has lead to comparing Matches
+                    continue
 
     def __delitem__(self, key: Union[slice, int]) -> None:
         """Remove the specified range or character from self.string.
