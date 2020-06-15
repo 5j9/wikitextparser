@@ -215,12 +215,12 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     # HTML <!-- comments -->
     for match in COMMENT_FINDITER(byte_array):
         ms, me = match.span()
-        cms_append([ms, me, None])
+        cms_append([ms, me, None, byte_array[ms:me]])
         byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
         ms, me = match.span()
-        ets_append([ms, me, match])
+        ets_append([ms, me, match, byte_array[ms:me]])
         if match[2]:  # parsable tag extension group
             _parse_sub_spans(
                 byte_array, ms, me,
@@ -253,9 +253,9 @@ def _parse_sub_spans(
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
-                    wls_append([ms, me, match])
+                    wls_append([ms, me, match, byte_array[ms:me]])
                 else:
-                    pms_append([ms, me, match])
+                    pms_append([ms, me, match, byte_array[ms:me]])
                 _parse_sub_spans(
                     byte_array, ms + 2, me - 2,
                     pms_append, pfs_append, tls_append, wls_append)
@@ -265,14 +265,14 @@ def _parse_sub_spans(
         for match in PF_TL_FINDITER(byte_array, start, end):
             ms, me = match.span()
             if match[1] is not None:
-                pfs_append([ms, me, match])
+                pfs_append([ms, me, match, byte_array[ms:me]])
                 byte_array[ms:me] = b'X' * (me - ms)
             elif match[2] is not None:  # invalid template name
                 byte_array[ms:me] = b'_' * (me - ms)
                 byte_array[ms+1] = 123
                 continue
             else:
-                tls_append([ms, me, match])
+                tls_append([ms, me, match, byte_array[ms:me]])
                 byte_array[ms:me] = b'X' * (me - ms)
         if match is None:
             break

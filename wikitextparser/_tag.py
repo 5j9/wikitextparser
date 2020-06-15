@@ -198,10 +198,11 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def parsed_contents(self) -> SubWikiText:
         """Return the contents as a SubWikiText object."""
-        se = self._span[0]
+        ss, _, _, byte_array = self._span_data
         s, e = self._match.span('contents')
         type_to_spans = self._type_to_spans
-        span = type_to_spans.setdefault('SubWikiText', [se + s, se + e, None])
+        span = type_to_spans.setdefault(
+            'SubWikiText', [ss + s, ss + e, None, byte_array[s:e]])
         return SubWikiText(self._lststr, type_to_spans, span, 'SubWikiText')
 
     @property

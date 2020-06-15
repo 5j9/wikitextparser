@@ -71,8 +71,8 @@ class Table(SubWikiTextWithAttrs):
     def _table_shadow(self) -> bytearray:
         """Remove Table spans from shadow and return it."""
         shadow = self._shadow[:]
-        ss = self._span[0]
-        for s, e, _ in self._subspans('Table'):
+        ss = self._span_data[0]
+        for s, e, _, _ in self._subspans('Table'):
             if s == ss:
                 continue
             shadow[s - ss:e - ss] = b'#' * (e - s)
@@ -201,7 +201,7 @@ class Table(SubWikiTextWithAttrs):
         If only need the values inside cells, then use the ``data`` method
         instead.
         """
-        tbl_span = self._span
+        tbl_span = self._span_data
         ss = tbl_span[0]
         match_table = self._match_table
         shadow = self._shadow
@@ -221,7 +221,7 @@ class Table(SubWikiTextWithAttrs):
                 row_attrs_append = row_attrs.append
             for m in match_row:
                 ms, me = m.span()
-                cell_span = [ss + ms, ss + me, None]
+                cell_span = [ss + ms, ss + me, None, shadow[ms:me]]
                 if span:
                     s, e = m.span('attrs')
                     # Note: ATTRS_MATCH always matches, even to empty strings.

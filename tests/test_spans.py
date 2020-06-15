@@ -84,7 +84,7 @@ def test_template_name_cannot_contain_newline():
 
 # noinspection PyProtectedMember
 def test_unicode_template():
-    (a, b, _), = WikiText('{{\nرنگ\n|متن}}')._type_to_spans['Template']
+    (a, b, _, _), = WikiText('{{\nرنگ\n|متن}}')._type_to_spans['Template']
     assert a == 0
     assert b == 13
 
@@ -96,7 +96,7 @@ def test_invoking_a_named_ref_is_not_a_ref_start():
     [[mw:Help:Extension:Cite]] may be helpful, too.
 
     """
-    (a, b, _), = WikiText(
+    (a, b, _, _), = WikiText(
         '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
     )._type_to_spans['Template']
     assert a == 0
@@ -112,14 +112,14 @@ def test_invalid_refs_that_should_not_produce_any_template():
 
 # noinspection PyProtectedMember
 def test_unicode_parser_function():
-    (a, b, _), = WikiText('{{#اگر:|فلان}}')._type_to_spans['ParserFunction']
+    (a, b, _, _), = WikiText('{{#اگر:|فلان}}')._type_to_spans['ParserFunction']
     assert a == 0
     assert b == 14
 
 
 # noinspection PyProtectedMember
 def test_unicode_parameters():
-    (a, b, _), (c, d, _) = WikiText(
+    (a, b, _, _), (c, d, _, _) = WikiText(
         '{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')._type_to_spans['Parameter']
     assert a == 0
     assert b == 30
@@ -129,7 +129,7 @@ def test_unicode_parameters():
 
 # noinspection PyProtectedMember
 def test_image_containing_wikilink():
-    (a, b, _), (c, d, _), (e, f, _) = parse(
+    (a, b, _, _), (c, d, _, _), (e, f, _, _) = parse(
         "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 "
         "[[Wikilink2]].]]")._type_to_spans['WikiLink']
     assert a == 0
@@ -307,7 +307,7 @@ def test_parser_function_regex():
 
 # noinspection PyProtectedMember
 def test_wikilinks_inside_exttags():
-    (s, e, _), = WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
+    (s, e, _, _), = WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
     assert s == 5
     assert e == 10
 

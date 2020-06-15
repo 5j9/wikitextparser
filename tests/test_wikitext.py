@@ -184,7 +184,7 @@ def test_spans_are_closed_properly():
     #     WikiText('{{text|1={{#if:|}}\n\n}}').pformat(),
     # )
     wt = WikiText('')
-    wt._type_to_spans = {'ParserFunction': [[16, 25, None]]}
+    wt._type_to_spans = {'ParserFunction': [[16, 25, None, None]]}
     # noinspection PyProtectedMember
     wt._close_subspans(16, 27)
     # noinspection PyProtectedMember
@@ -449,8 +449,8 @@ def test_parser_function_in_external_link():
 def test_equal_span_ids():
     p = parse('lead\n== 1 ==\nhttp://wikipedia.org/')
     # noinspection PyProtectedMember
-    assert id(p.external_links[0]._span) == \
-        id(p.sections[1].external_links[0]._span)
+    assert id(p.external_links[0]._span_data) == \
+        id(p.sections[1].external_links[0]._span_data)
 
 
 # WikiText.tables
@@ -590,7 +590,7 @@ def test_nested_tables_sorted():
     p = parse(s)
     assert 1 == len(p.get_tables())  # non-recursive
     tables = p.tables
-    assert tables == sorted(tables, key=attrgetter('_span'))
+    assert tables == sorted(tables, key=attrgetter('_span_data'))
     t0 = tables[0]
     assert s == t0.string
     assert t0.data(strip=False) == [[
@@ -1076,7 +1076,7 @@ def test_subsection():
     assert '=== b ===\n2\n==== c ====\n3\n' == b.string
     # Sections use the same span object
     # noinspection PyProtectedMember
-    assert b.sections[1]._span is b._span
+    assert b.sections[1]._span_data is b._span_data
     assert '==== c ====\n3\n' == b.sections[2].string
 
 
@@ -1119,9 +1119,9 @@ def test_by_heading_pattern():
     # return the same span when returning same section
     lead_, h1_, h2_, h3_, h_ = wt.get_sections(include_subsections=False)
     # noinspection PyProtectedMember
-    assert lead._span is lead_._span
+    assert lead._span_data is lead_._span_data
     # noinspection PyProtectedMember
-    assert h._span is h_._span
+    assert h._span_data is h_._span_data
     # do not create repeated spans
     # noinspection PyProtectedMember
     assert len(wt._type_to_spans['Section']) == 5
@@ -1239,7 +1239,7 @@ def test_extension_tags_are_not_lost_in_shadows():
 
 def test_same_tags_end():
     # noinspection PyProtectedMember
-    assert WikiText('<s></s><s></s>').get_tags()[0]._span[:2] == [0, 7]
+    assert WikiText('<s></s><s></s>').get_tags()[0]._span_data[:2] == [0, 7]
 
 
 def test_get_bolds():

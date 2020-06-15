@@ -136,7 +136,7 @@ class WikiList(SubWikiText):
         # Only return sub-lists that are within the given item
         match = self._match
         fullitem_spans = match.spans('fullitem')
-        ss = self._span[0]
+        ss = self._span_data[0]
         ms = match.start()
         s, e = fullitem_spans[i]
         e -= ms - ss
@@ -144,7 +144,7 @@ class WikiList(SubWikiText):
         for pattern in patterns:
             for lst in get_lists(self_pattern + pattern):
                 # noinspection PyProtectedMember
-                ls, le, _ = lst._span
+                ls, le, _, _ = lst._span_data
                 if s < ls and le <= e:
                     sublists_append(lst)
         return sublists

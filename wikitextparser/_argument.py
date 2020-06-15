@@ -41,9 +41,9 @@ class Argument(SubWikiText):
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match
-        ss, se, _ = self._span
+        ss, se, _, _ = self._span_data
         parent = self._parent
-        ps = parent._span[0]
+        ps = parent._span_data[0]
         shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps:se - ps])
         self._shadow_match_cache = shadow_match, self_string
         return shadow_match
@@ -56,7 +56,7 @@ class Argument(SubWikiText):
         setter: convert it to keyword argument if positional.
         """
         lststr = self._lststr
-        ss = self._span[0]
+        ss = self._span_data[0]
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             s, e = shadow_match.span('pre_eq')
@@ -64,8 +64,8 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         parent_find = self._parent._shadow.find
-        parent_start = self._parent._span[0]
-        for s, e, _ in self._type_to_spans[self._type]:
+        parent_start = self._parent._span_data[0]
+        for s, e, _, _ in self._type_to_spans[self._type]:
             if ss <= s:
                 break
             if parent_find(b'=', s - parent_start, e - parent_start) != -1:
@@ -142,9 +142,9 @@ class Argument(SubWikiText):
             ls_post_eq = post_eq.lstrip()
             return (
                 ls_post_eq,
-                self._span[0] + shadow_match.start('post_eq')
+                self._span_data[0] + shadow_match.start('post_eq')
                 + len(post_eq) - len(ls_post_eq))
-        return shadow_match[0][1:], self._span[0] + 1
+        return shadow_match[0][1:], self._span_data[0] + 1
 
 
 if __name__ == '__main__':

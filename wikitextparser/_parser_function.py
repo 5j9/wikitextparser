@@ -43,13 +43,15 @@ class SubWikiTextWithArgs(SubWikiText):
         arguments = []
         arguments_append = arguments.append
         type_to_spans = self._type_to_spans
-        ss, se, _ = span = self._span
+        ss, se, _, _ = span = self._span_data
         type_ = id(span)
         lststr = self._lststr
         arg_spans = type_to_spans.setdefault(type_, [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
         for arg_self_start, arg_self_end in split_spans:
-            s, e, _ = arg_span = [ss + arg_self_start, ss + arg_self_end, None]
+            # todo: add byte array
+            s, e, _, _ = arg_span = [
+                ss + arg_self_start, ss + arg_self_end, None, None]
             old_span = span_tuple_to_span_get((s, e))
             if old_span is None:
                 insort(arg_spans, arg_span)

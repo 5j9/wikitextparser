@@ -27,7 +27,7 @@ def test_sub_bolds():
     assert b.get_bolds(recursive=False) == []
     recursive_subbolds = b.get_bolds()
     assert len(recursive_subbolds) == 1  # ?
-    assert recursive_subbolds[0]._span[:2] == [12, 19]
+    assert recursive_subbolds[0]._span_data[:2] == [12, 19]
 
 
 def test_sub_italics():
@@ -35,7 +35,7 @@ def test_sub_italics():
     assert i.get_italics(recursive=False) == []
     recursive_subitalics = i.get_italics()
     assert len(recursive_subitalics) == 1  # ?
-    assert recursive_subitalics[0]._span[:2] == [11, 16]
+    assert recursive_subitalics[0]._span_data[:2] == [11, 16]
 
 
 if __name__ == '__main__':
