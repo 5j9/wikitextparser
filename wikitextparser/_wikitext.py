@@ -149,7 +149,7 @@ class WikiText:
             self._type_to_spans = _type_to_spans
             self._lststr = string  # type: MutableSequence[str]
             return
-        self._lststr = list(string)
+        self._lststr = [string]
         byte_array = bytearray(string, 'ascii', 'replace')
         span = self._span_data = [0, len(string), None, byte_array]
         _type = self._type
@@ -225,13 +225,13 @@ class WikiText:
         """
         if stop is False:
             if start >= 0:
-                return self._lststr[self._span_data[0] + start]
-            return self._lststr[self._span_data[1] + start]
+                return self._lststr[0][self._span_data[0] + start]
+            return self._lststr[0][self._span_data[1] + start]
         s, e, _, _ = self._span_data
-        return ''.join(self._lststr[
+        return self._lststr[0][
             s if start is None else (s + start if start >= 0 else e + start):
             e if stop is None else (s + stop if stop >= 0 else e + stop):
-            step])
+            step]
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
@@ -278,7 +278,8 @@ class WikiText:
         abs_start, abs_stop = self._check_index(key)
         # Update lststr
         lststr = self._lststr
-        lststr[abs_start:abs_stop] = list(value)
+        lststr0 = lststr[0]
+        lststr[0] = lststr0[:abs_start] + value + lststr0[abs_stop:]
         # Set the length of all subspans to zero because
         # they are all being replaced.
         self._close_subspans(abs_start, abs_stop)
@@ -310,7 +311,9 @@ class WikiText:
         possibility of insertion into the wrong spans.
         """
         start, stop = self._check_index(key)
-        del self._lststr[start:stop]
+        lststr = self._lststr
+        lststr0 = lststr[0]
+        lststr[0] = lststr0[:start] + lststr0[stop:]
         # Update spans
         self._shrink_update(start, stop)
 
@@ -325,6 +328,7 @@ class WikiText:
         """
         ss, se, _, _ = self._span_data
         lststr = self._lststr
+        lststr0 = lststr[0]
         if index < 0:
             index += se - ss
             if index < 0:
@@ -333,7 +337,7 @@ class WikiText:
             index = se - ss
         index += ss
         # Update lststr
-        lststr[index:index] = list(string)
+        lststr[0] = lststr0[:index] + string + lststr0[index:]
         string_len = len(string)
         # Update spans
         self._insert_update(
@@ -361,7 +365,7 @@ class WikiText:
             emptying any object that points to the old string.
         """
         start, end, _, _ = self._span_data
-        return ''.join(self._lststr[start:end])
+        return self._lststr[0][start:end]
 
     @string.setter
     def string(self, newstring: str) -> None:
@@ -493,7 +497,7 @@ class WikiText:
         """
         # return self._span_data[3]
         ss, se, _, byte_array = self._span_data
-        string = ''.join(self._lststr[ss:se])
+        string = self._lststr[0][ss:se]
         cached_string, shadow = getattr(
             self, '_shadow_cache', (None, None))
         if cached_string == string:
@@ -525,7 +529,7 @@ class WikiText:
         'ParserFunction', 'Parameter') only invalid characters are replaced.
         """
         ss, se, _, _ = self._span_data
-        string = ''.join(self._lststr[ss:se])
+        string = self._lststr[0][ss:se]
         byte_array = bytearray(string, 'ascii', 'replace')
         subspans = self._subspans
         for type_ in 'Template', 'ParserFunction', 'Parameter':
@@ -543,7 +547,7 @@ class WikiText:
         self.string.
         """
         ss, se, _, _ = self._span_data
-        if ss == 0 and se == len(self._lststr):
+        if ss == 0 and se == len(self._lststr[0]):
             return deepcopy(self._type_to_spans)
         return {
             type_: [
@@ -568,7 +572,7 @@ class WikiText:
         if _mutate is False:
             s, e, _, _ = self._span_data
             parsed = WikiText(
-                self._lststr[s:e], self._inner_type_to_spans_copy())
+                [self._lststr[0][s:e]], self._inner_type_to_spans_copy())
             parsed._span_data = self._span_data.copy()
             tts = parsed._type_to_spans
         else:
@@ -622,12 +626,12 @@ class WikiText:
         """
         ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
-        lststr = self._lststr
+        lststr0 = self._lststr[0]
         s, e, _, _ = self._span_data
-        parsed = WikiText(lststr[s:e], self._inner_type_to_spans_copy())
+        parsed = WikiText([lststr0[s:e]], self._inner_type_to_spans_copy())
         # Since _type_to_spans arg of WikiText has been used, parsed._span
         # is not set yet.
-        span = [0, len(lststr)] + self._span_data[2:]
+        span = [0, len(lststr0)] + self._span_data[2:]
         parsed._span_data = span
         parsed._type_to_spans['WikiText'] = [span]
         if remove_comments:
@@ -1145,7 +1149,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         if name:
             if name in _tag_extensions:
-                string = ''.join(lststr)
+                string = lststr[0]
                 startswith = '<' + name + ' '
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')

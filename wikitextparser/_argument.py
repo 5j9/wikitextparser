@@ -55,12 +55,11 @@ class Argument(SubWikiText):
         getter: return the position as a string, for positional arguments.
         setter: convert it to keyword argument if positional.
         """
-        lststr = self._lststr
         ss = self._span_data[0]
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             s, e = shadow_match.span('pre_eq')
-            return ''.join(lststr[ss + s:ss + e])
+            return self._lststr[0][ss + s:ss + e]
         # positional argument
         position = 1
         parent_find = self._parent._shadow.find
