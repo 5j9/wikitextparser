@@ -289,7 +289,7 @@ class WikiText:
         if len_change > 0:
             self._insert_update(abs_start, len_change)
         elif len_change < 0:
-            self._shrink_update(
+            self._del_update(
                 rmstart=abs_stop + len_change,  # new stop
                 rmstop=abs_stop)  # old stop
         # Add the newly added spans contained in the value.
@@ -315,7 +315,7 @@ class WikiText:
         lststr0 = lststr[0]
         lststr[0] = lststr0[:start] + lststr0[stop:]
         # Update spans
-        self._shrink_update(start, stop)
+        self._del_update(start, stop)
 
     # Todo: def __add__(self, other) and __radd__(self, other)
 
@@ -392,7 +392,7 @@ class WikiText:
                         spans.pop(i + b)[:] = -1, -1, None, None
                         b -= 1
 
-    def _shrink_update(self, rmstart: int, rmstop: int) -> None:
+    def _del_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span.
 
         Warning: If an operation involves both _shrink_update and
