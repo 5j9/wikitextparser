@@ -91,10 +91,6 @@ class SubWikiTextWithArgs(SubWikiText):
     def name(self, newname: str) -> None:
         self[2:2 + len(self.name)] = newname
 
-    @property
-    def parser_functions(self) -> List['ParserFunction']:
-        return super().parser_functions[1:]
-
     def get_bolds(self, recursive=False):
         bolds = []
         for a in self.arguments:
@@ -108,3 +104,7 @@ class ParserFunction(SubWikiTextWithArgs):
 
     _name_args_matcher = PF_NAME_ARGS_FULLMATCH
     _first_arg_sep = 58
+
+    @property
+    def parser_functions(self) -> List['ParserFunction']:
+        return super().parser_functions[1:]

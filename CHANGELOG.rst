@@ -1,3 +1,7 @@
+v0.37.2.dev0
+------------
+- Fix a bug in getting the parser functions of a Template object.
+
 v0.37.1
 -------
 - Fix a catastrophic backtracking issue for wikitexts containing html tags. (#37)

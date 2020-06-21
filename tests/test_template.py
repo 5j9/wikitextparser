@@ -307,5 +307,10 @@ def test_del_positional_arg():
     assert '{{t| a | d }}' == t.string
 
 
+def test_parser_functions():
+    assert Template(
+        '{{t|{{#if:|}}}}').parser_functions[0].string == '{{#if:|}}'
+
+
 if __name__ == '__main__':
     main()
