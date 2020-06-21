@@ -1,5 +1,5 @@
-v0.37.2.dev0
-------------
+v0.37.2
+-------
 - Fix a bug in getting the parser functions of a Template object.
 
 v0.37.1
