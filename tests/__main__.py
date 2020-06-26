@@ -1,3 +1,3 @@
 from pytest import main
 
-main()
+raise SystemExit(main())
