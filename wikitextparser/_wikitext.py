@@ -566,7 +566,7 @@ class WikiText:
         unescape_html_entities=True,
         replace_bolds=True,
         replace_italics=True,
-        _mutate=False,
+        _mutate=False
     ) -> str:
         """Return a plain text string representation of self."""
         if _mutate is False:

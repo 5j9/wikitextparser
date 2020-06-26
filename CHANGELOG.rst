@@ -1,3 +1,7 @@
+v0.37.3.dev0
+-------
+- Fix syntax errors for python 3.5, 3.6, and 3.7.
+
 v0.37.2
 -------
 - Fix a bug in getting the parser functions of a Template object.
