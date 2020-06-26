@@ -364,7 +364,7 @@ class WikiText:
     def string(self) -> str:
         """Return str(self). Support get, set, and delete operations.
 
-        getter and delter: Note that this will overwrite the current string,
+        getter and deleter: Note that this will overwrite the current string,
             emptying any object that points to the old string.
         """
         start, end, _, _ = self._span_data
