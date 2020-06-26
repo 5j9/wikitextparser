@@ -76,7 +76,7 @@ class Italic(BoldItalic):
             False otherwise.
         """
         super().__init__(string, _type_to_spans, _span, _type)
-        self.end_token: bool = end_token
+        self.end_token = end_token
 
     @property
     def _match(self):
@@ -84,7 +84,7 @@ class Italic(BoldItalic):
             return ITALIC_FULLMATCH(self.string)
         return ITALIC_NOEND_FULLMATCH(self.string)
 
-    def get_italics(self, recursive=True) -> List['Bold']:
+    def get_italics(self, recursive=True) -> List['Italic']:
         if not recursive:
             return []
         return super().get_italics(True)[1:]
