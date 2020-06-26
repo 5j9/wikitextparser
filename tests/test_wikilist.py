@@ -1,4 +1,4 @@
-from pytest import main, warns
+from pytest import warns
 
 from wikitextparser import WikiList, parse
 
@@ -146,9 +146,5 @@ def test_cache_update():
     wl = WikiList('*a {{t}}', pattern=r'\*')
     wl.templates[0].name = 'ttt'
     assert wl.string == '*a {{ttt}}'
-
-
-if __name__ == '__main__':
-    main()
 
 # todo: check if ref tags can contain lists and add a test for it.

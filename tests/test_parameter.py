@@ -1,4 +1,4 @@
-﻿from pytest import main, warns
+﻿from pytest import warns
 
 from wikitextparser import Parameter
 
@@ -102,7 +102,3 @@ def test_ignore_comment_pipes():
     del p.default
     assert p.string == '{{{2<!-- |comment| -->}}}'
     assert p.pipe == ''
-
-
-if __name__ == '__main__':
-    main()

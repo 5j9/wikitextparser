@@ -1,5 +1,3 @@
-from pytest import main
-
 # noinspection PyProtectedMember
 from wikitextparser._config import _pattern, _plant_trie, regex_pattern
 
@@ -63,7 +61,3 @@ def test_a_or_abc_or_null():
 
 def test_regex_pattern():
     assert regex_pattern(['a', 'bc']) == b'(?>bc|a)'
-
-
-if __name__ == '__main__':
-    main()

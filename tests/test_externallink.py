@@ -1,6 +1,4 @@
-﻿from pytest import main
-
-from wikitextparser import ExternalLink
+﻿from wikitextparser import ExternalLink
 
 
 def test_externallinks():
@@ -84,7 +82,3 @@ def test_ending_with_less_than_sign():
     el = ExternalLink('[https://www.google.<com]')
     assert el.url == 'https://www.google.'
     assert el.text == '<com'
-
-
-if __name__ == '__main__':
-    main()

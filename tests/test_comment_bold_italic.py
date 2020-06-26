@@ -1,6 +1,4 @@
-﻿from pytest import main
-
-from wikitextparser import Comment, Bold, Italic
+﻿from wikitextparser import Comment, Bold, Italic
 
 
 def test_comment():
@@ -36,7 +34,3 @@ def test_sub_italics():
     recursive_subitalics = i.get_italics()
     assert len(recursive_subitalics) == 1  # ?
     assert recursive_subitalics[0]._span_data[:2] == [11, 16]
-
-
-if __name__ == '__main__':
-    main()

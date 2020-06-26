@@ -1,4 +1,4 @@
-﻿from pytest import mark, main
+﻿from pytest import mark
 
 from wikitextparser import Section
 
@@ -104,7 +104,3 @@ def test_level_setter_does_not_overwrite_title():
     s.level = 2
     assert '=={{t}}==\nb' == s.string
     assert '{{t}}' == t.string
-
-
-if __name__ == '__main__':
-    main()

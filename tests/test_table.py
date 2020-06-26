@@ -1,5 +1,3 @@
-from pytest import main
-
 from wikitextparser import Table, WikiText
 
 
@@ -496,7 +494,3 @@ def test_get_get_tables():
     assert repr(
         Table('{|\n|a\n|-\n{|\n|b\n|}\n|}').get_tables()
     ) == "[Table('{|\\n|b\\n|}')]"
-
-
-if __name__ == '__main__':
-    main()

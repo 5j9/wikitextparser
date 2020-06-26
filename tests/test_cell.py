@@ -1,6 +1,4 @@
-﻿from pytest import main
-
-from wikitextparser import parse
+﻿from wikitextparser import parse
 # noinspection PyProtectedMember
 from wikitextparser._table import Table, Cell
 
@@ -101,7 +99,3 @@ def test_cached_attrs_expiry():
 def test_cell_attrs_using_table_match():
     c = parse('text\n{|\n!a=b| c\n|}').tables[0].cells(0, 0)
     assert c.attrs == {'a': 'b'}
-
-
-if __name__ == '__main__':
-    main()

@@ -1,4 +1,4 @@
-from pytest import main, warns, mark
+from pytest import warns, mark
 
 from wikitextparser import Template
 
@@ -310,7 +310,3 @@ def test_del_positional_arg():
 def test_parser_functions():
     assert Template(
         '{{t|{{#if:|}}}}').parser_functions[0].string == '{{#if:|}}'
-
-
-if __name__ == '__main__':
-    main()

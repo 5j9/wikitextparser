@@ -1,5 +1,5 @@
 ﻿from typing import Dict, List
-from pytest import main, mark
+from pytest import mark
 
 # noinspection PyProtectedMember
 from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
@@ -486,7 +486,3 @@ def test_wikilinks_and_params_cannot_overlap():
     assert d['Parameter'] == [[4, 15]]
     assert not d['WikiLink']
     # -> whichever comes last is processes first
-
-
-if __name__ == '__main__':
-    main()

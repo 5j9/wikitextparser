@@ -1,4 +1,4 @@
-﻿from pytest import main, mark
+﻿from pytest import mark
 
 from wikitextparser import ParserFunction, WikiText
 # noinspection PyProtectedMember
@@ -66,7 +66,3 @@ def test_argument_with_existing_span():
 
 def test_tag_containing_pipe():
     assert len(ParserFunction("{{text|a<s |>b</s>c}}").arguments) == 1
-
-
-if __name__ == '__main__':
-    main()

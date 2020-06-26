@@ -1,6 +1,6 @@
 from operator import attrgetter
 
-from pytest import main, warns, mark, raises
+from pytest import warns, mark, raises
 
 from wikitextparser import WikiText, parse, Template, ParserFunction,\
     remove_markup
@@ -1358,7 +1358,3 @@ def test_plaintext():
 
 def test_remove_markup():
     assert remove_markup("''a'' {{b}} c <!----> '''d'''") == "a  c  d"
-
-
-if __name__ == '__main__':
-    main()

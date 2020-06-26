@@ -1,5 +1,3 @@
-from pytest import main
-
 from wikitextparser import WikiLink
 
 
@@ -195,7 +193,3 @@ def test_title_and_fragment_deleters():
     del wl.fragment
     del wl.title
     assert wl.string == '[[|#]]'
-
-
-if __name__ == '__main__':
-    main()

@@ -1,4 +1,4 @@
-from pytest import raises, main
+from pytest import raises
 
 from wikitextparser import Argument, Template, parse
 
@@ -129,7 +129,3 @@ def test_equal_sign_in_val():
     a, c = Template('{{t|a==b|c}}').arguments
     assert a.value == '=b'
     assert c.name == '1'
-
-
-if __name__ == '__main__':
-    main()
