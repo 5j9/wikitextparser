@@ -355,7 +355,7 @@ class WikiText:
     @property
     def span(self) -> tuple:
         """Return the span of self relative to the start of the root node."""
-        return *self._span_data[:2],
+        return self._span_data[0],self._span_data[1],
 
     @property
     def string(self) -> str:
