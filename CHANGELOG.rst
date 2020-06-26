@@ -1,4 +1,4 @@
-v0.37.3.dev0
+v0.37.3
 -------
 - Fix syntax errors for python 3.5, 3.6, and 3.7.
 
