@@ -1281,6 +1281,11 @@ def test_get_bolds():
     ab("{{text|{{text|'''b'''}}}}", "'''b'''")
 
 
+def test_extension_tags():
+    a, b = parse('<ref/><ref/>')._extension_tags
+    assert a._extension_tags == []
+
+
 def test_get_italics():
     def ai(s: str, o: str, r: bool = True):
         italics = parse(s).get_italics(r)
@@ -1342,7 +1347,6 @@ def test_italic_end_token():
 def test_plaintext():
     def ap(s, p):
         assert parse(s).plain_text() == p
-    # ap("<ref/><ref></ref>", '')
     ap("<ref>''w''</ref>", 'w')  # could be '' as well
     ap("[[file:a.jpg|[[w]]]]", '')
     ap('<span>a</span>b<span>c</span>', 'abc')  # 39

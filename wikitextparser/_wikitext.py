@@ -1147,7 +1147,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         return [
             Tag(lststr, type_to_spans, span, 'ExtensionTag')
-            for span in type_to_spans['ExtensionTag']]
+            for span in self._subspans('ExtensionTag')]
 
     def get_tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
