@@ -338,7 +338,7 @@ The ``remove_markup`` function or ``plain_text`` method can be used to remove wi
     >>> s = "'''a'''<!--comment--> [[b|c]] [[d]]"
     >>> remove_markup(s)
     'a c d'
-    >>>> parse(s).plain_text()
+    >>> parse(s).plain_text()
     'a c d'
 
 Compared with mwparserfromhell
