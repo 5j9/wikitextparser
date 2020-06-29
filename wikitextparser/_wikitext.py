@@ -589,6 +589,18 @@ class WikiText:
         if replace_parser_functions:
             for (b, e, _, _) in tts['ParserFunction'].copy():
                 del parsed[b:e]
+        if replace_external_links:
+            for e in parsed.external_links:
+                if e.in_brackets:
+                    e[:] = e.text or ''
+        # replacing bold and italics should be done before wikilinks and tags
+        # because removing tags and wikilinks creates invalid spans.
+        if replace_bolds:
+            for b in parsed.get_bolds():
+                b[:] = b.text
+        if replace_italics:
+            for i in parsed.get_italics():
+                i[:] = i.text
         if replace_parameters:
             for p in parsed.parameters:
                 default = p.default
@@ -599,20 +611,8 @@ class WikiText:
         if replace_tags:
             for t in parsed.get_tags():
                 t[:] = t.contents
-        if replace_external_links:
-            for e in parsed.external_links:
-                if e.in_brackets:
-                    e[:] = e.text or ''
-        if replace_bolds:
-            for b in parsed.get_bolds():
-                b[:] = b.text
-        if replace_italics:
-            for i in parsed.get_italics():
-                i[:] = i.text
         if replace_wikilinks:
             for w in reversed(parsed.wikilinks):
-                # this makes some wikilink spans invalid, so it should be done
-                # after get_bolds and get_italics which rely on wikilinks.
                 if w.wikilinks:
                     del w[:]
                 else:

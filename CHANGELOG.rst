@@ -2,6 +2,7 @@ v0.37.5.dev0
 ------------
 - Fixed some other bugs in ``plain_text``/``remove_markup`` functions:
    - Images containing wikitext will no longer cause an exception.
+   - Tags containing bold/italic items.
 
 v0.37.4
 -------
