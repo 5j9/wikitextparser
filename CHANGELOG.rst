@@ -1,3 +1,8 @@
+v0.37.4
+-------
+- Fixed a bug in Tag objects causing strange behaviour upon mutating a tag.
+- Fixed a bug in ``plain_text``/``remove_markup`` function, causing some objects that are expected to be removed, remain in the result. (#39)
+
 v0.37.3
 -------
 - Fix syntax errors for python 3.5, 3.6, and 3.7.

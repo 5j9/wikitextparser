@@ -581,13 +581,13 @@ class WikiText:
         else:
             tts = self._type_to_spans
             parsed = self
-        for (b, e, _, _) in tts['Comment']:
+        for (b, e, _, _) in tts['Comment'].copy():
             del parsed[b:e]
         if replace_templates:
-            for (b, e, _, _) in tts['Template']:
+            for (b, e, _, _) in tts['Template'].copy():
                 del parsed[b:e]
         if replace_parser_functions:
-            for (b, e, _, _) in tts['ParserFunction']:
+            for (b, e, _, _) in tts['ParserFunction'].copy():
                 del parsed[b:e]
         if replace_parameters:
             for p in parsed.parameters:
@@ -1213,6 +1213,7 @@ class WikiText:
             else:
                 span = old_span
             tags_append(Tag(lststr, type_to_spans, span, 'Tag'))
+        spans.sort()
         tags.sort(key=attrgetter('_span_data'))
         return tags
 

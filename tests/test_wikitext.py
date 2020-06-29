@@ -1342,6 +1342,8 @@ def test_italic_end_token():
 def test_plaintext():
     def ap(s, p):
         assert parse(s).plain_text() == p
+    ap('<span>a</span>b<span>c</span>', 'abc')  # 39
+    ap('{{a}}b{{c}}', 'b')  # 39
     ap('t [[a|b]] t', 't b t')
     ap('t [[a]] t', 't a t')
     ap('&Sigma; &#931; &#x3a3; Σ', 'Σ Σ Σ Σ')
