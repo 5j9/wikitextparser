@@ -1,8 +1,9 @@
 v0.37.5.dev0
 ------------
-- Fixed some other bugs in ``plain_text``/``remove_markup`` functions:
+- Fixed some other bugs in ``plain_text``/``remove_markup`` functions for:
    - Images containing wikitext will no longer cause an exception.
    - Tags containing bold/italic items.
+   - Nested tags.
 - Fixed a bug in extracting sub-tags.
 
 v0.37.4

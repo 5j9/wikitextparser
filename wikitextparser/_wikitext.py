@@ -609,7 +609,7 @@ class WikiText:
                 else:
                     del p.string
         if replace_tags:
-            for t in parsed.get_tags():
+            for t in reversed(parsed.get_tags()):
                 t[:] = t.contents
         if replace_wikilinks:
             for w in reversed(parsed.wikilinks):
