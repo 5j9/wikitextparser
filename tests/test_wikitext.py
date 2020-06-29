@@ -1342,7 +1342,8 @@ def test_italic_end_token():
 def test_plaintext():
     def ap(s, p):
         assert parse(s).plain_text() == p
-    ap("<ref>''w''</ref>", 'w')
+    # ap("<ref/><ref></ref>", '')
+    ap("<ref>''w''</ref>", 'w')  # could be '' as well
     ap("[[file:a.jpg|[[w]]]]", '')
     ap('<span>a</span>b<span>c</span>', 'abc')  # 39
     ap('{{a}}b{{c}}', 'b')  # 39

@@ -581,13 +581,13 @@ class WikiText:
         else:
             tts = self._type_to_spans
             parsed = self
-        for (b, e, _, _) in tts['Comment'].copy():
+        for (b, e, _, _) in reversed(tts['Comment']):
             del parsed[b:e]
         if replace_templates:
-            for (b, e, _, _) in tts['Template'].copy():
+            for (b, e, _, _) in reversed(tts['Template']):
                 del parsed[b:e]
         if replace_parser_functions:
-            for (b, e, _, _) in tts['ParserFunction'].copy():
+            for (b, e, _, _) in reversed(tts['ParserFunction']):
                 del parsed[b:e]
         if replace_external_links:
             for e in parsed.external_links:
