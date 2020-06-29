@@ -610,10 +610,13 @@ class WikiText:
             for i in parsed.get_italics():
                 i[:] = i.text
         if replace_wikilinks:
-            for w in parsed.wikilinks:
-                # this makes the wikilinks invalid, so it should be done
-                # berfore get_bolds and get_italics which rely on wikilinks.
-                w[:] = w.text or w.target
+            for w in reversed(parsed.wikilinks):
+                # this makes some wikilink spans invalid, so it should be done
+                # after get_bolds and get_italics which rely on wikilinks.
+                if w.wikilinks:
+                    del w[:]
+                else:
+                    w[:] = w.text or w.target
         string = parsed.string
         if unescape_html_entities:
             string = unescape(string)

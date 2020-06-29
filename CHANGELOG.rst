@@ -1,7 +1,12 @@
+v0.37.5.dev0
+------------
+- Fixed some other bugs in ``plain_text``/``remove_markup`` functions:
+   - Images containing wikitext will no longer cause an exception.
+
 v0.37.4
 -------
 - Fixed a bug in Tag objects causing strange behaviour upon mutating a tag.
-- Fixed a bug in ``plain_text``/``remove_markup`` function, causing some objects that are expected to be removed, remain in the result. (#39)
+- Fixed a bug in ``plain_text``/``remove_markup`` functions, causing some objects that are expected to be removed, remain in the result. (#39)
 
 v0.37.3
 -------
