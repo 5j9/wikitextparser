@@ -1,3 +1,7 @@
+v0.37.6
+-------
+- Fixed a bug in ``plain_text``/``remove_markup`` causing unexpectedly empty objects. (#40)
+
 v0.37.5
 -------
 - Fixed some other bugs in ``plain_text``/``remove_markup`` functions for:

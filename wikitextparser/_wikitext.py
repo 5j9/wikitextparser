@@ -573,10 +573,10 @@ class WikiText:
     ) -> str:
         """Return a plain text string representation of self."""
         if _mutate is False:
-            s, e, _, _ = self._span_data
+            s, e, m, b = self._span_data
             parsed = WikiText(
                 [self._lststr[0][s:e]], self._inner_type_to_spans_copy())
-            parsed._span_data = self._span_data.copy()
+            parsed._span_data = [0, e - s, m, b[:]]
             tts = parsed._type_to_spans
         else:
             tts = self._type_to_spans
@@ -633,11 +633,11 @@ class WikiText:
         ws = WS
         # Do not try to do inplace pformat. It will overwrite on some spans.
         lststr0 = self._lststr[0]
-        s, e, _, _ = self._span_data
+        s, e, m, b = self._span_data
         parsed = WikiText([lststr0[s:e]], self._inner_type_to_spans_copy())
         # Since _type_to_spans arg of WikiText has been used, parsed._span
         # is not set yet.
-        span = [0, len(lststr0)] + self._span_data[2:]
+        span = [0, e - s, m, b[:]]
         parsed._span_data = span
         parsed._type_to_spans['WikiText'] = [span]
         if remove_comments:

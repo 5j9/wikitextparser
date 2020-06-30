@@ -1366,5 +1366,12 @@ def test_plaintext():
     ap("{{{1|a}}}", 'a')
 
 
+def test_plain_text_should_not_mutate():  # 40
+    p = parse('[[a]][[b]]')
+    a, b = p.wikilinks
+    assert a.plain_text() == 'a'
+    assert b.plain_text() == 'b'
+
+
 def test_remove_markup():
     assert remove_markup("''a'' {{b}} c <!----> '''d'''") == "a  c  d"
