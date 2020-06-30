@@ -415,6 +415,11 @@ def test_no_bare_external_link_within_wiki_links():
     assert 0 == len(p.wikilinks)
 
 
+def test_external_link_containing_wikilink():
+    s = '[http://a.b [[c]] d]'
+    assert parse(s).external_links[0].string == s
+
+
 def test_bare_external_link_must_have_scheme():
     """Bare external links must have scheme."""
     assert len(parse('//mediawiki.org').external_links) == 0

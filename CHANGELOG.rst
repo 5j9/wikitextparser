@@ -1,3 +1,7 @@
+v0.37.7
+-------
+- Fix handling of external links containing wikilinks.
+
 v0.37.6
 -------
 - Fixed a bug in ``plain_text``/``remove_markup`` causing unexpectedly empty objects. (#40)
