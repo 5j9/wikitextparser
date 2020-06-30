@@ -554,7 +554,7 @@ class WikiText:
             return deepcopy(self._type_to_spans)
         return {
             type_: [
-                [s - ss, e - ss, match, byte_array] for s, e, match, byte_array
+                [s - ss, e - ss, m, ba[:]] for s, e, m, ba
                 in spans[bisect_left(spans, [ss]):] if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
@@ -614,7 +614,7 @@ class WikiText:
         if replace_wikilinks:
             for w in reversed(parsed.wikilinks):
                 if w.wikilinks:
-                    del w[:]
+                    del w[:]  # image
                 else:
                     w[:] = w.text or w.target
         string = parsed.string
