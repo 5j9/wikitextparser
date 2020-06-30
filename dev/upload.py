@@ -10,5 +10,5 @@ try:
     check_call(('python', 'setup.py', 'sdist', 'bdist_wheel'))
     check_call(('twine', 'upload', 'dist/*'))
 finally:
-    for d in ('dist', 'build', 'wikitextparser.egg-info'):
+    for d in ('dist', 'build'):
         (wtp_dir / d).rmtree()
