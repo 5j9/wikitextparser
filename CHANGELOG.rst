@@ -1,3 +1,7 @@
+v0.37.9
+-------
+- Fixed a bug in parsing tag attributes. (#44)
+
 v0.37.8
 -------
 - Fixed handling of tags having different casings in start and end name, e.g. ``<s></S>``.
