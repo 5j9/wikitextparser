@@ -146,7 +146,7 @@ ATTR_VAL = (
     # If an empty attribute is to be followed by the optional
     # "/" character, then there must be a space character separating
     # the two. This rule is ignored here.
-    rb'[' + SPACE_CHARS + rb']*+(?>'  # noqa
+    rb'(?>[' + SPACE_CHARS + rb']*+'  # noqa
         + EQ_WS + rb'(?>' + UNQUOTED_ATTR_VAL + rb'|' + QUOTED_ATTR_VAL + rb')'
         + rb'|(?<attr_value>)'  # empty attribute
     + rb')')
