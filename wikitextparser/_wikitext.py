@@ -594,7 +594,8 @@ class WikiText:
                 if e.in_brackets:
                     e[:] = e.text or ''
         # replacing bold and italics should be done before wikilinks and tags
-        # because removing tags and wikilinks creates invalid spans.
+        # because removing tags and wikilinks creates invalid spans, and
+        # get_bolds() will try to look into wikilinks for bold parts.
         if replace_bolds:
             for b in parsed.get_bolds():
                 b[:] = b.text
