@@ -1247,8 +1247,8 @@ def test_same_tags_end():
     assert WikiText('<s></s><s></s>').get_tags()[0]._span_data[:2] == [0, 7]
 
 
-def test_tags_lists_no_initial_match():  # 46
-    assert len(parse('<pre>test</pre>').get_tags()) == 1
+def test_pre():  # 46
+    assert len(parse('<pre></pre>').get_tags()) == 1
 
 
 def test_get_bolds():
