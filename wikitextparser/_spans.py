@@ -171,11 +171,11 @@ ATTRS_MATCH = regex_compile(
 # note that end tags do not accept attributes, but MW currently cleans up and
 # ignores such attributes
 END_TAG_PATTERN = rb'(?<end_tag></{name}(?:>|[' + SPACE_CHARS + rb'][^>]*+>))'
-START_TAG_PATTERN = (
+START_TAG_PATTERN = ( # noqa
     rb'(?<start_tag>'
-    rb'<{name}(?>' + ATTR_PATTERN + rb')*+'
-    rb'[' + SPACE_CHARS + rb']*+'
-    rb'(?:(?<self_closing>/[' + SPACE_CHARS + b']*+>)|>)'
+        rb'<{name}(?>' + ATTR_PATTERN + rb')*+'
+        rb'[' + SPACE_CHARS + rb']*+'
+        rb'(?:(?<self_closing>/[' + SPACE_CHARS + b']*+>)|>)'
     rb')')
 HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer
