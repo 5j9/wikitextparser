@@ -888,7 +888,7 @@ class WikiText:
             'wikilinks'
         ):
             for e in getattr(self, t):
-                bolds += e.get_bolds(True)
+                bolds += e.get_bolds(False)
         return bolds
 
     def get_italics(self, recursive=True) -> List['Italic']:
@@ -931,7 +931,7 @@ class WikiText:
             'wikilinks'
         ):
             for e in getattr(self, t):
-                italics += e.get_italics(True)
+                italics += e.get_italics(False)
         return italics
 
     @property

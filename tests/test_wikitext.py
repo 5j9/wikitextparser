@@ -1380,3 +1380,8 @@ def test_plain_text_should_not_mutate():  # 40
 
 def test_remove_markup():
     assert remove_markup("''a'' {{b}} c <!----> '''d'''") == "a  c  d"
+
+
+def test_do_not_return_duplicate_bolds_italics():  # 42
+    assert len(parse("{{a|{{b|'''c'''}}}}").get_bolds()) == 1
+    assert len(parse("[[file:a.jpg|[[b|''c'']]]]").get_italics()) == 1
