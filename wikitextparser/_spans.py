@@ -139,7 +139,7 @@ ATTR_NAME = (
 EQ_WS = rb'=[' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = (
     rb'(?<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`]++)')
-QUOTED_ATTR_VAL = rb'(?<quote>[\'"])(?<attr_value>.+?)(?P=quote)'
+QUOTED_ATTR_VAL = rb'(?<quote>[\'"])(?<attr_value>.*?)(?P=quote)'
 # May include character references, but for now, ignore the fact that they
 # cannot contain an ambiguous ampersand.
 ATTR_VAL = (
@@ -151,12 +151,17 @@ ATTR_VAL = (
         + rb'|(?<attr_value>)'  # empty attribute
     + rb')')
 # Ignore ambiguous ampersand for the sake of simplicity.
-ATTR_PATTERN = (
-    rb'(?<attr>[' + SPACE_CHARS + rb']++' + ATTR_NAME + ATTR_VAL + rb')')
+ATTRS_PATTERN = ( # noqa
+    rb'(?<attr>'
+        rb'[' + SPACE_CHARS + rb']++'
+        rb'(?>'
+            + ATTR_NAME + ATTR_VAL + rb'|[^>\s]++)'
+        rb')*+'
+    rb'(?<attr_insert>)'
+)
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
-    rb'(?<attr>[' + SPACE_CHARS + rb']*+' + ATTR_NAME + ATTR_VAL + rb')*+'
-    rb'(?<attr_insert>)',
+    ATTRS_PATTERN.replace(b'++', b'*+', 1),
 ).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
@@ -173,7 +178,7 @@ ATTRS_MATCH = regex_compile(
 END_TAG_PATTERN = rb'(?<end_tag></{name}(?:>|[' + SPACE_CHARS + rb'][^>]*+>))'
 START_TAG_PATTERN = ( # noqa
     rb'(?<start_tag>'
-        rb'<{name}(?>' + ATTR_PATTERN + rb')*+'
+        rb'<{name}' + ATTRS_PATTERN +
         rb'[' + SPACE_CHARS + rb']*+'
         rb'(?:(?<self_closing>/[' + SPACE_CHARS + b']*+>)|>)'
     rb')')

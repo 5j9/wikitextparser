@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Any
 
 from regex import compile as regex_compile, VERBOSE, DOTALL
 
-from ._spans import ATTR_PATTERN, SPACE_CHARS, END_TAG_PATTERN
+from ._spans import ATTRS_PATTERN, SPACE_CHARS, END_TAG_PATTERN
 from ._wikitext import SubWikiText
 
 
@@ -31,21 +31,14 @@ from ._wikitext import SubWikiText
 # Note that the following regex won't check for nested tags
 TAG_FULLMATCH = regex_compile(
     rb'''
-    # Note that the start group does not include the > character
-    <(?<name>[A-Za-z0-9]++)''' + ATTR_PATTERN + rb'''*+
-    # After the attributes, or after the tag name if there are no attributes,
-    # there may be one or more space characters. This is sometimes required but
-    # ignored here.
-    (?<attr_insert>)
+    <(?<name>[A-Za-z0-9]++)''' + ATTRS_PATTERN + rb'''
     [''' + SPACE_CHARS + rb''']*+
     (?>
         (?<self_closing>/\s*>)
         |>(?<contents>.*)''' + END_TAG_PATTERN.replace(
             rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)') +  # noqa
         rb'''|>  # only start; no end tag
-    )''',
-    DOTALL | VERBOSE,
-).fullmatch
+    )''', DOTALL | VERBOSE).fullmatch
 
 
 class SubWikiTextWithAttrs(SubWikiText):

@@ -1,3 +1,7 @@
+v0.38.10
+--------
+- Improved how invalid attributes (in html tags, tables, etc.) are handled. (#47)
+
 v0.37.10
 --------
 - Fixed a bug in handling ``<pre>`` tags. (#46)
