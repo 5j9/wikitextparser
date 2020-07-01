@@ -155,10 +155,12 @@ ATTRS_PATTERN = ( # noqa
     rb'(?<attr>'
         rb'[' + SPACE_CHARS + rb']++'
         rb'(?>'
-            + ATTR_NAME + ATTR_VAL + rb'|[^>\s]++)'
-        rb')*+'
-    rb'(?<attr_insert>)'
-)
+            + ATTR_NAME + ATTR_VAL
+            # Invalid attribute. Todo: could be removed? see
+            # https://stackoverflow.com/a/3558200/2705757
+            + rb'|(?>[^<>\s/]++|/(?!\s*+>))++'
+        rb')'
+    rb')*+(?<attr_insert>)')
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.
     ATTRS_PATTERN.replace(b'++', b'*+', 1),
