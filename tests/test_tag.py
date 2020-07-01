@@ -139,6 +139,11 @@ def test_attrs():
         'n1': 'v1', 'n2': 'v2', 'n3': ''}
 
 
+def test_attrs_without_values():
+    assert Tag('<t n1 n2 n3>c</t>').attrs == {
+        'n1': '', 'n2': '', 'n3': ''}
+
+
 def test_contents_contains_tl():
     t = Tag('<b>{{text|t}}</b>')
     assert t.contents == '{{text|t}}'
