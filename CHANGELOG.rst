@@ -1,3 +1,7 @@
+v0.37.10
+--------
+- Fixed a bug in handling ``<pre>`` tags. (#46)
+
 v0.37.9
 -------
 - Fixed a bug in parsing tag attributes. (#44)

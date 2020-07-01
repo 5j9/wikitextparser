@@ -128,7 +128,7 @@ _valid_html_tag_names = {
     'ruby', 'h3', 'dfn', 'rb', 'li', 'h1', 'cite', 'dl', 'rtc', 'em',
     'q', 'h2', 'samp', 'strike', 'time', 'blockquote', 'bdi', 'del',
     'br', 'rp', 'hr', 'abbr', 'sub', 'u', 'kbd', 'table', 'rt', 'dd',
-    'var', 'pre', 'ul', 'tr', 'center', 'data', 'strong', 'mark',
+    'var', 'ul', 'tr', 'center', 'data', 'strong', 'mark',
     'h6', 'bdo', 'caption', 'sup'}
 _HTML_TAG_NAME = regex_pattern(_valid_html_tag_names)
 
