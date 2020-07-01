@@ -19,7 +19,6 @@ from ._wikitext import SubWikiText
 
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
-ASCII_TAG_NAME = rb'(?<name>[A-Za-z0-9]++)'
 # Todo: can the tags method be implemented using a TAG_FINDITER? Will
 # that be more performant?
 # TAG_FINDITER should not find any tag containing other tags.
@@ -33,7 +32,7 @@ ASCII_TAG_NAME = rb'(?<name>[A-Za-z0-9]++)'
 TAG_FULLMATCH = regex_compile(
     rb'''
     # Note that the start group does not include the > character
-    <''' + ASCII_TAG_NAME + ATTR_PATTERN + rb'''*  # Todo: Possessive?
+    <(?<name>[A-Za-z0-9]++)''' + ATTR_PATTERN + rb'''*+
     # After the attributes, or after the tag name if there are no attributes,
     # there may be one or more space characters. This is sometimes required but
     # ignored here.
@@ -41,9 +40,9 @@ TAG_FULLMATCH = regex_compile(
     [''' + SPACE_CHARS + rb''']*+
     (?>
         (?<self_closing>/\s*>)
-        |>(?<contents>.*?)'''
-    + END_TAG_PATTERN.replace(rb'{name}', rb'(?<end_name>(?P=name))')
-    + rb'''|>  # only start; no end tag
+        |>(?<contents>.*)''' + END_TAG_PATTERN.replace(
+            rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)') +  # noqa
+        rb'''|>  # only start; no end tag
     )''',
     DOTALL | VERBOSE,
 ).fullmatch

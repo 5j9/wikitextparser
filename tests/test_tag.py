@@ -12,6 +12,11 @@ def test_get_tags():
     assert repr(Tag('<b><s></s></b>').get_tags()) == "[Tag('<s></s>')]"
 
 
+def start_tag_finder(string):
+    """Return the first found match of START_TAG_FINDITER."""
+    return next(NAME_CAPTURING_HTML_START_TAG_FINDITER(string))
+
+
 def test_start_tag_patterns():
     assert start_tag_finder(b'<b>').groupdict() == {
         'name': b'b', 'attr': None, 'quote': None,
@@ -139,6 +144,5 @@ def test_contents_contains_tl():
     assert t.contents == '{{text|t}}'
 
 
-def start_tag_finder(string):
-    """Return the first found match of START_TAG_FINDITER."""
-    return next(NAME_CAPTURING_HTML_START_TAG_FINDITER(string))
+def test_ignore_case():  # 42
+    assert Tag('<s></S>').contents == ''
