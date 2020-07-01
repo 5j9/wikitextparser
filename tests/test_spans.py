@@ -486,3 +486,8 @@ def test_wikilinks_and_params_cannot_overlap():
     assert d['Parameter'] == [[4, 15]]
     assert not d['WikiLink']
     # -> whichever comes last is processes first
+
+
+def test_param_containing_curly_brace():
+    assert bpts(b'{{{p|{}}}')['Parameter'] == [[0, 9]]
+    assert bpts(b'{{{p|}d}}}')['Parameter'] == [[0, 10]]

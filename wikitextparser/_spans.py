@@ -51,14 +51,6 @@ EXTERNAL_LINK_URL_TAIL = (
     rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
 BARE_EXTERNAL_LINK = (
     BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
-# Parameters
-PARAM_PATTERN = rb'''
-    \{\{\{(
-        [^{}]*+
-        |(?!})}
-        |(?!{){
-    )++\}\}\}
-'''
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_PARAM_FINDITER = regex_compile(
@@ -88,7 +80,11 @@ WIKILINK_PARAM_FINDITER = regex_compile(
         [^\[\]\|]*+
     )*+
     \]\0*+\]
-    |''' + PARAM_PATTERN,
+    |\{\{\{(
+        [^{}]++
+        |(?<!})}(?!})
+        |(?<!{){
+    )++\}\}\}''',
     IGNORECASE | VERBOSE | REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)

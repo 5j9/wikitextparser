@@ -1,6 +1,7 @@
 v0.37.7
 -------
 - Fix handling of external links containing wikilinks.
+- Fix bug in detection of parameters containing single braces.
 
 v0.37.6
 -------
