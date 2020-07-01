@@ -1,4 +1,4 @@
-v0.38.10
+v0.37.11
 --------
 - Improved how invalid attributes (in html tags, tables, etc.) are handled. (#47)
 
