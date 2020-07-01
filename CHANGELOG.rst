@@ -1,8 +1,8 @@
 v0.37.8
 -------
-- Fixed detection handling of tags having different casings in start and end name, e.g. ``<s></S>``.
+- Fixed handling of tags having different casings in start and end name, e.g. ``<s></S>``.
 - Fix handling of extension tags.
-- Fixed a bug ``get_bolds``/``get_italics`` resulting in duplicate items in returned values. It also was causing a subtle issue in ``plain_text``/``remove_markup``. (#42)
+- Fixed a bug in ``get_bolds``/``get_italics`` resulting in duplicate items in returned values. It also was causing a subtle issue in ``plain_text``/``remove_markup``, too. (#42)
 - Fixed detection of parameters containing single braces.
 
 v0.37.7
