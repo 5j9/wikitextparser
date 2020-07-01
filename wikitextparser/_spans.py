@@ -105,25 +105,26 @@ UNPARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 EXTENSION_TAGS_FINDITER = regex_compile(
-    rb'< (' + UNPARSABLE_TAG_EXTENSIONS_PATTERN + rb'|(' +
-    PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')) \b [^>]*+
-        (?:
-            (?<=/)> # self-closing
-            |>(?># contents
-                # Either contains no other tags or
-                [^<]++
-                |
-                # the nested-tag is something else or
-                < (?! \1 \b [^>]*+ >)
-                |
-                # the nested tag closes itself.
-                # Note that for extension tags whitespace
-                # is not allowed between / and >.
-                <\1\b[^>]*/>
-            )*?
-            # tag-end
-            </\1\s*+>
-        )''', IGNORECASE | VERBOSE).finditer
+    rb'<(' # noqa
+        + UNPARSABLE_TAG_EXTENSIONS_PATTERN
+        + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')
+    )\b[^>]*+(?:
+        (?<=/)> # self-closing
+        |>(?># contents
+            # Either contains no other tags or
+            [^<]++
+            |
+            # the nested-tag is something else or
+            < (?! \1 \b [^>]*+ >)
+            |
+            # the nested tag closes itself.
+            # Note that for extension tags whitespace
+            # is not allowed between / and >.
+            <\1\b[^>]*/>
+        )*?
+        # tag-end
+        </\1\s*+>
+    )''', IGNORECASE | VERBOSE).finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_PATTERN_B = COMMENT_PATTERN.encode()
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN_B).finditer
@@ -221,7 +222,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     for match in EXTENSION_TAGS_FINDITER(byte_array):
         ms, me = match.span()
         ets_append([ms, me, match, byte_array[ms:me]])
-        if match[2]:  # parsable tag extension group
+        if match[2] is not None:  # parsable tag extension group
             _parse_sub_spans(
                 byte_array, ms, me,
                 pms_append, pfs_append, tls_append, wls_append)
