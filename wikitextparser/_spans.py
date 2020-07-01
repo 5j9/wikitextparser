@@ -110,7 +110,7 @@ EXTENSION_TAGS_FINDITER = regex_compile(
         + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')
     )\b[^>]*+(?:
         (?<=/)> # self-closing
-        |>(?># contents
+        |>((?># contents
             # Either contains no other tags or
             [^<]++
             |
@@ -121,7 +121,7 @@ EXTENSION_TAGS_FINDITER = regex_compile(
             # Note that for extension tags whitespace
             # is not allowed between / and >.
             <\1\b[^>]*/>
-        )*?
+        )*?)
         # tag-end
         </\1\s*+>
     )''', IGNORECASE | VERBOSE).finditer
@@ -226,6 +226,7 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
             _parse_sub_spans(
                 byte_array, ms, me,
                 pms_append, pfs_append, tls_append, wls_append)
+        ms, me = match.span(3)
         byte_array[ms:me] = b'_' * (me - ms)
     _parse_sub_spans(
         byte_array, 0, None, pms_append, pfs_append, tls_append, wls_append)

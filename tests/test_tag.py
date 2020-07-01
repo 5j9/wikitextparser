@@ -144,5 +144,6 @@ def test_contents_contains_tl():
     assert t.contents == '{{text|t}}'
 
 
-def test_ignore_case():  # 42
+def test_ignore_case():
     assert Tag('<s></S>').contents == ''
+    assert Tag('<Ref></ref>').contents == ''  # 43
