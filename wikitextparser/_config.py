@@ -130,7 +130,7 @@ _valid_html_tag_names = {
     'br', 'rp', 'hr', 'abbr', 'sub', 'u', 'kbd', 'table', 'rt', 'dd',
     'var', 'ul', 'tr', 'center', 'data', 'strong', 'mark',
     'h6', 'bdo', 'caption', 'sup'}
-_HTML_TAG_NAME = regex_pattern(_valid_html_tag_names)
+_HTML_TAG_NAME = regex_pattern(_valid_html_tag_names) + br'\b'
 
 _parser_functions = {
     'ARTICLEPAGENAME',
