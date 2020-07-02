@@ -1,3 +1,8 @@
+v0.37.12
+--------
+- Improve handling of extension tags inside external links. (#49)
+- Ignore invalid attributes that do not start with space characters. (#48)
+
 v0.37.11
 --------
 - Improved how invalid attributes (in html tags, tables, etc.) are handled. (#47)

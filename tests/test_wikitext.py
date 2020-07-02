@@ -300,6 +300,11 @@ def test_getting_comment():
 # WikiText.external_links
 
 
+def test_with_nowiki():
+    assert parse('[http://a.b <nowiki>[c]</nowiki>]').external_links[0].text \
+           == '<nowiki>[c]</nowiki>'
+
+
 def test_ipv6_brackets():
     # See:
     # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers

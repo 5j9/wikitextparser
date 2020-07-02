@@ -535,7 +535,8 @@ class WikiText:
         string = self._lststr[0][ss:se]
         byte_array = bytearray(string, 'ascii', 'replace')
         subspans = self._subspans
-        for type_ in 'Template', 'ParserFunction', 'Parameter', 'WikiLink':
+        for type_ in 'Template', 'ParserFunction', 'Parameter', 'WikiLink',\
+                'ExtensionTag':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
                     b' ', byte_array[s + 2:e - 2]) + b'  '
