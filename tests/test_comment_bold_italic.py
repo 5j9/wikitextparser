@@ -10,9 +10,11 @@ def test_comment():
 def test_bold():
     assert Bold("'''b'''").text == 'b'
     assert Bold("'<!---->''b'''").text == 'b'
+    assert Bold("'''b").text == 'b'
 
 
 def test_italic():
+    assert Italic("''i").text == 'i'
     assert Italic("'''''i'''''").text == "'''i'''"
     assert Italic("''i<!---->'<!---->'").text == "i<!---->"
     assert Italic("''i'''").text == "i'"

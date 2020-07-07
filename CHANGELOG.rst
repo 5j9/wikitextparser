@@ -1,3 +1,7 @@
+v0.37.13
+--------
+- Fix a bug handling of half-marked bold/italic items e.g. ``'''bold text\n``.
+
 v0.37.12
 --------
 - Improve handling of extension tags inside external links. (#49)

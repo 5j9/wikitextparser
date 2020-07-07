@@ -1,7 +1,7 @@
 ﻿"""Define the Comment class."""
 from typing import Dict, List, MutableSequence, Optional, Union
 
-from regex import compile as regex_compile
+from regex import MULTILINE, compile as regex_compile
 
 from ._wikitext import SubWikiText
 from ._spans import COMMENT_PATTERN
@@ -10,9 +10,10 @@ from ._spans import COMMENT_PATTERN
 COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ")*+"
 COMMENT_COMMA = "(?>" + COMMENT_PATTERN + ")*+'"
 BOLD_FULLMATCH = regex_compile(
-    COMMA_COMMENT * 2 + "'(.*)'" + COMMENT_COMMA * 2).fullmatch
+    COMMA_COMMENT * 2 + "'(.*?)(?>'" + COMMENT_COMMA * 2 + "|$)",
+    MULTILINE).fullmatch
 ITALIC_FULLMATCH = regex_compile(
-    COMMA_COMMENT + "'(.*)'" + COMMENT_COMMA).fullmatch
+    COMMA_COMMENT + "'(.*?)(?>'" + COMMENT_COMMA + "|$)").fullmatch
 ITALIC_NOEND_FULLMATCH = regex_compile(
     COMMA_COMMENT + "'(.*)").fullmatch
 
