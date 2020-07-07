@@ -1,0 +1,5 @@
+[tool.r3l3453]
+version_paths = [
+    'wikitextparser/__init__.py:__version__',
+    'setup.py:version',
+]

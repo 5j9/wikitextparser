@@ -3,20 +3,13 @@
 
 from setuptools import setup, find_packages
 from os.path import abspath, dirname, join
-from re import search, MULTILINE
 
 
 here = abspath(dirname(__file__))
 
 setup(
     name='wikitextparser',
-    version=search(
-        r"^__version__ = '([^']*)'",
-        open(
-            join(here, 'wikitextparser', '__init__.py'),
-            encoding='ascii', errors='ignore').read(),
-        MULTILINE,
-    ).group(1),
+    version='0.37.13.dev0',
     description='A simple parsing tool for MediaWiki\'s wikitext markup.',
     long_description=open(join(here, 'README.rst'), encoding='utf8').read(),
     url='https://github.com/5j9/wikitextparser',
@@ -25,13 +18,8 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.5',
-    install_requires=[
-        'regex',
-        'wcwidth',
-    ],
-    extras_require={
-        'dev': ['path.py', 'coverage', 'twine'],
-    },
+    install_requires=['regex', 'wcwidth'],
+    extras_require={'dev': ['path.py', 'coverage', 'twine']},
     tests_require=['pytest'],
     zip_safe=True,
     classifiers=[
@@ -44,7 +32,5 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
-        'Topic :: Text Processing',
-    ],
-    keywords='MediaWiki wikitext parser',
-)
+        'Topic :: Text Processing'],
+    keywords='MediaWiki wikitext parser')
