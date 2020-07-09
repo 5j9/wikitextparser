@@ -116,6 +116,20 @@ WikiList
    :special-members:
    :show-inheritance:
 
+Bold
+----
+.. autoclass:: wikitextparser.Bold
+   :members:
+   :special-members:
+   :show-inheritance:
+
+Italic
+-------
+.. autoclass:: wikitextparser.Italic
+   :members:
+   :special-members:
+   :show-inheritance:
+
 Indices and tables
 ==================
 
