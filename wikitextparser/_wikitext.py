@@ -25,7 +25,7 @@ from ._spans import (
     START_TAG_PATTERN,
     END_TAG_PATTERN,
     parse_to_spans,
-    INVALID_EXTLINK_CHARS,
+    INVALID_URL_CHARS,
     BARE_EXTERNAL_LINK,
     EXTERNAL_LINK_URL_TAIL)
 
@@ -44,7 +44,7 @@ EXTERNAL_LINK = \
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
 EXTERNAL_LINK_FINDITER = regex_compile(EXTERNAL_LINK, IGNORECASE).finditer
 INVALID_EXT_CHARS_SUB = regex_compile(
-    rb'[' + INVALID_EXTLINK_CHARS + rb'{}]'
+    rb'[' + INVALID_URL_CHARS + rb'{}]'
 ).sub
 
 # Sections

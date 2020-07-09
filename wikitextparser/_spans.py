@@ -36,21 +36,19 @@ PF_TL_FINDITER = regex_compile(  # noqa
     \}\})
     ''', VERBOSE).finditer
 # External links
-INVALID_EXTLINK_CHARS = rb' \t\n<>\[\]"'
-VALID_EXTLINK_CHARS = rb'[^' + INVALID_EXTLINK_CHARS + rb']++'
+INVALID_URL_CHARS = rb' \t\n"<>\[\]'
+VALID_URL_CHARS = rb'[^' + INVALID_URL_CHARS + rb']++'
 # See more info on literal IPv6 see:
 # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
 # The following pattern is part of EXT_LINK_ADDR constant in
 # https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
-LITERAL_IPV6_AND_TAIL = \
-    rb'\[[0-9a-fA-F:.]++\][^' + INVALID_EXTLINK_CHARS + rb']*+'
+LITERAL_IPV6_AND_TAIL = rb'\[[0-9a-fA-F:.]++\][^' + INVALID_URL_CHARS + rb']*+'
 # A \b is added to the beginning.
 BARE_EXTERNAL_LINK_SCHEMES = (
     rb'\b' + regex_pattern(_bare_external_link_schemes))
 EXTERNAL_LINK_URL_TAIL = (
-    rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_EXTLINK_CHARS + rb')')
-BARE_EXTERNAL_LINK = (
-    BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
+    rb'(?>' + LITERAL_IPV6_AND_TAIL + rb'|' + VALID_URL_CHARS + rb')')
+BARE_EXTERNAL_LINK = BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_PARAM_FINDITER = regex_compile(
