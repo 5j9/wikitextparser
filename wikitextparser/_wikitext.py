@@ -48,7 +48,7 @@ BRACKET_EXTERNAL_LINK = (
 EXTERNAL_LINK = \
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
 EXTERNAL_LINK_FINDITER = regex_compile(EXTERNAL_LINK, IGNORECASE).finditer
-INVALID_EXT_CHARS_SUB = regex_compile(  # the [:-4] slicee allows \[ and \]
+INVALID_EXT_CHARS_SUB = regex_compile(  # the [:-4] slice allows \[ and \]
     rb'[' + INVALID_URL_CHARS[:-4] + rb'{}]').sub
 
 # Sections
