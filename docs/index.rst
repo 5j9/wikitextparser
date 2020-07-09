@@ -11,7 +11,8 @@ Welcome to wikitextparser's documentation!
    :caption: Contents:
 
    README
-   CHANGELOG
+
+`Changelog <docs/CHANGELOG.rst>`_
 
 API Reference
 =============
