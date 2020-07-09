@@ -63,9 +63,7 @@ TABLE_FINDITER = regex_compile(
     rb"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
-    ^
-    # Group the leading spaces or colons so that we can ignore them later.
-    ([ :\0]*+)
+    (?<=^[ :\0]*+)
     {\| # Table contents
     (?:
         # Any character, as long as it is not indicating another table-start
@@ -75,8 +73,7 @@ TABLE_FINDITER = regex_compile(
     \n\s*+
     (?> \|} | \Z )
     """,
-    DOTALL | MULTILINE | VERBOSE
-).finditer
+    DOTALL | MULTILINE | VERBOSE).finditer
 
 # Bolds
 BOLDS_FINDITER = regex_compile(
@@ -410,7 +407,7 @@ class WikiText:
             i = len(spans) - 1
             while i >= 0:
                 # todo update byte_aray
-                s, e, _, _ = span = spans[i]
+                s, e, _, b = span = spans[i]
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
                     rmlength = rmstop - rmstart
@@ -425,7 +422,7 @@ class WikiText:
                 if rmstart <= s:
                     if rmstop < e:
                         # rmstart < s <= rmstop < e
-                        # todo: set bytearray
+                        # todo: update byte_array instead
                         span[:] = rmstart, e + rmstart - rmstop, None, None
                         i -= 1
                         if i < 0:
@@ -449,9 +446,10 @@ class WikiText:
                     s, e, _, _ = span = spans[i]
                     continue
                 # s <= rmstart <= rmstop <= e
-                # todo: update bytearray
                 span[1] -= rmstop - rmstart
                 span[2] = None
+                # todo: update bytearray instead
+                span[3] = None
                 i -= 1
                 if i < 0:
                     break
@@ -466,6 +464,7 @@ class WikiText:
                 s0, s1, _, _ = span
                 if index < s1 or s1 == index == se:
                     span[1] += length
+                    span[3] = None  # todo: update instead
                     # index is before s, or at s but not on self_span
                     if index < s0 or s0 == index != ss or (
                         s0 == index and span is not self_span
@@ -498,20 +497,11 @@ class WikiText:
         This function is called upon extracting tables or extracting the data
         inside them.
         """
-        # return self._span_data[3]
-        ss, se, _, byte_array = self._span_data
-        string = self._lststr[0][ss:se]
-        cached_string, shadow = getattr(
-            self, '_shadow_cache', (None, None))
-        if cached_string == string:
-            return shadow
-        # In the old method the existing spans were used to create the shadow.
-        # But it was slow because there can be thousands of spans and iterating
-        # over them to find the relevant sub-spans could take a significant
-        # amount of time. The new method tries to parse the self.string which
-        # is usually much more faster because there are usually far less
-        # sub-spans for individual objects.
-        shadow = bytearray(string, 'ascii', 'replace')
+        span_data = self._span_data
+        ss, se, m, cached_shadow = span_data
+        if cached_shadow is not None:
+            return cached_shadow
+        shadow = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
         if self._type in SPAN_PARSER_TYPES:
             head = shadow[:2]
             tail = shadow[-2:]
@@ -521,7 +511,7 @@ class WikiText:
             shadow[-2:] = tail
         else:
             parse_to_spans(shadow)
-        self._shadow_cache = string, shadow
+        self._span_data[3] = shadow
         return shadow
 
     @property
@@ -1045,15 +1035,16 @@ class WikiText:
         return_spans = []
         return_spans_append = return_spans.append
         m = True
+        shadow_copy_copy = shadow_copy[:]
         while m:
             m = False
             for m in TABLE_FINDITER(shadow_copy, skip_self_span):
                 ms, me = m.span()
                 # Ignore leading whitespace using len(m[1]).
-                s, e = ss + ms + len(m[1]), ss + me
+                s, e = ss + ms, ss + me
                 old_span = span_tuple_to_span_get((s, e))
                 if old_span is None:
-                    span = [s, e, None, shadow_copy[ms:me]]
+                    span = [s, e, None, shadow_copy_copy[ms:me]]
                     spans_append(span)
                     return_spans_append(span)
                 else:
@@ -1208,7 +1199,7 @@ class WikiText:
                 if end_match:
                     ems, eme = end_match.span()
                     shadow_copy[ems:eme] = b'_' * (eme - ems)
-                    span = [ss + sms, ss + eme, None, shadow_copy[sms:eme]]
+                    span = [ss + sms, ss + eme, None, shadow[sms:eme]]
                 else:
                     # Assume start-only tag.
                     span = [ss + sms, ss + sme, None, shadow_copy[sms:sme]]
