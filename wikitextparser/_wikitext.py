@@ -535,13 +535,13 @@ class WikiText:
         string = self._lststr[0][ss:se]
         byte_array = bytearray(string, 'ascii', 'replace')
         subspans = self._subspans
-        for type_ in 'Template', 'ParserFunction', 'Parameter', 'WikiLink',\
-                'ExtensionTag':
+        for type_ in 'Template', 'ParserFunction', 'Parameter', 'ExtensionTag':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
                     b' ', byte_array[s + 2:e - 2]) + b'  '
-        for s, e, _, _ in subspans('Comment'):
-            byte_array[s:e] = (e - s) * b'_'
+        for type_ in 'Comment', 'WikiLink':
+            for s, e, _, _ in subspans(type_):
+                byte_array[s:e] = (e - s) * b'_'
         return byte_array
 
     def _inner_type_to_spans_copy(self) -> Dict[str, List[List[int]]]:
