@@ -1,6 +1,10 @@
-v0.37.13
---------
+v0.38.1
+-------
 - Fix a bug in detection of external links in parsable tag extensions. (#50)
+
+v0.38.0
+-------
+- Fix a bug in handling of half-marked bold/italic, e.g. ``'''bold\n``.
 
 v0.37.13
 --------
