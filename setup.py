@@ -9,7 +9,7 @@ here = abspath(dirname(__file__))
 
 setup(
     name='wikitextparser',
-    version='0.38.1.dev0',
+    version='0.38.1',
     description='A simple parsing tool for MediaWiki\'s wikitext markup.',
     long_description=open(join(here, 'README.rst'), encoding='utf8').read(),
     url='https://github.com/5j9/wikitextparser',
