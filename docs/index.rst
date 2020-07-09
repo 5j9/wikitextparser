@@ -12,7 +12,7 @@ Welcome to wikitextparser's documentation!
 
    README
 
-`Changelog </CHANGELOG.html>`_
+`Changelog <CHANGELOG.html>`_
 
 API Reference
 =============
