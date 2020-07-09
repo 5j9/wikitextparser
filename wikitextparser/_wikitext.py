@@ -501,10 +501,11 @@ class WikiText:
         This function is called upon extracting tables or extracting the data
         inside them.
         """
-        ss, se, m, cached_shadow = self._span_data
+        ss, se, m, cached_shadow = span_data = self._span_data
         if cached_shadow is not None:
             return cached_shadow
-        shadow = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
+        shadow = span_data[3] = \
+            bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
         if self._type in SPAN_PARSER_TYPES:
             head = shadow[:2]
             tail = shadow[-2:]
@@ -514,7 +515,6 @@ class WikiText:
             shadow[-2:] = tail
         else:
             parse_to_spans(shadow)
-        self._span_data[3] = shadow
         return shadow
 
     @property
@@ -525,8 +525,7 @@ class WikiText:
         'ParserFunction', 'Parameter') only invalid characters are replaced.
         """
         ss, se, _, _ = self._span_data
-        string = self._lststr[0][ss:se]
-        byte_array = bytearray(string, 'ascii', 'replace')
+        byte_array = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
         subspans = self._subspans
         for type_ in 'Comment', 'WikiLink':
             for s, e, _, _ in subspans(type_):
