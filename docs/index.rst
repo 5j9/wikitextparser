@@ -116,6 +116,13 @@ WikiList
    :special-members:
    :show-inheritance:
 
+SubWikiText
+-----------
+.. autoclass:: wikitextparser._comment_bold_italic.BoldItalic
+   :members:
+   :special-members:
+   :show-inheritance:
+
 Bold
 ----
 .. autoclass:: wikitextparser.Bold
