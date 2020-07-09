@@ -501,8 +501,7 @@ class WikiText:
         This function is called upon extracting tables or extracting the data
         inside them.
         """
-        span_data = self._span_data
-        ss, se, m, cached_shadow = span_data
+        ss, se, m, cached_shadow = self._span_data
         if cached_shadow is not None:
             return cached_shadow
         shadow = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
