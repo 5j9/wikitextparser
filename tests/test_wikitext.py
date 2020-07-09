@@ -1162,10 +1162,13 @@ def test_multiline_tags():
 
 def test_get_lists_deprecation():
     with warns(DeprecationWarning):
+        # noinspection PyTypeChecker
         list_ = ParserFunction('{{#if:|*a\n*b}}').get_lists(None)[0]
     with warns(DeprecationWarning):
+        # noinspection PyTypeChecker
         list_.get_lists(None)
     with warns(DeprecationWarning):
+        # noinspection PyTypeChecker
         list_.sublists(pattern=None)
 
 
