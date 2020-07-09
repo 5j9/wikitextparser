@@ -573,10 +573,9 @@ class WikiText:
         """Return a plain text string representation of self."""
         if _mutate is False:
             s, e, m, b = self._span_data
-            parsed = WikiText(
-                [self._lststr[0][s:e]], self._inner_type_to_spans_copy())
-            parsed._span_data = [0, e - s, m, b[:]]
-            tts = parsed._type_to_spans
+            tts = self._inner_type_to_spans_copy()
+            parsed = WikiText([self._lststr[0][s:e]], tts)
+            parsed._span_data = tts[self._type][0]
         else:
             tts = self._type_to_spans
             parsed = self

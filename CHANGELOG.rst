@@ -1,3 +1,7 @@
+v0.38.2
+-------
+- Fix a bug in ``plaintext`` method.
+
 v0.38.1
 -------
 - Fix a bug in detection of external links in parsable tag extensions. (#50)

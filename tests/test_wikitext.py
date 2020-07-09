@@ -1408,3 +1408,7 @@ def test_remove_markup():
 def test_do_not_return_duplicate_bolds_italics():  # 42
     assert len(parse("{{a|{{b|'''c'''}}}}").get_bolds()) == 1
     assert len(parse("[[file:a.jpg|[[b|''c'']]]]").get_italics()) == 1
+
+
+def test_do_not_include_end_tag():
+    assert parse('<div>[http://a]</div>').plain_text() == ''
