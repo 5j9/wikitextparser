@@ -22,6 +22,7 @@ from ._config import (
     _tag_extensions, _HTML_TAG_NAME, _bare_external_link_schemes,
     regex_pattern)
 from ._spans import (
+    PARSABLE_TAG_EXTENSIONS_PATTERN,
     START_TAG_PATTERN,
     END_TAG_PATTERN,
     parse_to_spans,
@@ -33,6 +34,10 @@ from ._spans import (
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(
         b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
+
+PARSABLE_TAG_EXTENSIONS_MATCH = regex_compile(
+    rb'<' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb'\b', IGNORECASE).match
+
 # External links
 BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
     _bare_external_link_schemes | {'//'})
@@ -43,9 +48,8 @@ BRACKET_EXTERNAL_LINK = (
 EXTERNAL_LINK = \
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
 EXTERNAL_LINK_FINDITER = regex_compile(EXTERNAL_LINK, IGNORECASE).finditer
-INVALID_EXT_CHARS_SUB = regex_compile(
-    rb'[' + INVALID_URL_CHARS + rb'{}]'
-).sub
+INVALID_EXT_CHARS_SUB = regex_compile(  # the [:-4] slicee allows \[ and \]
+    rb'[' + INVALID_URL_CHARS[:-4] + rb'{}]').sub
 
 # Sections
 SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
@@ -525,13 +529,19 @@ class WikiText:
         string = self._lststr[0][ss:se]
         byte_array = bytearray(string, 'ascii', 'replace')
         subspans = self._subspans
-        for type_ in 'Template', 'ParserFunction', 'Parameter', 'ExtensionTag':
-            for s, e, _, _ in subspans(type_):
-                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
-                    b' ', byte_array[s + 2:e - 2]) + b'  '
         for type_ in 'Comment', 'WikiLink':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = (e - s) * b'_'
+        for s, e, _, _ in subspans('ExtensionTag'):
+            if PARSABLE_TAG_EXTENSIONS_MATCH(byte_array, s, e):
+                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
+                    b' ', byte_array[s + 2:e - 2]) + b'  '
+            else:
+                byte_array[s:e] = (e - s) * b'_'
+        for type_ in 'Template', 'ParserFunction', 'Parameter':
+            for s, e, _, _ in subspans(type_):
+                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
+                    b' ', byte_array[s + 2:e - 2]) + b'  '
         return byte_array
 
     def _inner_type_to_spans_copy(self) -> Dict[str, List[List[int]]]:

@@ -300,6 +300,17 @@ def test_getting_comment():
 # WikiText.external_links
 
 
+def test_external_links_in_brackets_in_parser_elements():  # 50
+    assert parse('{{t|[http://a b]}}').external_links[0].string \
+        == '[http://a b]'
+    assert parse('<ref>[http://a b]</ref>').external_links[0].string \
+        == '[http://a b]'
+    assert parse('<ref>[http://a{{b}}]</ref>').external_links[0].string \
+        == '[http://a{{b}}]'
+    assert parse('{{a|{{b|[http://c{{d}}]}}}}').external_links[0].string \
+        == '[http://c{{d}}]'
+
+
 def test_with_nowiki():
     assert parse('[http://a.b <nowiki>[c]</nowiki>]').external_links[0].text \
            == '<nowiki>[c]</nowiki>'
