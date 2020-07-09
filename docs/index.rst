@@ -39,6 +39,13 @@ SubWikiTextWithAttrs
    :special-members:
    :show-inheritance:
 
+SubWikiTextWithArgs
+--------------------
+.. autoclass:: wikitextparser._parser_function.SubWikiTextWithArgs
+   :members:
+   :special-members:
+   :show-inheritance:
+
 Template
 --------
 .. autoclass:: wikitextparser.Template
