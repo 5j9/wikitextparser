@@ -122,7 +122,7 @@ SPAN_PARSER_TYPES = {
 WS = '\r\n\t '
 
 
-class DeadIndexError(ValueError):
+class DeadIndexError(TypeError):
     pass
 
 
