@@ -122,6 +122,27 @@ SPAN_PARSER_TYPES = {
 WS = '\r\n\t '
 
 
+class InvalidIndexError(ValueError):
+    pass
+
+
+class DeadIndex(int):
+    __slots__ = ()
+
+    def __add__(self, o):
+        raise InvalidIndexError(
+            'this usually means that the '
+            'object has died and cannot be mutated')
+    __radd__ = __add__
+
+    def __repr__(self):
+        return 'DeadIndex()'
+
+
+DEAD_INDEX = DeadIndex()  # == int() == 0
+DEAD_SPAN = DEAD_INDEX, DEAD_INDEX, None, None
+
+
 class WikiText:
 
     # In subclasses of WikiText _type is used as the key for _type_to_spans
@@ -393,7 +414,7 @@ class WikiText:
             ):
                 if e <= stop:
                     if ss != s or se != e:
-                        spans.pop(i + b)[:] = -1, -1, None, None
+                        spans.pop(i + b)[:] = DEAD_SPAN
                         b -= 1
 
     def _del_update(self, rmstart: int, rmstop: int) -> None:
@@ -434,7 +455,7 @@ class WikiText:
                         s, e, _, _ = span = spans[i]
                         continue
                     # rmstart <= s <= e < rmstop
-                    spans.pop(i)[:] = -1, -1, None, None
+                    spans.pop(i)[:] = DEAD_SPAN
                     i -= 1
                     if i < 0:
                         break

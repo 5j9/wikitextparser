@@ -1,3 +1,7 @@
+v0.39.0
+-------
+- Trying to mutate an overwritten/detached object will now raise DeadIndexError. Hopefully this will prevent some subtle late-appearing bugs.
+
 v0.38.2
 -------
 - Fix a bug in ``plaintext`` method.

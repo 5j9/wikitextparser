@@ -5,7 +5,7 @@ from pytest import warns, mark, raises
 from wikitextparser import WikiText, parse, Template, ParserFunction,\
     remove_markup
 # noinspection PyProtectedMember
-from wikitextparser._wikitext import WS
+from wikitextparser._wikitext import WS, InvalidIndexError, DEAD_INDEX
 
 
 # basics  of WikiText
@@ -1412,3 +1412,18 @@ def test_do_not_return_duplicate_bolds_italics():  # 42
 
 def test_do_not_include_end_tag():
     assert parse('<div>[http://a]</div>').plain_text() == ''
+
+
+def test_mutating_invalid_link():
+    p = parse('a [[file:1.jpg|[[w]]]]')
+    w0, w1 = p.wikilinks
+    w0.string = '[[]]'
+    with raises(InvalidIndexError):
+        w1.string = 'd'
+    assert p.string == 'a [[]]'
+    assert w0.string == '[[]]'
+    assert w1.string == ''
+
+
+def test_dead_index():
+    assert repr(DEAD_INDEX) == 'DeadIndex()'
