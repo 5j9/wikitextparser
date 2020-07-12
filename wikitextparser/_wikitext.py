@@ -127,6 +127,11 @@ class DeadIndexError(TypeError):
 
 
 class DeadIndex(int):
+    """Do not allow adding to another integer but allow usage in a slice.
+
+    Addition of indices is the main operation during mutation of WikiText
+    objects.
+    """
     __slots__ = ()
 
     def __add__(self, o):
