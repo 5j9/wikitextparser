@@ -122,7 +122,7 @@ SPAN_PARSER_TYPES = {
 WS = '\r\n\t '
 
 
-class InvalidIndexError(ValueError):
+class DeadIndexError(ValueError):
     pass
 
 
@@ -130,9 +130,9 @@ class DeadIndex(int):
     __slots__ = ()
 
     def __add__(self, o):
-        raise InvalidIndexError(
-            'this usually means that the '
-            'object has died and cannot be mutated')
+        raise DeadIndexError(
+            'this usually means that the object has died '
+            '(overwritten or deleted) and cannot be mutated')
     __radd__ = __add__
 
     def __repr__(self):

@@ -1,6 +1,6 @@
-v0.39.0
+v0.40.0
 -------
-- Trying to mutate an overwritten/detached object will now raise DeadIndexError. Hopefully this will prevent some subtle late-appearing bugs.
+- Trying to mutate an overwritten/detached object will now raise DeadIndexError (a subclass of ValueError). Hopefully this will prevent some subtle late-appearing bugs.
 
 v0.38.2
 -------
