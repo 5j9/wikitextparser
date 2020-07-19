@@ -1433,3 +1433,9 @@ def test_dead_index():
 def test_nested_bold_or_italic_plain_text():
     assert remove_markup("''[[a|''b'']]") == 'b'
     assert remove_markup("'''[[a|'''b''']]") == 'b'
+
+
+def test_multiline_italics():
+    a, b = parse("'''a''\n'''b''").get_italics()
+    assert a.string == "''a''"
+    assert b.string == "''b''"

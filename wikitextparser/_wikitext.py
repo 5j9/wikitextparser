@@ -914,7 +914,6 @@ class WikiText:
                             shadow_copy[firstmultiletterword] = 95  # _
                         elif firstspace is not None:
                             shadow_copy[firstspace] = 95  # _
-                    continue
                 bold_matches.clear()
                 odd_italics = False
                 continue
