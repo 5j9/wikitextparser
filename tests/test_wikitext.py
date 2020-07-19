@@ -1464,3 +1464,8 @@ def test_ignore_head_apostrophes():
 def test_bold_ends_4_apostrophes():
     b, = parse("''a'''b''''").get_bolds()
     assert b.text == "b'"
+
+
+def test_single_bold_italic():
+    i, = parse("'''''a").get_italics()
+    assert i.text == "'''a"

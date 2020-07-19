@@ -876,11 +876,13 @@ class WikiText:
         # todo: cache
         bold_matches = []
         odd_italics = False
-        append_match = bold_matches.append
+        odd_bold_italics = False
         shadow_copy = self._shadow[:]
+        append_match = bold_matches.append
         for match in BOLD_ITALIC_FINDITER(shadow_copy):
             if match[4] is not None:  # newline or string end
-                if odd_italics is True and len(bold_matches) % 2:
+                if odd_italics is True and (
+                        len(bold_matches) + odd_bold_italics) % 2:
                     # one of the bold marks needs to be interpreted as italic
                     first_multi_letter_word = first_space = None
                     for bold_match in bold_matches:
@@ -917,7 +919,7 @@ class WikiText:
             es = e - s
             if es:  # more than 5 apostrophes, hide the previous ones
                 shadow_copy[s:e] = b'_' * es
-            append_match(match)
+            odd_bold_italics ^= True
             odd_italics ^= True
         return shadow_copy
 
