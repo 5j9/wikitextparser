@@ -1,4 +1,4 @@
-﻿"""Define the WikiText and SubWikiText classes."""
+"""Define the WikiText and SubWikiText classes."""
 
 # Todo: see if it is possible to use shadow position instead of using subpsans
 # Todo: consider using a tree structure (interval or segment tree).
@@ -79,40 +79,40 @@ TABLE_FINDITER = regex_compile(
     """,
     DOTALL | MULTILINE | VERBOSE).finditer
 
-# Bolds
-BOLDS_FINDITER = regex_compile(
+
+_BOLD_ITALIC_FINDITER = regex_compile(  # bold-italic, bold, or italic tokens
     rb"""
-    (?>(
-        (?<=('\0*+'\0*+))'\0*+'\0*+'  # bold-italic start
-        |'\0*+'\0*+'
-    ))
-    # contents
+    # start token
+    '\0*+'\0*+('\0*+('\0*+')?+)?+
+    # content
     \0*+[^'\n]++.*?
-    # bold end
-    (
-        '\0*+'\0*+'
-        (?=
-            (?(2)
-                (?:\0*+'\0*+')?+
-            )
-            (?>\0*+[^']|$)
-        )
-        |$
-    )
-    """,
+    # end token
+    (?(2)\0*+'\0*+')
+    (?:'\0*+'(?(1)\0*+'()?+)?+)?+
+    (?=\0*+[^']|$)
+    """, MULTILINE | VERBOSE).finditer
+
+BOLD_ITALIC_FINDITER = regex_compile(  # bold-italic, bold, or italic tokens
+    rb"""((?>'\0*)*?)'\0*+'\0*+('\0*+('\0*+')?+)?+(?=[^']|$)|($)""",
     MULTILINE | VERBOSE).finditer
 
-ITALICS_FINDITER = regex_compile(
-    rb"""
+BOLD_FINDITER = regex_compile(rb"""
+    # start token
+    '\0*+'\0*+'
+    # content
+    (\0*+[^'\n]++.*?)
+    # end token
+    (?:'\0*+'\0*+'|$)
+""", MULTILINE | VERBOSE).finditer
+
+ITALIC_FINDITER = regex_compile(rb"""
+    # start token
     '\0*+'
-    # contents
-    \0*+[^'\n]++.*?
-    (?>
-        '\0*+'(?!\0*')
-        |()$
-    )
-    """,
-    MULTILINE | VERBOSE).finditer
+    # content
+    (\0*+[^'\n]++.*?)
+    # end token
+    (?:'\0*+'|$)
+""", MULTILINE | VERBOSE).finditer
 
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
@@ -878,6 +878,60 @@ class WikiText:
     def _relative_contents_end(self) -> int:
         return self._span_data[1]
 
+    @property
+    def _bold_italic_balanced_shadow(self):
+        """Return bold and italic match objects according MW's algorithm.
+
+        The comments at /includes/parser/Parser.php:doQuotes are helpful:
+        https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
+        https://phabricator.wikimedia.org/T15227#178834
+        """
+        # todo: cache
+        bold_matches = []
+        odd_italics = False
+        append_match = bold_matches.append
+        shadow_copy = self._shadow[:]
+        for match in BOLD_ITALIC_FINDITER(shadow_copy):
+            if match[4] is not None:  # newline or string end
+                if odd_italics is True and len(bold_matches) % 2:
+                    # one of the bold marks needs to be interpreted as italic
+                    firstmultiletterword = firstspace = None
+                    for bold_match in bold_matches:
+                        bold_start = bold_match.start()
+                        # x1 and x2 are the variable names used in Parser.php
+                        x1 = shadow_copy[bold_start - 1:bold_start]
+                        x2 = shadow_copy[bold_start - 2:bold_start - 1]
+                        if x1 == b' ':
+                            if firstspace is None:
+                                firstspace = bold_start
+                        if x2 == b' ':  # firstsingleletterword
+                            shadow_copy[bold_start] = 95  # _
+                            break
+                        elif firstmultiletterword is None:
+                            firstmultiletterword = bold_start
+                    else:  # there was no firstsingleletterword
+                        if firstmultiletterword is not None:
+                            shadow_copy[firstmultiletterword] = 95  # _
+                        elif firstspace is not None:
+                            shadow_copy[firstspace] = 95  # _
+                    continue
+                bold_matches.clear()
+                odd_italics = False
+                continue
+            if match[2] is None:  # italic
+                odd_italics ^= True
+                continue
+            if match[3] is None:  # bold
+                append_match(match)
+                continue
+            # bold-italic
+            s, e = match.span(1)
+            if s != -1:  # more than 5 apostrophes, ignore the previous ones
+                shadow_copy[s:e] = b'_' * (e - s)
+            append_match(match)
+            odd_italics ^= True
+        return shadow_copy
+
     def get_bolds(self, recursive=True) -> List['Bold']:
         """Return bold parts of self.
 
@@ -891,16 +945,14 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         bolds = []
         bolds_append = bolds.append
-        shadow = self._shadow
-        for match in BOLDS_FINDITER(
-            shadow, endpos=self._relative_contents_end
-        ):
-            ms = match.start(1)
-            me = match.end(3)
+        balanced_shadow = self._bold_italic_balanced_shadow
+        for match in BOLD_FINDITER(
+                balanced_shadow, endpos=self._relative_contents_end):
+            ms, me = match.span()
             b, e = s + ms, s + me
             old_span = span_tuple_to_span_get((b, e))
             if old_span is None:
-                span = [b, e, None, shadow[ms:me]]
+                span = [b, e, None, balanced_shadow[ms:me]]
                 insort_right(spans, span)
             else:
                 span = old_span
@@ -921,13 +973,6 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        shadow_copy = self._shadow[:]
-        # remove bolds
-        for match in BOLDS_FINDITER(shadow_copy):
-            s, e = match.span(1)
-            shadow_copy[s:e] = b'B' * (e - s)
-            s, e = match.span(3)
-            shadow_copy[s:e] = b'B' * (e - s)
         type_to_spans = self._type_to_spans
         s = self._span_data[0]
         _lststr = self._lststr
@@ -935,19 +980,25 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         italics = []
         italics_append = italics.append
-        for match in ITALICS_FINDITER(
-            shadow_copy, endpos=self._relative_contents_end
-        ):
+        balanced_shadow = self._bold_italic_balanced_shadow
+        for match in BOLD_FINDITER(
+                balanced_shadow, endpos=self._relative_contents_end):
+            ms, me = match.span()
+            cs, ce = match.span(1)
+            balanced_shadow[ms:cs] = b'_' * (cs - ms)
+            balanced_shadow[ce:me] = b'_' * (cs - ms)
+        for match in ITALIC_FINDITER(
+                balanced_shadow, endpos=self._relative_contents_end):
             ms, me = match.span()
             b, e = span = s + ms, s + me
             old_span = span_tuple_to_span_get(span)
             if old_span is None:
-                span = [b, e, None, shadow_copy[ms:me]]
+                span = [b, e, None, balanced_shadow[ms:me]]
                 insort_right(spans, span)
             else:
                 span = old_span
             italics_append(Italic(
-                _lststr, type_to_spans, span, 'Bold', match[1] is None))
+                _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
         if not recursive:
             return italics
         for t in (

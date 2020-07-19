@@ -1,3 +1,7 @@
+v0.41.1
+-------
+- Fixed bugs and rewrote the algorithm for finding ``Bold`` and ``Italic`` objects. (#51)
+
 v0.41.0
 -------
 - Trying to mutate an overwritten/detached object will now raise ``DeadIndexError`` (a subclass of ``TypeError``). Hopefully this will prevent some subtle late-appearing bugs.
