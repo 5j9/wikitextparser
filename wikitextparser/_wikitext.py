@@ -904,11 +904,13 @@ class WikiText:
                         if x1 == b' ':
                             if firstspace is None:
                                 firstspace = bold_start
+                            continue
                         if x2 == b' ':  # firstsingleletterword
                             shadow_copy[bold_start] = 95  # _
                             break
-                        elif firstmultiletterword is None:
+                        if firstmultiletterword is None:
                             firstmultiletterword = bold_start
+                            continue
                     else:  # there was no firstsingleletterword
                         if firstmultiletterword is not None:
                             shadow_copy[firstmultiletterword] = 95  # _

@@ -1444,3 +1444,13 @@ def test_multiline_italics():
 def test_firstsingleletterword_condition_in_doquotes():
     b, = parse("'''a'' b'''c'' '''d''").get_bolds()
     assert b.string == "'''a'' b'''c'' '''"
+
+
+def test_firstspace_condition_in_doquotes_not_used():
+    b, = parse("'''a'' '''b'' '''c''").get_bolds()
+    assert b.string == "'''b'' '''"
+
+
+def test_firstspace_condition_in_doquotes():
+    b, = parse("a '''b'' '''c'' '''d''").get_bolds()
+    assert b.string == "'''c'' '''"
