@@ -1010,7 +1010,8 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        return self.get_bolds_and_italics(filter_cls=Italic, recursive=recursive)
+        return self.get_bolds_and_italics(
+            filter_cls=Italic, recursive=recursive)
 
     @property
     def external_links(self) -> List['ExternalLink']:
