@@ -1,9 +1,5 @@
 """Define the WikiText and SubWikiText classes."""
 
-# Todo: see if it is possible to use shadow position instead of using subpsans
-# Todo: consider using a tree structure (interval or segment tree).
-# Todo: Consider using separate strings for each node.
-
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
 from html import unescape
