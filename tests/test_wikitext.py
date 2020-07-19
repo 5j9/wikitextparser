@@ -1428,3 +1428,8 @@ def test_mutating_invalid_link():
 
 def test_dead_index():
     assert repr(DEAD_INDEX) == 'DeadIndex()'
+
+
+def test_nested_bold_or_italic_plain_text():
+    assert remove_markup("''[[a|''b'']]") == 'b'
+    assert remove_markup("'''[[a|'''b''']]") == 'b'

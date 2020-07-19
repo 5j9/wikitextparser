@@ -621,10 +621,10 @@ class WikiText:
         # because removing tags and wikilinks creates invalid spans, and
         # get_bolds() will try to look into wikilinks for bold parts.
         if replace_bolds:
-            for b in parsed.get_bolds():
+            for b in reversed(parsed.get_bolds()):
                 b[:] = b.text
         if replace_italics:
-            for i in parsed.get_italics():
+            for i in reversed(parsed.get_italics()):
                 i[:] = i.text
         if replace_parameters:
             for p in parsed.parameters:
