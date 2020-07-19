@@ -1439,3 +1439,8 @@ def test_multiline_italics():
     a, b = parse("'''a''\n'''b''").get_italics()
     assert a.string == "''a''"
     assert b.string == "''b''"
+
+
+def test_firstsingleletterword_condition_in_doquotes():
+    b, = parse("'''a'' b'''c'' '''d''").get_bolds()
+    assert b.string == "'''a'' b'''c'' '''"
