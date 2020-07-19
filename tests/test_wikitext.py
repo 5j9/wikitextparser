@@ -1469,3 +1469,11 @@ def test_bold_ends_4_apostrophes():
 def test_single_bold_italic():
     i, = parse("'''''a").get_italics()
     assert i.text == "'''a"
+
+
+def test_bolds_italics_span_data_reuse():
+    p = parse("'''b''' ''i''")
+    b0, i0 = p.get_bolds_and_italics()
+    b1, i1 = p.get_bolds_and_italics()
+    assert i0._span_data is i1._span_data
+    assert b0._span_data is b1._span_data

@@ -608,7 +608,7 @@ class WikiText:
         # because removing tags and wikilinks creates invalid spans, and
         # get_bolds() will try to look into wikilinks for bold parts.
         if replace_bolds_and_italics:
-            for i in reversed(parsed.get_bolds_italics()):
+            for i in reversed(parsed.get_bolds_and_italics()):
                 i[:] = i.text
         if replace_parameters:
             for p in parsed.parameters:
@@ -917,7 +917,7 @@ class WikiText:
             odd_italics ^= True
         return shadow_copy
 
-    def get_bolds_italics(
+    def get_bolds_and_italics(
         self, *, recursive=True, filter_cls: type = None,
     ) -> List[Union['Bold', 'Italic']]:
         """Return a list of bold and italic objects in self.
@@ -1002,7 +1002,7 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        return self.get_bolds_italics(filter_cls=Bold, recursive=recursive)
+        return self.get_bolds_and_italics(filter_cls=Bold, recursive=recursive)
 
     def get_italics(self, recursive=True) -> List['Italic']:
         """Return italic parts of self.
@@ -1010,7 +1010,7 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        return self.get_bolds_italics(filter_cls=Italic, recursive=recursive)
+        return self.get_bolds_and_italics(filter_cls=Italic, recursive=recursive)
 
     @property
     def external_links(self) -> List['ExternalLink']:
