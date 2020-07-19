@@ -936,7 +936,8 @@ class WikiText:
         if not italics_only:
             bold_spans = tts_setdefault('Bold', [])
             get_old_bold_span = {(s[0], s[1]): s for s in bold_spans}.get
-            for match in BOLD_FINDITER(balanced_shadow, rs, re):
+            bold_matches = list(BOLD_FINDITER(balanced_shadow, rs, re))
+            for match in bold_matches:
                 ms, me = match.span()
                 b, e = s + ms, s + me
                 old_span = get_old_bold_span((b, e))
@@ -951,16 +952,20 @@ class WikiText:
             for m in BOLD_ITALIC_RECURSE_METHODS:
                 for e in getattr(self, m):
                     result += e.get_bolds(False)
+        else:
+            bold_matches = BOLD_FINDITER(balanced_shadow, rs, re)
+
         if bolds_only:
             return result
+        else:  # remove bold tokens before searching for italics
+            for match in bold_matches:
+                ms, me = match.span()
+                cs, ce = match.span(1)  # content
+                balanced_shadow[ms:cs] = b'_' * (cs - ms)
+                balanced_shadow[ce:me] = b'_' * (me - ce)
 
         italic_spans = tts_setdefault('Italic', [])
         get_old_italic_span = {(s[0], s[1]): s for s in italic_spans}.get
-        for match in BOLD_FINDITER(balanced_shadow, rs, re):
-            ms, me = match.span()
-            cs, ce = match.span(1)  # content
-            balanced_shadow[ms:cs] = b'_' * (cs - ms)
-            balanced_shadow[ce:me] = b'_' * (me - ce)
         for match in ITALIC_FINDITER(balanced_shadow, rs, re):
             ms, me = match.span()
             b, e = span = s + ms, s + me
