@@ -918,7 +918,7 @@ class WikiText:
         return shadow_copy
 
     def get_bolds_and_italics(
-        self, *, recursive=True, filter_cls: type = None,
+        self, *, recursive=True, filter_cls: type = None
     ) -> List[Union['Bold', 'Italic']]:
         """Return a list of bold and italic objects in self.
 
