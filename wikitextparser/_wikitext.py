@@ -97,6 +97,10 @@ ITALIC_FINDITER = regex_compile(rb"""
     (?:'\0*+'|$)
 """, MULTILINE | VERBOSE).finditer
 
+BOLD_ITALIC_RECURSE_METHODS = (
+    'templates', 'parser_functions', 'parameters', '_extension_tags',
+    'wikilinks')
+
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
@@ -575,8 +579,7 @@ class WikiText:
         replace_external_links=True,
         replace_wikilinks=True,
         unescape_html_entities=True,
-        replace_bolds=True,
-        replace_italics=True,
+        replace_bolds_and_italics=True,
         _mutate=False
     ) -> str:
         """Return a plain text string representation of self."""
@@ -603,11 +606,8 @@ class WikiText:
         # replacing bold and italics should be done before wikilinks and tags
         # because removing tags and wikilinks creates invalid spans, and
         # get_bolds() will try to look into wikilinks for bold parts.
-        if replace_bolds:
-            for b in reversed(parsed.get_bolds()):
-                b[:] = b.text
-        if replace_italics:
-            for i in reversed(parsed.get_italics()):
+        if replace_bolds_and_italics:
+            for i in reversed(parsed.get_bolds_italics()):
                 i[:] = i.text
         if replace_parameters:
             for p in parsed.parameters:
@@ -857,9 +857,7 @@ class WikiText:
             Comment(_lststr, _type_to_spans, span, 'Comment')
             for span in self._subspans('Comment')]
 
-    @property
-    def _relative_contents_end(self) -> int:
-        return self._span_data[1]
+    _relative_contents_end = span
 
     @property
     def _balanced_quotes_shadow(self):
@@ -869,7 +867,6 @@ class WikiText:
         https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
         https://phabricator.wikimedia.org/T15227#178834
         """
-        # todo: cache
         bold_matches = []
         odd_italics = False
         odd_bold_italics = False
@@ -919,40 +916,79 @@ class WikiText:
             odd_italics ^= True
         return shadow_copy
 
+    def get_bolds_italics(
+        self, *, recursive=True, bolds_only=False, italics_only=False,
+    ) -> List[Union['Bold', 'Italic']]:
+        """Return a list of bold and italic objects in self.
+
+        This is faster than calling ``get_bolds`` and ``get_italics``
+        individually.
+        """
+        result = []
+        append = result.append
+        _lststr = self._lststr
+        s = self._span_data[0]
+        type_to_spans = self._type_to_spans
+        tts_setdefault = type_to_spans.setdefault
+        balanced_shadow = self._balanced_quotes_shadow
+        rs, re = self._relative_contents_end
+
+        if not italics_only:
+            bold_spans = tts_setdefault('Bold', [])
+            get_old_bold_span = {(s[0], s[1]): s for s in bold_spans}.get
+            for match in BOLD_FINDITER(balanced_shadow, rs, re):
+                ms, me = match.span()
+                b, e = s + ms, s + me
+                old_span = get_old_bold_span((b, e))
+                if old_span is None:
+                    span = [b, e, None, balanced_shadow[ms:me]]
+                    insort_right(bold_spans, span)
+                else:
+                    span = old_span
+                append(Bold(_lststr, type_to_spans, span, 'Bold'))
+            if not recursive:
+                return result
+            for m in BOLD_ITALIC_RECURSE_METHODS:
+                for e in getattr(self, m):
+                    result += e.get_bolds(False)
+        if bolds_only:
+            return result
+
+        italic_spans = tts_setdefault('Italic', [])
+        get_old_italic_span = {(s[0], s[1]): s for s in italic_spans}.get
+        for match in BOLD_FINDITER(balanced_shadow, rs, re):
+            ms, me = match.span()
+            cs, ce = match.span(1)  # content
+            balanced_shadow[ms:cs] = b'_' * (cs - ms)
+            balanced_shadow[ce:me] = b'_' * (me - ce)
+        for match in ITALIC_FINDITER(balanced_shadow, rs, re):
+            ms, me = match.span()
+            b, e = span = s + ms, s + me
+            old_span = get_old_italic_span(span)
+            if old_span is None:
+                span = [b, e, None, balanced_shadow[ms:me]]
+                insort_right(italic_spans, span)
+            else:
+                span = old_span
+            append(Italic(
+                _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
+        if not recursive:
+            result.sort(key=attrgetter('_span_data'))
+            return result
+        for m in BOLD_ITALIC_RECURSE_METHODS:
+            for e in getattr(self, m):
+                result += e.get_italics(False)
+
+        result.sort(key=attrgetter('_span_data'))
+        return result
+
     def get_bolds(self, recursive=True) -> List['Bold']:
         """Return bold parts of self.
 
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        _lststr = self._lststr
-        type_to_spans = self._type_to_spans
-        s = self._span_data[0]
-        spans = type_to_spans.setdefault('Bold', [])
-        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        bolds = []
-        bolds_append = bolds.append
-        balanced_shadow = self._balanced_quotes_shadow
-        for match in BOLD_FINDITER(
-                balanced_shadow, endpos=self._relative_contents_end):
-            ms, me = match.span()
-            b, e = s + ms, s + me
-            old_span = span_tuple_to_span_get((b, e))
-            if old_span is None:
-                span = [b, e, None, balanced_shadow[ms:me]]
-                insort_right(spans, span)
-            else:
-                span = old_span
-            bolds_append(Bold(_lststr, type_to_spans, span, 'Bold'))
-        if not recursive:
-            return bolds
-        for t in (
-            'templates', 'parser_functions', 'parameters', '_extension_tags',
-            'wikilinks'
-        ):
-            for e in getattr(self, t):
-                bolds += e.get_bolds(False)
-        return bolds
+        return self.get_bolds_italics(bolds_only=True, recursive=recursive)
 
     def get_italics(self, recursive=True) -> List['Italic']:
         """Return italic parts of self.
@@ -960,41 +996,7 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        type_to_spans = self._type_to_spans
-        s = self._span_data[0]
-        _lststr = self._lststr
-        spans = type_to_spans.setdefault('Italic', [])
-        span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
-        italics = []
-        italics_append = italics.append
-        balanced_shadow = self._balanced_quotes_shadow
-        for match in BOLD_FINDITER(
-                balanced_shadow, endpos=self._relative_contents_end):
-            ms, me = match.span()
-            cs, ce = match.span(1)  # content
-            balanced_shadow[ms:cs] = b'_' * (cs - ms)
-            balanced_shadow[ce:me] = b'_' * (me - ce)
-        for match in ITALIC_FINDITER(
-                balanced_shadow, endpos=self._relative_contents_end):
-            ms, me = match.span()
-            b, e = span = s + ms, s + me
-            old_span = span_tuple_to_span_get(span)
-            if old_span is None:
-                span = [b, e, None, balanced_shadow[ms:me]]
-                insort_right(spans, span)
-            else:
-                span = old_span
-            italics_append(Italic(
-                _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
-        if not recursive:
-            return italics
-        for t in (
-            'templates', 'parser_functions', 'parameters', '_extension_tags',
-            'wikilinks'
-        ):
-            for e in getattr(self, t):
-                italics += e.get_italics(False)
-        return italics
+        return self.get_bolds_italics(italics_only=True, recursive=recursive)
 
     @property
     def external_links(self) -> List['ExternalLink']:

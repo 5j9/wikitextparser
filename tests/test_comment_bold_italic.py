@@ -30,6 +30,14 @@ def test_sub_bolds():
     assert recursive_subbolds[0]._span_data[:2] == [12, 19]
 
 
+def test_sub_bolds_italics():
+    b = Bold("'''A{{{text|'''b'''}}}C'''")
+    assert b.get_bolds_italics(recursive=False) == []
+    recursive_results = b.get_bolds_italics()
+    assert len(recursive_results) == 1
+    assert recursive_results[0]._span_data[:2] == [12, 19]
+
+
 def test_sub_italics():
     i = Italic("''A{{{text|''b''}}}C''")
     assert i.get_italics(recursive=False) == []

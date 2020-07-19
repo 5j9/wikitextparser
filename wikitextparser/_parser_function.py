@@ -92,8 +92,8 @@ class SubWikiTextWithArgs(SubWikiText):
         self[2:2 + len(self.name)] = newname
 
     @property
-    def _relative_contents_end(self) -> int:
-        return -2
+    def _relative_contents_end(self) -> tuple:
+        return 2, -2
 
 
 class ParserFunction(SubWikiTextWithArgs):

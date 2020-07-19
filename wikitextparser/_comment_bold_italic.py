@@ -46,6 +46,11 @@ class BoldItalic(SubWikiText):
         b, e = self._match.span(1)
         self[b:e] = s
 
+    @property
+    def _relative_contents_end(self) -> tuple:
+        # noinspection PyUnresolvedReferences
+        return self._match.span(1)
+
 
 class Bold(BoldItalic):
     __slots__ = ()
@@ -53,11 +58,6 @@ class Bold(BoldItalic):
     @property
     def _match(self):
         return BOLD_FULLMATCH(self.string)
-
-    def get_bolds(self, recursive=True) -> List['Bold']:
-        if not recursive:
-            return []
-        return super().get_bolds(True)[1:]
 
 
 class Italic(BoldItalic):
@@ -84,8 +84,3 @@ class Italic(BoldItalic):
         if self.end_token:
             return ITALIC_FULLMATCH(self.string)
         return ITALIC_NOEND_FULLMATCH(self.string)
-
-    def get_italics(self, recursive=True) -> List['Italic']:
-        if not recursive:
-            return []
-        return super().get_italics(True)[1:]

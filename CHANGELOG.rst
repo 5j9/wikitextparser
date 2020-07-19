@@ -1,5 +1,9 @@
-v0.41.1
+v0.42.0
 -------
+- BREAKING CHANGE:
+    Remove ``replace_bolds``/``replace_italics`` params from ``remove_markup``/``plain_text`` methods.
+    Users can use the new ``replace_bolds_and_italics`` parameters. Removing only bolds or only italics is no longer possible.
+- Add ``get_bolds_italics`` as a new method.
 - Fixed bugs and rewrote the algorithm for finding ``Bold`` and ``Italic`` objects. (#51)
 
 v0.41.0

@@ -205,5 +205,5 @@ class Tag(SubWikiTextWithAttrs):
         return super().get_tags(name)[1:]
 
     @property
-    def _relative_contents_end(self) -> int:
-        return self._match.end('contents')
+    def _relative_contents_end(self) -> tuple:
+        return self._match.span('contents')
