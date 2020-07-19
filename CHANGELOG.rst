@@ -1,3 +1,7 @@
+v0.42.1
+-------
+- Fix a syntax error in Python 3.5.
+
 v0.42.0
 -------
 - BREAKING CHANGE:
