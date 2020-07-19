@@ -6,7 +6,8 @@ from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
-    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union)
+    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Type,
+    Union)
 from warnings import warn
 
 from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
@@ -917,12 +918,17 @@ class WikiText:
         return shadow_copy
 
     def get_bolds_italics(
-        self, *, recursive=True, bolds_only=False, italics_only=False,
+        self, *, recursive=True, filter_cls: type = None,
     ) -> List[Union['Bold', 'Italic']]:
         """Return a list of bold and italic objects in self.
 
         This is faster than calling ``get_bolds`` and ``get_italics``
         individually.
+        :keyword recursive: if True also look inside templates, parser
+            functions, extension tags, etc.
+        :keyword filter_cls: only return this type. Should be
+            `wikitextparser.Bold` or `wikitextparser.Italic`.
+            The default is None and means both bolds and italics.
         """
         result = []
         append = result.append
@@ -933,7 +939,7 @@ class WikiText:
         balanced_shadow = self._balanced_quotes_shadow
         rs, re = self._relative_contents_end
 
-        if not italics_only:
+        if filter_cls is None or filter_cls is Bold:
             bold_spans = tts_setdefault('Bold', [])
             get_old_bold_span = {(s[0], s[1]): s for s in bold_spans}.get
             bold_matches = list(BOLD_FINDITER(balanced_shadow, rs, re))
@@ -952,17 +958,19 @@ class WikiText:
             for m in BOLD_ITALIC_RECURSE_METHODS:
                 for e in getattr(self, m):
                     result += e.get_bolds(False)
-        else:
+            if filter_cls is Bold:
+                return result
+        else:  # filter_cls is Italic
             bold_matches = BOLD_FINDITER(balanced_shadow, rs, re)
 
-        if bolds_only:
-            return result
-        else:  # remove bold tokens before searching for italics
-            for match in bold_matches:
-                ms, me = match.span()
-                cs, ce = match.span(1)  # content
-                balanced_shadow[ms:cs] = b'_' * (cs - ms)
-                balanced_shadow[ce:me] = b'_' * (me - ce)
+        # filter_cls is None or filter_cls is Italic
+
+        # remove bold tokens before searching for italics
+        for match in bold_matches:
+            ms, me = match.span()
+            cs, ce = match.span(1)  # content
+            balanced_shadow[ms:cs] = b'_' * (cs - ms)
+            balanced_shadow[ce:me] = b'_' * (me - ce)
 
         italic_spans = tts_setdefault('Italic', [])
         get_old_italic_span = {(s[0], s[1]): s for s in italic_spans}.get
@@ -984,7 +992,8 @@ class WikiText:
             for e in getattr(self, m):
                 result += e.get_italics(False)
 
-        result.sort(key=attrgetter('_span_data'))
+        if filter_cls is None:  # the results are mixed and unsorted
+            result.sort(key=attrgetter('_span_data'))
         return result
 
     def get_bolds(self, recursive=True) -> List['Bold']:
@@ -993,7 +1002,7 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        return self.get_bolds_italics(bolds_only=True, recursive=recursive)
+        return self.get_bolds_italics(filter_cls=Bold, recursive=recursive)
 
     def get_italics(self, recursive=True) -> List['Italic']:
         """Return italic parts of self.
@@ -1001,7 +1010,7 @@ class WikiText:
         :param recursive: if True also look inside templates, parser functions,
             extension tags, etc.
         """
-        return self.get_bolds_italics(italics_only=True, recursive=recursive)
+        return self.get_bolds_italics(filter_cls=Italic, recursive=recursive)
 
     @property
     def external_links(self) -> List['ExternalLink']:
