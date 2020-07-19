@@ -79,19 +79,6 @@ TABLE_FINDITER = regex_compile(
     """,
     DOTALL | MULTILINE | VERBOSE).finditer
 
-
-_BOLD_ITALIC_FINDITER = regex_compile(  # bold-italic, bold, or italic tokens
-    rb"""
-    # start token
-    '\0*+'\0*+('\0*+('\0*+')?+)?+
-    # content
-    \0*+[^'\n]++.*?
-    # end token
-    (?(2)\0*+'\0*+')
-    (?:'\0*+'(?(1)\0*+'()?+)?+)?+
-    (?=\0*+[^']|$)
-    """, MULTILINE | VERBOSE).finditer
-
 BOLD_ITALIC_FINDITER = regex_compile(  # bold-italic, bold, or italic tokens
     rb"""((?>'\0*)*?)'\0*+'\0*+('\0*+('\0*+')?+)?+(?=[^']|$)|($)""",
     MULTILINE | VERBOSE).finditer
@@ -879,7 +866,7 @@ class WikiText:
         return self._span_data[1]
 
     @property
-    def _bold_italic_balanced_shadow(self):
+    def _balanced_quotes_shadow(self):
         """Return bold and italic match objects according MW's algorithm.
 
         The comments at /includes/parser/Parser.php:doQuotes are helpful:
@@ -895,24 +882,24 @@ class WikiText:
             if match[4] is not None:  # newline or string end
                 if odd_italics is True and len(bold_matches) % 2:
                     # one of the bold marks needs to be interpreted as italic
-                    firstmultiletterword = firstspace = None
+                    first_multi_letter_word = first_space = None
                     for bold_match in bold_matches:
                         bold_start = bold_match.start()
                         if shadow_copy[bold_start - 1:bold_start] == b' ':
-                            if firstspace is None:
-                                firstspace = bold_start
+                            if first_space is None:
+                                first_space = bold_start
                             continue
                         if shadow_copy[bold_start - 2:bold_start - 1] == b' ':
                             shadow_copy[bold_start] = 95  # _
-                            break  # firstsingleletterword
-                        if firstmultiletterword is None:
-                            firstmultiletterword = bold_start
+                            break  # first_single_letter_word
+                        if first_multi_letter_word is None:
+                            first_multi_letter_word = bold_start
                             continue
-                    else:  # there was no firstsingleletterword
-                        if firstmultiletterword is not None:
-                            shadow_copy[firstmultiletterword] = 95  # _
-                        elif firstspace is not None:
-                            shadow_copy[firstspace] = 95  # _
+                    else:  # there was no first_single_letter_word
+                        if first_multi_letter_word is not None:
+                            shadow_copy[first_multi_letter_word] = 95  # _
+                        elif first_space is not None:
+                            shadow_copy[first_space] = 95  # _
                 bold_matches.clear()
                 odd_italics = False
                 continue
@@ -924,8 +911,9 @@ class WikiText:
                 continue
             # bold-italic
             s, e = match.span(1)
-            if s != -1:  # more than 5 apostrophes, ignore the previous ones
-                shadow_copy[s:e] = b'_' * (e - s)
+            es = e - s
+            if es:  # more than 5 apostrophes, ignore the previous ones
+                shadow_copy[s:e] = b'_' * es
             append_match(match)
             odd_italics ^= True
         return shadow_copy
@@ -943,7 +931,7 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         bolds = []
         bolds_append = bolds.append
-        balanced_shadow = self._bold_italic_balanced_shadow
+        balanced_shadow = self._balanced_quotes_shadow
         for match in BOLD_FINDITER(
                 balanced_shadow, endpos=self._relative_contents_end):
             ms, me = match.span()
@@ -978,13 +966,13 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         italics = []
         italics_append = italics.append
-        balanced_shadow = self._bold_italic_balanced_shadow
+        balanced_shadow = self._balanced_quotes_shadow
         for match in BOLD_FINDITER(
                 balanced_shadow, endpos=self._relative_contents_end):
             ms, me = match.span()
-            cs, ce = match.span(1)
+            cs, ce = match.span(1)  # content
             balanced_shadow[ms:cs] = b'_' * (cs - ms)
-            balanced_shadow[ce:me] = b'_' * (cs - ms)
+            balanced_shadow[ce:me] = b'_' * (me - ce)
         for match in ITALIC_FINDITER(
                 balanced_shadow, endpos=self._relative_contents_end):
             ms, me = match.span()

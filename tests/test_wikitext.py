@@ -1441,16 +1441,21 @@ def test_multiline_italics():
     assert b.string == "''b''"
 
 
-def test_firstsingleletterword_condition_in_doquotes():
+def test_first_single_letter_word_condition_in_doquotes():
     b, = parse("'''a'' b'''c'' '''d''").get_bolds()
     assert b.string == "'''a'' b'''c'' '''"
 
 
-def test_firstspace_condition_in_doquotes_not_used():
+def test_first_space_condition_in_doquotes_not_used():
     b, = parse("'''a'' '''b'' '''c''").get_bolds()
     assert b.string == "'''b'' '''"
 
 
-def test_firstspace_condition_in_doquotes():
+def test_first_space_condition_in_balanced_quotes_shadow():
     b, = parse("a '''b'' '''c'' '''d''").get_bolds()
     assert b.string == "'''c'' '''"
+
+
+def test_ignore_head_apostrophes():
+    b, = parse("''''''''a").get_italics()
+    assert b.string == "'''''a"
