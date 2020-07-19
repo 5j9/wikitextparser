@@ -1459,3 +1459,8 @@ def test_first_space_condition_in_balanced_quotes_shadow():
 def test_ignore_head_apostrophes():
     b, = parse("''''''''a").get_italics()
     assert b.string == "'''''a"
+
+
+def test_bold_ends_4_apostrophes():
+    b, = parse("''a'''b''''").get_bolds()
+    assert b.text == "b'"

@@ -907,12 +907,15 @@ class WikiText:
                 odd_italics ^= True
                 continue
             if match[3] is None:  # bold
+                s, e = match.span(1)
+                if s != e:  # four apostrophes, hide the first one
+                    shadow_copy[s] = 95  # _
                 append_match(match)
                 continue
             # bold-italic
             s, e = match.span(1)
             es = e - s
-            if es:  # more than 5 apostrophes, ignore the previous ones
+            if es:  # more than 5 apostrophes, hide the previous ones
                 shadow_copy[s:e] = b'_' * es
             append_match(match)
             odd_italics ^= True
