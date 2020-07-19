@@ -898,16 +898,13 @@ class WikiText:
                     firstmultiletterword = firstspace = None
                     for bold_match in bold_matches:
                         bold_start = bold_match.start()
-                        # x1 and x2 are the variable names used in Parser.php
-                        x1 = shadow_copy[bold_start - 1:bold_start]
-                        x2 = shadow_copy[bold_start - 2:bold_start - 1]
-                        if x1 == b' ':
+                        if shadow_copy[bold_start - 1:bold_start] == b' ':
                             if firstspace is None:
                                 firstspace = bold_start
                             continue
-                        if x2 == b' ':  # firstsingleletterword
+                        if shadow_copy[bold_start - 2:bold_start - 1] == b' ':
                             shadow_copy[bold_start] = 95  # _
-                            break
+                            break  # firstsingleletterword
                         if firstmultiletterword is None:
                             firstmultiletterword = bold_start
                             continue
