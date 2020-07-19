@@ -91,11 +91,9 @@ class SubWikiTextWithArgs(SubWikiText):
     def name(self, newname: str) -> None:
         self[2:2 + len(self.name)] = newname
 
-    def get_bolds(self, recursive=False):
-        bolds = []
-        for a in self.arguments:
-            bolds += a.get_bolds(recursive)
-        return bolds
+    @property
+    def _relative_contents_end(self) -> int:
+        return -2
 
 
 class ParserFunction(SubWikiTextWithArgs):
