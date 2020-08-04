@@ -333,21 +333,18 @@ def _apply_attr_spans(
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
-    # Numbered comments indicate the step in that algorithm.
-    # 1
-    xwidth = 0
-    # 2
-    yheight = 0
+    # Numeral comments indicate the steps in that algorithm.
+    # 1, 2, 10
+    ycurrent = yheight = xwidth = 0
     # 4
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
     table = []  # type: List[List[Optional[T]]]
+    append_row = table.append
     # Table.data won't call this function if table_data is empty.
     # 5
     # if not table_data:
     #     return table_data
-    # 10
-    ycurrent = 0
     # 11
     downward_growing_cells = []  # type: List[Tuple[Optional[T], int, int]]
     # 13, 18
@@ -356,7 +353,7 @@ def _apply_attr_spans(
         # 13.1 ycurrent is never greater than yheight
         if yheight == ycurrent:
             yheight += 1
-            table.append([None] * xwidth)
+            append_row([None] * xwidth)
         # 13.2
         xcurrent = 0
         # 13.3
@@ -410,7 +407,7 @@ def _apply_attr_spans(
             if yheight < ycurrent + rowspan:
                 yheight = ycurrent + rowspan
                 while len(table) < yheight:
-                    table.append([None] * xwidth)
+                    append_row([None] * xwidth)
             # 13.13
             for y in range(ycurrent, ycurrent + rowspan):
                 r = table[y]
@@ -423,8 +420,7 @@ def _apply_attr_spans(
             # 13.14
             if cell_grows_downward:
                 downward_growing_cells.append(
-                    (current_cell, xcurrent, colspan)
-                )
+                    (current_cell, xcurrent, colspan))
             # 13.15
             xcurrent += colspan
         # 13.16
