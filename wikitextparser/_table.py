@@ -50,6 +50,16 @@ CAPTION_MATCH = regex_compile(
 T = TypeVar('T')
 
 
+COL_ROW_DIGITS = regex_compile(rb'\s*+\d+').match
+
+
+def head_int(value):
+    if value is None:
+        return 1
+    match = COL_ROW_DIGITS(value)
+    return 1 if match is None else int(match[0])
+
+
 class Table(SubWikiTextWithAttrs):
 
     __slots__ = '_attrs_match_cache'
@@ -373,14 +383,14 @@ def _apply_attr_spans(
                     if xwidth > len(r):
                         r.extend([None] * (xwidth - len(r)))
             # 13.8
-            colspan = int(attrs_get(b'colspan', 1))
+            colspan = head_int(attrs_get(b'colspan'))
             if colspan == 0:
                 # Note: colspan="0" tells the browser to span the cell to
                 # the last column of the column group (colgroup)
                 # http://www.w3schools.com/TAGS/att_td_colspan.asp
                 colspan = 1
             # 13.9
-            rowspan = int(attrs_get(b'rowspan', 1))
+            rowspan = head_int(attrs_get(b'rowspan'))
             # 13.10
             if rowspan == 0:
                 # Note: rowspan="0" tells the browser to span the cell to the

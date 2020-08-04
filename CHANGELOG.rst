@@ -1,3 +1,7 @@
+v0.42.2
+-------
+- Improve handling weird colspan and rowspan values in tables. (#53)
+
 v0.42.1
 -------
 - Fix a syntax error in Python 3.5.

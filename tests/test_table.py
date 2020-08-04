@@ -494,3 +494,13 @@ def test_get_get_tables():
     assert repr(
         Table('{|\n|a\n|-\n{|\n|b\n|}\n|}').get_tables()
     ) == "[Table('{|\\n|b\\n|}')]"
+
+
+def test_weird_colspan():
+    assert Table(
+        '{|class=wikitable\n'
+        '! colspan="" | 1 !!colspan=" " | 2 !! 3 !! 4\n'
+        '|-\n'
+        '| colspan=" 2a2"| a\n'
+        '|colspan="1.5"| b\n'
+        '|}').data() == [['1', '2', '3', '4'], ['a', 'a', 'b', None]]
