@@ -1,6 +1,6 @@
 v0.42.2
 -------
-- Improve handling weird colspan and rowspan values in tables. (#53)
+- Improve the handling of weird ``colspan`` and ``rowspan`` values in tables. (#53)
 
 v0.42.1
 -------
