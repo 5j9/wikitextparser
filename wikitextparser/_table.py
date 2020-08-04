@@ -50,13 +50,13 @@ CAPTION_MATCH = regex_compile(
 T = TypeVar('T')
 
 
-COL_ROW_DIGITS = regex_compile(rb'\s*+\d+').match
+HEAD_DIGITS = regex_compile(rb'\s*+\d+').match
 
 
 def head_int(value):
     if value is None:
         return 1
-    match = COL_ROW_DIGITS(value)
+    match = HEAD_DIGITS(value)
     return 1 if match is None else int(match[0])
 
 
