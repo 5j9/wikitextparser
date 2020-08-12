@@ -1,14 +1,12 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 from functools import partial
-from typing import Dict, Callable, Optional
+from typing import Callable, Dict, Optional
 
-from regex import VERBOSE, IGNORECASE, REVERSE
-from regex import compile as regex_compile
+from regex import IGNORECASE, REVERSE, VERBOSE, compile as regex_compile
 
 from ._config import (
-    _parsable_tag_extensions, regex_pattern, _unparsable_tag_extensions,
-    _bare_external_link_schemes, _parser_functions, _HTML_TAG_NAME)
-
+    _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
+    _parser_functions, _unparsable_tag_extensions, regex_pattern)
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'

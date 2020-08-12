@@ -1,11 +1,10 @@
 ﻿"""Define the ExternalLink class."""
 
-from typing import Optional, List
+from typing import List, Optional
 
 from regex import compile as regex_compile
 
-from ._wikitext import SubWikiText, BRACKET_EXTERNAL_LINK_URL
-
+from ._wikitext import BRACKET_EXTERNAL_LINK_URL, SubWikiText
 
 URL_MATCH = regex_compile(BRACKET_EXTERNAL_LINK_URL).match
 

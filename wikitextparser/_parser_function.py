@@ -4,10 +4,9 @@ from typing import Iterable, List, Union
 
 import regex
 
-from ._wikitext import SubWikiText
 from ._argument import Argument
 from ._wikilist import WikiList
-
+from ._wikitext import SubWikiText
 
 PF_NAME_ARGS_FULLMATCH = regex.compile(
     rb'[^:|}]*+'  # name

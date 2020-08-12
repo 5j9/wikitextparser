@@ -7,7 +7,6 @@ from regex import DOTALL, compile
 
 from ._wikitext import SubWikiText
 
-
 FULLMATCH = compile(
     rb'\[\0*+\['
     rb'('  # 1: target

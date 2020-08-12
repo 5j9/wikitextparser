@@ -1,4 +1,4 @@
-﻿from wikitextparser import Comment, Bold, Italic
+﻿from wikitextparser import Bold, Comment, Italic
 
 
 def test_comment():

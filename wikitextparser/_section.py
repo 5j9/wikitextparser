@@ -5,7 +5,6 @@ from regex import compile as regex_compile
 
 from ._wikitext import SubWikiText
 
-
 HEADER_MATCH = regex_compile(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
 
 

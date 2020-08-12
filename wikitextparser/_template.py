@@ -1,15 +1,14 @@
 """Define the Template class."""
 
 
-from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
-from regex import compile as regex_compile, REVERSE
+from regex import REVERSE, compile as regex_compile
 
 from ._argument import Argument
 from ._parser_function import SubWikiTextWithArgs
 from ._spans import COMMENT_PATTERN
 from ._wikitext import WS
-
 
 COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
 

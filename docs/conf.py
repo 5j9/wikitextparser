@@ -21,7 +21,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 from os.path import abspath, dirname, join
-from re import search, MULTILINE
+from re import MULTILINE, search
 
 docs_dir = abspath(dirname(__file__))
 repo_dir = abspath(join(docs_dir, '..'))

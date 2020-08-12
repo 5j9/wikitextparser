@@ -6,27 +6,21 @@ from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
-    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Type,
-    Union)
+    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union)
 from warnings import warn
 
-from regex import VERBOSE, DOTALL, MULTILINE, IGNORECASE, search, finditer
-from regex import compile as regex_compile
+from regex import DOTALL, IGNORECASE, MULTILINE, VERBOSE, \
+    compile as regex_compile, finditer, search
 from wcwidth import wcswidth
 
 # noinspection PyProtectedMember
 from ._config import (
-    _tag_extensions, _HTML_TAG_NAME, _bare_external_link_schemes,
+    _HTML_TAG_NAME, _bare_external_link_schemes, _tag_extensions,
     regex_pattern)
 from ._spans import (
-    PARSABLE_TAG_EXTENSIONS_PATTERN,
-    START_TAG_PATTERN,
-    END_TAG_PATTERN,
-    parse_to_spans,
-    INVALID_URL_CHARS,
-    BARE_EXTERNAL_LINK,
-    EXTERNAL_LINK_URL_TAIL)
-
+    BARE_EXTERNAL_LINK, END_TAG_PATTERN, EXTERNAL_LINK_URL_TAIL,
+    INVALID_URL_CHARS, PARSABLE_TAG_EXTENSIONS_PATTERN, START_TAG_PATTERN,
+    parse_to_spans)
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(

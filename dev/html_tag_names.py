@@ -2,9 +2,9 @@ from collections import Counter
 from itertools import chain
 from json import loads
 
+from bs4 import BeautifulSoup
 from regex import findall
 from requests import get, post
-from bs4 import BeautifulSoup
 
 
 def parse(text: str) -> bytes:

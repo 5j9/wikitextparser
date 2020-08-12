@@ -1,11 +1,11 @@
 from operator import attrgetter
 
-from pytest import warns, mark, raises
+from pytest import mark, raises, warns
 
-from wikitextparser import WikiText, parse, Template, ParserFunction,\
+from wikitextparser import ParserFunction, Template, WikiText, parse, \
     remove_markup
 # noinspection PyProtectedMember
-from wikitextparser._wikitext import WS, DeadIndexError, DEAD_INDEX
+from wikitextparser._wikitext import DEAD_INDEX, DeadIndexError, WS
 
 
 # basics  of WikiText

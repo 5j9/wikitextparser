@@ -1,9 +1,9 @@
 ﻿"""Define the Argument class."""
 from typing import Dict, List, MutableSequence, Optional, Union
 
-from regex import compile as regex_compile, MULTILINE, DOTALL
+from regex import DOTALL, MULTILINE, compile as regex_compile
 
-from ._wikitext import SubWikiText, SECTION_HEADING
+from ._wikitext import SECTION_HEADING, SubWikiText
 
 ARG_SHADOW_FULLMATCH = regex_compile(
     rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING +

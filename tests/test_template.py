@@ -1,4 +1,4 @@
-from pytest import warns, mark
+from pytest import mark
 
 from wikitextparser import Template
 

@@ -1,9 +1,10 @@
 ﻿from typing import Dict, List
+
 from pytest import mark
 
+from wikitextparser import WikiText, parse
 # noinspection PyProtectedMember
 from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
-from wikitextparser import WikiText, parse
 
 
 def bytearray_parse_to_spans(bytes_: bytes) -> Dict[str, List[List[int]]]:

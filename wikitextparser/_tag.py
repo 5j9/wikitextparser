@@ -9,13 +9,12 @@ For more info see:
 
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
-from regex import compile as regex_compile, VERBOSE, DOTALL
+from regex import DOTALL, VERBOSE, compile as regex_compile
 
-from ._spans import ATTRS_PATTERN, SPACE_CHARS, END_TAG_PATTERN
+from ._spans import ATTRS_PATTERN, END_TAG_PATTERN, SPACE_CHARS
 from ._wikitext import SubWikiText
-
 
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name

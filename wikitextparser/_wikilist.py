@@ -1,10 +1,9 @@
-from typing import Iterable, List, Union, Dict, MutableSequence, Match
+from typing import Dict, Iterable, List, Match, MutableSequence, Union
 from warnings import warn
 
-from regex import escape, fullmatch, MULTILINE
+from regex import MULTILINE, escape, fullmatch
 
 from ._wikitext import SubWikiText
-
 
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'

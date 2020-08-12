@@ -1,20 +1,18 @@
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
 __version__ = '0.42.4.dev0'
 
-from ._parameter import Parameter
-from ._argument import Argument
-from ._externallink import ExternalLink
-from ._wikilink import WikiLink
-from ._section import Section
-from ._comment_bold_italic import Comment, Bold, Italic
 from . import _wikitext
-from ._table import Table
-from ._template import Template
+from ._argument import Argument
+from ._comment_bold_italic import Bold, Comment, Italic
+from ._externallink import ExternalLink
+from ._parameter import Parameter
 from ._parser_function import ParserFunction
+from ._section import Section
+from ._table import Table
 from ._tag import Tag
-from ._wikilist import WikiList
-from ._wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT
-
+from ._template import Template
+from ._wikilink import WikiLink
+from ._wikilist import LIST_PATTERN_FORMAT as _LIST_PATTERN_FORMAT, WikiList
 
 _wikitext.ExternalLink = ExternalLink
 _wikitext.WikiLink = WikiLink

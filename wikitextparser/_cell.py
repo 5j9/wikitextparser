@@ -1,13 +1,12 @@
 ﻿"""Define the Cell class."""
 
 
-from typing import Match, MutableSequence, Union, Dict, List
+from typing import Dict, List, Match, MutableSequence, Union
 
-from regex import compile as regex_compile, VERBOSE, DOTALL
+from regex import DOTALL, VERBOSE, compile as regex_compile
 
-from ._tag import SubWikiTextWithAttrs
 from ._spans import ATTRS_MATCH
-
+from ._tag import SubWikiTextWithAttrs
 
 # https://regex101.com/r/hB4dX2/17
 NEWLINE_CELL_MATCH = regex_compile(

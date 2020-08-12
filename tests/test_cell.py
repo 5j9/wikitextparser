@@ -1,6 +1,6 @@
 ﻿from wikitextparser import parse
 # noinspection PyProtectedMember
-from wikitextparser._table import Table, Cell
+from wikitextparser._table import Cell, Table
 
 
 def test_value():

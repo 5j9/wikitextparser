@@ -1,11 +1,10 @@
-import sys
+import cProfile
 from functools import partial
 from timeit import repeat
-import cProfile
 
-import wikitextparser as wtp
 import mwparserfromhell as mwp
 
+import wikitextparser as wtp
 
 # with open('vs_mwparserfromhell_input.txt', encoding='utf8') as f:
 #     text = f.read()

@@ -3,7 +3,6 @@ from webbrowser import open_new_tab
 
 from path import Path  # requires path
 
-
 repo = Path(__file__).parent.parent
 repo.cd()
 check_call(['coverage', 'run', '-m', 'pytest'])

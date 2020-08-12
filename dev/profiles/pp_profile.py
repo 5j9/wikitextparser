@@ -1,8 +1,7 @@
-import sys
 import cProfile
+import sys
 
 from wikitextparser import parse
-
 
 with open('citation_template.txt', encoding='utf8') as f:
     text = f.read()

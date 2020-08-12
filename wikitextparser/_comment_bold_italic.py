@@ -3,9 +3,8 @@ from typing import Dict, List, MutableSequence, Optional, Union
 
 from regex import MULTILINE, compile as regex_compile
 
-from ._wikitext import SubWikiText
 from ._spans import COMMENT_PATTERN
-
+from ._wikitext import SubWikiText
 
 COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ")*+"
 COMMENT_COMMA = "(?>" + COMMENT_PATTERN + ")*+'"
