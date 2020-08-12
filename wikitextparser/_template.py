@@ -2,7 +2,6 @@
 
 
 from typing import List, Optional, TypeVar, Iterable, Dict, Tuple
-from warnings import warn
 
 from regex import compile as regex_compile, REVERSE
 
@@ -40,8 +39,6 @@ class Template(SubWikiTextWithArgs):
     def normal_name(
         self,
         rm_namespaces=('Template',),
-        capital_links=False,
-        _code: str = None,
         *,
         code: str = None,
         capitalize=False
@@ -63,8 +60,6 @@ class Template(SubWikiTextWithArgs):
             template's name to a capital letter. See
             [[mw:Manual:$wgCapitalLinks]] for more info.
         :param code: is the language code.
-        :param capital_links: deprecated.
-        :param _code: deprecated.
 
         Example:
             >>> Template(
@@ -72,14 +67,6 @@ class Template(SubWikiTextWithArgs):
             ... ).normal_name(code='en')
             'T 1'
         """
-        if capital_links:
-            warn('`capital_links` argument is deprecated,'
-                 ' use `capitalize` instead', DeprecationWarning)
-            capitalize = capital_links
-        if _code:
-            warn('`positional_code` argument is deprecated,'
-                 ' use `code` instead', DeprecationWarning)
-            code = _code
         # Remove comments
         name = COMMENT_SUB('', self.name).strip(WS)
         # Remove code

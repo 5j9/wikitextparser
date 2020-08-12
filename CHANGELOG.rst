@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Removed deperecated parameters of ``Template.normal_name()``: .
+
 v0.42.3
 -------
 - Fix a bug in handling of comments in template names. (#54)
