@@ -986,7 +986,8 @@ class WikiText:
             append(Italic(
                 _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
         if not recursive:
-            result.sort(key=attrgetter('_span_data'))
+            if filter_cls is None:  # all Italics are appended after Bolds
+                result.sort(key=attrgetter('_span_data'))
             return result
         for m in BOLD_ITALIC_RECURSE_METHODS:
             for e in getattr(self, m):
