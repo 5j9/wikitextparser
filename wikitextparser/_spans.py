@@ -25,13 +25,13 @@ PF_TL_FINDITER = regex_compile(  # noqa
         |''' + regex_pattern(_parser_functions)[3:] + rb'''
         :(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()
         |  # invalid template name
-        [\s_\n]*+  # invalid name
+        [\s\0_]*+  # invalid name
         (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
         \}\}()
         |  # template
-        \s*+
+        [\s\0]*+
         ''' + VALID_TITLE_CHARS + rb'''  # template name
-        \s*+
+        [\s\0]*+
         (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
     \}\})
     ''', VERBOSE).finditer

@@ -64,6 +64,7 @@ def test_normal_name():
     warns(DeprecationWarning, t.normal_name, _code='fa')
     assert 't' == Template('{{ : t |a}}').normal_name()
     assert 'A B' == Template('{{A___B}}').normal_name()
+    assert 'T' == Template('{{_<!---->\n _T_ \n<!---->_}}').normal_name()
 
 
 def test_keyword_and_positional_args():

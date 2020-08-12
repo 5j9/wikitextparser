@@ -1,3 +1,7 @@
+v0.42.3
+-------
+- Fix a bug in handling of comments in template names. (#54)
+
 v0.42.2
 -------
 - Improve the handling of weird ``colspan`` and ``rowspan`` values in tables. (#53)

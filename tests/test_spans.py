@@ -491,3 +491,9 @@ def test_wikilinks_and_params_cannot_overlap():
 def test_param_containing_curly_brace():
     assert bpts(b'{{{p|{}}}')['Parameter'] == [[0, 9]]
     assert bpts(b'{{{p|}d}}}')['Parameter'] == [[0, 10]]
+
+
+def test_comment_in_template_name():
+    assert bpts(b'{{t\n<!---->|p}}')['Template'] == [[0, 15]]
+    assert bpts(b'{{<!---->\nt|p}}')['Template'] == [[0, 15]]
+    assert not bpts(b'{{_<!---->}}')['Template']
