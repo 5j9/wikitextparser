@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.43.1
+-------
 - Improve the performance of ``get_bolds_and_italics(recursive=True, filter_cls=None)``.
 - Fix a bug in ``get_bolds_and_italics(recursive=False)`` which was causing to return recursive Bold items.
 
