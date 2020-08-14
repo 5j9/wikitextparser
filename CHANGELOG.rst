@@ -1,6 +1,7 @@
 Unreleased
 ----------
-- Removed deperecated parameters of ``Template.normal_name()``: .
+- Remove the deprecated parameters of ``Template.normal_name()``.
+- Fix a bug in  ``get_bolds_and_italics(recursive=True)`` which was causing it to return only ``Bold`` items.
 
 v0.42.3
 -------
@@ -293,3 +294,4 @@ v0.18.0
 - Fixed: A minor bug in Template.set_arg
 - Changed: ExternalLink.text: Return None if the link is not within brackets
 - Fixed: Handling of comments and templates in external links
+links

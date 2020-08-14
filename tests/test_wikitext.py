@@ -2,8 +2,8 @@ from operator import attrgetter
 
 from pytest import mark, raises, warns
 
-from wikitextparser import ParserFunction, Template, WikiText, parse, \
-    remove_markup
+from wikitextparser import Bold, Italic, ParserFunction, Template, WikiText, \
+    parse, remove_markup
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import DEAD_INDEX, DeadIndexError, WS
 
@@ -1477,3 +1477,9 @@ def test_bolds_italics_span_data_reuse():
     b1, i1 = p.get_bolds_and_italics()
     assert i0._span_data is i1._span_data
     assert b0._span_data is b1._span_data
+
+
+def test_bold_italics_order():
+    i, b = parse("''i'' '''b'''").get_bolds_and_italics(recursive=False)
+    assert type(i) is Italic
+    assert type(b) is Bold

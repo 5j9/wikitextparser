@@ -947,7 +947,7 @@ class WikiText:
                 else:
                     span = old_span
                 append(Bold(_lststr, type_to_spans, span, 'Bold'))
-            if not recursive:
+            if filter_cls is Bold and not recursive:
                 return result
             for m in BOLD_ITALIC_RECURSE_METHODS:
                 for e in getattr(self, m):
