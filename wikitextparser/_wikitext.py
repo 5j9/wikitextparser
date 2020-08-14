@@ -92,7 +92,7 @@ ITALIC_FINDITER = regex_compile(rb"""
     (?:'\0*+'|$)
 """, MULTILINE | VERBOSE).finditer
 
-BOLD_ITALIC_RECURSE_METHODS = (
+BOLD_ITALIC_RECURSE = (
     'templates', 'parser_functions', 'parameters', '_extension_tags',
     'wikilinks')
 
@@ -947,12 +947,15 @@ class WikiText:
                 else:
                     span = old_span
                 append(Bold(_lststr, type_to_spans, span, 'Bold'))
-            if filter_cls is Bold and not recursive:
-                return result
-            for m in BOLD_ITALIC_RECURSE_METHODS:
-                for e in getattr(self, m):
-                    result += e.get_bolds(False)
-            if filter_cls is Bold:
+            if recursive:
+                for prop in BOLD_ITALIC_RECURSE:
+                    for e in getattr(self, prop):
+                        result += e.get_bolds_and_italics(
+                            filter_cls=filter_cls, recursive=False)
+                if filter_cls is Bold:
+                    result.sort(key=attrgetter('_span_data'))
+                    return result
+            elif filter_cls is Bold:
                 return result
         else:  # filter_cls is Italic
             bold_matches = BOLD_FINDITER(balanced_shadow, rs, re)
@@ -979,15 +982,15 @@ class WikiText:
                 span = old_span
             append(Italic(
                 _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
-        if not recursive:
-            if filter_cls is None:  # all Italics are appended after Bolds
-                result.sort(key=attrgetter('_span_data'))
+        if recursive:
+            if filter_cls is Italic:
+                for prop in BOLD_ITALIC_RECURSE:
+                    for e in getattr(self, prop):
+                        result += e.get_bolds_and_italics(
+                            filter_cls=Italic, recursive=False)
+            result.sort(key=attrgetter('_span_data'))
             return result
-        for m in BOLD_ITALIC_RECURSE_METHODS:
-            for e in getattr(self, m):
-                result += e.get_italics(False)
-
-        if filter_cls is None:  # the results are mixed and unsorted
+        if filter_cls is None:  # all Italics are appended after Bolds
             result.sort(key=attrgetter('_span_data'))
         return result
 

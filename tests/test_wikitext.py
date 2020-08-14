@@ -1303,7 +1303,7 @@ def test_get_bolds():
     assert repr(parse("'''b<ref>r'''c</ref>a").get_bolds(False)) ==\
         """[Bold("'''b<ref>r'''c</ref>a")]"""
     ab("'''b{{{p|'''}}}", "'''b{{{p|'''}}}")  # ?
-    ab("<nowiki>'''a</nowiki>'''b", "'''b")
+    ab("<nowiki>'''a</nowiki>'''b", "'''a")
     anb("' ' ' a ' ' '")
     ab("x''' '''y", "''' '''")
     ab("x''''''y", "'''y")

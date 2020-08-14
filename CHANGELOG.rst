@@ -1,7 +1,12 @@
+Unreleased
+----------
+- Improve the performance of ``get_bolds_and_italics(recursive=True, filter_cls=None)``.
+- Fix a bug in ``get_bolds_and_italics(recursive=False)`` which was causing to return recursive Bold items.
+
 v0.43.0
 -------
 - Remove the deprecated parameters of ``Template.normal_name()``.
-- Fix a bug in  ``get_bolds_and_italics(recursive=True)`` which was causing it to return only ``Bold`` items.
+- Fix a bug in  ``get_bolds_and_italics()`` which was causing it to return only ``Bold`` items.
 
 v0.42.3
 -------
