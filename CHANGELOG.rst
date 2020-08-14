@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.43.0
+-------
 - Remove the deprecated parameters of ``Template.normal_name()``.
 - Fix a bug in  ``get_bolds_and_italics(recursive=True)`` which was causing it to return only ``Bold`` items.
 
