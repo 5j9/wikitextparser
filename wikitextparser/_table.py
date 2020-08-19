@@ -14,7 +14,7 @@ from ._tag import SubWikiTextWithAttrs
 from ._wikitext import WS
 
 CAPTION_MATCH = regex_compile(
-    r"""
+    rb"""
     # Everything until the caption line
     (?P<preattrs>
         # Start of table
@@ -35,14 +35,8 @@ CAPTION_MATCH = regex_compile(
         (?!\|)
     )?
     (?P<caption>.*?)
-    # End of caption line
-    (?:
-        \n|
-        \|\|
-    )
-    """,
-    VERBOSE
-).match
+    (?:\n|\|\|)
+    """, VERBOSE).match
 T = TypeVar('T')
 
 
@@ -268,26 +262,24 @@ class Table(SubWikiTextWithAttrs):
     @property
     def caption(self) -> Optional[str]:
         """Caption of the table. Support get and set."""
-        m = CAPTION_MATCH(self.string)
+        m = CAPTION_MATCH(self._shadow)
         if m:
-            return m['caption']
+            return self(*m.span('caption'))
         return None
 
     @caption.setter
     def caption(self, newcaption: str) -> None:
-        m = CAPTION_MATCH(self.string)
+        shadow = self._shadow
+        m = CAPTION_MATCH(shadow)
         if m:
-            preattrs = m['preattrs']
-            attrs = m['attrs'] or ''
-            oldcaption = m['caption']
-            self[len(preattrs + attrs):len(preattrs + attrs + oldcaption)] =\
+            s = m.end('attrs')
+            self[s if s != -1 else m.end('preattrs'):m.end('caption')] =\
                 newcaption
-        else:
-            # There is no caption. Create one.
-            string = self.string
-            h, s, t = string.partition('\n')
-            # Insert caption after the first one.
-            self.insert(len(h + s), '|+' + newcaption + '\n')
+            return
+        # There is no caption. Create one.
+        h, s, t = shadow.partition(b'\n')
+        # Insert caption after the first one.
+        self.insert(len(h + s), '|+' + newcaption + '\n')
 
     @property
     def _attrs_match(self) -> Any:
@@ -303,24 +295,24 @@ class Table(SubWikiTextWithAttrs):
     @property
     def caption_attrs(self) -> Optional[str]:
         """Caption attributes. Support get and set operations."""
-        m = CAPTION_MATCH(self.string)
+        m = CAPTION_MATCH(self._shadow)
         if m:
-            return m['attrs']
+            s, e = m.span('attrs')
+            if s != -1:
+                return self(s, e)
         return None
 
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
-        string = self.string
-        h, s, t = string.partition('\n')
-        m = CAPTION_MATCH(string)
-        if not m:
-            # There is no caption-line
+        shadow = self._shadow
+        h, s, t = shadow.partition(b'\n')
+        m = CAPTION_MATCH(shadow)
+        if not m:  # There is no caption-line
             self.insert(len(h + s), '|+' + attrs + '|\n')
-        else:
-            preattrs = m['preattrs']
-            oldattrs = m['attrs'] or ''
-            # Caption and attrs or Caption but no attrs
-            self[len(preattrs):len(preattrs + oldattrs)] = attrs
+        else:  # Caption and attrs or Caption but no attrs
+            end = m.end('attrs')
+            if end != -1:
+                self[m.end('preattrs'):end] = attrs
 
 
 def _apply_attr_spans(

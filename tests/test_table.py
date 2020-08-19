@@ -504,3 +504,7 @@ def test_weird_colspan():
         '| colspan=" 2a2"| a\n'
         '|colspan="1.5"| b\n'
         '|}').data() == [['1', '2', '3', '4'], ['a', 'a', 'b', None]]
+
+
+def test_caption_containing_piped_wikilink():
+    assert Table('{|\n|+a [[b|c]]\n|}').caption == 'a [[b|c]]'

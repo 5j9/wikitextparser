@@ -1,3 +1,7 @@
+unreleased
+----------
+- Fixed a bug in detection of ``Table.caption``  ``Table.caption_attrs``.
+
 v0.43.1
 -------
 - Improve the performance of ``get_bolds_and_italics(recursive=True, filter_cls=None)``.
