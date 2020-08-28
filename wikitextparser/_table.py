@@ -175,8 +175,7 @@ class Table(SubWikiTextWithAttrs):
                         captures = ATTRS_MATCH(
                             string.encode('ascii', 'replace'), s, e).captures
                         row_attrs_append(dict(zip(
-                            captures('attr_name'), captures('attr_value')
-                        )))
+                            captures('attr_name'), captures('attr_value'))))
                 table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:
@@ -231,24 +230,15 @@ class Table(SubWikiTextWithAttrs):
                     captures = attrs_match.captures
                     # noinspection PyUnboundLocalVariable
                     row_attrs_append(dict(zip(
-                        captures('attr_name'), captures('attr_value')
-                    )))
+                        captures('attr_name'), captures('attr_value'))))
                 old_span = next((s for s in spans if s == cell_span), None)
                 if old_span is None:
                     insort_right(spans, cell_span)
                 else:
                     cell_span = old_span
-                row_cells.append(
-                    Cell(
-                        self._lststr,
-                        header,
-                        type_to_spans,
-                        cell_span,
-                        type_,
-                        m,
-                        attrs_match,
-                    )
-                )
+                row_cells.append(Cell(
+                    self._lststr, header, type_to_spans, cell_span, type_, m,
+                    attrs_match))
         if table_cells and span:
             table_cells = _apply_attr_spans(table_attrs, table_cells)
         if row is None:
@@ -355,10 +345,7 @@ def _apply_attr_spans(
         for attrs, current_cell in zip(attrs_row, row):
             # 13.6
             attrs_get = attrs.get
-            while (
-                xcurrent < xwidth and
-                table[ycurrent][xcurrent] is not None
-            ):
+            while xcurrent < xwidth and table[ycurrent][xcurrent] is not None:
                 xcurrent += 1
             # 13.7
             if xcurrent == xwidth:
