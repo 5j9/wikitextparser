@@ -213,7 +213,7 @@ class Table(SubWikiTextWithAttrs):
         for match_row in match_table:
             row_cells = []  # type: List[Cell]
             table_cells.append(row_cells)
-            header = match_row[0]['sep'] == '!'
+            header = match_row[0]['sep'] == b'!'
             if span:
                 row_attrs = []  # type: List[Dict[str, str]]
                 table_attrs.append(row_attrs)

@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed bug in matching header cells in ``Table.cells``. (#53)
+
 v0.43.2
 -------
 - Fixed a bug in detection of ``Table.caption`` and ``Table.caption_attrs``.
