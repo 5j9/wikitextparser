@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.44.0
+-------
 - Fixed bug in matching header cells in ``Table.cells``. (#53)
 - Add ``Cell.is_header`` property.
 
