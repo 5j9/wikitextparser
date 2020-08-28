@@ -252,10 +252,13 @@ class Cell(SubWikiTextWithAttrs):
         fmt = ' {}="{}" |' if attr_value else ' {} |'
         if shadow[0] == 10:  # ord('\n')
             self.insert(
-                cell_match.start('sep') + 1,
-                fmt.format(attr_name, attr_value)
-            )
+                cell_match.start('sep') + 1, fmt.format(attr_name, attr_value))
             return
         # An inline cell
         self.insert(2, fmt.format(attr_name, attr_value))
         return
+
+    @property
+    def is_header(self) -> bool:
+        """Return True if this is a header cell."""
+        return self._header

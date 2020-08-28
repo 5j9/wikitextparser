@@ -511,6 +511,5 @@ def test_caption_containing_piped_wikilink():
 
 
 def test_cell_header():
-    c = Table('{|\n!1!!style="color:red;"|2\n|}').cells(row=0, column=1)
-    c.value = '3'  # invalidates the match cache
-    assert c.value == '3'
+    assert Table('{|\n!1!!style="color:red;"|2\n|}').cells(
+        row=0, column=1).is_header is True
