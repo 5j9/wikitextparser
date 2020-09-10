@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in `get_bolds_and_italics` causing it to return duplicate items in some situations. This was also causing an error in `plain_text` method. (#57)
+
 v0.44.0
 -------
 - Fixed bug in matching header cells in ``Table.cells``. (#53)

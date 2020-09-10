@@ -92,10 +92,6 @@ ITALIC_FINDITER = regex_compile(rb"""
     (?:'\0*+'|$)
 """, MULTILINE | VERBOSE).finditer
 
-BOLD_ITALIC_RECURSE = (
-    'templates', 'parser_functions', 'parameters', '_extension_tags',
-    'wikilinks')
-
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
     'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
@@ -911,6 +907,24 @@ class WikiText:
             odd_italics ^= True
         return shadow_copy
 
+    def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
+        for prop in (
+                'templates', 'parser_functions', 'parameters', 'wikilinks'):
+            for e in getattr(self, prop):
+                result += e.get_bolds_and_italics(
+                    filter_cls=filter_cls, recursive=False)
+        extension_tags = self._extension_tags
+        if not extension_tags:
+            return result
+        # noinspection PyProtectedMember
+        result_spans = {(*i._span_data[:2],) for i in result}
+        for e in extension_tags:
+            for i in e.get_bolds_and_italics(
+                    filter_cls=filter_cls, recursive=False):
+                # noinspection PyProtectedMember
+                if (*i._span_data[:2],) not in result_spans:
+                    result.append(i)
+
     def get_bolds_and_italics(
         self, *, recursive=True, filter_cls: type = None
     ) -> List[Union['Bold', 'Italic']]:
@@ -948,10 +962,7 @@ class WikiText:
                     span = old_span
                 append(Bold(_lststr, type_to_spans, span, 'Bold'))
             if recursive:
-                for prop in BOLD_ITALIC_RECURSE:
-                    for e in getattr(self, prop):
-                        result += e.get_bolds_and_italics(
-                            filter_cls=filter_cls, recursive=False)
+                self._bolds_italics_recurse(result, filter_cls)
                 if filter_cls is Bold:
                     result.sort(key=attrgetter('_span_data'))
                     return result
@@ -982,12 +993,8 @@ class WikiText:
                 span = old_span
             append(Italic(
                 _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
-        if recursive:
-            if filter_cls is Italic:
-                for prop in BOLD_ITALIC_RECURSE:
-                    for e in getattr(self, prop):
-                        result += e.get_bolds_and_italics(
-                            filter_cls=Italic, recursive=False)
+        if recursive and filter_cls is Italic:
+            self._bolds_italics_recurse(result, filter_cls)
             result.sort(key=attrgetter('_span_data'))
             return result
         if filter_cls is None:  # all Italics are appended after Bolds

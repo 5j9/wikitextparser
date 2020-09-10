@@ -1483,3 +1483,8 @@ def test_bold_italics_order():
     i, b = parse("''i'' '''b'''").get_bolds_and_italics(recursive=False)
     assert type(i) is Italic
     assert type(b) is Bold
+
+
+def test_wikilinks_in_extension_tags_should_not_create_duplicates():  # 57
+    assert len(
+        parse("<ref>\n[[a|''b'']]\n</ref>").get_bolds_and_italics()) == 1
