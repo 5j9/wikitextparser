@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in parsing tags containing the "<" character. (#58)
+
 v0.44.1
 -------
 - Fixed a bug in `get_bolds_and_italics` causing it to return duplicate items in some situations. This was also causing an error in `plain_text` method. (#57)

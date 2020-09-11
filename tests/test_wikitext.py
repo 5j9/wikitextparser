@@ -1488,3 +1488,8 @@ def test_bold_italics_order():
 def test_wikilinks_in_extension_tags_should_not_create_duplicates():  # 57
     assert len(
         parse("<ref>\n[[a|''b'']]\n</ref>").get_bolds_and_italics()) == 1
+
+
+def test_section_tag_apparently_containing_another_section_tag_start():  # 58
+    assert parse('<section begin=<section begin=t2 />').get_tags(
+        'section')[0].contents == ''
