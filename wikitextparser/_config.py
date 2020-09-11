@@ -79,6 +79,8 @@ _parsable_tag_extensions = {
     'includeonly',
     'indicator',
     'inputbox',
+    'noinclude',
+    'onlyinclude',
     'poem',
     'ref',
     'references',
@@ -97,16 +99,25 @@ _parsable_tag_extensions = {
 # braces appear between 1 and 2 or completely don't show up, `tagname` is
 # a tag extension (e.g.: <pre>).
 _unparsable_tag_extensions = {
+    'ce',
     'charinsert',
+    'chem',
     'graph',
     'hiero',
+    'languages',  # Extension:Translate
+    'mapframe',
+    'maplink',
     'math',
     'nowiki',
+    'pagelist',
+    'pagequality',
+    'pages',
     'pre',
     'score',
     'source',
     'syntaxhighlight',
     'templatedata',
+    'templatestyles',
     'timeline',
 }
 _tag_extensions = _parsable_tag_extensions | _unparsable_tag_extensions
