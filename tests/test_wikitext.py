@@ -260,8 +260,7 @@ def test_template_inside_extension_tags():
 
 
 def test_dont_parse_source_tag():
-    s = "<source>{{t}}</source>"
-    assert 0 == len(WikiText(s).templates)
+    assert 0 == len(WikiText("<source>{{t}}</source>").templates)
 
 
 # WikiText.parser_functions
@@ -1493,3 +1492,9 @@ def test_wikilinks_in_extension_tags_should_not_create_duplicates():  # 57
 def test_section_tag_apparently_containing_another_section_tag_start():  # 58
     assert parse('<section begin=<section begin=t2 />').get_tags(
         'section')[0].contents == ''
+
+
+def test_nested_tag_extensions_plain_text():
+    assert parse(
+        '<noinclude><pagequality level="4" user="Zabia" /></noinclude>'
+    ).plain_text() == ''

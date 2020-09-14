@@ -2,6 +2,7 @@ Unreleased
 ----------
 - Fixed a bug in parsing tags containing the ``<`` character. (#58)
 - Updated the list of known extension tags.
+- Improved detection of nested tag extensions, e.g. a ``<ref>`` tag within ``<references>``.
 
 v0.44.1
 -------

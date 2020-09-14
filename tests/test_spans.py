@@ -498,3 +498,9 @@ def test_comment_in_template_name():
     assert bpts(b'{{t\n<!---->|p}}')['Template'] == [[0, 15]]
     assert bpts(b'{{<!---->\nt|p}}')['Template'] == [[0, 15]]
     assert not bpts(b'{{_<!---->}}')['Template']
+
+
+def test_nested_tag_extensions():
+    assert len(bpts(
+        b'<noinclude><pagequality level="4" user="a" /></noinclude>'
+    )['ExtensionTag']) == 2

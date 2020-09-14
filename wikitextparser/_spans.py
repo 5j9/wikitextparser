@@ -1,5 +1,6 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 from functools import partial
+from itertools import zip_longest
 from typing import Callable, Dict, Optional
 
 from regex import IGNORECASE, REVERSE, VERBOSE, compile as regex_compile
@@ -92,31 +93,32 @@ PARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
 UNPARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
     _unparsable_tag_extensions)
 
+RM_ANGLE_BRACKETS = partial(regex_compile(b'[^<>]').sub, br'_')
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-EXTENSION_TAGS_FINDITER = regex_compile(
-    rb'<(' # noqa
-        + UNPARSABLE_TAG_EXTENSIONS_PATTERN
-        + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb''')
-    )\b[^>]*+(?:
-        (?<=/)> # self-closing
-        |>((?># contents
-            # Either contains no other tags or
-            [^<]++
-            |
-            # the nested-tag is something else or
-            < (?! \1 \b [^>]*+ >)
-            |
-            # the nested tag closes itself.
-            # Note that for extension tags whitespace
-            # is not allowed between / and >.
-            <\1\b[^>]*/>
-        )*?)
-        # tag-end
-        </\1\s*+>
-    )''', IGNORECASE | VERBOSE).finditer
+EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
+    rb'(<'  # group 1 captures the whole tag
+        rb'('  # group 2 captures the tag name
+            + UNPARSABLE_TAG_EXTENSIONS_PATTERN
+            # group 3 captures if the tag parsable
+            + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb')'
+        rb')\b[^>]*+'
+        rb'(?:'
+            rb'(?<=/)>'  # self-closing
+            rb'|>((?>'  # group 4 captures the contents
+                # either contains no other tags
+                rb'[^<]++'
+                # or a nested-tag
+                rb'|(?R)'
+                # or < that is not a nested tag
+                rb'|<'
+            rb')*?)'
+            # tag-end
+            rb'</\2\s*+>'
+        rb')'
+    rb')', IGNORECASE).finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_PATTERN_B = COMMENT_PATTERN.encode()
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN_B).finditer
@@ -216,14 +218,17 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
         byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
-        ms, me = match.span()
-        ets_append([ms, me, match, byte_array[ms:me]])
-        if match[2] is not None:  # parsable tag extension group
-            _parse_sub_spans(
-                byte_array, ms, me,
-                pms_append, pfs_append, tls_append, wls_append)
-        ms, me = match.span(3)
-        byte_array[ms:me] = b'_' * (me - ms)
+        for ((ts, te), parsable, content_span)\
+                in zip_longest(match.spans(1), match.spans(3), match.spans(4)):
+            ets_append([ts, te, match, byte_array[ts:te]])
+            if parsable is not None:
+                _parse_sub_spans(
+                    byte_array, ts, te,
+                    pms_append, pfs_append, tls_append, wls_append)
+            if content_span is None:  # self-closing
+                continue
+            cs, ce = content_span
+            byte_array[cs:ce] = RM_ANGLE_BRACKETS(byte_array[cs:ce])
     _parse_sub_spans(
         byte_array, 0, None, pms_append, pfs_append, tls_append, wls_append)
     return {
