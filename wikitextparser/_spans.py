@@ -3,7 +3,7 @@ from functools import partial
 from itertools import zip_longest
 from typing import Callable, Dict, Optional
 
-from regex import IGNORECASE, REVERSE, VERBOSE, compile as regex_compile
+from regex import IGNORECASE, REVERSE, compile as regex_compile
 
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
@@ -16,24 +16,21 @@ VALID_TITLE_CHARS = rb'[^\|\{\}\[\]<>\n]++'
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
+ARGS = rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'
 PF_TL_FINDITER = regex_compile(  # noqa
-    rb'''
-    \{\{(?>
-        [\s\0]*+  # parser function
-        (?>\#[^{}\s:]++
-        |''' + regex_pattern(_parser_functions)[3:] + rb'''
-        :(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()
-        |  # invalid template name
-        [\s\0_]*+  # invalid name
-        (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
-        \}\}()
-        |  # template
-        [\s\0]*+
-        ''' + VALID_TITLE_CHARS + rb'''  # template name
-        [\s\0]*+
-        (?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+  # args
-    \}\})
-    ''', VERBOSE).finditer
+    rb'\{\{(?>'
+        rb'[\s\0]*+'
+        rb'(?>'
+            rb'\#[^{}\s:]++'  # parser function
+            rb'|' + regex_pattern(_parser_functions)[3:] +  # )
+        rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
+        rb'|'  # invalid template name
+        rb'[\s\0_]*+' + ARGS +
+        rb'\}\}()'
+        rb'|'  # template
+        rb'[\s\0]*+' + VALID_TITLE_CHARS +  # template name
+        rb'[\s\0]*+' + ARGS +
+    rb'\}\})').finditer
 # External links
 INVALID_URL_CHARS = rb' \t\n"<>\[\]'
 VALID_URL_CHARS = rb'[^' + INVALID_URL_CHARS + rb']++'
@@ -50,39 +47,38 @@ EXTERNAL_LINK_URL_TAIL = (
 BARE_EXTERNAL_LINK = BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_PARAM_FINDITER = regex_compile(
-    rb'''
-    (?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)  # != 2N + 1
-    \[\0*\[
-    (?![\ \0]*+''' + BARE_EXTERNAL_LINK + rb')'
-    + VALID_TITLE_CHARS + rb'''
-    (?>
-        \|
-        (?>
-            (?<!\[\0*+)
-            \[
-        )?+
-        (?>
-            (?<!\]\0*+)
-            \]
-        )?+
+WIKILINK_PARAM_FINDITER = regex_compile(  # noqa
+    rb'(?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)'  # != 2N + 1
+    rb'\[\0*\['
+    rb'(?![\ \0]*+' + BARE_EXTERNAL_LINK + rb')'
+    + VALID_TITLE_CHARS +
+    rb'(?>'
+        rb'\|'
+        rb'(?>'
+            rb'(?<!\[\0*+)'
+            rb'\['
+        rb')?+'
+        rb'(?>'
+            rb'(?<!\]\0*+)'
+            rb'\]'
+        rb')?+'
         # single matching brackets are allowed in text e.g. [[a|[b]]]
-        (?>
-            [^\[\]\|]*+
-            \[
-            [^\[\]\|]*+
-            \]
-            (?!(?:\0*+\]){3})
-        )?+
-        [^\[\]\|]*+
-    )*+
-    \]\0*+\]
-    |\{\{\{(
-        [^{}]++
-        |(?<!})}(?!})
-        |(?<!{){
-    )++\}\}\}''',
-    IGNORECASE | VERBOSE | REVERSE).finditer
+        rb'(?>'
+            rb'[^\[\]\|]*+'
+            rb'\['
+            rb'[^\[\]\|]*+'
+            rb'\]'
+            rb'(?!(?:\0*+\]){3})'
+        rb')?+'
+        rb'[^\[\]\|]*+'
+    rb')*+'
+    rb'\]\0*+\]'
+    rb'|\{\{\{('
+        rb'[^{}]++'
+        rb'|(?<!})}(?!})'
+        rb'|(?<!{){'
+    rb')++\}\}\}',
+    IGNORECASE | REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
