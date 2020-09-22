@@ -504,3 +504,5 @@ def test_nested_tag_extensions():
     assert len(bpts(
         b'<noinclude><pagequality level="4" user="a" /></noinclude>'
     )['ExtensionTag']) == 2
+    assert len(bpts(
+        b'<nowiki><ref></nowiki><nowiki></ref></nowiki>')['ExtensionTag']) == 2

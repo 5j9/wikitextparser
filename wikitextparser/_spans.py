@@ -3,7 +3,7 @@ from functools import partial
 from itertools import zip_longest
 from typing import Callable, Dict, Optional
 
-from regex import IGNORECASE, REVERSE, compile as regex_compile
+from regex import REVERSE, compile as regex_compile
 
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
@@ -78,7 +78,7 @@ WIKILINK_PARAM_FINDITER = regex_compile(  # noqa
         rb'|(?<!})}(?!})'
         rb'|(?<!{){'
     rb')++\}\}\}',
-    IGNORECASE | REVERSE).finditer
+    REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
@@ -101,12 +101,12 @@ EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
             # group 3 captures if the tag parsable
             + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb')'
         rb')\b[^>]*+'
-        rb'(?:'
+        rb'(?>'
             rb'(?<=/)>'  # self-closing
-            rb'|>((?>'  # group 4 captures the contents
-                # either contains no other tags
+            rb'|>((?>'
+                # no other tags
                 rb'[^<]++'
-                # or a nested-tag
+                # a nested-tag
                 rb'|(?R)'
                 # or < that is not a nested tag
                 rb'|<'
@@ -114,7 +114,7 @@ EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
             # tag-end
             rb'</\2\s*+>'
         rb')'
-    rb')', IGNORECASE).finditer
+    rb')').finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
 COMMENT_PATTERN_B = COMMENT_PATTERN.encode()
 COMMENT_FINDITER = regex_compile(COMMENT_PATTERN_B).finditer
