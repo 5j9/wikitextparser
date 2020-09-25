@@ -44,3 +44,7 @@ def test_sub_italics():
     recursive_subitalics = i.get_italics()
     assert len(recursive_subitalics) == 1  # ?
     assert recursive_subitalics[0]._span_data[:2] == [11, 16]
+
+
+def test_ref_text():  # 61
+    assert Bold("'''<ref>\n</ref>", ).text == '<ref>\n</ref>'
