@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.45.1
+-------
 - Fixed a catastrophic backtracking issue in parsing nested extension tags. (#60)
 - Fixed a bug in ``Bold.text`` and ``Italic.text``, failing to parse objects containing ``\n``. (#61)
 
