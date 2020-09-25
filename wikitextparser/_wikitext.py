@@ -19,7 +19,7 @@ from ._config import (
     regex_pattern)
 from ._spans import (
     BARE_EXTERNAL_LINK, END_TAG_PATTERN, EXTERNAL_LINK_URL_TAIL,
-    INVALID_URL_CHARS, PARSABLE_TAG_EXTENSIONS_PATTERN, START_TAG_PATTERN,
+    INVALID_URL_CHARS, PARSABLE_TAG_EXTENSION_NAME, START_TAG_PATTERN,
     parse_to_spans)
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
@@ -27,7 +27,7 @@ NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
         b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
 
 PARSABLE_TAG_EXTENSIONS_MATCH = regex_compile(
-    rb'<' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb'\b', IGNORECASE).match
+    rb'<' + PARSABLE_TAG_EXTENSION_NAME + rb'\b', IGNORECASE).match
 
 # External links
 BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(

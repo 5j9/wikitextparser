@@ -84,9 +84,9 @@ WIKILINK_PARAM_FINDITER = regex_compile(  # noqa
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
 blank_brackets = partial(regex_compile(br'[\[\]]').sub, br' ')
 
-PARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
+PARSABLE_TAG_EXTENSION_NAME = regex_pattern(
     _parsable_tag_extensions)
-UNPARSABLE_TAG_EXTENSIONS_PATTERN = regex_pattern(
+UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(
     _unparsable_tag_extensions)
 
 RM_ANGLE_BRACKETS = partial(regex_compile(b'[^<>]').sub, br'_')
@@ -94,25 +94,36 @@ RM_ANGLE_BRACKETS = partial(regex_compile(b'[^<>]').sub, br'_')
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
+PARSABLE_TAG_EXTENSION_CONTENT = (  # noqa
+    rb'(?>'
+        # no other tags
+        rb'[^<]++'
+        # a nested-tag
+        rb'|(?R)'
+        # or < that is not a nested tag
+        rb'|<'
+    rb')*?')
+UNPARSABLE_TAG_EXTENSION_CONTENT = PARSABLE_TAG_EXTENSION_CONTENT.replace(
+    rb'|(?R)', rb'')
+CONTENT_AND_END = (  # noqa
+    rb'\b[^>]*+'
+    rb'(?>'
+        rb'(?<=/)>'  # self-closing
+        # group c captures contents
+        rb'|>(?<c>{c})</\g<n>\s*+>'
+    rb')')
 EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
     rb'(<'  # group 1 captures the whole tag
-        rb'('  # group 2 captures the tag name
-            + UNPARSABLE_TAG_EXTENSIONS_PATTERN
-            # group 3 captures if the tag parsable
-            + rb'|(' + PARSABLE_TAG_EXTENSIONS_PATTERN + rb')'
-        rb')\b[^>]*+'
         rb'(?>'
-            rb'(?<=/)>'  # self-closing
-            rb'|>((?>'
-                # no other tags
-                rb'[^<]++'
-                # a nested-tag
-                rb'|(?R)'
-                # or < that is not a nested tag
-                rb'|<'
-            rb')*?)'
-            # tag-end
-            rb'</\2\s*+>'
+            # group n captures the tag name
+            rb'(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
+            + CONTENT_AND_END.replace(
+                rb'{c}', UNPARSABLE_TAG_EXTENSION_CONTENT) +
+            # group n captures the tag name
+            rb'|(?<n>' + PARSABLE_TAG_EXTENSION_NAME + rb')'
+            + CONTENT_AND_END.replace(
+                # group p captures if the tag is parsable
+                b'{c}', PARSABLE_TAG_EXTENSION_CONTENT) + rb'(?<p>)'
         rb')'
     rb')').finditer
 COMMENT_PATTERN = r'<!--[\s\S]*?-->'
@@ -214,8 +225,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
         byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
-        for ((ts, te), parsable, content_span)\
-                in zip_longest(match.spans(1), match.spans(3), match.spans(4)):
+        for ((ts, te), content_span, parsable) in zip_longest(
+                match.spans(1), match.spans('c'), match.spans('p')):
             ets_append([ts, te, match, byte_array[ts:te]])
             if parsable is not None:
                 _parse_sub_spans(

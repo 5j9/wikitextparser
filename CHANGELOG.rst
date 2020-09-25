@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a catastrophic backtracking issue in parsing nested extension tags. (#60)
+
 v0.45.0
 -------
 - Fixed a bug in parsing tags containing the ``<`` character. (#58)
