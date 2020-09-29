@@ -292,8 +292,8 @@ def test_wikilink_target_may_contain_newline():
 
 
 def test_getting_comment():
-    assert "\n\ncomment\n{{A}}\n" == WikiText(
-        'text1 <!--\n\ncomment\n{{A}}\n-->text2').comments[0].contents
+    assert "\n\nc\n{{A}}\n" == WikiText(
+        '1 <!--\n\nc\n{{A}}\n-->2').comments[0].contents
 
 
 # WikiText.external_links

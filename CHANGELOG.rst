@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Detect unclosed comments, e.g. ``<!== a``.
+- Fix parsing priority of tag extensions and comments. For example the comment in ``<ref>b<!--c</ref>d-->`` used to be parsed detected as ``<!--c</ref>d-->`` which was incorrect.
+
 v0.45.1
 -------
 - Fixed a catastrophic backtracking issue in parsing nested extension tags. (#60)

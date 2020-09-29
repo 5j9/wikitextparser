@@ -48,3 +48,7 @@ def test_sub_italics():
 
 def test_ref_text():  # 61
     assert Bold("'''<ref>\n</ref>", ).text == '<ref>\n</ref>'
+
+
+def test_close_only_comment():
+    assert Comment('<!--a\nb').contents == 'a\nb'

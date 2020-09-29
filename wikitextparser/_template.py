@@ -7,8 +7,9 @@ from regex import REVERSE, compile as regex_compile
 
 from ._argument import Argument
 from ._parser_function import SubWikiTextWithArgs
-from ._spans import COMMENT_PATTERN
+from ._comment_bold_italic import COMMENT_PATTERN
 from ._wikitext import WS
+
 
 COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
 

@@ -506,3 +506,18 @@ def test_nested_tag_extensions():
     )['ExtensionTag']) == 2
     assert len(bpts(
         b'<nowiki><ref></nowiki><nowiki></ref></nowiki>')['ExtensionTag']) == 2
+
+
+def test_unclosed_comment():
+    # contents if {{t}} does not matter
+    assert bpts(b'a<!--{{t}}')['Comment'] == [[1, 10]]
+    # comments and extension tags have the same parsing priority
+    s = bpts(b'a<ref>b<!--c</ref>d-->')
+    assert s['ExtensionTag'] == [[1, 18]]
+    assert s['Comment'] == [[7, 12]]
+    s = bpts(b'a<!--<ref>b-->c</ref>d')
+    assert not s['ExtensionTag']
+    assert s['Comment'] == [[1, 14]]
+    s = bpts(b'<ref>a</ref><!--</ref>-->')
+    assert s['ExtensionTag'] == [[0, 12]]
+    assert s['Comment'] == [[12, 25]]

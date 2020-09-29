@@ -115,8 +115,10 @@ CONTENT_AND_END = (  # noqa
 EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
     rb'(<'  # group 1 captures the whole tag
         rb'(?>'
+            # group m captures comments
+            rb'!--[\s\S]*?(?>-->|(?=</\g<n>\s*+>)|\Z)(?<m>)'
             # group n captures the tag name
-            rb'(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
+            rb'|(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
             + CONTENT_AND_END.replace(
                 rb'{c}', UNPARSABLE_TAG_EXTENSION_CONTENT) +
             # group n captures the tag name
@@ -126,9 +128,6 @@ EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
                 b'{c}', PARSABLE_TAG_EXTENSION_CONTENT) + rb'(?<p>)'
         rb')'
     rb')').finditer
-COMMENT_PATTERN = r'<!--[\s\S]*?-->'
-COMMENT_PATTERN_B = COMMENT_PATTERN.encode()
-COMMENT_FINDITER = regex_compile(COMMENT_PATTERN_B).finditer
 
 # HTML tags
 # Tags:
@@ -218,15 +217,15 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     pfs_append = parser_function_spans.append
     template_spans = []
     tls_append = template_spans.append
-    # HTML <!-- comments -->
-    for match in COMMENT_FINDITER(byte_array):
-        ms, me = match.span()
-        cms_append([ms, me, None, byte_array[ms:me]])
-        byte_array[ms:me] = b'\0' * (me - ms)
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
-        for ((ts, te), content_span, parsable) in zip_longest(
-                match.spans(1), match.spans('c'), match.spans('p')):
+        spans = match.spans
+        for ((ts, te), content_span, parsable, comment) in zip_longest(
+                spans(1), spans('c'), spans('p'), spans('m')):
+            if comment is not None:
+                cms_append([ts, te, None, byte_array[ts:te]])
+                byte_array[ts:te] = b'\0' * (te - ts)
+                continue
             ets_append([ts, te, match, byte_array[ts:te]])
             if parsable is not None:
                 _parse_sub_spans(

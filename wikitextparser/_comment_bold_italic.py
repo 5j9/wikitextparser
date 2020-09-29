@@ -3,9 +3,10 @@ from typing import Dict, List, MutableSequence, Optional, Union
 
 from regex import DOTALL, MULTILINE, compile as regex_compile
 
-from ._spans import COMMENT_PATTERN
 from ._wikitext import SubWikiText
 
+
+COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
 COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ")*+"
 COMMENT_COMMA = "(?>" + COMMENT_PATTERN + ")*+'"
 BOLD_FULLMATCH = regex_compile(
@@ -23,7 +24,10 @@ class Comment(SubWikiText):
     @property
     def contents(self) -> str:
         """Return contents of this comment."""
-        return self(4, -3)
+        s = self.string
+        if s[-3:] == '-->':
+            return s[4:-3]
+        return s[4:]
 
     @property
     def comments(self) -> List['Comment']:
