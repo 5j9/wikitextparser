@@ -1,6 +1,5 @@
 ﻿"""Define the functions required for parsing wikitext into spans."""
 from functools import partial
-from itertools import zip_longest
 from typing import Callable, Dict, Optional
 
 from regex import REVERSE, compile as regex_compile
@@ -113,20 +112,20 @@ CONTENT_AND_END = (  # noqa
         rb'|>(?<c>{c})</\g<n>\s*+>'
     rb')')
 EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
-    rb'(<'  # group 1 captures the whole tag
-        rb'(?>'
-            # group m captures comments
-            rb'!--[\s\S]*?(?>-->|(?=</\g<n>\s*+>)|\Z)(?<m>)'
-            # group n captures the tag name
-            rb'|(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
-            + CONTENT_AND_END.replace(
-                rb'{c}', UNPARSABLE_TAG_EXTENSION_CONTENT) +
-            # group n captures the tag name
-            rb'|(?<n>' + PARSABLE_TAG_EXTENSION_NAME + rb')'
-            + CONTENT_AND_END.replace(
-                # group p captures if the tag is parsable
-                b'{c}', PARSABLE_TAG_EXTENSION_CONTENT) + rb'(?<p>)'
-        rb')'
+    rb'<(?>'
+        # group m captures comments
+        rb'(?<m>!--[\s\S]*?(?>-->|(?=</\g<n>\s*+>)|\Z))'
+        # u captures unparsable tag extensions and n captures the name
+        rb'|(?<u>(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
+        + CONTENT_AND_END.replace(
+            rb'{c}', UNPARSABLE_TAG_EXTENSION_CONTENT)
+        + rb')'
+        # p captures parsable tag extensions and n captures the name
+        rb'|(?<p>(?<n>' + PARSABLE_TAG_EXTENSION_NAME + rb')'
+        + CONTENT_AND_END.replace(
+            # group p captures if the tag is parsable
+            b'{c}', PARSABLE_TAG_EXTENSION_CONTENT)
+        + rb')'
     rb')').finditer
 
 # HTML tags
@@ -220,26 +219,27 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     # <extension tags>
     for match in EXTENSION_TAGS_FINDITER(byte_array):
         spans = match.spans
-        for ((ts, te), content_span, parsable, comment) in zip_longest(
-                spans(1), spans('c'), spans('p'), spans('m')):
-            if comment is not None:
-                cms_append([ts, te, None, byte_array[ts:te]])
-                byte_array[ts:te] = b'\0' * (te - ts)
-                continue
-            ets_append([ts, te, match, byte_array[ts:te]])
-            if parsable is not None:
-                _parse_sub_spans(
-                    byte_array, ts, te,
-                    pms_append, pfs_append, tls_append, wls_append)
-            if content_span is None:  # self-closing
-                continue
-            cs, ce = content_span
-            byte_array[cs:ce] = RM_ANGLE_BRACKETS(byte_array[cs:ce])
+        for s, e in spans('m'):
+            s -= 1  # <
+            cms_append([s, e, None, byte_array[s:e]])
+            byte_array[s:e] = b'\0' * (e - s)
+        for s, e in spans('p'):
+            s -= 1  # <
+            ets_append([s, e, match, byte_array[s:e]])
+            _parse_sub_spans(
+                byte_array, s, e,
+                pms_append, pfs_append, tls_append, wls_append)
+        for s, e in spans('u'):
+            s -= 1  # <
+            ets_append([s, e, match, byte_array[s:e]])
+        for s, e in spans('c'):
+            s -= 1  # <
+            byte_array[s:e] = RM_ANGLE_BRACKETS(byte_array[s:e])
     _parse_sub_spans(
         byte_array, 0, None, pms_append, pfs_append, tls_append, wls_append)
     return {
         'Comment': comment_spans,
-        'ExtensionTag': extension_tag_spans,
+        'ExtensionTag': sorted(extension_tag_spans),
         'Parameter': sorted(parameter_spans),
         'ParserFunction': sorted(parser_function_spans),
         'Template': sorted(template_spans),

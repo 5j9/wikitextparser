@@ -521,3 +521,9 @@ def test_unclosed_comment():
     s = bpts(b'<ref>a</ref><!--</ref>-->')
     assert s['ExtensionTag'] == [[0, 12]]
     assert s['Comment'] == [[12, 25]]
+
+
+def test_nested_extags_and_comment_spans():
+    s = bpts(b'<noinclude><ref>a<!----></ref>b<!----></noinclude>')
+    assert s['ExtensionTag'] == [[0, 50], [11, 30]]
+    assert s['Comment'] == [[17, 24], [31, 38]]
