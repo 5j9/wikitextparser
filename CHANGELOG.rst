@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.45.3
+-------
 - Fix a bug in detecting external links within extension tags. (#65)
 - Fix a few bugs ``plain_text``/``remove_markup``. (#65)
 
