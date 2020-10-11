@@ -1375,6 +1375,8 @@ def test_italic_end_token():
 def test_plaintext():
     def ap(s, p):
         assert parse(s).plain_text() == p
+    ap('[https://wikimedia.org/ wm]', 'wm')
+    ap("{{{a}}}", '')
     ap("<span>a<small>b</small>c</span>", 'abc')
     ap("<ref>''w''</ref>", 'w')  # could be '' as well
     ap("[[file:a.jpg|[[w]]]]", '')
@@ -1383,14 +1385,12 @@ def test_plaintext():
     ap('t [[a|b]] t', 't b t')
     ap('t [[a]] t', 't a t')
     ap('&Sigma; &#931; &#x3a3; Σ', 'Σ Σ Σ Σ')
-    ap('[https://wikimedia.org/ wm]', 'wm')
     ap('[https://wikimedia.org/]', '')
     ap('<s>text</s>', 'text')
     ap('{{template|argument}}', '')
     ap('{{#if:a|y|n}}', '')
     ap("'''b'''", 'b')
     ap("''i''", 'i')
-    ap("{{{a}}}", '')
     ap("{{{1|a}}}", 'a')
 
 
@@ -1503,3 +1503,7 @@ def test_nested_tag_extensions_plain_text():
 def test_external_link_should_not_span_over_tags():
     els, = parse('<ref>[https://a.b/ </ref>]').external_links
     assert els.string == 'https://a.b/'
+
+
+def test_plain_text_when_the_whole_content_of_bold_is_a_template():
+    assert parse("'''{{text|a}}''', ''b''<ref>c</ref>").plain_text() == ', bc'

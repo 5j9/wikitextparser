@@ -576,41 +576,68 @@ class WikiText:
         else:
             tts = self._type_to_spans
             parsed = self
-        for (b, e, _, _) in reversed(tts['Comment']):
-            del parsed[b:e]
+        lst = list(parsed.string)
+
+        def remove(b: int, e: int):
+            lst[b:e] = '\0' * (e - b)
+
+        for (b, e, _, _) in tts['Comment']:
+            remove(b, e)
         if replace_templates:
-            for (b, e, _, _) in reversed(tts['Template']):
-                del parsed[b:e]
+            for (b, e, _, _) in tts['Template']:
+                remove(b, e)
         if replace_parser_functions:
-            for (b, e, _, _) in reversed(tts['ParserFunction']):
-                del parsed[b:e]
+            for (b, e, _, _) in tts['ParserFunction']:
+                remove(b, e)
         if replace_external_links:
-            for e in parsed.external_links:
-                if e.in_brackets:
-                    e[:] = e.text or ''
+            for el in parsed.external_links:
+                if el.in_brackets:
+                    b, e = el.span
+                    text = el.text
+                    if text is None:
+                        remove(b, e)
+                    else:
+                        remove(b, e - 1 - len(text))
+                        remove(e - 1, e)
         # replacing bold and italics should be done before wikilinks and tags
         # because removing tags and wikilinks creates invalid spans, and
         # get_bolds() will try to look into wikilinks for bold parts.
         if replace_bolds_and_italics:
-            for i in reversed(parsed.get_bolds_and_italics()):
-                i[:] = i.text
+            for i in parsed.get_bolds_and_italics():
+                b, e = i.span
+                ib, ie = i._match.span(1)  # text span
+                remove(b, b + ib)
+                remove(b + ie, e)
         if replace_parameters:
             for p in parsed.parameters:
-                default = p.default
-                if default is not None:
-                    p.string = default
+                b, e = p.span
+                default_start = p._shadow.find(124)
+                if default_start != -1:
+                    remove(b, b + default_start + 1)
+                    remove(e - 3, e)
                 else:
-                    del p.string
+                    remove(b, e)
         if replace_tags:
-            for t in reversed(parsed.get_tags()):
-                t[:] = t.contents
+            for t in parsed.get_tags():
+                b, e = t.span
+                cb, ce = t._match.span('contents')
+                remove(b, b + cb)
+                remove(b + ce, e)
         if replace_wikilinks:
-            for w in reversed(parsed.wikilinks):
+            for w in parsed.wikilinks:
+                b, e = w.span
                 if w.wikilinks:
-                    del w[:]  # image
+                    remove(b, e)  # image
                 else:
-                    w[:] = w.text or w.target
-        string = parsed.string
+                    tb, te = w._match.span(4)  # text span
+                    if tb != -1:
+                        remove(b, b + tb)
+                        remove(b + te, e)
+                    else:
+                        tb, te = w._match.span(1)  # target span
+                        remove(b, b + tb)
+                        remove(b + te, e)
+        string = ''.join(c for c in lst if c != '\0')
         if unescape_html_entities:
             string = unescape(string)
         return string
