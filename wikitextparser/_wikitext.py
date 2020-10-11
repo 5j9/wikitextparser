@@ -565,10 +565,10 @@ class WikiText:
         replace_wikilinks=True,
         unescape_html_entities=True,
         replace_bolds_and_italics=True,
-        _mutate=False
+        _is_root_node=False
     ) -> str:
         """Return a plain text string representation of self."""
-        if _mutate is False:
+        if _is_root_node is False:
             s, e, m, b = self._span_data
             tts = self._inner_type_to_spans_copy()
             parsed = WikiText([self._lststr[0][s:e]], tts)
@@ -579,7 +579,7 @@ class WikiText:
         lst = list(parsed.string)
 
         def remove(b: int, e: int):
-            lst[b:e] = '\0' * (e - b)
+            lst[b:e] = [None] * (e - b)
 
         for (b, e, _, _) in tts['Comment']:
             remove(b, e)
@@ -637,7 +637,7 @@ class WikiText:
                         tb, te = w._match.span(1)  # target span
                         remove(b, b + tb)
                         remove(b + te, e)
-        string = ''.join(c for c in lst if c != '\0')
+        string = ''.join(c for c in lst if c is not None)
         if unescape_html_entities:
             string = unescape(string)
         return string
@@ -1441,7 +1441,7 @@ def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
 
 def remove_markup(s: str, **kwargs) -> str:
     """Return a string with wiki markup removed/replaced."""
-    return WikiText(s).plain_text(**kwargs, _mutate=True)
+    return WikiText(s).plain_text(**kwargs, _is_root_node=True)
 
 
 plain_text_doc = """

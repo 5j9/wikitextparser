@@ -1507,3 +1507,7 @@ def test_external_link_should_not_span_over_tags():
 
 def test_plain_text_when_the_whole_content_of_bold_is_a_template():
     assert parse("'''{{text|a}}''', ''b''<ref>c</ref>").plain_text() == ', bc'
+
+
+def test_plain_text_non_root_node():
+    assert Template('{{T}}').plain_text() == ''
