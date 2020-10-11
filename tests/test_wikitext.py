@@ -312,7 +312,7 @@ def test_external_links_in_brackets_in_parser_elements():  # 50
 
 def test_with_nowiki():
     assert parse('[http://a.b <nowiki>[c]</nowiki>]').external_links[0].text \
-           == '<nowiki>[c]</nowiki>'
+        == '<nowiki>[c]</nowiki>'
 
 
 def test_ipv6_brackets():
@@ -1498,3 +1498,8 @@ def test_nested_tag_extensions_plain_text():
     assert parse(
         '<noinclude><pagequality level="4" user="Zabia" /></noinclude>'
     ).plain_text() == ''
+
+
+def test_external_link_should_not_span_over_tags():
+    els, = parse('<ref>[https://a.b/ </ref>]').external_links
+    assert els.string == 'https://a.b/'

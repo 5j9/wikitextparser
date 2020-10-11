@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fix a bug in detecting external links within extension tags. (#65)
+
 v0.45.2
 -------
 - Detect unclosed comments, e.g. ``<!== a``.

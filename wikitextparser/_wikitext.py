@@ -534,12 +534,6 @@ class WikiText:
         for type_ in 'Comment', 'WikiLink':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = (e - s) * b'_'
-        for s, e, _, _ in subspans('ExtensionTag'):
-            if PARSABLE_TAG_EXTENSIONS_MATCH(byte_array, s, e):
-                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
-                    b' ', byte_array[s + 2:e - 2]) + b'  '
-            else:
-                byte_array[s:e] = (e - s) * b'_'
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
@@ -1044,16 +1038,24 @@ class WikiText:
         spans = type_to_spans.setdefault('ExternalLink', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         el_shadow = self._ext_link_shadow
-        for m in EXTERNAL_LINK_FINDITER(el_shadow):
-            ms, me = m.span()
-            span = s, e, _, _ = [ss + ms, ss + me, None, el_shadow[ms:me]]
-            old_span = span_tuple_to_span_get((s, e))
-            if old_span is None:
-                insort_right(spans, span)
-            else:
-                span = old_span
-            external_links_append(
-                ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
+
+        def _extract(start, end):
+            for m in EXTERNAL_LINK_FINDITER(el_shadow, start, end):
+                ms, me = m.span()
+                span = s, e, _, _ = [ss + ms, ss + me, None, el_shadow[ms:me]]
+                old_span = span_tuple_to_span_get((s, e))
+                if old_span is None:
+                    insort_right(spans, span)
+                else:
+                    span = old_span
+                external_links_append(
+                    ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
+
+        for s, e, _, _ in self._subspans('ExtensionTag'):
+            if PARSABLE_TAG_EXTENSIONS_MATCH(el_shadow, s, e):
+                _extract(s, e)
+            el_shadow[s:e] = (e - s) * b'_'
+        _extract(None, None)
         return external_links
 
     @property
