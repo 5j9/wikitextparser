@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in detection parser functions without parameters. ``{{NAMESPACE}}`` used to be detected as template, but ``{{NAMESPACE:MediaWiki}}`` a parser function. Now both of them will be detected parser functions.
+
 v0.45.3
 -------
 - Fix a bug in detecting external links within extension tags. (#65)

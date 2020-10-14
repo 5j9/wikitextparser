@@ -20,9 +20,9 @@ PF_TL_FINDITER = regex_compile(  # noqa
     rb'\{\{(?>'
         rb'[\s\0]*+'
         rb'(?>'
-            rb'\#[^{}\s:]++'  # parser function
+            rb'\#[^{}\s:]++:'  # parser function
             rb'|' + regex_pattern(_parser_functions)[3:] +  # )
-        rb':(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
+        rb'(?>[^{}]*+|}(?!})|{(?!{))*+\}\}()'
         rb'|'  # invalid template name
         rb'[\s\0_]*+' + ARGS +
         rb'\}\}()'

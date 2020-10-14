@@ -527,3 +527,8 @@ def test_nested_extags_and_comment_spans():
     s = bpts(b'<noinclude><ref>a<!----></ref>b<!----></noinclude>')
     assert s['ExtensionTag'] == [[0, 50], [11, 30]]
     assert s['Comment'] == [[17, 24], [31, 38]]
+
+
+def test_treat_magic_words_without_arguments_as_parser_functions():
+    assert len(bpts(
+        b'{{NAMESPACE:MediaWiki}}\n{{NAMESPACE}}')['ParserFunction']) == 2
