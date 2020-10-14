@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.46.0
+-------
 - Fixed a bug in detection parser functions without parameters. ``{{NAMESPACE}}`` used to be detected as template, but ``{{NAMESPACE:MediaWiki}}`` a parser function. Now both of them will be detected parser functions.
 
 v0.45.3
