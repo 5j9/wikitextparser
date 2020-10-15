@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in mutation of root element when a child was mutated. (#66)
+
 v0.46.0
 -------
 - Fixed a bug in detection parser functions without parameters. ``{{NAMESPACE}}`` used to be detected as template, but ``{{NAMESPACE:MediaWiki}}`` a parser function. Now both of them will be detected parser functions.

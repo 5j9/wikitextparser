@@ -1511,3 +1511,11 @@ def test_plain_text_when_the_whole_content_of_bold_is_a_template():
 
 def test_plain_text_non_root_node():
     assert Template('{{T}}').plain_text() == ''
+
+
+def test_wikitext_string_set():  # 66
+    parsed = parse("[[a]]")
+    wikilink = parsed.wikilinks[0]
+    wikilink.insert(0, 'b')
+    assert wikilink.string == 'b[[a]]'
+    assert parsed.string == 'b[[a]]'

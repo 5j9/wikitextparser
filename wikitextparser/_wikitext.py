@@ -467,16 +467,17 @@ class WikiText:
     def _insert_update(self, index: int, length: int) -> None:
         """Update self._type_to_spans according to the added length."""
         self_span = ss, se, _, _ = self._span_data
-        for spans in self._type_to_spans.values():
+        for span_type, spans in self._type_to_spans.items():
             for span in spans:
                 s0, s1, _, _ = span
                 if index < s1 or s1 == index == se:
                     span[1] += length
                     span[3] = None  # todo: update instead
-                    # index is before s, or at s but not on self_span
-                    if index < s0 or s0 == index != ss or (
-                        s0 == index and span is not self_span
-                    ):
+                    # index is before s0, or at s0 but span is not a parent
+                    if index < s0 or (
+                            s0 == index
+                            and self_span is not span
+                            and span_type != 'WikiText'):
                         span[0] += length
 
     def _nesting_level(self, parent_types) -> int:
