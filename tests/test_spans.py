@@ -530,5 +530,7 @@ def test_nested_extags_and_comment_spans():
 
 
 def test_treat_magic_words_without_arguments_as_parser_functions():
-    assert len(bpts(
-        b'{{NAMESPACE:MediaWiki}}\n{{NAMESPACE}}')['ParserFunction']) == 2
+    s = bpts(
+        b'{{NAMESPACE:MediaWiki}}\n{{NAMESPACE}}\n{{NAMESPACE|2}}')
+    assert s['ParserFunction'] == [[0, 23], [24, 37]]
+    assert s['Template'] == [[38, 53]]

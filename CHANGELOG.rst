@@ -1,6 +1,7 @@
 Unreleased
 ----------
 - Fixed a bug in mutation of root element when a child was mutated. (#66)
+- Fixed a bug that was causing templates like ``{{NAMESPACE|2}}`` to be detected as a parser function. It is a template if the first argument starts with a ``:``.
 
 v0.46.0
 -------
