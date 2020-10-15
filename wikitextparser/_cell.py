@@ -24,7 +24,7 @@ NEWLINE_CELL_MATCH = regex_compile(
         |
         (?P<attrs>
             (?:
-                [^\n]
+                [^|\n]
                 (?!
                     # attrs end with `|`; or `!!` if sep is `!`
                     (?P=sep){2}|\|\|

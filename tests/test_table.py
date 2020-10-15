@@ -413,7 +413,7 @@ def test_multiline_table():
     table.del_attr('s')
     table.set_attr('class', 'wikitable')
     assert repr(table) == "Table('{| class=\"wikitable\"\\n|a\\n|}')"
-    
+
     assert table.get_attr('class') == 'wikitable'
     table.set_attr('class', 'sortable')
     assert table.attrs == {'class': 'sortable'}
@@ -428,6 +428,11 @@ def test_attr_contains_template_newline_invalid_chars():
         '| cell\n'
         '|}\n'
     ).tables[0].get_attr('style') == 'color: {{text| 1 =\nred}};'
+
+
+def test_pipe_in_text():
+    table = Table('{|\n| colspan="2" | text | with pipe\n|}')
+    assert table.cells()[0][0].attrs == {"colspan": "2"}
 
 
 # Table.cells
