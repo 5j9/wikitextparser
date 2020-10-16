@@ -518,3 +518,9 @@ def test_caption_containing_piped_wikilink():
 def test_cell_header():
     assert Table('{|\n!1!!style="color:red;"|2\n|}').cells(
         row=0, column=1).is_header is True
+
+
+def test_table_attr_span_false():  # 71
+    cell = Table('{|\n|colspan=2| Test1 \n|| Test 2 \n|| Test 3 \n|}').cells(
+        span=False)[0][0]
+    assert cell.attrs == {'colspan': '2'}

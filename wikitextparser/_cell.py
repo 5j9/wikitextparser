@@ -160,8 +160,12 @@ class Cell(SubWikiTextWithAttrs):
             if _attrs_match:
                 self._attrs_match_cache = _attrs_match, string
             else:
-                self._attrs_match_cache = \
-                    ATTRS_MATCH(_match['attrs']), string
+                cell_start = _match.start()
+                attrs_start, attrs_end = _match.span('attrs')
+                self._attrs_match_cache = ATTRS_MATCH(
+                    _match[0],
+                    attrs_start - cell_start,
+                    attrs_end - cell_start), string
         else:
             self._attrs_match_cache = self._match_cache = None, None
 
