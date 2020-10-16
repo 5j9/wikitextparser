@@ -27,7 +27,7 @@ NEWLINE_CELL_MATCH = regex_compile(
                 [^|\n]
                 (?!
                     # attrs end with `|`; or `!!` if sep is `!`
-                    (?P=sep){2}|\|\|
+                    (?P=sep){2}
                 )
             )*  # Todo: why can't be made possessive?
         )
