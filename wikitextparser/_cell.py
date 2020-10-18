@@ -63,10 +63,14 @@ INLINE_HAEDER_CELL_MATCH = regex_compile(
     rb"""
     (?>
         # immediate closure of attrs
-        \|!(?P<attrs>)!
+        (?P<sep>\|)!(?P<attrs>)!
         |
         # attrs start is with a double ! or |
-        (?>!{2}|\|{2})
+        (?>
+            (?P<sep>!)!
+            |
+            (?P<sep>\|)\|
+        )
         # find the matching pipe that ends attrs
         (?>
             # immediate closure
@@ -106,7 +110,7 @@ INLINE_HAEDER_CELL_MATCH = regex_compile(
 # https://regex101.com/r/hW8aZ3/7
 INLINE_NONHAEDER_CELL_MATCH = regex_compile(
     rb"""
-    \|\| # catch the matching pipe (style holder).
+    (?P<sep>\|)\| # catch the matching pipe (style holder).
     (?>
         # immediate closure
         (?P<attrs>)
