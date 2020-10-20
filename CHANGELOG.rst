@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in detecting `reverse pipe tricks <https://en.wikipedia.org/wiki/Help:Pipe_trick#Reverse_pipe_trick>`_ as wikilinks.
+
 v0.51.1
 -------
 - Fixed a bug in ``WikiText.external_links`` causing external links within extension tags (e.g. ref tag) not to be detected when tag is inside a template/parser function/parameter. (#110)

@@ -10,7 +10,7 @@ from ._config import (
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS = rb'[^\1-\6\|\{\}\[\]<>\n]++'
+VALID_TITLE_CHARS = rb'[^\1-\6\|\{\}\[\]<>\n]*+'
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
