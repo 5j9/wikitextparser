@@ -44,6 +44,11 @@ def test_pipes_inside_params_or_templates():
     assert 2 == len(pf.arguments)
 
 
+def test_strip_empty_wikilink():
+    pf = ParserFunction("{{ #if: test | [[|Alt]] }}")
+    assert 2 == len(pf.arguments)
+
+
 def test_default_parser_function_without_hash_sign():
     assert 1 == len(WikiText("{{formatnum:text|R}}").parser_functions)
 
