@@ -515,6 +515,14 @@ def test_caption_containing_piped_wikilink():
     assert Table('{|\n|+a [[b|c]]\n|}').caption == 'a [[b|c]]'
 
 
+def test_caption_multiline():
+    assert Table('{|\n|+a\nb\nc\n|}').caption == "a\nb\nc"
+
+
+def test_caption_multiline_rows():
+    assert Table('{|\n|+a\nb\nc\n|-\n|cell\n|}').caption == "a\nb\nc"
+
+
 def test_cell_header():
     assert Table('{|\n!1!!style="color:red;"|2\n|}').cells(
         row=0, column=1).is_header is True
