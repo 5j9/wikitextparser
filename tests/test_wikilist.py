@@ -97,6 +97,12 @@ def test_mixed_definition_lists():
             'back to the main list']
 
 
+def test_order_definition_lists():
+    wl = WikiList("; Item 1 : definition 1\n", pattern=r'[:;]\s*')
+    assert wl.items == ["Item 1 ", " definition 1"]
+    assert wl.fullitems == ["; Item 1 : definition 1\n", ": definition 1"]
+
+
 def test_travese_mixed_list_completely():
     wl = WikiList(
         '* Or create mixed lists\n'
