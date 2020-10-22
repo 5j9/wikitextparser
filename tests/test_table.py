@@ -520,6 +520,11 @@ def test_cell_header():
         row=0, column=1).is_header is True
 
 
+def test_not_cell_header():
+    assert Table('{|\n!Header\n|Not a header|}').cells(
+        row=0, column=1).is_header is False
+
+
 def test_table_attr_span_false():  # 71
     cell = Table('{|\n|colspan=2| Test1 \n|| Test 2 \n|| Test 3 \n|}').cells(
         span=False)[0][0]
