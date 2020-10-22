@@ -3,7 +3,7 @@ from warnings import warn
 
 from regex import MULTILINE, escape, fullmatch
 
-from ._wikitext import SubWikiText
+from ._wikitext import BRACKET_EXTERNAL_LINK_SCHEMES, SubWikiText
 
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'
@@ -16,7 +16,11 @@ LIST_PATTERN_FORMAT = (  # noqa
         rb'(?<pattern>{pattern})'
         rb'(?(?<=;\s*+)'
             # mark inline definition as an item
-            rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
+            rb'(?<item>'
+                rb'.*' + BRACKET_EXTERNAL_LINK_SCHEMES + rb'[^:\n]*+'
+                rb'|'
+                rb'[^:\n]*+'
+            rb')(?<fullitem>:(?<item>.*+))?+'
             rb'(?>\n|\Z)' + SUBLIST_PATTERN +
             rb'|'
             # non-definition

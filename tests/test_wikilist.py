@@ -79,6 +79,11 @@ def test_subitems_for_the_second_item():
     assert sublist.items == [' sub-list of b']
 
 
+def test_link_in_definition_list():
+    wl = WikiList("; https://github.com : definition", pattern=r'[:;]\s*')
+    assert wl.items == ["https://github.com ", " definition"]
+
+
 def test_mixed_definition_lists():
     wl = WikiList(
         '; Mixed definition lists\n'
