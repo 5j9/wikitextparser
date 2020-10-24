@@ -1272,7 +1272,7 @@ class WikiText:
         if name:
             if name in _tag_extensions:
                 string = lststr[0]
-                startswith = '<' + name + ' '
+                startswith = ('<' + name + ' ', '<' + name + '>')
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')
                     for span in type_to_spans['ExtensionTag']

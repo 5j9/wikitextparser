@@ -1222,6 +1222,11 @@ def test_same_nested_tags():
     assert all_tags[1].string == tags_by_name[1].string
 
 
+def test_tag_extension_by_name():
+    parsed = parse('<gallery>pictures</gallery>')
+    assert parsed.get_tags('gallery')[0].contents == "pictures"
+
+
 def test_self_closing():
     # extension tag
     assert parse('<references />').get_tags()[0].string == '<references />'
