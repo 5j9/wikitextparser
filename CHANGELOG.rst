@@ -5,6 +5,7 @@ Unreleased
 - Fixed a bug that was causing templates like ``{{NAMESPACE|2}}`` to be detected as a parser function. It is a template if the first argument starts with a ``:``.
 - Fixed bugs in detecting attributes of table cells. (#71, #73)
 - Fixed a bug in detecting header cells in tables. (#77)
+- Fixed a bug in ``get_tags`` where extension tags without attributes were not returned. (#84)
 
 v0.46.0
 -------
