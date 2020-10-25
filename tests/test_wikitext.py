@@ -1223,8 +1223,10 @@ def test_same_nested_tags():
 
 
 def test_tag_extension_by_name():
-    parsed = parse('<gallery>pictures</gallery>')
-    assert parsed.get_tags('gallery')[0].contents == "pictures"
+    assert parse('<gallery>pictures</gallery>').get_tags('gallery')[0]. \
+        contents == "pictures"
+    assert parse('<gallery\t>pictures</gallery>').get_tags('gallery')[0]. \
+        contents == "pictures"
 
 
 def test_self_closing():

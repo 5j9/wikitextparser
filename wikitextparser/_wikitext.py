@@ -10,7 +10,7 @@ from typing import (
 from warnings import warn
 
 from regex import DOTALL, IGNORECASE, MULTILINE, VERBOSE, \
-    compile as regex_compile, finditer, search
+    compile as regex_compile, finditer, search, match
 from wcwidth import wcswidth
 
 # noinspection PyProtectedMember
@@ -1272,11 +1272,11 @@ class WikiText:
         if name:
             if name in _tag_extensions:
                 string = lststr[0]
-                startswith = ('<' + name + ' ', '<' + name + '>')
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')
                     for span in type_to_spans['ExtensionTag']
-                    if string.startswith(startswith, span[0])]
+                    if match(
+                        r'<' + name + r'\b', string, pos=span[0]) is not None]
             tags = []  # type: List['Tag']
         else:
             # There is no name, add all extension tags. Before using shadow.
