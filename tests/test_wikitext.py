@@ -1526,3 +1526,8 @@ def test_wikitext_string_set():  # 66
     wikilink.insert(0, 'b')
     assert wikilink.string == 'b[[a]]'
     assert parsed.string == 'b[[a]]'
+
+
+def test_tables_in_parsable_tag_extensions():  # 85
+    table, = parse('<onlyinclude>\n{|\n|}\n</onlyinclude>').tables
+    assert table.span == (14, 19)

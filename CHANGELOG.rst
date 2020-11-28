@@ -6,6 +6,7 @@ Unreleased
 - Fixed bugs in detecting attributes of table cells. (#71, #73)
 - Fixed a bug in detecting header cells in tables. (#77)
 - Fixed a bug in ``get_tags`` where extension tags without attributes were not returned. (#84)
+- Fixed a bug in ``get_tables`` method where tables within tag extensions were not recognized (#85)
 
 v0.46.0
 -------

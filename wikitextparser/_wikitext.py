@@ -16,7 +16,7 @@ from wcwidth import wcswidth
 # noinspection PyProtectedMember
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _tag_extensions,
-    regex_pattern)
+    regex_pattern, _parsable_tag_extensions)
 from ._spans import (
     BARE_EXTERNAL_LINK, END_TAG_PATTERN, EXTERNAL_LINK_URL_TAIL,
     INVALID_URL_CHARS, PARSABLE_TAG_EXTENSION_NAME, START_TAG_PATTERN,
@@ -1157,22 +1157,35 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         return_spans = []
         return_spans_append = return_spans.append
-        m = True
         shadow_copy_copy = shadow_copy[:]
-        while m:
-            m = False
-            for m in TABLE_FINDITER(shadow_copy, skip_self_span):
-                ms, me = m.span()
-                # Ignore leading whitespace using len(m[1]).
-                s, e = ss + ms, ss + me
-                old_span = span_tuple_to_span_get((s, e))
-                if old_span is None:
-                    span = [s, e, None, shadow_copy_copy[ms:me]]
-                    spans_append(span)
-                    return_spans_append(span)
-                else:
-                    return_spans_append(old_span)
-                shadow_copy[ms:me] = b'_' * (me - ms)
+
+        def extract_tables_from_shadow():
+            m = True
+            while m:
+                m = False
+                for m in TABLE_FINDITER(shadow_copy, skip_self_span):
+                    ms, me = m.span()
+                    # Ignore leading whitespace using len(m[1]).
+                    s, e = ss + ms, ss + me
+                    old_span = span_tuple_to_span_get((s, e))
+                    if old_span is None:
+                        span = [s, e, None, shadow_copy_copy[ms:me]]
+                        spans_append(span)
+                        return_spans_append(span)
+                    else:
+                        return_spans_append(old_span)
+                    shadow_copy[ms:me] = b'_' * (me - ms)
+
+        extract_tables_from_shadow()
+
+        for tag in self._extension_tags:
+            if tag.name in _parsable_tag_extensions:
+                shadow_copy = tag._shadow[:]
+                shadow_copy_copy = shadow_copy[:]
+                # noinspection PyProtectedMember
+                ss = tag._span_data[0]
+                extract_tables_from_shadow()
+
         return_spans.sort()
         spans.sort()
         if not recursive:
