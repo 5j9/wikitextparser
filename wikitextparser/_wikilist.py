@@ -3,7 +3,7 @@ from warnings import warn
 
 from regex import MULTILINE, escape, fullmatch
 
-from ._wikitext import BRACKET_EXTERNAL_LINK_SCHEMES, SubWikiText
+from ._wikitext import SubWikiText
 
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'
@@ -16,11 +16,7 @@ LIST_PATTERN_FORMAT = (  # noqa
         rb'(?<pattern>{pattern})'
         rb'(?(?<=;\s*+)'
             # mark inline definition as an item
-            rb'(?<item>'
-                rb'.*' + BRACKET_EXTERNAL_LINK_SCHEMES + rb'[^:\n]*+'
-                rb'|'
-                rb'[^:\n]*+'
-            rb')(?<fullitem>:(?<item>.*+))?+'
+            rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
             rb'(?>\n|\Z)' + SUBLIST_PATTERN +
             rb'|'
             # non-definition
@@ -53,9 +49,17 @@ class WikiList(SubWikiText):
             self._match_cache = fullmatch(
                 LIST_PATTERN_FORMAT.replace(
                     b'{pattern}', pattern.encode(), 1),
-                self._shadow,
+                self._list_shadow,
                 MULTILINE,
             ), self.string
+
+    @property
+    def _list_shadow(self):
+        shadow_copy = self._shadow[:]
+        for el in self.external_links:
+            s, e = el.span
+            shadow_copy[s:e] = b'_' * (e - s)
+        return shadow_copy
 
     @property
     def _match(self):
@@ -67,8 +71,7 @@ class WikiList(SubWikiText):
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
                 b'{pattern}', self.pattern.encode(), 1),
-            self._shadow,
-            MULTILINE)
+            self._list_shadow, MULTILINE)
         self._match_cache = cache_match, string
         return cache_match
 
