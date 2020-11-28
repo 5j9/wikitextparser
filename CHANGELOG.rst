@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed handling of external links within definition lists. (pr #83)
+
 v0.47.0
 -------
 - MW variables are now recognized recognized as parser functions, not templates. (#69)

@@ -49,9 +49,17 @@ class WikiList(SubWikiText):
             self._match_cache = fullmatch(
                 LIST_PATTERN_FORMAT.replace(
                     b'{pattern}', pattern.encode(), 1),
-                self._shadow,
+                self._list_shadow,
                 MULTILINE,
             ), self.string
+
+    @property
+    def _list_shadow(self):
+        shadow_copy = self._shadow[:]
+        for el in self.external_links:
+            s, e = el.span
+            shadow_copy[s:e] = b'_' * (e - s)
+        return shadow_copy
 
     @property
     def _match(self):
@@ -63,8 +71,7 @@ class WikiList(SubWikiText):
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
                 b'{pattern}', self.pattern.encode(), 1),
-            self._shadow,
-            MULTILINE)
+            self._list_shadow, MULTILINE)
         self._match_cache = cache_match, string
         return cache_match
 
