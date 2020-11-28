@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.0
+-------
 - MW variables are now recognized recognized as parser functions, not templates. (#69)
 - Fixed a bug in mutation of root element when a child was mutated. (#66)
 - Fixed a bug that was causing templates like ``{{NAMESPACE|2}}`` to be detected as a parser function. It is a template if the first argument starts with a ``:``.
