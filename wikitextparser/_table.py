@@ -31,11 +31,10 @@ CAPTION_MATCH = regex_compile(
     # Optional caption attrs
     (?:
         (?P<attrs>[^\n|]*+)
-        (?:\|)
-        (?!\|)
+        \|(?!\|)
     )?
     (?P<caption>.*?)
-    (?:\n[\|\!])
+    (?:\n[\|\!]|\|\|)
     """, DOTALL | VERBOSE).match
 T = TypeVar('T')
 

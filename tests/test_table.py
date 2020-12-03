@@ -519,6 +519,22 @@ def test_caption_multiline():
     assert Table('{|\n|+a\nb\nc\n|}').caption == "a\nb\nc"
 
 
+def test_caption_end():
+    # MW renders the following test input as """
+    # <table>
+    #  <caption>caption</caption>
+    #  <caption>second caption!</caption>
+    #  <tbody><tr><td></td></tr></tbody>
+    # </table>
+    # """ but only one caption is valid in HTML. Most browsers ignore the
+    # second caption tag. wikitextparser only returns the first one.
+    assert Table('{|\n|+ caption|| second caption!\n|}').caption == " caption"
+    assert Table('{|\n|+style="color:red;"|caption\n|}').caption == "caption"
+    assert Table('{|\n|+caption ! caption\n|}').caption == "caption ! caption"
+    assert Table('{|\n|+caption !! caption\n! header\n|}').caption \
+        == "caption !! caption"
+
+
 def test_caption_multiline_rows():
     assert Table('{|\n|+a\nb\nc\n|-\n|cell\n|}').caption == "a\nb\nc"
 
