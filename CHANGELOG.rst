@@ -1,5 +1,6 @@
 Unreleased
 ----------
+- Fixed and improved a few edge cases in ``Table.caption``. (pr #81)
 - Fixed handling of external links within definition lists. (pr #83)
 
 v0.47.0

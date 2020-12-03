@@ -4,7 +4,7 @@
 from bisect import insort_right
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
-from regex import VERBOSE, compile as regex_compile
+from regex import DOTALL, VERBOSE, compile as regex_compile
 
 from ._cell import (
     Cell, INLINE_HAEDER_CELL_MATCH, INLINE_NONHAEDER_CELL_MATCH,
@@ -31,12 +31,11 @@ CAPTION_MATCH = regex_compile(
     # Optional caption attrs
     (?:
         (?P<attrs>[^\n|]*+)
-        (?:\|)
-        (?!\|)
+        \|(?!\|)
     )?
     (?P<caption>.*?)
-    (?:\n|\|\|)
-    """, VERBOSE).match
+    (?:\n[\|\!]|\|\|)
+    """, DOTALL | VERBOSE).match
 T = TypeVar('T')
 
 
