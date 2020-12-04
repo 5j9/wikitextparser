@@ -98,7 +98,9 @@ class WikiList(SubWikiText):
         string = self.string
         match = self._match
         ms = match.start()
-        for s, e in match.spans('fullitem'):
+        # Sort because "fullitem" can be flipped compared to "items" in case
+        # of a definition list with the LIST_PATTERN_FORMAT regex.
+        for s, e in sorted(match.spans('fullitem')):
             append(string[s - ms:e - ms])
         return fullitems
 
