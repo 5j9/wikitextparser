@@ -3,6 +3,7 @@ Unreleased
 - Fixed the order of items in ``WikiList.fullitems``. (#72)
 - Fixed and improved a few edge cases in ``Table.caption``. (pr #81)
 - Fixed handling of external links within definition lists. (pr #83)
+- Fixed a bug in parsing extension tags. (#90)
 
 v0.47.0
 -------

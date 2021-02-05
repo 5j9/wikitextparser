@@ -1531,3 +1531,9 @@ def test_wikitext_string_set():  # 66
 def test_tables_in_parsable_tag_extensions():  # 85
     table, = parse('<onlyinclude>\n{|\n|}\n</onlyinclude>').tables
     assert table.span == (14, 19)
+
+
+def test_extract_unparsable_extension_tags_first():  # 90
+    assert parse(
+        "<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>"
+    ).plain_text() == '[b]'

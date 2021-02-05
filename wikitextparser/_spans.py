@@ -227,16 +227,16 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
             s -= 1  # <
             cms_append([s, e, None, byte_array[s:e]])
             byte_array[s:e] = b'\0' * (e - s)
-        for s, e in spans('p'):
+        for s, e in spans('u'):  # unparsable
+            s -= 1  # <
+            ets_append([s, e, match, byte_array[s:e]])
+        for s, e in spans('p'):  # parsable
             s -= 1  # <
             ets_append([s, e, match, byte_array[s:e]])
             _parse_sub_spans(
                 byte_array, s, e,
                 pms_append, pfs_append, tls_append, wls_append)
-        for s, e in spans('u'):
-            s -= 1  # <
-            ets_append([s, e, match, byte_array[s:e]])
-        for s, e in spans('c'):
+        for s, e in spans('c'):  # content
             s -= 1  # <
             byte_array[s:e] = RM_ANGLE_BRACKETS(byte_array[s:e])
     _parse_sub_spans(
