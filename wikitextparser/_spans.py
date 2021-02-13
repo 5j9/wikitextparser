@@ -2,7 +2,7 @@
 from functools import partial
 from typing import Callable, Dict, Optional
 
-from regex import REVERSE, compile as regex_compile
+from regex import DOTALL, REVERSE, compile as regex_compile
 
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
@@ -92,28 +92,18 @@ PARSABLE_TAG_EXTENSION_NAME = regex_pattern(
 UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(
     _unparsable_tag_extensions)
 
-RM_ANGLE_BRACKETS = partial(regex_compile(b'[^<>]').sub, br'_')
 # The idea of the following regex is to detect innermost HTML tags. From
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-PARSABLE_TAG_EXTENSION_CONTENT = (  # noqa
-    rb'(?>'
-        # no other tags
-        rb'[^<]++'
-        # a nested-tag
-        rb'|(?R)'
-        # or < that is not a nested tag
-        rb'|<'
-    rb')*?')
-UNPARSABLE_TAG_EXTENSION_CONTENT = PARSABLE_TAG_EXTENSION_CONTENT.replace(
-    rb'|(?R)', rb'')
 CONTENT_AND_END = (  # noqa
     rb'\b[^>]*+'
     rb'(?>'
         rb'(?<=/)>'  # self-closing
         # group c captures contents
-        rb'|>(?<c>{c})</\g<n>\s*+>'
+        rb'|>(?<c>'
+            rb'.*?'
+        rb')</\g<n>\s*+>'
     rb')')
 EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
     rb'<(?>'
@@ -121,16 +111,13 @@ EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
         rb'(?<m>!--[\s\S]*?(?>-->|(?=</\g<n>\s*+>)|\Z))'
         # u captures unparsable tag extensions and n captures the name
         rb'|(?<u>(?<n>' + UNPARSABLE_TAG_EXTENSION_NAME + rb')'
-        + CONTENT_AND_END.replace(
-            rb'{c}', UNPARSABLE_TAG_EXTENSION_CONTENT)
+            + CONTENT_AND_END
         + rb')'
         # p captures parsable tag extensions and n captures the name
         rb'|(?<p>(?<n>' + PARSABLE_TAG_EXTENSION_NAME + rb')'
-        + CONTENT_AND_END.replace(
-            # group p captures if the tag is parsable
-            b'{c}', PARSABLE_TAG_EXTENSION_CONTENT)
+            + CONTENT_AND_END
         + rb')'
-    rb')').finditer
+    rb')', DOTALL).finditer
 
 # HTML tags
 # Tags:
@@ -221,24 +208,9 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
     template_spans = []
     tls_append = template_spans.append
     # <extension tags>
-    for match in EXTENSION_TAGS_FINDITER(byte_array):
-        spans = match.spans
-        for s, e in spans('m'):
-            s -= 1  # <
-            cms_append([s, e, None, byte_array[s:e]])
-            byte_array[s:e] = b'\0' * (e - s)
-        for s, e in spans('u'):  # unparsable
-            s -= 1  # <
-            ets_append([s, e, match, byte_array[s:e]])
-        for s, e in spans('p'):  # parsable
-            s -= 1  # <
-            ets_append([s, e, match, byte_array[s:e]])
-            _parse_sub_spans(
-                byte_array, s, e,
-                pms_append, pfs_append, tls_append, wls_append)
-        for s, e in spans('c'):  # content
-            s -= 1  # <
-            byte_array[s:e] = RM_ANGLE_BRACKETS(byte_array[s:e])
+    extract_tag_extensions(
+        byte_array, ets_append, cms_append, None, None,
+        pms_append, pfs_append, tls_append, wls_append)
     _parse_sub_spans(
         byte_array, 0, None, pms_append, pfs_append, tls_append, wls_append)
     return {
@@ -248,6 +220,39 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
         'ParserFunction': sorted(parser_function_spans),
         'Template': sorted(template_spans),
         'WikiLink': sorted(wikilink_spans)}
+
+
+def extract_tag_extensions(
+    byte_array, ets_append, cms_append, start, end
+    , pms_append, pfs_append, tls_append, wls_append
+):
+    for match in EXTENSION_TAGS_FINDITER(byte_array, start, end):
+        span = match.span
+        s, e = span('m')  # comment
+        if s != -1:
+            s -= 1  # <
+            cms_append([s, e, None, byte_array[s:e]])
+            byte_array[s:e] = b'\0' * (e - s)
+            continue
+        s, e = span('u')  # unparsable
+        if s != -1:
+            s -= 1  # <
+            ets_append([s, e, match, byte_array[s:e]])
+            byte_array[s:e] = (e - s) * b'_'
+            continue
+        s, e = span('p')  # parsable
+        if s != -1:
+            s -= 1  # <
+            ets_append([s, e, match, byte_array[s:e]])
+            cs, ce = span('c')  # content
+            extract_tag_extensions(
+                byte_array, ets_append, cms_append, cs, ce,
+                pms_append, pfs_append, tls_append, wls_append)
+            _parse_sub_spans(
+                byte_array, s, e,
+                pms_append, pfs_append, tls_append, wls_append)
+            byte_array[cs:ce] = b'_' * (ce - cs)
+            continue
 
 
 def _parse_sub_spans(
