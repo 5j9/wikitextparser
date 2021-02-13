@@ -51,7 +51,7 @@ def test_removing_last_arg_should_not_effect_the_others():
 
 def test_nowikied_arg():
     a = Argument('|<nowiki>1=3</nowiki>')
-    assert a.positional
+    assert a.positional is True
     assert '1' == a.name
     assert '<nowiki>1=3</nowiki>' == a.value
 
