@@ -1,3 +1,11 @@
+v0.47.3
+-------
+- Fixed a bug in ``plain_text`` method, not handling self-closing tags correctly.
+
+v0.47.2
+-------
+- Fixed a bug that was causing the parser to hang when parsing complicated nested tags.
+
 v0.47.1
 -------
 - Fixed the order of items in ``WikiList.fullitems``. (#72)

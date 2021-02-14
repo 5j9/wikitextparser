@@ -1537,3 +1537,7 @@ def test_extract_unparsable_extension_tags_first():  # 90
     assert parse(
         "<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>"
     ).plain_text() == '[b]'
+
+
+def test_self_closing_tag_contents():  # 88
+    assert parse('a<ref n=b/>').plain_text() == 'a'

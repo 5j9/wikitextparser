@@ -622,8 +622,11 @@ class WikiText:
             for t in parsed.get_tags():
                 b, e = t.span
                 cb, ce = t._match.span('contents')
-                remove(b, b + cb)
-                remove(b + ce, e)
+                if cb != -1:  # not a self-closing tag
+                    remove(b, b + cb)
+                    remove(b + ce, e)
+                else:  # remove the whole self-closing tag
+                    remove(b, e)
         if replace_wikilinks:
             for w in parsed.wikilinks:
                 b, e = w.span
