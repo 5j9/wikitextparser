@@ -1541,3 +1541,9 @@ def test_extract_unparsable_extension_tags_first():  # 90
 
 def test_self_closing_tag_contents():  # 88
     assert parse('a<ref n=b/>').plain_text() == 'a'
+
+
+def test_definition_list_with_external_link():  # 91
+    assert parse("; http://a.b :d\n").get_lists()[0].items == \
+        [' http://a.b ', 'd']
+

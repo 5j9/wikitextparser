@@ -1,3 +1,7 @@
+v0.47.4
+-------
+- Fixed handling of external links within definition lists. (#91)
+
 v0.47.3
 -------
 - Fixed a bug in ``plain_text`` method, not handling self-closing tags correctly.

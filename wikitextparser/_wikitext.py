@@ -1248,6 +1248,10 @@ class WikiText:
         spans = type_to_spans.setdefault('WikiList', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         shadow, ss = self._lists_shadow_ss
+        if any(':' in pattern for pattern in patterns):
+            for m in EXTERNAL_LINK_FINDITER(shadow):
+                s, e = m.span()
+                shadow[s:e] = b'_' * (e - s)
         for pattern in patterns:
             for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode(), 1),

@@ -140,10 +140,10 @@ class Argument(SubWikiText):
             post_eq = shadow_match['post_eq']
             ls_post_eq = post_eq.lstrip()
             return (
-                ls_post_eq,
+                bytearray(ls_post_eq),
                 self._span_data[0] + shadow_match.start('post_eq')
                 + len(post_eq) - len(ls_post_eq))
-        return shadow_match[0][1:], self._span_data[0] + 1
+        return bytearray(shadow_match[0][1:]), self._span_data[0] + 1
 
 
 if __name__ == '__main__':

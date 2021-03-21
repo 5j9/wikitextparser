@@ -3,7 +3,7 @@ from warnings import warn
 
 from regex import MULTILINE, escape, fullmatch
 
-from ._wikitext import SubWikiText
+from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'
@@ -56,9 +56,10 @@ class WikiList(SubWikiText):
     @property
     def _list_shadow(self):
         shadow_copy = self._shadow[:]
-        for el in self.external_links:
-            s, e = el.span
-            shadow_copy[s:e] = b'_' * (e - s)
+        if ':' in self.pattern:
+            for m in EXTERNAL_LINK_FINDITER(shadow_copy):
+                s, e = m.span()
+                shadow_copy[s:e] = b'_' * (e - s)
         return shadow_copy
 
     @property

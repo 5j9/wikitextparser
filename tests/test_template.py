@@ -197,6 +197,8 @@ def test_lists():
     l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').get_lists()
     assert l1.items == ['a', 'b']
     assert l2.items == ['c', 'd']
+    assert Template('{{t|;https://a.b :d}}').get_lists('[;:]')[0].items ==\
+        ['https://a.b ', 'd']
 
 
 # Template.set_arg

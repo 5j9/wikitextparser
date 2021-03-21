@@ -161,3 +161,9 @@ def test_cache_update():
     assert wl.string == '*a {{ttt}}'
 
 # todo: check if ref tags can contain lists and add a test for it.
+
+
+def test_external_link_colon_shadow():  # 91
+    assert parse("===abc===\n; https://github.com : definition\n").get_lists(
+        r'[:;]')[0]._list_shadow == bytearray(
+            b'; __________________ : definition\n')
