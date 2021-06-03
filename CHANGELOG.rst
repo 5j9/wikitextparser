@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.5
+-------
 - Fixed regex requirement for Python 3.5 on Windows platform.
 
 v0.47.4
