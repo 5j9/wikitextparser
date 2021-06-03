@@ -18,7 +18,10 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.5',
-    install_requires=['regex', 'wcwidth'],
+    install_requires=[
+        'regex<2019.12.17;python_version=="3.5" and platform_system=="Windows"'
+        , 'regex;python_version!="3.5" or platform_system!="Windows"'
+        , 'wcwidth'],
     extras_require={'dev': ['path.py', 'coverage', 'twine']},
     tests_require=['pytest'],
     zip_safe=True,
