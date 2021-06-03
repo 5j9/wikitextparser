@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed regex requirement for Python 3.5 on Windows platform.
+
 v0.47.4
 -------
 - Fixed handling of external links within definition lists. (#91)
