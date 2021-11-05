@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed problem in detecting extension tags with uppercase letters in their names (#95)
+
 v0.47.5
 -------
 - Fixed regex requirement for Python 3.5 on Windows platform.
