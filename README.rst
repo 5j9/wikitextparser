@@ -1,5 +1,5 @@
-.. image:: https://travis-ci.org/5j9/wikitextparser.svg?branch=master
-    :target: https://travis-ci.org/5j9/wikitextparser
+.. image:: https://github.com/5j9/wikitextparser/actions/workflows/tests.yml/badge.svg
+    :target: https://github.com/5j9/wikitextparser/actions
 .. image:: https://codecov.io/github/5j9/wikitextparser/coverage.svg?branch=master
     :target: https://codecov.io/github/5j9/wikitextparser
 .. image:: https://readthedocs.org/projects/wikitextparser/badge/?version=latest

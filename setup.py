@@ -18,6 +18,7 @@ setup(
     license='GNU General Public License v3 (GPLv3)',
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.5',
+    # todo: add github actions for testing windows environment
     install_requires=[
         'regex<2019.12.17;python_version=="3.5" and platform_system=="Windows"'
         , 'regex;python_version!="3.5" or platform_system!="Windows"'
@@ -36,5 +37,6 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Text Processing'],
     keywords='MediaWiki wikitext parser')
