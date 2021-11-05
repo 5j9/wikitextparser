@@ -2,7 +2,7 @@
 from functools import partial
 from typing import Callable, Dict, Optional
 
-from regex import DOTALL, REVERSE, compile as regex_compile
+from regex import DOTALL, REVERSE, compile as regex_compile, IGNORECASE
 
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
@@ -117,7 +117,7 @@ EXTENSION_TAGS_FINDITER = regex_compile(  # noqa
         rb'|(?<p>(?<n>' + PARSABLE_TAG_EXTENSION_NAME + rb')'
             + CONTENT_AND_END
         + rb')'
-    rb')', DOTALL).finditer
+    rb')', DOTALL | IGNORECASE).finditer
 
 # HTML tags
 # Tags:

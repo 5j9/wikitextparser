@@ -9,7 +9,7 @@ from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 
 def bytearray_parse_to_spans(bytes_: bytes) -> Dict[str, List[List[int]]]:
     return {
-        k: [i[:2] for i in v]
+        k: [i[:2] for i in v]  # no need for match and byte_array
         for k, v in parse_to_spans(bytearray(bytes_)).items()}
 
 
@@ -534,3 +534,7 @@ def test_treat_magic_words_without_arguments_as_parser_functions():
         b'{{NAMESPACE:MediaWiki}}\n{{NAMESPACE}}\n{{NAMESPACE|2}}')
     assert s['ParserFunction'] == [[0, 23], [24, 37]]
     assert s['Template'] == [[38, 53]]
+
+
+def test_extension_tags_are_case_insensitive():
+    assert bpts(b'<ref></Ref>')['ExtensionTag'] == [[0, 11]]
