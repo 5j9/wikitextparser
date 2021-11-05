@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.6
+-------
 - Fixed problem in detecting extension tags with uppercase letters in their names (#95)
 
 v0.47.5
