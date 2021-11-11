@@ -201,7 +201,7 @@ class Template(SubWikiTextWithArgs):
                 arg.positional = positional
             if preserve_spacing:
                 val = arg.value
-                arg.value = val.replace(val.strip(WS), value)
+                arg.value = val.replace(val.strip(WS), value, 1)
             else:
                 arg.value = value
             return

@@ -311,3 +311,15 @@ def test_del_positional_arg():
 def test_parser_functions():
     assert Template(
         '{{t|{{#if:|}}}}').parser_functions[0].string == '{{#if:|}}'
+
+
+def test_setting_single_space_arg():  # 97
+    t = Template("{{t|a= }}")
+    t.set_arg('a', 'v')
+    assert t.string == "{{t|a=v }}"
+
+
+def test_preserve_spacing_left_and_right():
+    t = Template("{{t|a=\tx }}")
+    t.set_arg('a', 'y')
+    assert t.string == "{{t|a=\ty }}"

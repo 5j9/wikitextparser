@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed ``Template.set_arg`` causing duplicate values. (#97)
+
 v0.47.6
 -------
 - Fixed problem in detecting extension tags with uppercase letters in their names (#95)
@@ -374,4 +378,3 @@ v0.18.0
 - Fixed: A minor bug in Template.set_arg
 - Changed: ExternalLink.text: Return None if the link is not within brackets
 - Fixed: Handling of comments and templates in external links
-links
