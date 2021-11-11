@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.7
+-------
 - Fixed ``Template.set_arg`` causing duplicate values. (#97)
 
 v0.47.6
