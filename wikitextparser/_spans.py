@@ -224,8 +224,8 @@ def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
 
 
 def extract_tag_extensions(
-    byte_array, ets_append, cms_append, start, end
-    , pms_append, pfs_append, tls_append, wls_append
+    byte_array, ets_append, cms_append, start, end,
+    pms_append, pfs_append, tls_append, wls_append
 ):
     for match in EXTENSION_TAGS_FINDITER(byte_array, start, end):
         span = match.span
