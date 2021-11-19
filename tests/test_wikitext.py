@@ -1547,3 +1547,7 @@ def test_definition_list_with_external_link():  # 91
     assert parse("; http://a.b :d\n").get_lists()[0].items == \
         [' http://a.b ', 'd']
 
+
+def test_tags_in_wikilinks():
+    b, = parse('[[a|a <b>c]] d</b>').get_tags('b')
+    assert b.string == '<b>c]] d</b>'

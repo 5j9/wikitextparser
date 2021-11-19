@@ -1,6 +1,11 @@
+Unreleased
+----------
+- Fixed: Templates titles cannot include wikilinks
+- Fixed: Detection of tags withing WikiLinks (#96)
+
 v0.47.7
 -------
-- Fixed ``Template.set_arg`` causing duplicate values. (#97)
+- Fixed a bug in ``Template.set_arg`` causing duplicate values. (#97)
 
 v0.47.6
 -------

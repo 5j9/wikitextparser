@@ -10,7 +10,7 @@ from ._config import (
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS = rb'[^\|\{\}\[\]<>\n]++'
+VALID_TITLE_CHARS = rb'[^\1-\6\|\{\}\[\]<>\n]++'
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
@@ -84,6 +84,7 @@ WIKILINK_PARAM_FINDITER = regex_compile(  # noqa
     REVERSE).finditer
 
 # these characters interfere with detection of (args|tls|wlinks|wlists)
+pbba_tt = b''.maketrans(b"|[]'{}", b'\1\2\3\7\5\6')
 blank_sensitive_chars = partial(regex_compile(br'[\|\{\}\n]').sub, br' ')
 blank_brackets = partial(regex_compile(br'[\[\]]').sub, br' ')
 
@@ -272,12 +273,16 @@ def _parse_sub_spans(
                 ms, me = match.span()
                 if match[1] is None:
                     wls_append([ms, me, match, byte_array[ms:me]])
+                    _parse_sub_spans(
+                        byte_array, ms + 2, me - 2,
+                        pms_append, pfs_append, tls_append, wls_append)
+                    byte_array[ms:me] = byte_array[ms:me].translate(pbba_tt)
                 else:
                     pms_append([ms, me, match, byte_array[ms:me]])
-                _parse_sub_spans(
-                    byte_array, ms + 2, me - 2,
-                    pms_append, pfs_append, tls_append, wls_append)
-                byte_array[ms:me] = b'_' * (me - ms)
+                    _parse_sub_spans(
+                        byte_array, ms + 2, me - 2,
+                        pms_append, pfs_append, tls_append, wls_append)
+                    byte_array[ms:me] = b'_' * (me - ms)
             if match is None:
                 break
         for match in PF_TL_FINDITER(byte_array, start, end):

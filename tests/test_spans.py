@@ -443,7 +443,8 @@ def test_wikilinks_priority():
     # pfs are *processed* before wikilinks
     # todo: an option to not ignore pfs?
     # the outer one is not a wikilink actually
-    assert bpts(b'[[a[[a{{#if:||}}]]]]')['WikiLink'][1] == [3, 18]
+    assert bpts(b'[[file:a.jpg|thumb|[[a{{#if:||}}]]]]')['WikiLink'] \
+        == [[0, 36], [19, 34]]
 
 
 def test_comments_in_between_tokens():
@@ -538,3 +539,7 @@ def test_treat_magic_words_without_arguments_as_parser_functions():
 
 def test_extension_tags_are_case_insensitive():
     assert bpts(b'<ref></Ref>')['ExtensionTag'] == [[0, 11]]
+
+
+def test_no_wikilink_allowed_in_template_name():
+    assert not bpts(b'{{c[[a|b]]}}')['Template']
