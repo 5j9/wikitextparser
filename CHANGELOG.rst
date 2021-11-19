@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.8
+-------
 - Fixed: Templates titles cannot include wikilinks
 - Fixed: Detection of tags withing WikiLinks (#96)
 
