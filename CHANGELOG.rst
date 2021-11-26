@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.47.9
+-------
 - Fix missing tables rows after comments (#98)
 
 v0.47.8
