@@ -276,6 +276,7 @@ def _parse_sub_spans(
                     _parse_sub_spans(
                         byte_array, ms + 2, me - 2,
                         pms_append, pfs_append, tls_append, wls_append)
+                    # keep tags
                     byte_array[ms:me] = byte_array[ms:me].translate(pbba_tt)
                 else:
                     pms_append([ms, me, match, byte_array[ms:me]])
