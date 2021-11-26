@@ -1,12 +1,11 @@
 ﻿"""Define the Tag class and tag-related regular expressions.
 
-Although MediaWiki has a very strict HTML restrictions by default, regexes
-defined in this module don't follow those restrictions and allow most finding
+Unlike MediaWiki which has very strict HTML rules, regexes
+defined in this module don't follow those restrictions and allow finding
 most HTML tags.
 
 For more info see:
 * https://www.mediawiki.org/wiki/HTML_restriction
-
 """
 
 from typing import Any, Dict, List, Optional
