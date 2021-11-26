@@ -41,6 +41,11 @@ T = TypeVar('T')
 
 HEAD_DIGITS = regex_compile(rb'\s*+\d+').match
 
+# Captions are optional and only one should be placed between table-start
+# and the first row. Others captions are not part of the table and will
+# be ignored.
+FIRST_NON_CAPTION_LINE = regex_compile(br'\n[\t \0]*+(\|(?!\+)|!)').search
+
 
 def head_int(value):
     if value is None:
@@ -91,7 +96,7 @@ class Table(SubWikiTextWithAttrs):
             lsp = _lstrip_increase(table_shadow, pos)
         # Start of the first row
         match_table = []
-        pos = _semi_caption_increase(table_shadow, pos)
+        pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
         rsp = _row_separator_increase(table_shadow, pos)
         pos = -1
         while pos != rsp:
@@ -118,7 +123,7 @@ class Table(SubWikiTextWithAttrs):
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                    pos = _semi_caption_increase(table_shadow, pos)
+                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
                     m = NEWLINE_CELL_MATCH(table_shadow, pos)
             rsp = _row_separator_increase(table_shadow, pos)
         return match_table
@@ -426,36 +431,17 @@ def _lstrip_increase(shadow: bytearray, pos: int) -> int:
     return pos
 
 
-def _semi_caption_increase(shadow: bytearray, pos: int) -> int:
-    """Return the position after the starting semi-caption.
-
-    Captions are optional and only one should be placed between table-start
-    and the first row. Others captions are not part of the table and will
-    be ignored. We call these semi-captions.
-    """
-    lsp = _lstrip_increase(shadow, pos)
-    while shadow[lsp:lsp + 2] == b'|+':
-        pos = shadow.find(10, lsp + 2)  # ord('\n')
-        lsp = _lstrip_increase(shadow, pos)
-        while shadow[lsp] not in b'!|':
-            # This line is a continuation of semi-caption line.
-            nlp = shadow.find(10, lsp + 1)  # ord('\n')
-            pos = nlp
-            lsp = _lstrip_increase(shadow, nlp)
-    return pos
-
-
 def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     """Return the position after the starting row separator line.
 
     Also skips any semi-caption lines before and after the separator.
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    scp = _semi_caption_increase(shadow, pos)
-    lsp = _lstrip_increase(shadow, scp)
+    ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()
+    lsp = _lstrip_increase(shadow, ncl)
     while shadow[lsp:lsp + 2] == b'|-':
         # We are on a row separator line.
         pos = shadow.find(10, lsp + 2)  # ord('\n')
-        pos = _semi_caption_increase(shadow, pos)
+        pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()
         lsp = _lstrip_increase(shadow, pos)
     return pos

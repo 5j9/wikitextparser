@@ -545,7 +545,7 @@ def test_cell_header():
 
 
 def test_not_cell_header():
-    assert Table('{|\n!Header\n|Not a header|}').cells(
+    assert Table('{|\n!Header\n|Not a header\n|}').cells(
         row=0, column=1).is_header is False
 
 
@@ -553,3 +553,13 @@ def test_table_attr_span_false():  # 71
     cell = Table('{|\n|colspan=2| Test1 \n|| Test 2 \n|| Test 3 \n|}').cells(
         span=False)[0][0]
     assert cell.attrs == {'colspan': '2'}
+
+
+def test_comment_line():  # 98
+    assert Table(
+        '{|class=wikitable'
+        '\n!a'
+        '\n|-'
+        '\n<!---->'
+        '\n|b'
+        '\n|}').data() == [['a'], ['b']]

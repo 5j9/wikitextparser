@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fix missing tables rows after comments (#98)
+
 v0.47.8
 -------
 - Fixed: Templates titles cannot include wikilinks
