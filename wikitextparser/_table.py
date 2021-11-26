@@ -102,19 +102,19 @@ class Table(SubWikiTextWithAttrs):
             if m:
                 match_row = []  # type: List[Any]
                 match_table.append(match_row)
-                while m:
+                while m is not None:
                     match_row.append(m)
                     sep = m['sep']
                     pos = m.end()
                     if sep == b'|':
                         m = INLINE_NONHAEDER_CELL_MATCH(table_shadow, pos)
-                        while m:
+                        while m is not None:
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_NONHAEDER_CELL_MATCH(table_shadow, pos)
                     elif sep == b'!':
                         m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                        while m:
+                        while m is not None:
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
