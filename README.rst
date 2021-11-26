@@ -370,5 +370,5 @@ Known issues and limitations
 Credits
 =======
 * `python <https://www.python.org/>`_
-* `regex <https://bitbucket.org/mrabarnett/mrab-regex/>`_
+* `regex <https://github.com/mrabarnett/mrab-regex>`_
 * `wcwidth <https://github.com/jquast/wcwidth>`_
