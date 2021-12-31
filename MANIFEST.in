@@ -1,1 +1,10 @@
 include *.md
+
+exclude .gitignore
+exclude .coveragerc
+exclude .readthedocs.yaml
+
+prune tests
+prune dev
+prune .github
+prune docs

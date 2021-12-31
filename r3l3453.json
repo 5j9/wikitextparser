@@ -1,6 +1,0 @@
-{
-    "version_paths": [
-        "wikitextparser/__init__.py:__version__",
-        "setup.py:version"
-    ]
-}
