@@ -2,11 +2,11 @@
 
 from typing import List, Optional
 
-from regex import compile as regex_compile
+from regex import compile as rc, IGNORECASE
 
 from ._wikitext import BRACKET_EXTERNAL_LINK_URL, SubWikiText
 
-URL_MATCH = regex_compile(BRACKET_EXTERNAL_LINK_URL).match
+URL_MATCH = rc(BRACKET_EXTERNAL_LINK_URL, IGNORECASE).match
 
 
 class ExternalLink(SubWikiText):
@@ -34,7 +34,7 @@ class ExternalLink(SubWikiText):
 
     @property
     def text(self) -> Optional[str]:
-        """The text part (the part after the first space).
+        """The text part (the part after the url).
 
         getter: Return None if this is a bare link or has no associated text.
         setter: Automatically put the ExternalLink in brackets if it's not

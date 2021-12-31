@@ -82,3 +82,7 @@ def test_ending_with_less_than_sign():
     el = ExternalLink('[https://www.google.<com]')
     assert el.url == 'https://www.google.'
     assert el.text == '<com'
+
+
+def test_external_link_case():  # 99
+    assert ExternalLink('[Https://a b]').text == 'b'
