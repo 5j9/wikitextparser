@@ -20,7 +20,6 @@ Installation
 ============
 
 - Python 3.6+ is required
-- ``pip install 'setuptools>=36.2.1'``
 - ``pip install wikitextparser``
 
 Usage
