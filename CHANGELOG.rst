@@ -1,7 +1,7 @@
 unreleased
 ----------
 - BREAKING: dropped support for Python 3.5
-- Fixd: bug in handling of external links with uppercase scheme.
+- Fixd: bug in handling of external links with uppercase scheme. (#99)
 
 v0.47.9
 -------
