@@ -1,3 +1,8 @@
+unreleased
+----------
+- BREAKING: dropped support for Python 3.5
+- Fixd: bug in handling of external links with uppercase scheme.
+
 v0.47.9
 -------
 - Fix missing tables rows after comments (#98)
