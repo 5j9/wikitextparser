@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.48.1
+-------
 - Fixed a bug in ``pformat`` and ``plain_text`` methods. (#100)
 
 v0.48.0
