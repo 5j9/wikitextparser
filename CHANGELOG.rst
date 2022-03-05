@@ -1,5 +1,9 @@
+Unreleased
+----------
+- Fixed a bug in ``pformat`` and ``plain_text`` methods. (#100)
+
 v0.48.0
---------
+-------
 - BREAKING: dropped support for Python 3.5
 - Fixed: bug in handling of external links with uppercase scheme. (#99)
 

@@ -376,3 +376,20 @@ def test_no_error():
         '\n        {{{p2|}}}'
         '\n    }} }}'
         '\n')
+
+
+def test_after_section_title_deletion():  # 100
+    section = parse("= t =\nc").sections[1]
+    del section.title
+    assert section.pformat() == 'c'
+
+    section = parse("l\n= t =\nc").sections[1]
+    del section.title
+    assert section.pformat() == 'c'
+
+
+def test_mutated_template():
+    t = parse("{{t|a}}").templates[0]
+    a = t.arguments[0]
+    a.string = ''
+    assert t.pformat() == '{{t}}'

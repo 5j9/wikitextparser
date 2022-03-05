@@ -552,8 +552,8 @@ class WikiText:
             return deepcopy(self._type_to_spans)
         return {
             type_: [
-                [s - ss, e - ss, m, ba[:]] for s, e, m, ba
-                in spans[bisect_left(spans, [ss]):] if e <= se
+                [s - ss, e - ss, m, ba[:] if ba is not None else None]
+                for s, e, m, ba in spans[bisect_left(spans, [ss]):] if e <= se
             ] for type_, spans in self._type_to_spans.items()}
 
     def plain_text(
@@ -661,7 +661,7 @@ class WikiText:
         parsed = WikiText([lststr0[s:e]], self._inner_type_to_spans_copy())
         # Since _type_to_spans arg of WikiText has been used, parsed._span
         # is not set yet.
-        span = [0, e - s, m, b[:]]
+        span = [0, e - s, m, b[:] if b is not None else None]
         parsed._span_data = span
         parsed._type_to_spans['WikiText'] = [span]
         if remove_comments:
