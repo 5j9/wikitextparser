@@ -610,6 +610,7 @@ class WikiText:
         if replace_bolds_and_italics:
             for i in parsed.get_bolds_and_italics():
                 b, e = i.span
+                # noinspection PyProtectedMember
                 ib, ie = i._match.span(1)  # text span
                 remove(b, b + ib)
                 remove(b + ie, e)
@@ -625,6 +626,7 @@ class WikiText:
         if replace_tags:
             for t in parsed.get_tags():
                 b, e = t.span
+                # noinspection PyProtectedMember
                 cb, ce = t._match.span('contents')
                 if cb != -1:  # not a self-closing tag
                     remove(b, b + cb)
@@ -637,11 +639,13 @@ class WikiText:
                 if w.wikilinks:
                     remove(b, e)  # image
                 else:
+                    # noinspection PyProtectedMember
                     tb, te = w._match.span(4)  # text span
                     if tb != -1:
                         remove(b, b + tb)
                         remove(b + te, e)
                     else:
+                        # noinspection PyProtectedMember
                         tb, te = w._match.span(1)  # target span
                         remove(b, b + tb)
                         remove(b + te, e)
@@ -1390,11 +1394,15 @@ class SubWikiText(WikiText):
         if _type is None:
             # assert _span is None
             # assert _type_to_spans is None
+            # https://youtrack.jetbrains.com/issue/PY-29770
+            # noinspection PyDunderSlots,PyUnresolvedReferences
             self._type = _type = type(self).__name__
             super().__init__(string)
         else:
             # assert _span is not None
             # assert _type_to_spans is not None
+            # https://youtrack.jetbrains.com/issue/PY-29770
+            # noinspection PyDunderSlots,PyUnresolvedReferences
             self._type = _type
             super().__init__(string, _type_to_spans)
             self._span_data = _span
