@@ -651,7 +651,7 @@ class WikiText:
         return string
 
     def pformat(self, indent: str = '    ', remove_comments=False) -> str:
-        """Return a pretty-print of self.string as string.
+        """Return a pretty-print formatted version of `self.string`.
 
         Try to organize templates and parser functions by indenting, aligning
         at the equal signs, and adding space where appropriate.
