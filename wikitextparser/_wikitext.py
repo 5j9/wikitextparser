@@ -568,6 +568,7 @@ class WikiText:
         replace_bolds_and_italics=True,
         _is_root_node=False
     ) -> str:
+        # plain_text_doc will be added to __doc__
         """Return a plain text string representation of self."""
         if _is_root_node is False:
             s, e, m, b = self._span_data
@@ -1473,6 +1474,7 @@ def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
 
 
 def remove_markup(s: str, **kwargs) -> str:
+    # plain_text_doc will be added to __doc__
     """Return a string with wiki markup removed/replaced."""
     return WikiText(s).plain_text(**kwargs, _is_root_node=True)
 
