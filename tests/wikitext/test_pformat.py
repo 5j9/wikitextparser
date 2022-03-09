@@ -393,3 +393,11 @@ def test_mutated_template():
     a = t.arguments[0]
     a.string = ''
     assert t.pformat() == '{{t}}'
+
+
+def test_pprint_after_getting_subsections():  # 101
+    s = '\n==a==\n1\n===b===\n2'
+    a = parse(s).get_sections(level=2)[0]
+    a.get_sections()
+    a_string = s[1:]
+    assert a.plain_text() == a_string

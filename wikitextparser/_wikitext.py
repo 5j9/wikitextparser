@@ -573,7 +573,11 @@ class WikiText:
             s, e, m, b = self._span_data
             tts = self._inner_type_to_spans_copy()
             parsed = WikiText([self._lststr[0][s:e]], tts)
-            parsed._span_data = tts[self._type][0]
+            new_end = e - s
+            for span_data in tts[self._type]:
+                if span_data[1] == new_end:
+                    parsed._span_data = span_data
+                    break
         else:
             tts = self._type_to_spans
             parsed = self
@@ -1107,7 +1111,7 @@ class WikiText:
         :param level: Only return sections where section.level == level.
             Return all levels if None (default).
         """
-        sections = []  # type: List['Section']
+        sections = []  # type: List[Section]
         sections_append = sections.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
