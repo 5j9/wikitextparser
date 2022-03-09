@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.48.2
+-------
 - Fixed a bug in `plain_text` method. (#101)
 
 v0.48.1
