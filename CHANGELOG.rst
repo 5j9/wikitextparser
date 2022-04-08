@@ -1,6 +1,10 @@
+v0.48.3
+-------
+- Fixed a bug in ``Tag.parsed_contents`` method. (#102)
+
 v0.48.2
 -------
-- Fixed a bug in `plain_text` method. (#101)
+- Fixed a bug in ``plain_text`` method. (#101)
 
 v0.48.1
 -------

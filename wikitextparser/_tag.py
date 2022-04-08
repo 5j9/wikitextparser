@@ -190,10 +190,18 @@ class Tag(SubWikiTextWithAttrs):
         """Return the contents as a SubWikiText object."""
         ss, _, _, byte_array = self._span_data
         s, e = self._match.span('contents')
-        type_to_spans = self._type_to_spans
-        span = type_to_spans.setdefault(
-            'SubWikiText', [ss + s, ss + e, None, byte_array[s:e]])
-        return SubWikiText(self._lststr, type_to_spans, span, 'SubWikiText')
+        tts = self._type_to_spans
+        spans = tts.setdefault('SubWikiText', [])
+        ps, pe = span_tuple = ss + s, ss + e
+        try:
+            i = [(s[0], s[1]) for s in spans].index(span_tuple)
+        except ValueError:
+            span = [ps, pe, None, byte_array[s:e]]
+            spans.append(span)
+            spans.sort()
+        else:
+            span = spans[i]
+        return SubWikiText(self._lststr, tts, span, 'SubWikiText')
 
     @property
     def _extension_tags(self):

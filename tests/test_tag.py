@@ -134,6 +134,13 @@ def test_parsed_content_offset():
     assert parse('t<b>1</b>t').get_tags()[0].parsed_contents.string == '1'
 
 
+def test_calling_parsed_content_twice():
+    t = parse('t<b>1</b>t').get_tags()[0]
+    pc1 = t.parsed_contents
+    pc2 = t.parsed_contents
+    assert pc1._span_data is pc2._span_data
+
+
 def test_attrs():
     assert Tag('<t n1=v1 n2="v2" n3>c</t>').attrs == {
         'n1': 'v1', 'n2': 'v2', 'n3': ''}
