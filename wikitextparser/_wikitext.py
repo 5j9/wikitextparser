@@ -1379,7 +1379,7 @@ class WikiText:
 class SubWikiText(WikiText):
     """Define a class to be inherited by some subclasses of WikiText.
 
-    Allow to focus on a particular part of WikiText.
+    Allow focusing on a particular part of WikiText.
     """
 
     __slots__ = '_type'
