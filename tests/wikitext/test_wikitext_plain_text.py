@@ -78,3 +78,9 @@ def test_replace_fuctions():
         replace_templates=t,
         replace_parser_functions=f,
     ) == 'a T b T a F b F c'
+
+def test_nested_template_function_replace():
+    def t(_):
+        return 'T'
+    assert parse('{{tt|{{tt}}}}').plain_text(replace_templates=t) == \
+        'T'

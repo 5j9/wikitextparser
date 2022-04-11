@@ -592,7 +592,7 @@ class WikiText:
             remove(b, e)
 
         if callable(replace_templates):
-            for template in self.templates:
+            for template in reversed(self.templates):
                 b, e = template._span_data[:2]
                 lst[b] = replace_templates(template)
                 remove(b + 1, e)
@@ -601,7 +601,7 @@ class WikiText:
                 remove(b, e)
 
         if callable(replace_parser_functions):
-            for pf in self.parser_functions:
+            for pf in reversed(self.parser_functions):
                 b, e = pf._span_data[:2]
                 lst[b] = replace_parser_functions(pf)
                 remove(b + 1, e)

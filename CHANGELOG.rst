@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in ``plain_text``/``remove_markup`` causing duplicate values when replacing nested templates.
+
 v0.49.0
 -------
 - Feature: ``replace_templates`` and ``replace_parser_functions`` parameters of ``plain_text``/``remove_markup`` now accept a function mapping ``Template`` or ``ParserFuction`` objects to desired replacement string. (#103)
