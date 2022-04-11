@@ -6,7 +6,8 @@ from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
-    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union)
+    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union,
+    Callable)
 from warnings import warn
 
 from regex import DOTALL, IGNORECASE, MULTILINE, VERBOSE, \
@@ -558,8 +559,8 @@ class WikiText:
 
     def plain_text(
         self, *,
-        replace_templates=True,
-        replace_parser_functions=True,
+        replace_templates: Union[bool, Callable[['Template'], str]]=True,
+        replace_parser_functions: Union[bool, Callable[['ParserFunction'], str]]=True,
         replace_parameters=True,
         replace_tags=True,
         replace_external_links=True,
@@ -589,12 +590,25 @@ class WikiText:
 
         for (b, e, _, _) in tts['Comment']:
             remove(b, e)
-        if replace_templates:
+
+        if callable(replace_templates):
+            for template in self.templates:
+                b, e = template._span_data[:2]
+                lst[b] = replace_templates(template)
+                remove(b + 1, e)
+        elif replace_templates:
             for (b, e, _, _) in tts['Template']:
                 remove(b, e)
-        if replace_parser_functions:
+
+        if callable(replace_parser_functions):
+            for pf in self.parser_functions:
+                b, e = pf._span_data[:2]
+                lst[b] = replace_parser_functions(pf)
+                remove(b + 1, e)
+        elif replace_parser_functions:
             for (b, e, _, _) in tts['ParserFunction']:
                 remove(b, e)
+
         if replace_external_links:
             for el in parsed.external_links:
                 if el.in_brackets:
@@ -1482,8 +1496,14 @@ def remove_markup(s: str, **kwargs) -> str:
 plain_text_doc = """
 
         Comments are always removed.
-        :keyword replace_templates: Replace `{{template|argument}}` with ``.
-        :keyword replace_parser_functions: Replace `{{#if:a|y|n}}` with ``.
+        :keyword replace_templates:
+            A function mapping `Template` objects to strings.
+            If True, replace `{{template|argument}}`s with `''`.
+            If False, ignore templates.
+        :keyword replace_parser_functions:
+            A function mapping `ParserFunction` objects to strings.
+            If True, replace `{{#parser_function:argument}}`s with `''`.
+            If False, ignore parser functions. 
         :keyword replace_parameters: Replace `{{{a}}}` with `` and {{{a|b}}}
             with `b`.
         :keyword replace_tags: Replace `<s>text</s>` with `text`.

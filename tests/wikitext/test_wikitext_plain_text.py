@@ -65,3 +65,16 @@ def test_extract_unparsable_extension_tags_first():  # 90
 
 def test_self_closing_tag_contents():  # 88
     assert parse('a<ref n=b/>').plain_text() == 'a'
+
+
+def test_replace_fuctions():
+    def t(_):
+        return 'T'
+    def f(_):
+        return 'F'
+    assert parse(
+        'a {{tt}} b {{tt}} a {{#if:}} b {{#if:}} c'
+    ).plain_text(
+        replace_templates=t,
+        replace_parser_functions=f,
+    ) == 'a T b T a F b F c'
