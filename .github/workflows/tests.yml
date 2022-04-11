@@ -32,7 +32,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e . pytest-cov
       - name: Generate coverage report
-        run: pytest --cov=wikitextparser tests --cov-report=xml
+        run: pytest --cov=wikitextparser tests --cov-report=xml --cov-fail-under=80
       - name: Upload coverage to Codecov
         # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v2
