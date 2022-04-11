@@ -559,8 +559,8 @@ class WikiText:
 
     def plain_text(
         self, *,
-        replace_templates: Union[bool, Callable[['Template'], str]]=True,
-        replace_parser_functions: Union[bool, Callable[['ParserFunction'], str]]=True,
+        replace_templates: Union[bool, Callable[['Template'], Optional[str]]]=True,
+        replace_parser_functions: Union[bool, Callable[['ParserFunction'], Optional[str]]]=True,
         replace_parameters=True,
         replace_tags=True,
         replace_external_links=True,
@@ -664,7 +664,7 @@ class WikiText:
                         tb, te = w._match.span(1)  # target span
                         remove(b, b + tb)
                         remove(b + te, e)
-        string = ''.join(c for c in lst if c is not None)
+        string = ''.join([c for c in lst if c is not None])
         if unescape_html_entities:
             string = unescape(string)
         return string
