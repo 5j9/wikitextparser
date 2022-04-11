@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.1
+-------
 - Fixed a bug in ``plain_text``/``remove_markup`` causing duplicate values when replacing nested templates.
 
 v0.49.0
