@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.2
+-------
 - Fixed an issue in ``Template.normal_name()`` causing IndexError on empty/invalid template names, e.g. ``{{Template:}}``. (#105)
 
 v0.49.1
