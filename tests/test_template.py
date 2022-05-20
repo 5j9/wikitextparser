@@ -323,3 +323,7 @@ def test_preserve_spacing_left_and_right():
     t = Template("{{t|a=\tx }}")
     t.set_arg('a', 'y')
     assert t.string == "{{t|a=\ty }}"
+
+
+def test_invalid_normal_name():  # 105
+    assert '' == Template('{{template:}}').normal_name(capitalize=True)

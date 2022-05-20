@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed an issue in ``Template.normal_name()`` causing IndexError on empty/invalid template names, e.g. ``{{Template:}}``. (#105)
+
 v0.49.1
 -------
 - Fixed a bug in ``plain_text``/``remove_markup`` causing duplicate values when replacing nested templates.
