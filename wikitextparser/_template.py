@@ -92,9 +92,7 @@ class Template(SubWikiTextWithArgs):
         name = name.replace('_', ' ')
         if capitalize:
             # Use uppercase for the first letter
-            n0 = name[0]
-            if n0.islower():
-                name = n0.upper() + name[1:]
+            name = name[:1].upper() + name[1:]
         # Remove #anchor
         name, sep, tail = name.partition('#')
         return ' '.join(name.split())
