@@ -339,6 +339,21 @@ The ``remove_markup`` function or ``plain_text`` method can be used to remove wi
     'a c d'
     >>> parse(s).plain_text()
     'a c d'
+    
+Example: Wiktionary
+-------------
+Extract the noun definitions from the wikitext of the word `python <https://en.m.wiktionary.org/wiki/python>`_.
+
+.. code:: python
+    
+    >>> import wikitextparser as wtp
+    >>> wikitext = "==English==\n[[File:Python_natalensis_constricts_a_goat,_Zimbabwe.jpg|thumb|a python ({{taxlink|Python natalensis|species|ver=191222}}) constricting a goat.]]\n\n===Etymology===\n{{der|en|la|pȳthon}}, from {{der|en|grc|Πύθων|}}, the name of the mythological enormous serpent at Delphi slain by Apollo, probably from {{m|grc|Πυθώ}}, older name of Delphi.\n\n===Pronunciation===\n* {{a|UK}} {{IPA|en|/ˈpaɪθən/}}\n* {{a|US}} {{IPA|en|/ˈpaɪθɑːn/}}\n* {{audio|en|En-au-python.ogg|Audio (AU)}}\n\n===Noun===\n{{en-noun}}\n\n# A type of large [[constrict]]ing [[snake]].\n# {{lb|en|vulgar|slang}} [[penis]]"
+    >>> sections = wtp.parse(wikitext).get_sections(include_subsections=False, level=3)
+    >>> for s in sections:
+    ...     if s.title == 'Noun':
+    ...         nouns = s.get_lists(pattern='\#')[0].plain_text().split('\n') # look-up: plain_text() & remove_markups()
+    >>> nouns
+    ['# A type of large constricting snake.', '#  penis']
 
 Compared with mwparserfromhell
 ==============================
