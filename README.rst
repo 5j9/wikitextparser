@@ -351,7 +351,15 @@ Extract the noun definitions from the wikitext of the word `python <https://en.m
     >>> sections = wtp.parse(wikitext).get_sections(include_subsections=False, level=3)
     >>> for s in sections:
     ...     if s.title == 'Noun':
-    ...         nouns = s.get_lists(pattern='\#')[0].plain_text().split('\n') # look-up: plain_text() & remove_markups()
+    ...         nouns = s.get_lists(pattern='\#')[0].plain_text().split('\n')
+    ['# A type of large constricting snake.', '#  penis']
+    >>> nouns
+    
+Or simply:
+
+.. code:: python
+
+    >>> nouns = [s.get_lists(pattern='\#')[0].plain_text().split('\n') for s in sections if s.title=='Noun'][0]
     >>> nouns
     ['# A type of large constricting snake.', '#  penis']
 
