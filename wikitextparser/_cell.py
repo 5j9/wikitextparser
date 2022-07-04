@@ -249,7 +249,7 @@ class Cell(SubWikiTextWithAttrs):
                 if n == encoded_attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
                     q = 1 if attrs_m.string[ve] in b'"\'' else 0
-                    self[vs - q:ve + q] = '"{}"'.format(attr_value)
+                    self[vs - q:ve + q] = f'"{attr_value}"'
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs')

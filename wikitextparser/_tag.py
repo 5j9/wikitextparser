@@ -95,13 +95,12 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
                 q = 1 if match.string[ve] in b'"\'' else 0
-                self[vs - q:ve + q] = '"{}"'.format(attr_value)
+                self[vs - q:ve + q] = f'"{attr_value}"'
                 return
         # The attr_name is new, add a new attribute.
-        fmt = ' {}="{}"' if attr_value else ' {}'
         self.insert(
             match.end('attr_insert'),
-            fmt.format(attr_name, attr_value)
+            f' {attr_name}="{attr_value}"' if attr_value else f' {attr_name}'
         )
         return
 

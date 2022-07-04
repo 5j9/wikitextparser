@@ -191,12 +191,10 @@ class WikiText:
                 byte_array[-1] = tail
 
     def __str__(self) -> str:
-        """Return self-object as a string."""
         return self.string
 
     def __repr__(self) -> str:
-        """Return the string representation of self."""
-        return '{0}({1})'.format(type(self).__name__, repr(self.string))
+        return f'{type(self).__name__}({repr(self.string)})'
 
     def __contains__(self, value: Union[str, 'WikiText']) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
