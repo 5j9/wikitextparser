@@ -173,8 +173,7 @@ END_TAG_PATTERN = rb'(?<end_tag></{name}(?:>|[' + SPACE_CHARS + rb'][^>]*+>))'
 START_TAG_PATTERN = ( # noqa
     rb'(?<start_tag>'
         rb'<{name}' + ATTRS_PATTERN +
-        rb'[' + SPACE_CHARS + rb']*+'
-        rb'(?:(?<self_closing>/[' + SPACE_CHARS + b']*+>)|>)'
+        rb'[' + SPACE_CHARS + rb']*+>'
     rb')')
 HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(b'{name}', _HTML_TAG_NAME, 1)).finditer

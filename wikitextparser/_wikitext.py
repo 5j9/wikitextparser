@@ -606,7 +606,7 @@ class WikiText:
         if callable(replace_parser_functions):
             for pf in self.parser_functions:
                 b, e = pf._span_data[:2]
-                if lst[b] is None: # overwrriten
+                if lst[b] is None:  # already overwritten
                     continue
                 lst[b] = replace_parser_functions(pf)
                 remove(b + 1, e)
@@ -1350,8 +1350,8 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         spans_append = spans.append
         for start_match in reversed_start_matches:
-            if start_match['self_closing']:
-                # Don't look for the end tag
+            if start_match[0].rstrip(b' \t\n>')[-1] == 47:  # ord('/') == 47
+                # Self-closing tag. Don't look for the end tag.
                 ms, me = start_match.span()
                 span = [ss + ms, ss + me, None, shadow_copy[ms:me]]
             else:

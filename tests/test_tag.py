@@ -21,30 +21,23 @@ def test_start_tag_patterns():
     assert start_tag_finder(b'<b>').groupdict() == {
         'name': b'b', 'attr': None, 'quote': None,
         'start_tag': b'<b>', 'attr_name': None,
-        'self_closing': None, 'attr_value': None, 'attr_insert': b'',}
+        'attr_value': None, 'attr_insert': b'',}
     assert start_tag_finder(b'<b t>').groupdict() == {
         'name': b'b', 'attr': b' t', 'quote': None,
         'start_tag': b'<b t>', 'attr_name': b't', 'attr_value': b'',
-        'self_closing': None, 'attr_insert': b'',}
+        'attr_insert': b'',}
     assert start_tag_finder(b'<div value=yes>').groupdict() == {
         'name': b'div', 'attr': b' value=yes', 'quote': None,
         'start_tag': b'<div value=yes>', 'attr_name': b'value',
-        'attr_value': b'yes', 'self_closing': None, 'attr_insert': b'',}
+        'attr_value': b'yes', 'attr_insert': b'',}
     assert start_tag_finder(b"<div class='body'>").groupdict() == {
         'name': b'div', 'attr': b" class='body'", 'quote': b"'",
         'start_tag': b"<div class='body'>", 'attr_name': b'class',
-        'attr_value': b'body', 'self_closing': None, 'attr_insert': b'',}
-    # This is not standard HTML5, but could be useful to have.
-    # ae(
-    #     START_TAG_MATCH('<s style=>').groupdict(),
-    #     {'name': 's', 'attr': 'style=', 'quote': None,
-    #      'start': '<s style=>', 'attr_name': 'style', 'attr_value': ''
-    #      'self_closing': None}
-    # )
+        'attr_value': b'body', 'attr_insert': b'',}
     assert start_tag_finder(b"<table a1=v1 a2=v2>").capturesdict() == {
         'attr_name': [b'a1', b'a2'], 'start_tag': [b'<table a1=v1 a2=v2>'],
         'attr': [b' a1=v1', b' a2=v2'], 'quote': [],
-        'attr_value': [b'v1', b'v2'], 'self_closing': [],
+        'attr_value': [b'v1', b'v2'],
         'name': [b'table'],  'attr_insert': [b'']}
 
 
