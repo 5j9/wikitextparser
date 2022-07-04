@@ -1350,6 +1350,9 @@ class WikiText:
         for start_match in reversed_start_matches:
             if start_match[0].rstrip(b' \t\n>')[-1] == 47:  # ord('/') == 47
                 # Self-closing tag. Don't look for the end tag.
+                # todo: some self-closing tags actually should be treated
+                # as start tag in HTML5, see:
+                # https://stackoverflow.com/questions/3558119/
                 ms, me = start_match.span()
                 span = [ss + ms, ss + me, None, shadow_copy[ms:me]]
             else:
