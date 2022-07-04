@@ -70,14 +70,17 @@ def test_self_closing_tag_contents():  # 88
 def test_replace_fuctions():
     def t(_):
         return 'T'
+
     def f(_):
         return 'F'
+
     assert parse(
         'a {{tt}} b {{tt}} a {{#if:}} b {{#if:}} c'
     ).plain_text(
         replace_templates=t,
         replace_parser_functions=f,
     ) == 'a T b T a F b F c'
+
 
 def test_nested_template_function_replace():
     def t(_):
@@ -86,14 +89,13 @@ def test_nested_template_function_replace():
         'T'
 
 
-def test_replace_nested_template_fuctions():
+def test_replace_nested_template_functions():
     def t(_):
         return 'T'
-    def f(_):
-        return 'F'
+
     assert parse(
         '{{tt|{{#if:}}}}'
     ).plain_text(
         replace_templates=t,
-        replace_parser_functions=f,
+        replace_parser_functions=False,
     ) == 'T'
