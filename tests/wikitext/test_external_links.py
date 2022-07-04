@@ -137,6 +137,11 @@ def test_external_link_containing_wikilink():
     assert parse(s).external_links[0].string == s
 
 
+def test_wikilinks_and_ext_tags_can_be_part_of_text_but_not_url():  # 109
+    assert not parse('[//<ref></ref>]').external_links
+    assert not parse('[//[[a]]]').external_links
+
+
 def test_bare_external_link_must_have_scheme():
     """Bare external links must have scheme."""
     assert len(parse('//mediawiki.org').external_links) == 0

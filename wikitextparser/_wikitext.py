@@ -533,9 +533,10 @@ class WikiText:
         ss, se, _, _ = self._span_data
         byte_array = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
         subspans = self._subspans
-        for type_ in 'Comment', 'WikiLink':
-            for s, e, _, _ in subspans(type_):
-                byte_array[s:e] = (e - s) * b'_'
+        for s, e, _, _ in subspans('Comment'):
+            byte_array[s:e] = (e - s) * b'_'
+        for s, e, _, _ in subspans('WikiLink'):
+            byte_array[s:e] = (e - s) * b' '
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
@@ -1112,7 +1113,7 @@ class WikiText:
         for s, e, _, _ in self._subspans('ExtensionTag'):
             if PARSABLE_TAG_EXTENSIONS_MATCH(el_shadow, s, e):
                 _extract(s, e)
-            el_shadow[s:e] = (e - s) * b'_'
+            el_shadow[s:e] = (e - s) * b' '
         _extract(None, None)
         return external_links
 
