@@ -149,9 +149,9 @@ ATTR_VAL = (
 ATTRS_PATTERN = ( # noqa
     rb'(?<attr>'
         rb'[' + SPACE_CHARS + rb']++(?>' + ATTR_NAME + ATTR_VAL + rb')'
-        # Invalid attribute. Todo: could the / be removed? see
-        # https://stackoverflow.com/a/3558200/2705757
-        + rb'|(?>[^>/]++|/(?!\s*+>))++'
+        # See https://stackoverflow.com/a/3558200/2705757 for how HTML5
+        # treats self-closing marks.
+        + rb'|[^>]++'
     rb')*+(?<attr_insert>)')
 ATTRS_MATCH = regex_compile(
     # Leading space is not required at the start of the attribute string.

@@ -32,10 +32,9 @@ TAG_FULLMATCH = regex_compile(
     <(?<name>[A-Za-z0-9]++)''' + ATTRS_PATTERN + rb'''
     [''' + SPACE_CHARS + rb''']*+
     (?>
-        (?<self_closing>/\s*>)
-        |>(?<contents>.*)''' + END_TAG_PATTERN.replace(
+        >(?<contents>.*)''' + END_TAG_PATTERN.replace(
             rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)') +  # noqa
-        rb'''|>  # only start; no end tag
+        rb'''|>  # only start; no end tag; could be self-closing
     )''', DOTALL | VERBOSE).fullmatch
 
 
@@ -182,8 +181,7 @@ class Tag(SubWikiTextWithAttrs):
             self[start:end] = contents
         else:
             # This is a self-closing tag.
-            s, e = match.span('self_closing')
-            self[s:e] = '>{0}</{1}>'.format(contents, match['name'].decode())
+            self[-1:] = f'>{contents}</{match["name"].decode()}>'
 
     @property
     def parsed_contents(self) -> SubWikiText:

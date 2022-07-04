@@ -76,14 +76,16 @@ def test_contents():
     assert t.contents == '\nc\n'
     t.contents = 'n'
     assert t.string == '<t>n</t>'
+
     t = Tag('<t></t>')
     assert t.contents == ''
     t.contents = 'n'
     assert t.string == '<t>n</t>'
+
     t = Tag('<t/>')
     assert t.contents == ''
     t.contents = 'n'
-    assert t.string == '<t>n</t>'
+    assert t.string == '<t/>n</t>'
 
 
 def test_get_attr_value():
@@ -165,3 +167,11 @@ def test_ref_with_invalid_attr():  # 47,48
     assert Tag('<ref name="a"3></ref>').attrs == {'name': 'a'}
     assert Tag('<ref name=""></ref>').attrs == {'name': ''}
     assert Tag('<ref "16/32"></ref>').attrs == {}
+
+
+def test_ref_tag_name():  # 108
+    # This is actually an invalid syntax on Mediawiki, but the same syntax
+    # is valid for `pre`, `noinclude`, and `includeonly`.
+    # I think it should be valid and the / should be treated as an invalid
+    # attribute and be ignored like in normal HTML tags.
+    assert Tag('<ref/ ></ref>').name == 'ref'

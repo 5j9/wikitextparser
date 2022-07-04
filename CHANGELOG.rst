@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Fixed an issue in handling of / in tags. (#108)
+- Fixed a false-positive detection of invalid external links. (#109)
+
 v0.49.2
 -------
 - Fixed an issue in ``Template.normal_name()`` causing IndexError on empty/invalid template names, e.g. ``{{Template:}}``. (#105)
