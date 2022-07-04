@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.3
+-------
 - Fixed an issue in handling of / in tags. (#108)
 - Fixed a false-positive detection of invalid external links. (#109)
 
