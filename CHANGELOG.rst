@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.49.4
+-------
 - Fixed: Handle empty tables instead of raising IndexError. (#106)
 
 v0.49.3
