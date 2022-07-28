@@ -97,5 +97,5 @@ def test_replace_nested_template_functions():
         '{{tt|{{#if:}}}}'
     ).plain_text(
         replace_templates=t,
-        replace_parser_functions=False,
+        replace_parser_functions=t,  # tests for
     ) == 'T'
