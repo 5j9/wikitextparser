@@ -563,3 +563,7 @@ def test_comment_line():  # 98
         '\n<!---->'
         '\n|b'
         '\n|}').data() == [['a'], ['b']]
+
+
+def test_partially_invalid_table():  # 107
+    assert Table('{|\n}\n').data() == [[]]

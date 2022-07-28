@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed: Handle empty tables instead of raising IndexError. (#106)
+
 v0.49.3
 -------
 - Fixed an issue in handling of / in tags. (#108)

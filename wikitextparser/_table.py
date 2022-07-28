@@ -90,10 +90,14 @@ class Table(SubWikiTextWithAttrs):
         pos = table_shadow.find(10)  # ord('\n')
         lsp = _lstrip_increase(table_shadow, pos)
         # Remove everything until the first row
-        while table_shadow[lsp] not in b'!|':
-            nlp = table_shadow.find(10, lsp)  # ord('\n')
-            pos = nlp
-            lsp = _lstrip_increase(table_shadow, pos)
+        try:
+            # while condition may raise IndexError of table is empty
+            while table_shadow[lsp] not in b'!|':
+                nlp = table_shadow.find(10, lsp)  # ord('\n')
+                pos = nlp
+                lsp = _lstrip_increase(table_shadow, pos)
+        except IndexError:
+            return [[]]
         # Start of the first row
         match_table = []
         pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
