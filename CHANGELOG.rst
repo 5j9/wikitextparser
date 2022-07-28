@@ -1,6 +1,6 @@
 v0.49.4
 -------
-- Fixed: Handle empty tables instead of raising IndexError. (#106)
+- Fixed: Handle empty tables instead of raising IndexError. (#107)
 
 v0.49.3
 -------
