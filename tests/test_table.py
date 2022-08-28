@@ -567,3 +567,8 @@ def test_comment_line():  # 98
 
 def test_partially_invalid_table():  # 107
     assert Table('{|\n}\n').data() == [[]]
+
+
+def test_data_with_carriage_return():  # 107
+    # this used to hang
+    assert Table('{|\n}\n\r').data() == [[]]

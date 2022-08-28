@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed: Infinite loop on parsing tables containing ``\r``.
+
 v0.49.4
 -------
 - Fixed: Handle empty tables instead of raising IndexError. (#107)
