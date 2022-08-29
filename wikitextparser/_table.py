@@ -314,7 +314,7 @@ class Table(SubWikiTextWithAttrs):
                 self[m.end('preattrs'):end] = attrs
 
     @property
-    def row_attrs(self) -> list[dict]:
+    def row_attrs(self) -> List[dict]:
         """Row attributes.
 
         Use the setter of this property to set attributes for all rows.
@@ -335,7 +335,7 @@ class Table(SubWikiTextWithAttrs):
         return attrs
 
     @row_attrs.setter
-    def row_attrs(self, attrs: list[dict]):
+    def row_attrs(self, attrs: List[dict]):
         for row_match, attrs_dict in reversed(
             [*zip(FIND_ROWS(self._table_shadow), attrs)]
         ):
