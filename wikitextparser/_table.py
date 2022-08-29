@@ -3,6 +3,7 @@
 
 from bisect import insort_right
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
+from collections.abc import Mapping
 
 from regex import DOTALL, VERBOSE, compile as rc
 
@@ -335,7 +336,7 @@ class Table(SubWikiTextWithAttrs):
         return attrs
 
     @row_attrs.setter
-    def row_attrs(self, attrs: List[dict]):
+    def row_attrs(self, attrs: List[Mapping]):
         for row_match, attrs_dict in reversed(
             [*zip(FIND_ROWS(self._table_shadow), attrs)]
         ):
