@@ -148,15 +148,12 @@ ATTR_VAL = (
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTRS_PATTERN = ( # noqa
     rb'(?<attr>'
-        rb'[' + SPACE_CHARS + rb']++(?>' + ATTR_NAME + ATTR_VAL + rb')'
+        rb'[' + SPACE_CHARS + rb']*+(?>' + ATTR_NAME + ATTR_VAL + rb')'
         # See https://stackoverflow.com/a/3558200/2705757 for how HTML5
         # treats self-closing marks.
         + rb'|[^>]++'
     rb')*+(?<attr_insert>)')
-ATTRS_MATCH = regex_compile(
-    # Leading space is not required at the start of the attribute string.
-    ATTRS_PATTERN.replace(b'++', b'*+', 1),
-).match
+ATTRS_MATCH = regex_compile(ATTRS_PATTERN).match
 # VOID_ELEMENTS = (
 #     'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
 #     'link', 'meta', 'param', 'source', 'track', 'wbr'

@@ -157,7 +157,7 @@ def test_ignore_case():
 
 
 def test_ref_with_invalid_attr():  # 47,48
-    assert Tag('<ref name="a"3></ref>').attrs == {'name': 'a'}
+    assert Tag('<ref name="a"3></ref>').attrs == {'name': 'a', '3': ''}
     assert Tag('<ref name=""></ref>').attrs == {'name': ''}
     assert Tag('<ref "16/32"></ref>').attrs == {}
 
