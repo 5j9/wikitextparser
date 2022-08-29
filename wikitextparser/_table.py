@@ -4,7 +4,7 @@
 from bisect import insort_right
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
-from regex import DOTALL, VERBOSE, compile as regex_compile
+from regex import DOTALL, VERBOSE, compile as rc
 
 from ._cell import (
     Cell, INLINE_HAEDER_CELL_MATCH, INLINE_NONHAEDER_CELL_MATCH,
@@ -13,7 +13,7 @@ from ._spans import ATTRS_MATCH
 from ._tag import SubWikiTextWithAttrs
 from ._wikitext import WS
 
-CAPTION_MATCH = regex_compile(
+CAPTION_MATCH = rc(
     rb"""
     # Everything until the caption line
     (?P<preattrs>
@@ -39,12 +39,12 @@ CAPTION_MATCH = regex_compile(
 T = TypeVar('T')
 
 
-HEAD_DIGITS = regex_compile(rb'\s*+\d+').match
+HEAD_DIGITS = rc(rb'\s*+\d+').match
 
 # Captions are optional and only one should be placed between table-start
 # and the first row. Others captions are not part of the table and will
 # be ignored.
-FIRST_NON_CAPTION_LINE = regex_compile(br'\n[\t \0]*+(\|(?!\+)|!)').search
+FIRST_NON_CAPTION_LINE = rc(br'\n[\t \0]*+(\|(?!\+)|!)').search
 
 
 def head_int(value):
