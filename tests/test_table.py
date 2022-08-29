@@ -572,3 +572,94 @@ def test_partially_invalid_table():  # 107
 def test_data_with_carriage_return():  # 107
     # this used to hang
     assert Table('{|\n}\n\r').data() == [[]]
+
+
+def test_row_attrs_getter():
+    # simple case
+    assert Table(
+        '{|\n'
+        '|- style="background: black;"\n'
+        '| cell1\n'
+        '|- style="background: white;"\n'
+        '| cell2\n'
+        '|}'
+    ).row_attrs == [
+        {'style': 'background: black;'},
+        {'style': 'background: white;'},
+    ]
+
+    # multiple attrs on a row
+    assert Table(
+        '{|\n'
+        '|-style="color: red;" bgcolor=yellow"\n'
+        '| cell1\n'
+        '|}'
+    ).row_attrs == [
+        {'style': 'color: red;', 'bgcolor': 'yellow'},
+    ]
+
+    # test middle row with no attrs
+    assert Table(
+        '{|\n'
+        '|- style="background: black;"\n'
+        '| cell1\n'
+        '|-\n'
+        '| cell2\n'
+        '|- style="background: white;"\n'
+        '| cell3\n'
+        '|}'
+    ).row_attrs == [
+        {'style': 'background: black;'},
+        {},
+        {'style': 'background: white;'},
+    ]
+
+
+def test_row_attrs_containing_comment():
+    assert Table(
+        '{|\n'
+        '|- style="color: red;" <!--comment--> bgcolor=yellow\n'
+        '| cell1\n'
+        '|}'
+    ).row_attrs == [
+        {'style': 'color: red;', 'bgcolor': 'yellow'},
+    ]
+
+
+def test_row_attrs_containing_template():
+    assert Table(
+        '{|\n'
+        '|- style={{text|"color: red;"}}\n'
+        '| cell1\n'
+        '|}'
+    ).row_attrs == [
+        {'style': '{{text|"color: red;"}}'},
+    ]
+
+
+def test_row_attrs_setter():
+    table = Table(
+        '{|\n'
+        '|- style="background: black;"\n'
+        '| cell1\n'
+        '|-\n'
+        '| cell2\n'
+        '|- style="background: white;"\n'
+        '| cell3\n'
+        '|}'
+    )
+    table.row_attrs = [
+        {'style': 'color: white;'},
+        {'style': 'color: black;'},
+        {},
+    ]
+    assert table.string == (
+        '{|\n'
+        '|- style="color: white;"\n'
+        '| cell1\n'
+        '|- style="color: black;"\n'
+        '| cell2\n'
+        '|-\n'
+        '| cell3\n'
+        '|}'
+    )

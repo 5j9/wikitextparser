@@ -1,5 +1,6 @@
 Unreleased
 ----------
+- Feat: ``Table`` objects now have ``row_attrs`` property.
 - Fixed: Infinite loop on parsing tables containing ``\r``. (this is just to prevent infinite loop, CRLF line endings are not supported)
 
 v0.49.4

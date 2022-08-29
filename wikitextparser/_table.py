@@ -37,6 +37,7 @@ CAPTION_MATCH = rc(
     (?:\n[\|\!]|\|\|)
     """, DOTALL | VERBOSE).match
 T = TypeVar('T')
+FIND_ROWS = rc(rb'\|-(.*)').finditer
 
 
 HEAD_DIGITS = rc(rb'\s*+\d+').match
@@ -311,6 +312,39 @@ class Table(SubWikiTextWithAttrs):
             end = m.end('attrs')
             if end != -1:
                 self[m.end('preattrs'):end] = attrs
+
+    @property
+    def row_attrs(self) -> list[dict]:
+        """Row attributes.
+
+        Use the setter of this property to set attributes for all rows.
+        Note that it will overwrite all the existing attr values.
+        """
+        shadow = self._table_shadow
+        string = self.string
+        attrs = []
+        append = attrs.append
+        for row_match in FIND_ROWS(shadow):
+            s, e = row_match.span(1)
+            spans = ATTRS_MATCH(shadow, s, e).spans
+            append({
+                string[ns: ne]: string[vs: ve]
+                for (ns, ne), (vs, ve) in
+                zip(spans('attr_name'), spans('attr_value'))
+            })
+        return attrs
+
+    @row_attrs.setter
+    def row_attrs(self, attrs: list[dict]):
+        for row_match, attrs_dict in reversed(
+            [*zip(FIND_ROWS(self._table_shadow), attrs)]
+        ):
+            s, e = row_match.span(1)
+            del self[s: e]
+            self.insert(s, ''.join([
+                f' {name}="{value}"' if value else f' {name}'
+                for name, value in attrs_dict.items()
+            ]))
 
 
 def _apply_attr_spans(
