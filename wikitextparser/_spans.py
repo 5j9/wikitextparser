@@ -2,7 +2,7 @@
 from functools import partial
 from typing import Callable, Dict, Optional
 
-from regex import DOTALL, REVERSE, compile as regex_compile, IGNORECASE
+from regex import DOTALL, REVERSE, compile as regex_compile, IGNORECASE, Match
 
 from ._config import (
     _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
@@ -265,7 +265,7 @@ def _parse_sub_spans(
         byte_array[ms:me] = blank_brackets(byte_array[ms:me])
     while True:
         while True:
-            match = None
+            match: Optional[Match] = None
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
