@@ -1,6 +1,6 @@
 v0.50.2
 -------
-- Fixed a bug in ``WikiText.pformat`` which used to cause ``IndexError`` when a parser function which had no argument, e.g. for ``{{FULLPAGENAMEE}}``.
+- Fixed a bug in ``WikiText.pformat`` which used to cause ``IndexError`` on a parser function which had no argument, e.g. for ``{{FULLPAGENAMEE}}``.
 
 v0.50.0
 -------
