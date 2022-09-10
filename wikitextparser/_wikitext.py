@@ -789,9 +789,7 @@ class WikiText:
                         ' ' * (max_name_len - arg_name_len))
                     arg.value = ' ' + stripped_value + newline_indent
 
-        functions = parsed.parser_functions
-        while functions:
-            func = functions.pop()
+        for func in reversed(parsed.parser_functions):
             name = func.name
             ls_name = name.lstrip(ws)
             lws = len(name) - len(ls_name)
@@ -806,6 +804,8 @@ class WikiText:
                 # All args of #invoke are also whitespace-sensitive.
                 continue
             args = func.arguments
+            if not args:
+                continue
             # Whitespace, including newlines, tabs, and spaces is stripped
             # from the beginning and end of all the parameters of
             # parser functions. See:

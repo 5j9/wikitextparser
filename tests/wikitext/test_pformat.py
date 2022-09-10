@@ -286,13 +286,16 @@ def test_colon_in_tl_name():
 def test_parser_function_with_an_empty_argument():
     """The result might seem a little odd, but this is a very rare case.
 
-        The code could benefit from a little improvement.
-
-        """
+    The code could benefit from a little improvement.
+    """
     assert (
         '{{#rel2abs:\n'
         '    \n'
         '}}') == parse('{{ #rel2abs: }}').pformat()
+
+
+def test_parser_function_with_no_args():
+    assert ParserFunction('{{FULLPAGENAMEE}}').pformat() == '{{FULLPAGENAMEE}}'
 
 
 def test_pf_one_kw_arg():
