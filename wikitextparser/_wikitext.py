@@ -788,11 +788,10 @@ class WikiText:
                         ' ' + stripped_name + ' ' +
                         ' ' * (max_name_len - arg_name_len))
                     arg.value = ' ' + stripped_value + newline_indent
-        i = 0
+
         functions = parsed.parser_functions
-        while i < len(functions):
-            func = functions[i]
-            i += 1
+        while functions:
+            func = functions.pop()
             name = func.name
             ls_name = name.lstrip(ws)
             lws = len(name) - len(ls_name)
@@ -827,7 +826,6 @@ class WikiText:
                     # an ordinary string.
                     arg.name = newline_indent + arg.name.lstrip(ws)
                     arg.value = arg.value.rstrip(ws) + short_indent
-                functions = parsed.parser_functions
                 continue
             # Special formatting for the first argument
             arg = args[0]
@@ -851,7 +849,7 @@ class WikiText:
             else:
                 arg.name = ' ' + arg.name.lstrip(ws)
                 arg.value = arg.value.rstrip(ws) + short_indent
-            functions = parsed.parser_functions
+
         return parsed.string
 
     @property
