@@ -1,3 +1,4 @@
+from operator import attrgetter
 from typing import Dict, Iterable, List, Match, MutableSequence, Union
 from warnings import warn
 
@@ -11,19 +12,28 @@ SUBLIST_PATTERN = (  # noqa
         rb'[:;#*].*+'
         rb'(?>\n|\Z)'
     rb')*+')
+SUBLIST_WITH_SECOND_PATTERN = (  # noqa
+    rb'[*#;:].*+(?>\n|\Z)'
+    rb'(?>'
+        rb'(?&pattern)[*#;:].*+(?>\n|\Z)'
+    rb')*+')
 LIST_PATTERN_FORMAT = (  # noqa
     rb'(?<fullitem>^'
         rb'(?<pattern>{pattern})'
+    rb'(?>'
         rb'(?(?<=;\s*+)'
             # mark inline definition as an item
             rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
             rb'(?>\n|\Z)' + SUBLIST_PATTERN +
-            rb'|'
+        rb'|'
             # non-definition
-            rb'(?<item>.*+)'
-            rb'(?>\n|\Z)' + SUBLIST_PATTERN +
+            rb'(?>'
+                rb'(?<item>)' + SUBLIST_WITH_SECOND_PATTERN +
+                rb'|(?<item>.*+)(?>\n|\Z)' + SUBLIST_PATTERN +
+            rb')'
         rb')'
-    rb')++')
+    rb'))++'
+)
 
 
 class WikiList(SubWikiText):
@@ -80,9 +90,9 @@ class WikiList(SubWikiText):
     def items(self) -> List[str]:
         """Return items as a list of strings.
 
-        Don't include sub-items and the start pattern.
+        Do not include sub-items and the start pattern.
         """
-        items = []  # type: List[str]
+        items : List[str] = []
         append = items.append
         string = self.string
         match = self._match
@@ -119,7 +129,7 @@ class WikiList(SubWikiText):
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 
-        :param i: The index if the item which its sub-lists are desired.
+        :param i: The index of the item which its sub-lists are desired.
         :param pattern: The starting symbol for the desired sub-lists.
             The `pattern` of the current list will be automatically added
             as prefix.
@@ -141,21 +151,22 @@ class WikiList(SubWikiText):
             for pattern in patterns:
                 for lst in get_lists(self_pattern + pattern):
                     sublists_append(lst)
-            return sublists
-        # Only return sub-lists that are within the given item
-        match = self._match
-        fullitem_spans = match.spans('fullitem')
-        ss = self._span_data[0]
-        ms = match.start()
-        s, e = fullitem_spans[i]
-        e -= ms - ss
-        s -= ms - ss
-        for pattern in patterns:
-            for lst in get_lists(self_pattern + pattern):
-                # noinspection PyProtectedMember
-                ls, le, _, _ = lst._span_data
-                if s < ls and le <= e:
-                    sublists_append(lst)
+        else:
+            # Only return sub-lists that are within the given item
+            match = self._match
+            fullitem_spans = match.spans('fullitem')
+            ss = self._span_data[0]
+            ms = match.start()
+            s, e = fullitem_spans[i]
+            e -= ms - ss
+            s -= ms - ss
+            for pattern in patterns:
+                for lst in get_lists(self_pattern + pattern):
+                    # noinspection PyProtectedMember
+                    ls, le, _, _ = lst._span_data
+                    if s < ls and le <= e:
+                        sublists_append(lst)
+        sublists.sort(key=attrgetter('_span_data'))
         return sublists
 
     def convert(self, newstart: str) -> None:

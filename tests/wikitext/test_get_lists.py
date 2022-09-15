@@ -4,8 +4,7 @@ from wikitextparser import ParserFunction, parse
 
 
 def test_get_lists_with_no_pattern():
-    wikitext = '*a\n;c:d\n#b'
-    parsed = parse(wikitext)
+    parsed = parse('*a\n;c:d\n#b')
     with warns(DeprecationWarning):
         # noinspection PyDeprecation
         lists = parsed.lists()
@@ -38,3 +37,70 @@ def test_get_lists_deprecation():
 def test_definition_list_with_external_link():  # 91
     assert parse("; http://a.b :d\n").get_lists()[0].items == \
         [' http://a.b ', 'd']
+
+
+def test_first_item_is_list():  # 70
+    l0 = parse(
+        'a\n'
+        '###b\n'
+        '###c\n'
+        '##d\n'
+        '#e\n'
+        'f'
+    ).get_lists()[0]
+    assert l0.fullitems == ['###b\n###c\n##d\n', '#e\n']
+    assert l0.items == ['', 'e']
+    l0_0 = l0.get_lists()[0]
+    assert l0_0.level == 2
+    assert l0_0.pattern == r'\#\#'
+    assert l0_0.items == ['', 'd']
+    assert l0_0.fullitems == ['###b\n###c\n', '##d\n']
+
+
+def test_listitems_with_different_patterns():
+    # <ol>
+    #     <li>
+    #         <ol>
+    #             <li>
+    #                 <ol>
+    #                     <li>b</li>
+    #                 </ol>
+    #                 <ul>
+    #                     <li>c</li>
+    #                 </ul>
+    #                 <dl>
+    #                     <dt>d</dt>
+    #                 </dl>
+    #                 <ol>
+    #                     <li>e</li>
+    #                 </ol>
+    #             </li>
+    #             <li>f</li>
+    #         </ol>
+    #     </li>
+    #     <li>g</li>
+    # </ol>
+    lists = parse(
+        'a\n'
+        '###b\n'
+        '##*c\n'
+        '##;d\n'
+        '###e\n'
+        '##f\n'
+        '#g\n'
+        'h\n'
+    ).get_lists()
+    assert len(lists) == 1
+    l0 = lists[0]
+    assert l0.items == ['', 'g']
+    assert l0.fullitems == ['###b\n##*c\n##;d\n###e\n##f\n', '#g\n']
+
+    lists = l0.get_lists()
+    assert len(lists) == 1
+    l0_0 = lists[0]
+    assert l0_0.items == ['', 'f']
+    assert l0_0.fullitems == ['###b\n##*c\n##;d\n###e\n', '##f\n']
+
+    lists = l0_0.get_lists()
+    assert len(lists) == 4
+    assert [l.items for l in lists] == [['b'], ['c'], ['d'], ['e']]

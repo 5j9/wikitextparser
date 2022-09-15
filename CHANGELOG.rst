@@ -1,3 +1,8 @@
+Unreleased
+----------
+- ``WikiText.get_lists`` now correctly detects lists with a missing level (#70)
+- ``WikiList.sublists`` are now returned in sorted order.
+
 v0.50.2
 -------
 - Fixed a bug in ``WikiText.pformat`` which used to cause ``IndexError`` on a parser function which had no argument, e.g. for ``{{FULLPAGENAMEE}}``.
