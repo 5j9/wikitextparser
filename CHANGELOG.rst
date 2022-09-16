@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.51.0
+-------
 - ``WikiText.get_lists`` now correctly detects lists with a missing level (#70)
 - ``WikiList.sublists`` are now returned in sorted order.
 
