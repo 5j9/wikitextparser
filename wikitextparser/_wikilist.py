@@ -6,6 +6,7 @@ from regex import MULTILINE, escape, fullmatch
 
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
+# See includes/parser/BlockLevelPass.php for how MW parses list blocks.
 SUBLIST_PATTERN = (  # noqa
     rb'(?>^'
         rb'(?&pattern)'
@@ -164,7 +165,7 @@ class WikiList(SubWikiText):
                 for lst in get_lists(self_pattern + pattern):
                     # noinspection PyProtectedMember
                     ls, le, _, _ = lst._span_data
-                    if s < ls and le <= e:
+                    if s <= ls and le <= e:
                         sublists_append(lst)
         sublists.sort(key=attrgetter('_span_data'))
         return sublists

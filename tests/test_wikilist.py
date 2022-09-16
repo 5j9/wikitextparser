@@ -167,3 +167,8 @@ def test_external_link_colon_shadow():  # 91
     assert parse("===abc===\n; https://github.com : definition\n").get_lists(
         r'[:;]')[0]._list_shadow == bytearray(
             b'; __________________ : definition\n')
+
+
+def test_sublist_for_missing_level():
+    assert parse('**1\n**2\n').get_lists()[0].sublists(0)[0].items ==\
+        ['1', '2']
