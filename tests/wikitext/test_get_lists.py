@@ -1,4 +1,4 @@
-from pytest import warns
+from pytest import warns, mark
 
 from wikitextparser import ParserFunction, parse
 
@@ -103,4 +103,23 @@ def test_listitems_with_different_patterns():
 
     lists = l0_0.get_lists()
     assert len(lists) == 4
-    assert [l.items for l in lists] == [['b'], ['c'], ['d'], ['e']]
+    assert [li.items for li in lists] == [['b'], ['c'], ['d'], ['e']]
+
+
+@mark.xfail
+def test_dl_with_second_pattern():
+    # <dl>
+    #     <dt>a</dt>
+    #     <dd>
+    #         <dl>
+    #             <dt>1</dt>
+    #             <dt>b</dt>
+    #             <dd>2</dd>
+    #         </dl>
+    #     </dd>
+    # </dl>
+    # <dl>
+    #     <dt>c</dt>
+    #     <dd>3</dd>
+    # </dl>
+    assert len(parse(';;a:1\n;;b:2\n;c:3\n').get_lists()) == 2
