@@ -448,24 +448,24 @@ def test_wikilinks_priority():
 
 
 def test_comments_in_between_tokens():
-    def aw(w: bytes, r: bytes):
+    def assert_wikilink(w: bytes, r: bytes):
         s, e = bpts(w)['WikiLink'][0]
         assert w[s:e] == r
 
-    def afw(w: bytes):
+    def assert_no_wikilink(w: bytes):
         assert not bpts(w)['WikiLink']
 
     # test every \0 used in the old WIKILINK_FINDITER
-    aw(b'[<!---->[[[w]]', b'[[w]]')  # first \0
-    afw(b'[[<!---->[[[w]]')  # second \0
-    afw(b'[[[<!---->[[w]]')  # third \0
-    aw(b'[<!---->[w]]', b'[<!---->[w]]')  # fourth \0
-    afw(b'[[<!---->https://en.wikipedia.org/ w]]')  # fifth \0
-    aw(b'[[w]<!---->]', b'[[w]<!---->]')  # sixth \0
-    aw(b'[[w|[<!---->[w]]', b'[<!---->[w]]')  # seventh \0
-    aw(b'[[a|[b]<!---->] c]]', b'[[a|[b]<!---->]')  # 8th 11th 12th \0
-    aw(b'[[a|[b]<!---->]]', b'[[a|[b]<!---->]]')  # ninth \0
-    aw(b'[[a|[b]]<!---->]', b'[[a|[b]]<!---->]')  # tenth \0
+    assert_wikilink(b'[<!---->[[[w]]', b'[[w]]')  # first \0
+    assert_no_wikilink(b'[[<!---->[[[w]]')  # second \0
+    assert_no_wikilink(b'[[[<!---->[[w]]')  # third \0
+    assert_wikilink(b'[<!---->[w]]', b'[<!---->[w]]')  # fourth \0
+    assert_no_wikilink(b'[[<!---->https://en.wikipedia.org/ w]]')  # fifth \0
+    assert_wikilink(b'[[w]<!---->]', b'[[w]<!---->]')  # sixth \0
+    assert_wikilink(b'[[w|[<!---->[w]]', b'[<!---->[w]]')  # seventh \0
+    assert_wikilink(b'[[a|[b]<!---->] c]]', b'[[a|[b]<!---->]')  # 8th 11th 12th \0
+    assert_wikilink(b'[[a|[b]<!---->]]', b'[[a|[b]<!---->]]')  # ninth \0
+    assert_wikilink(b'[[a|[b]]<!---->]', b'[[a|[b]]<!---->]')  # tenth \0
 
 
 @mark.xfail
