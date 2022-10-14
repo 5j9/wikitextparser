@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.51.1
+-------
 - Fixed a bug in ``WikiText.external_links`` causing external links within extension tags (e.g. ref tag) not to be detected when tag is inside a template/parser function/parameter. (#110)
 
 v0.51.0
