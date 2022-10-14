@@ -521,26 +521,6 @@ class WikiText:
             parse_to_spans(shadow)
         return shadow
 
-    @property
-    def _ext_link_shadow(self):
-        """Replace the invalid chars of SPAN_PARSER_TYPES with b'_'.
-
-        For comments, all characters are replaced, but for ('Template',
-        'ParserFunction', 'Parameter') only invalid characters are replaced.
-        """
-        ss, se, _, _ = self._span_data
-        byte_array = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
-        subspans = self._subspans
-        for s, e, _, _ in subspans('Comment'):
-            byte_array[s:e] = (e - s) * b'_'
-        for s, e, _, _ in subspans('WikiLink'):
-            byte_array[s:e] = (e - s) * b' '
-        for type_ in 'Template', 'ParserFunction', 'Parameter':
-            for s, e, _, _ in subspans(type_):
-                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
-                    b' ', byte_array[s + 2:e - 2]) + b'  '
-        return byte_array
-
     def _inner_type_to_spans_copy(self) -> Dict[str, List[List[int]]]:
         """Create the arguments for the parse function used in pformat method.
 
@@ -1066,6 +1046,26 @@ class WikiText:
         """
         return self.get_bolds_and_italics(
             filter_cls=Italic, recursive=recursive)
+
+    @property
+    def _ext_link_shadow(self):
+        """Replace the invalid chars of SPAN_PARSER_TYPES with b'_'.
+
+        For comments, all characters are replaced, but for ('Template',
+        'ParserFunction', 'Parameter') only invalid characters are replaced.
+        """
+        ss, se, _, _ = self._span_data
+        byte_array = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
+        subspans = self._subspans
+        for s, e, _, _ in subspans('Comment'):
+            byte_array[s:e] = (e - s) * b'_'
+        for s, e, _, _ in subspans('WikiLink'):
+            byte_array[s:e] = (e - s) * b' '
+        for type_ in 'Template', 'ParserFunction', 'Parameter':
+            for s, e, _, _ in subspans(type_):
+                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
+                    b' ', byte_array[s + 2:e - 2]) + b'  '
+        return byte_array
 
     @property
     def external_links(self) -> List['ExternalLink']:
