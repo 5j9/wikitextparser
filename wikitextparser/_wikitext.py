@@ -1107,8 +1107,7 @@ class WikiText:
                     ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
 
         for s, e, _, _ in self._subspans('ExtensionTag'):
-            if PARSABLE_TAG_EXTENSIONS_MATCH(el_shadow, s, e):
-                _extract(s, e)
+            _extract(s, e)
             el_shadow[s:e] = (e - s) * b' '
         _extract(None, None)
         return external_links

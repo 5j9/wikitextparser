@@ -183,3 +183,8 @@ def test_equal_span_ids():
 def test_external_link_should_not_span_over_tags():
     els, = parse('<ref>[https://a.b/ </ref>]').external_links
     assert els.string == 'https://a.b/'
+
+
+def test_external_link_in_pf_in_tl():  # 110
+    els, = parse('{{text|<ref>[https://a.b a]</ref>}}').external_links
+    assert els.string == '[https://a.b a]'
