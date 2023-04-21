@@ -1,3 +1,7 @@
+Unreleased
+----------
+- BREAKING CHANGE: dropping Python 3.6 support.
+
 v0.51.2
 -------
 - Fixed a bug in detecting `reverse pipe tricks <https://en.wikipedia.org/wiki/Help:Pipe_trick#Reverse_pipe_trick>`_ as wikilinks.
