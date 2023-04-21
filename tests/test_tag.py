@@ -2,8 +2,10 @@ from pytest import mark
 from regex import compile as regex_compile
 
 from wikitextparser import Tag, parse
+
 # noinspection PyProtectedMember
 from wikitextparser._tag import END_TAG_PATTERN, TAG_FULLMATCH
+
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import NAME_CAPTURING_HTML_START_TAG_FINDITER
 

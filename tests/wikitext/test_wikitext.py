@@ -1,9 +1,9 @@
 from pytest import raises, warns
 
 from wikitextparser import Template, WikiText, parse
-# noinspection PyProtectedMember
-from wikitextparser._wikitext import DEAD_INDEX, DeadIndexError, WS
 
+# noinspection PyProtectedMember
+from wikitextparser._wikitext import DEAD_INDEX, WS, DeadIndexError
 
 # basics  of WikiText
 

@@ -5,7 +5,6 @@ from regex import DOTALL, MULTILINE, compile as regex_compile
 
 from ._wikitext import SubWikiText
 
-
 COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
 COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ")*+"
 COMMENT_COMMA = "(?>" + COMMENT_PATTERN + ")*+'"

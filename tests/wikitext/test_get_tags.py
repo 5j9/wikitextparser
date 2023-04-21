@@ -1,4 +1,4 @@
-from wikitextparser import parse, WikiText
+from wikitextparser import WikiText, parse
 
 
 def test_assume_that_templates_do_not_exist():

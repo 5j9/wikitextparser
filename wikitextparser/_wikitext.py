@@ -6,22 +6,47 @@ from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
-    Dict, Generator, Iterable, List, MutableSequence, Optional, Tuple, Union,
-    Callable)
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    MutableSequence,
+    Optional,
+    Tuple,
+    Union,
+)
 from warnings import warn
 
-from regex import DOTALL, IGNORECASE, MULTILINE, VERBOSE, \
-    compile as regex_compile, finditer, search, match
+from regex import (
+    DOTALL,
+    IGNORECASE,
+    MULTILINE,
+    VERBOSE,
+    compile as regex_compile,
+    finditer,
+    match,
+    search,
+)
 from wcwidth import wcswidth
 
 # noinspection PyProtectedMember
 from ._config import (
-    _HTML_TAG_NAME, _bare_external_link_schemes, _tag_extensions,
-    regex_pattern, _parsable_tag_extensions)
+    _HTML_TAG_NAME,
+    _bare_external_link_schemes,
+    _parsable_tag_extensions,
+    _tag_extensions,
+    regex_pattern,
+)
 from ._spans import (
-    BARE_EXTERNAL_LINK, END_TAG_PATTERN, EXTERNAL_LINK_URL_TAIL,
-    INVALID_URL_CHARS, PARSABLE_TAG_EXTENSION_NAME, START_TAG_PATTERN,
-    parse_to_spans)
+    BARE_EXTERNAL_LINK,
+    END_TAG_PATTERN,
+    EXTERNAL_LINK_URL_TAIL,
+    INVALID_URL_CHARS,
+    PARSABLE_TAG_EXTENSION_NAME,
+    START_TAG_PATTERN,
+    parse_to_spans,
+)
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
     START_TAG_PATTERN.replace(
@@ -1524,13 +1549,13 @@ remove_markup.__doc__ += plain_text_doc
 
 if __name__ == '__main__':
     # To make PyCharm happy! http://stackoverflow.com/questions/41524090
-    from ._tag import Tag
+    from ._comment_bold_italic import Bold, Comment, Italic
+    from ._externallink import ExternalLink
+    from ._parameter import Parameter
     from ._parser_function import ParserFunction
+    from ._section import Section
+    from ._table import Table
+    from ._tag import Tag
     from ._template import Template
     from ._wikilink import WikiLink
-    from ._comment_bold_italic import Comment, Bold, Italic
-    from ._externallink import ExternalLink
-    from ._section import Section
-    from ._wikilist import WikiList, LIST_PATTERN_FORMAT
-    from ._table import Table
-    from ._parameter import Parameter
+    from ._wikilist import LIST_PATTERN_FORMAT, WikiList

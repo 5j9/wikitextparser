@@ -1,6 +1,7 @@
 ﻿from pytest import mark
 
 from wikitextparser import ParserFunction, WikiText
+
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import WS
 

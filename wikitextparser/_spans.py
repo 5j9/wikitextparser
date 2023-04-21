@@ -2,11 +2,16 @@
 from functools import partial
 from typing import Callable, Dict, Optional
 
-from regex import DOTALL, REVERSE, compile as regex_compile, IGNORECASE, Match
+from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as regex_compile
 
 from ._config import (
-    _HTML_TAG_NAME, _bare_external_link_schemes, _parsable_tag_extensions,
-    _parser_functions, _unparsable_tag_extensions, regex_pattern)
+    _HTML_TAG_NAME,
+    _bare_external_link_schemes,
+    _parsable_tag_extensions,
+    _parser_functions,
+    _unparsable_tag_extensions,
+    regex_pattern,
+)
 
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'

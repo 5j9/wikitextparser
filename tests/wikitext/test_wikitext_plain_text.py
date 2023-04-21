@@ -1,4 +1,4 @@
-from wikitextparser import parse, remove_markup, Template
+from wikitextparser import Template, parse, remove_markup
 
 
 def test_plaintext():

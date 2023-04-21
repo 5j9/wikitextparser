@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from regex import compile as rc, IGNORECASE
+from regex import IGNORECASE, compile as rc
 
 from ._wikitext import BRACKET_EXTERNAL_LINK_URL, SubWikiText
 

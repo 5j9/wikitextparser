@@ -1,4 +1,4 @@
-from wikitextparser import parse, Italic, Bold
+from wikitextparser import Bold, Italic, parse
 
 
 def test_get_bolds():

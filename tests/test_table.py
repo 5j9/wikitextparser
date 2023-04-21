@@ -1,6 +1,5 @@
 from wikitextparser import Table, WikiText
 
-
 # Todo: addrow, addcol, shiftrow, shiftcol, ...
 # addrow([], -1)
 # addcol([], -1)

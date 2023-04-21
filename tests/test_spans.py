@@ -3,6 +3,7 @@
 from pytest import mark
 
 from wikitextparser import WikiText, parse
+
 # noinspection PyProtectedMember
 from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 

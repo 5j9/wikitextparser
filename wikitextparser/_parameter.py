@@ -4,7 +4,7 @@
 from typing import List, Optional
 from warnings import warn
 
-from ._wikitext import SubWikiText, WS
+from ._wikitext import WS, SubWikiText
 
 
 class Parameter(SubWikiText):

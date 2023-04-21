@@ -1,4 +1,4 @@
-from pytest import warns, mark
+from pytest import mark, warns
 
 from wikitextparser import ParserFunction, parse
 

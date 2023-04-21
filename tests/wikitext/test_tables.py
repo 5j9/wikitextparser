@@ -1,6 +1,7 @@
 from operator import attrgetter
 
 from wikitextparser import parse
+
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import WS
 
