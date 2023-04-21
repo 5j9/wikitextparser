@@ -21,7 +21,7 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Topic :: Text Processing",
 ]
-requires-python = ">= 3.6"
+requires-python = ">= 3.7"
 dependencies = [
     "regex >= 2022.9.11",
     "wcwidth",
