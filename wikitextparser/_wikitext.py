@@ -425,13 +425,7 @@ class WikiText:
                         b -= 1
 
     def _del_update(self, rmstart: int, rmstop: int) -> None:
-        """Update self._type_to_spans according to the removed span.
-
-        Warning: If an operation involves both _shrink_update and
-        _insert_update, you might wanna consider doing the
-        _insert_update before the _shrink_update as this function
-        can cause data loss in self._type_to_spans.
-        """
+        """Update self._type_to_spans according to the removed span."""
         # Note: The following algorithm won't work correctly if spans
         # are not sorted.
         # Note: No span should be removed from _type_to_spans.
@@ -489,7 +483,13 @@ class WikiText:
                 continue
 
     def _insert_update(self, index: int, length: int) -> None:
-        """Update self._type_to_spans according to the added length."""
+        """Update self._type_to_spans according to the added length.
+
+        Warning: If an operation involves both _shrink_update and
+        _insert_update, you might wanna consider doing the
+        _insert_update before the _shrink_update as this function
+        can cause data loss in self._type_to_spans.
+        """
         self_span = ss, se, _, _ = self._span_data
         for span_type, spans in self._type_to_spans.items():
             for span in spans:
