@@ -97,7 +97,7 @@ def test_delitem():
     t1, t2 = wt.templates
     del t2[3]
     assert wt.string == '{{t1|{{t}}}}'
-    del wt[5:10]
+    del wt[5:10]  # {{t}}
     assert t1.string == '{{t1|}}'
     assert t2.string == ''
 
