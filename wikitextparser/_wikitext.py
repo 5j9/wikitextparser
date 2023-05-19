@@ -159,7 +159,7 @@ def _table_to_text(t: 'Table') -> str:
         for ri, d in enumerate(row[:-1]):
             widths[ri] = max(widths[ri], wcswidth(d))
     return '\n' + '\n'.join('\t'.join(
-        f'{d:{w}}' for (w, d) in zip(widths, r)
+        f'{d:<{w}}' for (w, d) in zip(widths, r)
     ) for r in data) + '\n'
 
 
