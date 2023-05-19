@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.52.0
+-------
 - BREAKING CHANGE: dropping Python 3.6 support.
 - Fixed error in getting ``plain_text()`` of emptied-out wikitext (#113)
 - Deprecated: Calling ``Template.set_arg()`` without specifying a value  for ``preserve_spacing`` parameter is deprecated.
