@@ -106,3 +106,21 @@ def test_after_tag_deletion():  # 113
     tag = parsed.get_tags('ref')[0]
     del tag[:]
     assert parsed.plain_text() == ''
+
+
+def test_table():
+    p = parse(
+        'a\n'
+        '{|\n'
+        '|[[Orange]]\n'
+        '|Apple\n'
+        '|-\n'
+        '|Bread\n'
+        '|Pie\n'
+        '|-\n'
+        '|Butter\n'
+        '|Ice cream \n'
+        '|}\n'
+        'b'
+    )
+    assert p.plain_text() == 'a\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n\nb'

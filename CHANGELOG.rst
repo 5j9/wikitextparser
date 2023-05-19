@@ -5,6 +5,7 @@ Unreleased
 - Deprecated: Calling ``Template.set_arg()`` without specifying a value  for ``preserve_spacing`` parameter is deprecated.
   This is a temporary warning in preparation for changing the default value of this parameter from ``True`` to ``False``. (#111)
 - Fixed the ``stacklevel`` of warnings.
+- New feature: ``plain_text()`` replaces wiki-tables with a TSV string. (#115)
 
 v0.51.2
 -------

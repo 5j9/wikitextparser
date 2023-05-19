@@ -152,6 +152,18 @@ DEAD_INDEX = DeadIndex()  # == int() == 0
 DEAD_SPAN = DEAD_INDEX, DEAD_INDEX, None, None
 
 
+def _table_to_text(t: 'Table') -> str:
+    data = t.data()
+    widths = [0] * len(data[0])
+    for row in data:
+        for ri, d in enumerate(row[:-1]):
+            widths[ri] = max(widths[ri], wcswidth(d))
+    return '\n' + '\n'.join('\t'.join(
+        f'{d:{w}}' for (w, d) in zip(widths, r)
+    ) for r in data) + '\n'
+
+
+
 class WikiText:
 
     # In subclasses of WikiText _type is used as the key for _type_to_spans
@@ -571,6 +583,7 @@ class WikiText:
         replace_wikilinks=True,
         unescape_html_entities=True,
         replace_bolds_and_italics=True,
+        replace_tables: Union[Callable[['Table'], Optional[str]], bool] = _table_to_text,
         _is_root_node=False
     ) -> str:
         # plain_text_doc will be added to __doc__
@@ -599,8 +612,8 @@ class WikiText:
 
         if callable(replace_templates):
             for template in self.templates:
-                b, e = template._span_data[:2]
-                if lst[b] is None:  # overwrriten
+                b, e = template._span_data[:2]  # noqa
+                if lst[b] is None:  # overwritten
                     continue
                 lst[b] = replace_templates(template)
                 remove(b + 1, e)
@@ -635,8 +648,7 @@ class WikiText:
         if replace_bolds_and_italics:
             for i in parsed.get_bolds_and_italics():
                 b, e = i.span
-                # noinspection PyProtectedMember
-                ib, ie = i._match.span(1)  # text span
+                ib, ie = i._match.span(1)  # noqa, text span
                 remove(b, b + ib)
                 remove(b + ie, e)
         if replace_parameters:
@@ -651,8 +663,7 @@ class WikiText:
         if replace_tags:
             for t in parsed.get_tags():
                 b, e = t.span
-                # noinspection PyProtectedMember
-                cb, ce = t._match.span('contents')
+                cb, ce = t._match.span('contents')  # noqa
                 if cb != -1:  # not a self-closing tag
                     remove(b, b + cb)
                     remove(b + ce, e)
@@ -664,16 +675,25 @@ class WikiText:
                 if w.wikilinks:
                     remove(b, e)  # image
                 else:
-                    # noinspection PyProtectedMember
-                    tb, te = w._match.span(4)  # text span
+                    tb, te = w._match.span(4)  # noqa, text span
                     if tb != -1:
                         remove(b, b + tb)
                         remove(b + te, e)
                     else:
-                        # noinspection PyProtectedMember
-                        tb, te = w._match.span(1)  # target span
+                        tb, te = w._match.span(1)  # noqa, target span
                         remove(b, b + tb)
                         remove(b + te, e)
+
+        if callable(replace_tables):
+            for table in self.get_tables():
+                b, e = table._span_data[:2]  # noqa
+                if lst[b] is None:  # overwritten
+                    continue
+                lst[b] = replace_tables(Table(
+                    ''.join([c for c in lst[b:e] if c is not None])
+                ))
+                remove(b + 1, e)
+
         string = ''.join([c for c in lst if c is not None])
         if unescape_html_entities:
             string = unescape(string)
