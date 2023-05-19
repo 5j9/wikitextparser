@@ -584,6 +584,8 @@ class WikiText:
                 if span_data[1] == new_end:
                     parsed._span_data = span_data
                     break
+            else:  # self is a dead span
+                parsed._span_data = [0, 0, None, bytearray()]
         else:
             tts = self._type_to_spans
             parsed = self

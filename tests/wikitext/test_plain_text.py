@@ -99,3 +99,10 @@ def test_replace_nested_template_functions():
         replace_templates=t,
         replace_parser_functions=t,  # tests for
     ) == 'T'
+
+
+def test_after_tag_deletion():  # 113
+    parsed = parse('<ref>R</ref>')
+    tag = parsed.get_tags('ref')[0]
+    del tag[:]
+    assert parsed.plain_text() == ''

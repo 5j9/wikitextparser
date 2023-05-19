@@ -1,6 +1,8 @@
+
 Unreleased
 ----------
 - BREAKING CHANGE: dropping Python 3.6 support.
+- Fixed error in getting ``plain_text()`` of emptied-out wikitext (#113)
 
 v0.51.2
 -------
