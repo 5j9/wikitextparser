@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.52.1
+-------
 - Fixed a syntax error for Python < 3.10.
 
 v0.52.0
