@@ -1255,7 +1255,8 @@ class WikiText:
         """Deprecated, use self.get_lists instead."""
         warn(
             '`lists` method is deprecated, use `get_lists` instead.',
-            DeprecationWarning)
+            DeprecationWarning, 2
+        )
         return self.get_lists(pattern)
 
     def get_lists(
@@ -1284,8 +1285,10 @@ class WikiText:
                 - Use `'\*\s*'` as pattern to rtstrip `items` of the list.
         """
         if pattern is None:
-            warn('calling get_lists with None pattern is deprecated; '
-                 'Use the default value instead.', DeprecationWarning)
+            warn(
+                'calling get_lists with None pattern is deprecated; '
+                'Use the default value instead.', DeprecationWarning, 2
+            )
             patterns = (r'\#', r'\*', '[:;]')
         elif isinstance(pattern, str):
             patterns = (pattern,)
@@ -1324,7 +1327,8 @@ class WikiText:
         """Deprecated, use self.get_tags instead."""
         warn(
             '`tags` method is deprecated, use `get_tags` instead.',
-            DeprecationWarning)
+            DeprecationWarning, 2,
+        )
         return self.get_tags(name)
 
     @property

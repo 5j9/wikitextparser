@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, warns
 
 from wikitextparser import Template
 
@@ -207,42 +207,49 @@ def test_lists():
 def test_set_arg():
     # Template with no args, keyword
     t = Template('{{t}}')
-    t.set_arg('a', 'b')
+    with warns(DeprecationWarning):
+        t.set_arg('a', 'b')
     assert '{{t|a=b}}' == t.string
     # Template with no args, auto positional
     t = Template('{{t}}')
-    t.set_arg('1', 'b')
+    with warns(DeprecationWarning):
+        t.set_arg('1', 'b')
     assert '{{t|1=b}}' == t.string
     # Force keyword
     t = Template('{{t}}')
-    t.set_arg('1', 'b', positional=False)
+    with warns(DeprecationWarning):
+        t.set_arg('1', 'b', positional=False)
     assert '{{t|1=b}}' == t.string
     # Arg already exist, positional
     t = Template('{{t|a}}')
-    t.set_arg('1', 'b')
+    t.set_arg('1', 'b', preserve_spacing=False)
     assert '{{t|b}}' == t.string
     # Append new keyword when there is more than one arg
     t = Template('{{t|a}}')
-    t.set_arg('z', 'z')
+    t.set_arg('z', 'z', preserve_spacing=True)
     assert '{{t|a|z=z}}' == t.string
     # Preserve spacing
     t = Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
-    t.set_arg('z', 'z')
+    with warns(DeprecationWarning):
+        t.set_arg('z', 'z')
     assert '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}' == t.string
 
 
 def test_preserve_spacing_with_only_one_arg():
     t = Template('{{t\n  |  afadfaf =   value \n}}')
-    t.set_arg('z', 'z')
+    with warns(DeprecationWarning):
+        t.set_arg('z', 'z')
     assert '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}' == t.string
 
 
 def test_multiline_arg():
     t = Template('{{text|\na=\nb\nc\n}}')
-    t.set_arg('d', 'e')
+    with warns(DeprecationWarning):
+        t.set_arg('d', 'e')
     assert '{{text|\na=\nb\nc|\nd=\ne\n}}' == t.string
     t = Template('{{text\n\n | a = b\n\n}}')
-    t.set_arg('c', 'd')
+    with warns(DeprecationWarning):
+        t.set_arg('c', 'd')
     assert '{{text\n\n | a = b\n\n | c = d\n\n}}' == t.string
 
 
@@ -260,33 +267,38 @@ def test_new_dont_preserve_space():
 
 def test_before():
     t = Template('{{t|a|b|c=c|d}}')
-    t.set_arg('e', 'e', before='c')
+    with warns(DeprecationWarning):
+        t.set_arg('e', 'e', before='c')
     assert '{{t|a|b|e=e|c=c|d}}' == t.string
 
 
 def test_after():
     t = Template('{{t|a|b|c=c|d}}')
-    t.set_arg('e', 'e', after='c')
+    with warns(DeprecationWarning):
+        t.set_arg('e', 'e', after='c')
     assert '{{t|a|b|c=c|e=e|d}}' == t.string
 
 
 def test_multi_set_positional_args():
     t = Template('{{t}}')
-    t.set_arg('1', 'p', positional=True)
-    t.set_arg('2', 'q', positional=True)
+    with warns(DeprecationWarning):
+        t.set_arg('1', 'p', positional=True)
+        t.set_arg('2', 'q', positional=True)
     assert '{{t|p|q}}' == t.string
 
 
 @mark.xfail
 def test_invalid_position():
     t = Template('{{t}}')
-    t.set_arg('2', 'a', positional=True)
+    with warns(DeprecationWarning):
+        t.set_arg('2', 'a', positional=True)
     assert '{{t|2=a}}' == t.string
 
 
 def test_force_new_to_positional_when_old_is_keyword():
     t = Template('{{t|1=v}}')
-    t.set_arg('1', 'v', positional=True)
+    with warns(DeprecationWarning):
+        t.set_arg('1', 'v', positional=True)
     assert '{{t|v}}' == t.string
 
 
@@ -298,7 +310,8 @@ def test_nowiki_makes_equal_ineffective():
 
 def test_not_name_and_positional_is_none():
     t = Template('{{t}}')
-    t.set_arg(None, 'v')
+    with warns(DeprecationWarning):
+        t.set_arg(None, 'v')
     assert '{{t|v}}' == t.string
 
 
@@ -315,13 +328,15 @@ def test_parser_functions():
 
 def test_setting_single_space_arg():  # 97
     t = Template("{{t|a= }}")
-    t.set_arg('a', 'v')
+    with warns(DeprecationWarning):
+        t.set_arg('a', 'v')
     assert t.string == "{{t|a=v }}"
 
 
 def test_preserve_spacing_left_and_right():
     t = Template("{{t|a=\tx }}")
-    t.set_arg('a', 'y')
+    with warns(DeprecationWarning):
+        t.set_arg('a', 'y')
     assert t.string == "{{t|a=\ty }}"
 
 

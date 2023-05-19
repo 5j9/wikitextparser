@@ -2,6 +2,7 @@
 
 
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+from warnings import warn
 
 from regex import REVERSE, compile as regex_compile
 
@@ -177,7 +178,8 @@ class Template(SubWikiTextWithArgs):
         positional: bool = None,
         before: str = None,
         after: str = None,
-        preserve_spacing: bool = True
+        *args,
+        **kwargs,
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
@@ -190,6 +192,19 @@ class Template(SubWikiTextWithArgs):
           argument. Ignore `preserve_spacing` if positional is True.
           If it's None, do what seems more appropriate.
         """
+        if kwargs:
+            preserve_spacing = kwargs.get('preserve_spacing')
+        elif args:
+            preserve_spacing = args[0]
+        else:
+            preserve_spacing = True
+            warn(
+                'The default value for'
+                ' `Template.set_arg(preserve_spacing=True)`'
+                ' is going to change to `False` in future versions. Please'
+                ' specify the parameter value to avoid a breaking change.',
+                DeprecationWarning, 2,
+            )
         args = *reversed(self.arguments),
         arg = get_arg(name, args)
         # Updating an existing argument.

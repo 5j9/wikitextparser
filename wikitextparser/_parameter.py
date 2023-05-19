@@ -55,8 +55,10 @@ class Parameter(SubWikiText):
     @default.setter
     def default(self, newdefault: str) -> None:
         if newdefault is None:
-            warn('Setting Argument.default to None is deprecated. '
-                 'Use `del Argument.default` instead.', DeprecationWarning)
+            warn(
+                'Setting Argument.default to None is deprecated. '
+                'Use `del Argument.default` instead.', DeprecationWarning, 2,
+            )
             del self.default
             return
         pipe = self._shadow.find(124)

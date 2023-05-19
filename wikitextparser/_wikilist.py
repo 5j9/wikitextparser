@@ -136,8 +136,12 @@ class WikiList(SubWikiText):
             as prefix.
         """
         if pattern is None:
-            warn('calling sublists with None pattern is deprecated; '
-                 'Use the default value instead.', DeprecationWarning)
+            warn(
+                'calling sublists with None pattern is deprecated; '
+                'Use the default value instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
             patterns = (r'\#', r'\*', '[:;]')
         elif isinstance(pattern, str):
             patterns = (pattern,)
@@ -182,7 +186,11 @@ class WikiList(SubWikiText):
         self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
     ) -> List['WikiList']:
         if pattern is None:
-            warn('calling get_lists with None pattern is deprecated; '
-                 'Use the default value instead.', DeprecationWarning)
+            warn(
+                'calling get_lists with None pattern is deprecated; '
+                'Use the default value instead.',
+                DeprecationWarning,
+                stacklevel=2,
+            )
             pattern = (r'\#', r'\*', '[:;]')
         return self.sublists(pattern=pattern)
