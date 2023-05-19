@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a syntax error for Python < 3.10.
+
 v0.52.0
 -------
 - BREAKING CHANGE: dropping Python 3.6 support.
