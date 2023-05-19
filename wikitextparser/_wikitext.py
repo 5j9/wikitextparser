@@ -438,7 +438,7 @@ class WikiText:
         for spans in self._type_to_spans.values():
             i = len(spans) - 1
             while i >= 0:
-                # todo update byte_aray
+                # todo update byte_array
                 s, e, _, b = span = spans[i]
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
