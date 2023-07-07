@@ -124,3 +124,26 @@ def test_table():
         'b'
     )
     assert p.plain_text() == 'a\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n\nb'
+
+
+TABLE_WITH_ROW_AND_COL_SPANS = '''{| class="wikitable"
+!colspan="6"|Shopping List
+|-
+|rowspan="2"|Bread & Butter
+|Pie
+|Buns
+|Danish
+|colspan="2"|Croissant
+|-
+|Cheese
+|colspan="2"|Ice cream
+|Butter
+|Yogurt
+|}'''
+
+
+def test_none_in_table_data():
+    p = parse(TABLE_WITH_ROW_AND_COL_SPANS)
+    assert p.plain_text() == (
+        '\nShopping List \tShopping List\tShopping List\tShopping List\tShopping List\tShopping List\nBread & Butter\tPie          \tBuns         \tDanish       \tCroissant    \tCroissant\nBread & Butter\tCheese       \tIce cream    \tIce cream    \tButter       \tYogurt\n'
+    )
