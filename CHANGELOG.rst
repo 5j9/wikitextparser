@@ -1,3 +1,8 @@
+Unreleased
+----------
+- Fixed a bug in ``plain_text()``/``remove_markup``, not being able to handle table with row/colspan. (#116)
+- ``plain_text()`` will now include table captions.
+
 v0.52.1
 -------
 - Fixed a syntax error for Python < 3.10.

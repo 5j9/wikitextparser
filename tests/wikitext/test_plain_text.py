@@ -147,3 +147,24 @@ def test_none_in_table_data():
     assert p.plain_text() == (
         '\nShopping List \tShopping List\tShopping List\tShopping List\tShopping List\tShopping List\nBread & Butter\tPie          \tBuns         \tDanish       \tCroissant    \tCroissant\nBread & Butter\tCheese       \tIce cream    \tIce cream    \tButter       \tYogurt\n'
     )
+
+
+
+TABLE_WITH_CAPTION = '''{|
+|+Food complements
+|-
+|Orange
+|Apple
+|-
+|Bread
+|Pie
+|-
+|Butter
+|Ice cream
+|}'''
+
+
+def test_table_caption():
+    assert parse(TABLE_WITH_CAPTION).plain_text() == (
+        '\nFood complements\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n'
+    )
