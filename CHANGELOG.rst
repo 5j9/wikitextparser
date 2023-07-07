@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.53.0
+-------
 - Fixed a bug in ``plain_text()``/``remove_markup``, not being able to handle table with row/colspan. (#116)
 - ``plain_text()`` will now include table captions.
 
