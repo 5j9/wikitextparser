@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in ``WikiText.external_links`` not detecting external links inserted via overwriting a template string. (#74)
+
 v0.53.0
 -------
 - Fixed a bug in ``plain_text()``/``remove_markup``, not being able to handle table with row/colspan. (#116)

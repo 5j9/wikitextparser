@@ -1183,11 +1183,7 @@ class WikiText:
             byte_array[s:e] = (e - s) * b' '
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
-                byte_array[s:e] = (
-                    b'  '
-                    + INVALID_EXT_CHARS_SUB(b' ', byte_array[s + 2 : e - 2])
-                    + b'  '
-                )
+                byte_array[s:e] = INVALID_EXT_CHARS_SUB(b' ', byte_array[s:e])
         return byte_array
 
     @property
