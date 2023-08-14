@@ -4,8 +4,10 @@ from wikitextparser import Parameter
 
 
 def test_parameters():
-    assert repr(Parameter('{{{a|{{{b}}}}}}').parameters[0]) == \
-        "Parameter('{{{b}}}')"
+    assert (
+        repr(Parameter('{{{a|{{{b}}}}}}').parameters[0])
+        == "Parameter('{{{b}}}')"
+    )
 
 
 def test_basic():
@@ -42,12 +44,10 @@ def test_default_setter():
     assert '{{{ Q | V }}}' == p.string
     p.default = ''
     assert '{{{ Q |}}}' == p.string
-    with warns(DeprecationWarning):
-        p.default = None
+    del p.default
     assert '{{{ Q }}}' == p.string
     # Setting default to None when it is already None
-    with warns(DeprecationWarning):
-        p.default = None
+    del p.default
     assert '{{{ Q }}}' == p.string
 
 

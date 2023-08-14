@@ -1,6 +1,12 @@
 Unreleased
 ----------
 - Fixed a bug in ``WikiText.external_links`` not detecting external links inserted via overwriting a template string. (#74)
+- The following already deprecated functions/parameters are removed:
+
+  - Setting ``Parameter.default`` to ``None`` is not possible anymore. Use ``del Parameter.default`` instead.
+  - The default value for ``preserve_spacing`` parameter of ``Template.set_arg`` is now ``False``. (It was deprecated to call this method without providing a value for ``preserve_spacing``)
+  - The ``pattern`` parameter of ``WikiList.sublists``, ``WikiList.get_lists`` and ``WikiText.get_lists`` cannot be ``None`` anymore. Use the default value instead.
+  - ``WikiText.lists``` and ``WikiText.tags`` are removed. Use ``get_lists``` or ``get_tags`` instead.
 
 v0.53.0
 -------

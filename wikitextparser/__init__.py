@@ -1,5 +1,5 @@
 # Scheme: [N!]N(.N)*[{a|b|rc}N][.postN][.devN]
-__version__ = '0.53.1.dev0'
+__version__ = '1.0.0.dev0'
 
 from . import _wikitext
 from ._argument import Argument

@@ -1,6 +1,5 @@
 from operator import attrgetter
 from typing import Dict, Iterable, List, Match, MutableSequence, Union
-from warnings import warn
 
 from regex import MULTILINE, escape, fullmatch
 
@@ -8,31 +7,27 @@ from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
 SUBLIST_PATTERN = (  # noqa
-    rb'(?>^'
-        rb'(?&pattern)'
-        rb'[:;#*].*+'
-        rb'(?>\n|\Z)'
-    rb')*+')
+    rb'(?>^' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\n|\Z)' rb')*+'
+)
 SUBLIST_WITH_SECOND_PATTERN = (  # noqa
-    rb'[*#;:].*+(?>\n|\Z)'
-    rb'(?>'
-        rb'(?&pattern)[*#;:].*+(?>\n|\Z)'
-    rb')*+')
+    rb'[*#;:].*+(?>\n|\Z)' rb'(?>' rb'(?&pattern)[*#;:].*+(?>\n|\Z)' rb')*+'
+)
 LIST_PATTERN_FORMAT = (  # noqa
     rb'(?<fullitem>^'
-        rb'(?<pattern>{pattern})'
+    rb'(?<pattern>{pattern})'
     rb'(?>'
-        rb'(?(?<=;\s*+)'
-            # mark inline definition as an item
-            rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
-            rb'(?>\n|\Z)' + SUBLIST_PATTERN +
-        rb'|'
-            # non-definition
-            rb'(?>'
-                rb'(?<item>)' + SUBLIST_WITH_SECOND_PATTERN +
-                rb'|(?<item>.*+)(?>\n|\Z)' + SUBLIST_PATTERN +
-            rb')'
-        rb')'
+    rb'(?(?<=;\s*+)'
+    # mark inline definition as an item
+    rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
+    rb'(?>\n|\Z)' + SUBLIST_PATTERN + rb'|'
+    # non-definition
+    rb'(?>'
+    rb'(?<item>)'
+    + SUBLIST_WITH_SECOND_PATTERN
+    + rb'|(?<item>.*+)(?>\n|\Z)'
+    + SUBLIST_PATTERN
+    + rb')'
+    rb')'
     rb'))++'
 )
 
@@ -57,12 +52,16 @@ class WikiList(SubWikiText):
         if _match:
             self._match_cache = _match, self.string
         else:
-            self._match_cache = fullmatch(
-                LIST_PATTERN_FORMAT.replace(
-                    b'{pattern}', pattern.encode(), 1),
-                self._list_shadow,
-                MULTILINE,
-            ), self.string
+            self._match_cache = (
+                fullmatch(
+                    LIST_PATTERN_FORMAT.replace(
+                        b'{pattern}', pattern.encode(), 1
+                    ),
+                    self._list_shadow,
+                    MULTILINE,
+                ),
+                self.string,
+            )
 
     @property
     def _list_shadow(self):
@@ -82,8 +81,11 @@ class WikiList(SubWikiText):
             return cache_match
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
-                b'{pattern}', self.pattern.encode(), 1),
-            self._list_shadow, MULTILINE)
+                b'{pattern}', self.pattern.encode(), 1
+            ),
+            self._list_shadow,
+            MULTILINE,
+        )
         self._match_cache = cache_match, string
         return cache_match
 
@@ -93,13 +95,13 @@ class WikiList(SubWikiText):
 
         Do not include sub-items and the start pattern.
         """
-        items : List[str] = []
+        items: List[str] = []
         append = items.append
         string = self.string
         match = self._match
         ms = match.start()
         for s, e in match.spans('item'):
-            append(string[s - ms:e - ms])
+            append(string[s - ms : e - ms])
         return items
 
     @property
@@ -113,7 +115,7 @@ class WikiList(SubWikiText):
         # Sort because "fullitem" can be flipped compared to "items" in case
         # of a definition list with the LIST_PATTERN_FORMAT regex.
         for s, e in sorted(match.spans('fullitem')):
-            append(string[s - ms:e - ms])
+            append(string[s - ms : e - ms])
         return fullitems
 
     @property
@@ -125,8 +127,9 @@ class WikiList(SubWikiText):
         return len(self._match['pattern'])
 
     def sublists(
-        self, i: int = None,
-        pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
+        self,
+        i: int = None,
+        pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]'),
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.
 
@@ -135,15 +138,7 @@ class WikiList(SubWikiText):
             The `pattern` of the current list will be automatically added
             as prefix.
         """
-        if pattern is None:
-            warn(
-                'calling sublists with None pattern is deprecated; '
-                'Use the default value instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            patterns = (r'\#', r'\*', '[:;]')
-        elif isinstance(pattern, str):
+        if isinstance(pattern, str):
             patterns = (pattern,)
         else:
             patterns = pattern
@@ -179,18 +174,10 @@ class WikiList(SubWikiText):
         match = self._match
         ms = match.start()
         for s, e in reversed(match.spans('pattern')):
-            self[s - ms:e - ms] = newstart
+            self[s - ms : e - ms] = newstart
         self.pattern = escape(newstart)
 
     def get_lists(
         self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
     ) -> List['WikiList']:
-        if pattern is None:
-            warn(
-                'calling get_lists with None pattern is deprecated; '
-                'Use the default value instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            pattern = (r'\#', r'\*', '[:;]')
         return self.sublists(pattern=pattern)

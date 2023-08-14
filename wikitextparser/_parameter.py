@@ -1,14 +1,9 @@
-﻿"""Define the Parameter class."""
-
-
-from typing import List, Optional
-from warnings import warn
+﻿from typing import List, Optional
 
 from ._wikitext import WS, SubWikiText
 
 
 class Parameter(SubWikiText):
-
     __slots__ = ()
 
     @property
@@ -54,18 +49,11 @@ class Parameter(SubWikiText):
 
     @default.setter
     def default(self, newdefault: str) -> None:
-        if newdefault is None:
-            warn(
-                'Setting Argument.default to None is deprecated. '
-                'Use `del Argument.default` instead.', DeprecationWarning, 2,
-            )
-            del self.default
-            return
         pipe = self._shadow.find(124)
         if pipe == -1:
             self.insert(-3, '|' + newdefault)
             return
-        self[pipe + 1:-3] = newdefault
+        self[pipe + 1 : -3] = newdefault
 
     @default.deleter
     def default(self) -> None:
@@ -106,9 +94,10 @@ class Parameter(SubWikiText):
         else:
             name = innermost_param.name
             innermost_param[
-                len('{{{' + name + '|'):
-                len('{{{' + name + '|' + innermost_default)
-            ] = '{{{' + new_default_name + '|' + innermost_default + '}}}'
+                len('{{{' + name + '|') : len(
+                    '{{{' + name + '|' + innermost_default
+                )
+            ] = ('{{{' + new_default_name + '|' + innermost_default + '}}}')
 
     @property
     def parameters(self) -> List['Parameter']:

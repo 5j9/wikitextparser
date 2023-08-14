@@ -323,9 +323,7 @@ def test_unicode_attr_values():
         '<references group="گ"/>'
     )
     parsed = parse(wikitext)
-    with warns(DeprecationWarning):
-        # noinspection PyDeprecation
-        ref1, ref2 = parsed.tags('ref')
+    ref1, ref2 = parsed.get_tags('ref')
     assert ref1.string == '<ref name="نام۱" group="گ">یاد۱</ref>'
     assert ref2.string == '<ref name="نام۲" group="گ">یاد۲</ref>'
 

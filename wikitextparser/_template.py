@@ -1,25 +1,18 @@
-"""Define the Template class."""
-
-
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
-from warnings import warn
 
-from regex import REVERSE, compile as regex_compile
+from regex import REVERSE, compile as rc
 
 from ._argument import Argument
 from ._comment_bold_italic import COMMENT_PATTERN
 from ._parser_function import SubWikiTextWithArgs
 from ._wikitext import WS
 
-COMMENT_SUB = regex_compile(COMMENT_PATTERN).sub
+COMMENT_SUB = rc(COMMENT_PATTERN).sub
 
-TL_NAME_ARGS_FULLMATCH = regex_compile(
-    rb'[^|}]*+'  # name
-    rb'(?<arg>\|[^|]*+)*+'
-).fullmatch
-STARTING_WS_MATCH = regex_compile(r'\s*+').match
-ENDING_WS_MATCH = regex_compile(r'(?>\n[ \t]*)*+', REVERSE).match
-SPACE_AFTER_SEARCH = regex_compile(r'\s*+(?=\|)').search
+TL_NAME_ARGS_FULLMATCH = rc(rb'[^|}]*+(?#name)(?<arg>\|[^|]*+)*+').fullmatch
+STARTING_WS_MATCH = rc(r'\s*+').match
+ENDING_WS_MATCH = rc(r'(?>\n[ \t]*)*+', REVERSE).match
+SPACE_AFTER_SEARCH = rc(r'\s*+(?=\|)').search
 
 T = TypeVar('T')
 
@@ -41,7 +34,7 @@ class Template(SubWikiTextWithArgs):
         rm_namespaces=('Template',),
         *,
         code: str = None,
-        capitalize=False
+        capitalize=False,
     ) -> str:
         """Return normal form of self.name.
 
@@ -110,7 +103,7 @@ class Template(SubWikiTextWithArgs):
         for a in reversed(self.arguments):
             name = a.name.strip(WS)
             if name in names:
-                del a[:len(a.string)]
+                del a[: len(a.string)]
             else:
                 names.add(name)
 
@@ -133,8 +126,7 @@ class Template(SubWikiTextWithArgs):
 
         Also see `rm_first_of_dup_args` function.
         """
-        name_to_lastarg_vals = {} \
-            # type: Dict[str, Tuple[Argument, List[str]]]
+        name_to_lastarg_vals: Dict[str, Tuple[Argument, List[str]]] = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         for arg in reversed(self.arguments):
@@ -149,20 +141,20 @@ class Template(SubWikiTextWithArgs):
                 # This is a duplicate argument.
                 if not val:
                     # This duplicate argument is empty. It's safe to remove it.
-                    del arg[0:len(arg.string)]
+                    del arg[0 : len(arg.string)]
                 else:
                     # Try to remove any of the detected duplicates of this
                     # that are empty or their value equals to this one.
                     lastarg, dup_vals = name_to_lastarg_vals[name]
                     if val in dup_vals:
-                        del arg[0:len(arg.string)]
+                        del arg[0 : len(arg.string)]
                     elif '' in dup_vals:
                         # This happens only if the last occurrence of name has
                         # been an empty string; other empty values will
                         # be removed as they are seen.
                         # In other words index of the empty argument in
                         # dup_vals is always 0.
-                        del lastarg[0:len(lastarg.string)]
+                        del lastarg[0 : len(lastarg.string)]
                         dup_vals.pop(0)
                     else:
                         # It was not possible to remove any of the duplicates.
@@ -173,13 +165,13 @@ class Template(SubWikiTextWithArgs):
                 name_to_lastarg_vals[name] = (arg, [val])
 
     def set_arg(
-        self, name: str,
+        self,
+        name: str,
         value: str,
         positional: bool = None,
         before: str = None,
         after: str = None,
-        *args,
-        **kwargs,
+        preserve_spacing=False,
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
@@ -192,20 +184,7 @@ class Template(SubWikiTextWithArgs):
           argument. Ignore `preserve_spacing` if positional is True.
           If it's None, do what seems more appropriate.
         """
-        if kwargs:
-            preserve_spacing = kwargs.get('preserve_spacing')
-        elif args:
-            preserve_spacing = args[0]
-        else:
-            preserve_spacing = True
-            warn(
-                'The default value for'
-                ' `Template.set_arg(preserve_spacing=True)`'
-                ' is going to change to `False` in future versions. Please'
-                ' specify the parameter value to avoid a breaking change.',
-                DeprecationWarning, 2,
-            )
-        args = *reversed(self.arguments),
+        args = (*reversed(self.arguments),)
         arg = get_arg(name, args)
         # Updating an existing argument.
         if arg:
@@ -250,9 +229,14 @@ class Template(SubWikiTextWithArgs):
             if preserve_spacing:
                 # noinspection PyUnboundLocalVariable
                 addstring = (
-                    '|' + (pre_name_ws_mode + name.strip(WS)).
-                    ljust(name_length_mode) +
-                    '=' + pre_value_ws_mode + value + post_value_ws_mode
+                    '|'
+                    + (pre_name_ws_mode + name.strip(WS)).ljust(
+                        name_length_mode
+                    )
+                    + '='
+                    + pre_value_ws_mode
+                    + value
+                    + post_value_ws_mode
                 )
             else:
                 addstring = '|' + name + '=' + value
@@ -272,9 +256,11 @@ class Template(SubWikiTextWithArgs):
                     # The addstring needs to be recalculated because we don't
                     # want to change the the whitespace before final braces.
                     # noinspection PyUnboundLocalVariable
-                    arg[0:len(arg_string)] = (
-                        arg.string.rstrip(WS) + post_value_ws_mode +
-                        addstring.rstrip(WS) + after_values[0]
+                    arg[0 : len(arg_string)] = (
+                        arg.string.rstrip(WS)
+                        + post_value_ws_mode
+                        + addstring.rstrip(WS)
+                        + after_values[0]
                     )
                 else:
                     arg.insert(len(arg_string), addstring)

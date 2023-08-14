@@ -36,8 +36,12 @@ def test_contains_newlines():
 
 
 def test_name():
-    assert ' wrapper ' == Template(
-        "{{ wrapper | p1 | {{ cite | sp1 | dateformat = ymd}} }}").name
+    assert (
+        ' wrapper '
+        == Template(
+            "{{ wrapper | p1 | {{ cite | sp1 | dateformat = ymd}} }}"
+        ).name
+    )
 
 
 def test_dont_remove_nonkeyword_argument():
@@ -197,8 +201,10 @@ def test_lists():
     l1, l2 = Template('{{t|2=*a\n*b|*c\n*d}}').get_lists()
     assert l1.items == ['a', 'b']
     assert l2.items == ['c', 'd']
-    assert Template('{{t|;https://a.b :d}}').get_lists('[;:]')[0].items ==\
-        ['https://a.b ', 'd']
+    assert Template('{{t|;https://a.b :d}}').get_lists('[;:]')[0].items == [
+        'https://a.b ',
+        'd',
+    ]
 
 
 # Template.set_arg
@@ -207,18 +213,15 @@ def test_lists():
 def test_set_arg():
     # Template with no args, keyword
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg('a', 'b')
+    t.set_arg('a', 'b')
     assert '{{t|a=b}}' == t.string
     # Template with no args, auto positional
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg('1', 'b')
+    t.set_arg('1', 'b')
     assert '{{t|1=b}}' == t.string
     # Force keyword
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg('1', 'b', positional=False)
+    t.set_arg('1', 'b', positional=False)
     assert '{{t|1=b}}' == t.string
     # Arg already exist, positional
     t = Template('{{t|a}}')
@@ -230,26 +233,22 @@ def test_set_arg():
     assert '{{t|a|z=z}}' == t.string
     # Preserve spacing
     t = Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
-    with warns(DeprecationWarning):
-        t.set_arg('z', 'z')
+    t.set_arg('z', 'z', preserve_spacing=True)
     assert '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}' == t.string
 
 
 def test_preserve_spacing_with_only_one_arg():
     t = Template('{{t\n  |  afadfaf =   value \n}}')
-    with warns(DeprecationWarning):
-        t.set_arg('z', 'z')
+    t.set_arg('z', 'z', preserve_spacing=True)
     assert '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}' == t.string
 
 
 def test_multiline_arg():
     t = Template('{{text|\na=\nb\nc\n}}')
-    with warns(DeprecationWarning):
-        t.set_arg('d', 'e')
+    t.set_arg('d', 'e', preserve_spacing=True)
     assert '{{text|\na=\nb\nc|\nd=\ne\n}}' == t.string
     t = Template('{{text\n\n | a = b\n\n}}')
-    with warns(DeprecationWarning):
-        t.set_arg('c', 'd')
+    t.set_arg('c', 'd', preserve_spacing=True)
     assert '{{text\n\n | a = b\n\n | c = d\n\n}}' == t.string
 
 
@@ -267,38 +266,33 @@ def test_new_dont_preserve_space():
 
 def test_before():
     t = Template('{{t|a|b|c=c|d}}')
-    with warns(DeprecationWarning):
-        t.set_arg('e', 'e', before='c')
+    t.set_arg('e', 'e', before='c')
     assert '{{t|a|b|e=e|c=c|d}}' == t.string
 
 
 def test_after():
     t = Template('{{t|a|b|c=c|d}}')
-    with warns(DeprecationWarning):
-        t.set_arg('e', 'e', after='c')
+    t.set_arg('e', 'e', after='c')
     assert '{{t|a|b|c=c|e=e|d}}' == t.string
 
 
 def test_multi_set_positional_args():
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg('1', 'p', positional=True)
-        t.set_arg('2', 'q', positional=True)
+    t.set_arg('1', 'p', positional=True)
+    t.set_arg('2', 'q', positional=True)
     assert '{{t|p|q}}' == t.string
 
 
 @mark.xfail
 def test_invalid_position():
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg('2', 'a', positional=True)
+    t.set_arg('2', 'a', positional=True)
     assert '{{t|2=a}}' == t.string
 
 
 def test_force_new_to_positional_when_old_is_keyword():
     t = Template('{{t|1=v}}')
-    with warns(DeprecationWarning):
-        t.set_arg('1', 'v', positional=True)
+    t.set_arg('1', 'v', positional=True)
     assert '{{t|v}}' == t.string
 
 
@@ -310,8 +304,7 @@ def test_nowiki_makes_equal_ineffective():
 
 def test_not_name_and_positional_is_none():
     t = Template('{{t}}')
-    with warns(DeprecationWarning):
-        t.set_arg(None, 'v')
+    t.set_arg(None, 'v')
     assert '{{t|v}}' == t.string
 
 
@@ -322,21 +315,20 @@ def test_del_positional_arg():
 
 
 def test_parser_functions():
-    assert Template(
-        '{{t|{{#if:|}}}}').parser_functions[0].string == '{{#if:|}}'
+    assert (
+        Template('{{t|{{#if:|}}}}').parser_functions[0].string == '{{#if:|}}'
+    )
 
 
 def test_setting_single_space_arg():  # 97
     t = Template("{{t|a= }}")
-    with warns(DeprecationWarning):
-        t.set_arg('a', 'v')
+    t.set_arg('a', 'v', preserve_spacing=True)
     assert t.string == "{{t|a=v }}"
 
 
 def test_preserve_spacing_left_and_right():
     t = Template("{{t|a=\tx }}")
-    with warns(DeprecationWarning):
-        t.set_arg('a', 'y')
+    t.set_arg('a', 'y', preserve_spacing=True)
     assert t.string == "{{t|a=\ty }}"
 
 

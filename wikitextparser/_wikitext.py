@@ -1,5 +1,3 @@
-"""Define the WikiText and SubWikiText classes."""
-
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
 from html import unescape
@@ -16,7 +14,6 @@ from typing import (
     Tuple,
     Union,
 )
-from warnings import warn
 
 from regex import (
     DOTALL,
@@ -1345,15 +1342,6 @@ class WikiText:
         """Return appropriate shadow and its offset to be used by `lists`."""
         return self._shadow, self._span_data[0]
 
-    def lists(self, pattern: str = None) -> List['WikiList']:
-        """Deprecated, use self.get_lists instead."""
-        warn(
-            '`lists` method is deprecated, use `get_lists` instead.',
-            DeprecationWarning,
-            2,
-        )
-        return self.get_lists(pattern)
-
     def get_lists(
         self, pattern: Union[str, Tuple[str]] = (r'\#', r'\*', '[:;]')
     ) -> List['WikiList']:
@@ -1379,15 +1367,7 @@ class WikiText:
                     treated as flat.
                 - Use `'\*\s*'` as pattern to rtstrip `items` of the list.
         """
-        if pattern is None:
-            warn(
-                'calling get_lists with None pattern is deprecated; '
-                'Use the default value instead.',
-                DeprecationWarning,
-                2,
-            )
-            patterns = (r'\#', r'\*', '[:;]')
-        elif isinstance(pattern, str):
+        if isinstance(pattern, str):
             patterns = (pattern,)
         else:
             patterns = pattern
@@ -1423,15 +1403,6 @@ class WikiText:
                 )
         lists.sort(key=attrgetter('_span_data'))
         return lists
-
-    def tags(self, name=None) -> List['Tag']:
-        """Deprecated, use self.get_tags instead."""
-        warn(
-            '`tags` method is deprecated, use `get_tags` instead.',
-            DeprecationWarning,
-            2,
-        )
-        return self.get_tags(name)
 
     @property
     def _extension_tags(self):

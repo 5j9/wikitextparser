@@ -5,9 +5,6 @@ from wikitextparser import WikiList, parse
 
 def test_lists():
     assert repr(WikiList('# a\n## b', '#').get_lists()) == "[WikiList('## b')]"
-    with warns(DeprecationWarning):
-        # noinspection PyDeprecation
-        assert repr(WikiList('# a\n## b', '#').lists()) == "[WikiList('## b')]"
 
 
 def test_subitem_are_part_of_item():
@@ -18,43 +15,35 @@ def test_subitem_are_part_of_item():
         '* with a star\n'
         '** more stars mean\n'
         '*** deeper levels',
-        pattern=r'\*')
+        pattern=r'\*',
+    )
     items = ul.items
     assert items == [' Lists are easy to do:', ' with a star']
     fullitems = ul.fullitems
     assert fullitems == [
         '* Lists are easy to do:\n** start every line\n',
-        '* with a star\n** more stars mean\n*** deeper levels']
+        '* with a star\n** more stars mean\n*** deeper levels',
+    ]
 
 
 def test_commented_list_item():
     """One of the list items is commented through the wikitext."""
     wl = WikiList(
-        '#1\n'
-        '##1-1\n'
-        '##1-2<!-- \n'
-        '##1-3\n'
-        ' -->\n'
-        '#2\n',
-        pattern=r'\#')
+        '#1\n' '##1-1\n' '##1-2<!-- \n' '##1-3\n' ' -->\n' '#2\n',
+        pattern=r'\#',
+    )
     assert wl.items[1] == '2'
 
 
 def test_dont_return_shadow():
-    wl = WikiList(
-        '#1 {{t}}',
-        pattern=r'\#')
+    wl = WikiList('#1 {{t}}', pattern=r'\#')
     assert wl.items[0] == '1 {{t}}'
 
 
 def test_subitems_for_the_first_item():
     wl = WikiList(
-        '# 0\n'
-        '## 0.0\n'
-        '## 0.1\n'
-        '#* 0.0\n'
-        '# 2\n',
-        pattern=r'\#')
+        '# 0\n' '## 0.0\n' '## 0.1\n' '#* 0.0\n' '# 2\n', pattern=r'\#'
+    )
     items = wl.items[0]
     assert items == ' 0'
     subitems0 = wl.sublists(0, r'\#')[0]
@@ -72,7 +61,8 @@ def test_subitems_for_the_second_item():
         '* list item b\n'
         '** sub-list of b\n'
         '* list item c\n'
-        'text')
+        'text'
+    )
     wikilist = parsed.get_lists(pattern=r'\*')[0]
     assert wikilist.items == [' list item a', ' list item b', ' list item c']
     sublist = wikilist.sublists(1, r'\*')[0]
@@ -95,13 +85,15 @@ def test_mixed_definition_lists():
         ':; sub-item 2 : colon plus definition\n'
         '; item 2 \n'
         ': back to the main list\n',
-        pattern=r'[:;]\s*')
+        pattern=r'[:;]\s*',
+    )
     assert wl.items == [
-            'Mixed definition lists',
-            'item 1 ',
-            ' definition',
-            'item 2 ',
-            'back to the main list']
+        'Mixed definition lists',
+        'item 1 ',
+        ' definition',
+        'item 2 ',
+        'back to the main list',
+    ]
 
 
 def test_order_definition_lists():
@@ -120,7 +112,8 @@ def test_travese_mixed_list_completely():
         '*#*; apple\n'
         '*#*; banana\n'
         '*#*: fruits',
-        pattern=r'\*')
+        pattern=r'\*',
+    )
     assert wl.items == [' Or create mixed lists']
     swl = wl.sublists(0, r'\#')[0]
     assert swl.items == [' and nest them']
@@ -132,25 +125,18 @@ def test_travese_mixed_list_completely():
         ' work:',
         ' apple',
         ' banana',
-        ' fruits']
+        ' fruits',
+    ]
 
 
 def test_convert():
     wl = WikiList(
-        ':*A1\n'
-        ':*#B1\n'
-        ':*#B2\n'
-        ':*:continuing A1\n'
-        ':*A2',
-        pattern=r':\*')
+        ':*A1\n' ':*#B1\n' ':*#B2\n' ':*:continuing A1\n' ':*A2',
+        pattern=r':\*',
+    )
     assert wl.level == 2
     wl.convert('#')
-    assert wl.string == (
-        '#A1\n'
-        '##B1\n'
-        '##B2\n'
-        '#:continuing A1\n'
-        '#A2')
+    assert wl.string == ('#A1\n' '##B1\n' '##B2\n' '#:continuing A1\n' '#A2')
     assert wl.pattern == r'\#'
     assert wl.level == 1
 
@@ -160,15 +146,18 @@ def test_cache_update():
     wl.templates[0].name = 'ttt'
     assert wl.string == '*a {{ttt}}'
 
+
 # todo: check if ref tags can contain lists and add a test for it.
 
 
 def test_external_link_colon_shadow():  # 91
     assert parse("===abc===\n; https://github.com : definition\n").get_lists(
-        r'[:;]')[0]._list_shadow == bytearray(
-            b'; __________________ : definition\n')
+        r'[:;]'
+    )[0]._list_shadow == bytearray(b'; __________________ : definition\n')
 
 
 def test_sublist_for_missing_level():
-    assert parse('**1\n**2\n').get_lists()[0].sublists(0)[0].items ==\
-        ['1', '2']
+    assert parse('**1\n**2\n').get_lists()[0].sublists(0)[0].items == [
+        '1',
+        '2',
+    ]
