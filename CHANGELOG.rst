@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.54.0
+-------
 - Fixed a bug in ``WikiText.external_links`` not detecting external links inserted via overwriting a template string. (#74)
 - The following already deprecated functions/parameters are removed:
 
