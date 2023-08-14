@@ -7,6 +7,7 @@ from wikitextparser._wikitext import DEAD_INDEX, WS, DeadIndexError
 
 # basics  of WikiText
 
+
 def test_len():
     t1, t2 = WikiText('{{t1|{{t2}}}}').templates
     assert len(t2) == 6
@@ -49,8 +50,7 @@ def test_setitem_errors():
     raises(IndexError, w.__setitem__, -2, 'b')
     assert 'a' == w(-9, 9)
     raises(IndexError, w.__setitem__, 1, 'c')
-    raises(
-        NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
+    raises(NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
     assert 'a' == w(-1, None)
     assert w(-2, None) == 'a'
     raises(IndexError, w.__setitem__, slice(-2, None), 'e')
@@ -133,7 +133,7 @@ def test_a_b_from_different_objects():
     assert a2 not in b1
     assert a1 not in b2
     assert '{{a}}' in b1
-    assert'{{c}}' not in b2
+    assert '{{c}}' not in b2
 
 
 # _shrink_update
@@ -224,8 +224,7 @@ def test_overwriting_or_extending_selfspan_will_cause_data_loss():
 
 
 def test_template_inside_wikilink():
-    assert 2 == len(WikiText(
-        "{{text |  [[ A | {{text|b}} ]] }}").templates)
+    assert 2 == len(WikiText("{{text |  [[ A | {{text|b}} ]] }}").templates)
 
 
 def test_wikilink_in_template():
@@ -247,8 +246,9 @@ def test_ignore_comments():
 
 
 def test_ignore_nowiki():
-    assert "{{text |<nowiki>}} A </nowiki> }}" == str(WikiText(
-        "{{text |<nowiki>}} A </nowiki> }} B").templates[0])
+    assert "{{text |<nowiki>}} A </nowiki> }}" == str(
+        WikiText("{{text |<nowiki>}} A </nowiki> }} B").templates[0]
+    )
 
 
 def test_template_inside_extension_tags():
@@ -271,8 +271,12 @@ def test_comment_in_parserfunction_name():
 
 
 def test_wikilink_inside_parser_function():
-    assert "[[u:{{{3}}}|{{{3}}}]]" == WikiText(
-        "{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}").wikilinks[0].string
+    assert (
+        "[[u:{{{3}}}|{{{3}}}]]"
+        == WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
+        .wikilinks[0]
+        .string
+    )
 
 
 def test_template_in_wikilink():
@@ -289,8 +293,11 @@ def test_wikilink_target_may_contain_newline():
 
 
 def test_getting_comment():
-    assert "\n\nc\n{{A}}\n" == WikiText(
-        '1 <!--\n\nc\n{{A}}\n-->2').comments[0].contents
+    assert (
+        "\n\nc\n{{A}}\n"
+        == WikiText('1 <!--\n\nc\n{{A}}\n-->2').comments[0].contents
+    )
+
 
 # WikiText.nesting_level
 
@@ -313,7 +320,8 @@ def test_unicode_attr_values():
     wikitext = (
         'متن۱<ref name="نام۱" group="گ">یاد۱</ref>\n\n'
         'متن۲<ref name="نام۲" group="گ">یاد۲</ref>\n\n'
-        '<references group="گ"/>')
+        '<references group="گ"/>'
+    )
     parsed = parse(wikitext)
     with warns(DeprecationWarning):
         # noinspection PyDeprecation

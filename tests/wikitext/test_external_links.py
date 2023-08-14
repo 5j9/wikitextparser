@@ -2,28 +2,39 @@ from wikitextparser import Template, WikiText, parse
 
 
 def test_external_links_in_brackets_in_parser_elements():  # 50
-    assert parse('{{t|[http://a b]}}').external_links[0].string \
+    assert (
+        parse('{{t|[http://a b]}}').external_links[0].string == '[http://a b]'
+    )
+    assert (
+        parse('<ref>[http://a b]</ref>').external_links[0].string
         == '[http://a b]'
-    assert parse('<ref>[http://a b]</ref>').external_links[0].string \
-        == '[http://a b]'
-    assert parse('<ref>[http://a{{b}}]</ref>').external_links[0].string \
+    )
+    assert (
+        parse('<ref>[http://a{{b}}]</ref>').external_links[0].string
         == '[http://a{{b}}]'
-    assert parse('{{a|{{b|[http://c{{d}}]}}}}').external_links[0].string \
+    )
+    assert (
+        parse('{{a|{{b|[http://c{{d}}]}}}}').external_links[0].string
         == '[http://c{{d}}]'
+    )
 
 
 def test_with_nowiki():
-    assert parse('[http://a.b <nowiki>[c]</nowiki>]').external_links[0].text \
+    assert (
+        parse('[http://a.b <nowiki>[c]</nowiki>]').external_links[0].text
         == '<nowiki>[c]</nowiki>'
+    )
 
 
 def test_ipv6_brackets():
     # See:
     # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
-    assert parse(
-        'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/'
-    ).external_links[0].url == \
-        'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/'
+    assert (
+        parse('https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/')
+        .external_links[0]
+        .url
+        == 'https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/'
+    )
     el = parse(
         '[https://[2001:db8:85a3:8d3:1319:8a2e:370:7348]:443/ t]'
     ).external_links[0]
@@ -105,24 +116,33 @@ def test_wikilink2externallink_fallback():
 
 def test_template_in_link():
     # Note: In reality all assertions depend on the template outcome.
-    assert parse('http://example.com{{dead link}}').external_links[0].url == \
-        'http://example.com'
-    assert parse('http://example.com/foo{{!}}bar').external_links[0].url == \
-        'http://example.com/foo'
-    assert parse('[http://example.com{{foo}}text]').external_links[0].url == \
-        'http://example.com'
-    assert parse('[http://example.com{{foo bar}} t]').external_links[0].url ==\
-        'http://example.com'
+    assert (
+        parse('http://example.com{{dead link}}').external_links[0].url
+        == 'http://example.com'
+    )
+    assert (
+        parse('http://example.com/foo{{!}}bar').external_links[0].url
+        == 'http://example.com/foo'
+    )
+    assert (
+        parse('[http://example.com{{foo}}text]').external_links[0].url
+        == 'http://example.com'
+    )
+    assert (
+        parse('[http://example.com{{foo bar}} t]').external_links[0].url
+        == 'http://example.com'
+    )
 
 
 def test_comment_in_external_link():
     # This probably can be fixed, but who uses comments within urls?
-    el = parse(
-        '[http://example.com/foo<!-- comment -->bar]').external_links[0]
+    el = parse('[http://example.com/foo<!-- comment -->bar]').external_links[0]
     assert el.text is None
     assert el.url == 'http://example.com/foo<!-- comment -->bar'
-    assert parse('[http://example<!-- c -->.com t]').external_links[0].url == \
-        'http://example<!-- c -->.com'
+    assert (
+        parse('[http://example<!-- c -->.com t]').external_links[0].url
+        == 'http://example<!-- c -->.com'
+    )
 
 
 def test_no_bare_external_link_within_wiki_links():
@@ -166,9 +186,13 @@ def test_external_link_containing_extension_tags():
 
 
 def test_parser_function_in_external_link():
-    assert parse(
-        '[urn:u {{<!--c-->#if:a|a}}]'
-    ).external_links[0].parser_functions[0].string == '{{<!--c-->#if:a|a}}'
+    assert (
+        parse('[urn:u {{<!--c-->#if:a|a}}]')
+        .external_links[0]
+        .parser_functions[0]
+        .string
+        == '{{<!--c-->#if:a|a}}'
+    )
     # Note: Depends on the parser function outcome.
     assert len(parse('[urn:{{#if:a|a|}} t]').external_links) == 0
 
@@ -176,15 +200,16 @@ def test_parser_function_in_external_link():
 def test_equal_span_ids():
     p = parse('lead\n== 1 ==\nhttp://wikipedia.org/')
     # noinspection PyProtectedMember
-    assert id(p.external_links[0]._span_data) == \
-        id(p.sections[1].external_links[0]._span_data)
+    assert id(p.external_links[0]._span_data) == id(
+        p.sections[1].external_links[0]._span_data
+    )
 
 
 def test_external_link_should_not_span_over_tags():
-    els, = parse('<ref>[https://a.b/ </ref>]').external_links
+    (els,) = parse('<ref>[https://a.b/ </ref>]').external_links
     assert els.string == 'https://a.b/'
 
 
 def test_external_link_in_pf_in_tl():  # 110
-    els, = parse('{{text|<ref>[https://a.b a]</ref>}}').external_links
+    (els,) = parse('{{text|<ref>[https://a.b a]</ref>}}').external_links
     assert els.string == '[https://a.b a]'

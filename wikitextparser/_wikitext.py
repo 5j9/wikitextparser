@@ -23,7 +23,7 @@ from regex import (
     IGNORECASE,
     MULTILINE,
     VERBOSE,
-    compile as regex_compile,
+    compile as rc,
     finditer,
     match,
     search,
@@ -48,39 +48,43 @@ from ._spans import (
     parse_to_spans,
 )
 
-NAME_CAPTURING_HTML_START_TAG_FINDITER = regex_compile(
+NAME_CAPTURING_HTML_START_TAG_FINDITER = rc(
     START_TAG_PATTERN.replace(
-        b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1)).finditer
+        b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1
+    )
+).finditer
 
-PARSABLE_TAG_EXTENSIONS_MATCH = regex_compile(
-    rb'<' + PARSABLE_TAG_EXTENSION_NAME + rb'\b', IGNORECASE).match
+PARSABLE_TAG_EXTENSIONS_MATCH = rc(
+    rb'<' + PARSABLE_TAG_EXTENSION_NAME + rb'\b', IGNORECASE
+).match
 
 # External links
 BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
-    _bare_external_link_schemes | {'//'})
+    _bare_external_link_schemes | {'//'}
+)
 BRACKET_EXTERNAL_LINK_URL = (
-    BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL)
-BRACKET_EXTERNAL_LINK = (
-    rb'\[' + BRACKET_EXTERNAL_LINK_URL + rb'[^\]\n]*+\]')
-EXTERNAL_LINK = \
+    BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
+)
+BRACKET_EXTERNAL_LINK = rb'\[' + BRACKET_EXTERNAL_LINK_URL + rb'[^\]\n]*+\]'
+EXTERNAL_LINK = (
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
-EXTERNAL_LINK_FINDITER = regex_compile(EXTERNAL_LINK, IGNORECASE).finditer
-INVALID_EXT_CHARS_SUB = regex_compile(  # the [:-4] slice allows \[ and \]
-    rb'[' + INVALID_URL_CHARS[:-4] + rb'{}]').sub
+)
+EXTERNAL_LINK_FINDITER = rc(EXTERNAL_LINK, IGNORECASE).finditer
+INVALID_EXT_CHARS_SUB = rc(  # the [:-4] slice allows \[ and \]
+    rb'[' + INVALID_URL_CHARS[:-4] + rb'{}]'
+).sub
 
 # Sections
 SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
-SECTIONS_FULLMATCH = regex_compile(
+SECTIONS_FULLMATCH = rc(
     rb'(?<section>(?<equals>).*?)'  # lead section
-    rb'(?<section>'
-    + SECTION_HEADING +  # heading
-    rb'.*?'  # section content
+    rb'(?<section>' + SECTION_HEADING + rb'.*?'  # heading  # section content
     rb')*',  # Todo: why can't be made possessive?
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
 
 # Tables
-TABLE_FINDITER = regex_compile(
+TABLE_FINDITER = rc(
     rb"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
@@ -94,34 +98,47 @@ TABLE_FINDITER = regex_compile(
     \n\s*+
     (?> \|} | \Z )
     """,
-    DOTALL | MULTILINE | VERBOSE).finditer
+    DOTALL | MULTILINE | VERBOSE,
+).finditer
 
-BOLD_ITALIC_FINDITER = regex_compile(  # bold-italic, bold, or italic tokens
+BOLD_ITALIC_FINDITER = rc(  # bold-italic, bold, or italic tokens
     rb"""((?>'\0*)*?)'\0*+'\0*+('\0*+('\0*+')?+)?+(?=[^']|$)|($)""",
-    MULTILINE | VERBOSE).finditer
+    MULTILINE | VERBOSE,
+).finditer
 
-BOLD_FINDITER = regex_compile(rb"""
+BOLD_FINDITER = rc(
+    rb"""
     # start token
     '\0*+'\0*+'
     # content
     (\0*+[^'\n]++.*?)
     # end token
     (?:'\0*+'\0*+'|$)
-""", MULTILINE | VERBOSE).finditer
+""",
+    MULTILINE | VERBOSE,
+).finditer
 
-ITALIC_FINDITER = regex_compile(rb"""
+ITALIC_FINDITER = rc(
+    rb"""
     # start token
     '\0*+'
     # content
     (\0*+[^'\n]++.*?)
     # end token
     (?:'\0*+'|$)
-""", MULTILINE | VERBOSE).finditer
+""",
+    MULTILINE | VERBOSE,
+).finditer
 
 # Types which are detected by parse_to_spans
 SPAN_PARSER_TYPES = {
-    'Template', 'ParserFunction', 'WikiLink', 'Comment', 'Parameter',
-    'ExtensionTag'}
+    'Template',
+    'ParserFunction',
+    'WikiLink',
+    'Comment',
+    'Parameter',
+    'ExtensionTag',
+}
 
 WS = '\r\n\t '
 
@@ -136,12 +153,15 @@ class DeadIndex(int):
     Addition of indices is the main operation during mutation of WikiText
     objects.
     """
+
     __slots__ = ()
 
     def __add__(self, o):
         raise DeadIndexError(
             'this usually means that the object has died '
-            '(overwritten or deleted) and cannot be mutated')
+            '(overwritten or deleted) and cannot be mutated'
+        )
+
     __radd__ = __add__
 
     def __repr__(self):
@@ -153,22 +173,26 @@ DEAD_SPAN = DEAD_INDEX, DEAD_INDEX, None, None
 
 
 def _table_to_text(t: 'Table') -> str:
-    data = [[
-        (cell if cell is not None else '') for cell in row
-    ] for row in t.data()]
+    data = [
+        [(cell if cell is not None else '') for cell in row]
+        for row in t.data()
+    ]
     widths = [0] * len(data[0])
     for row in data:
         for ri, d in enumerate(row[:-1]):
             widths[ri] = max(widths[ri], wcswidth(d))
     caption = t.caption
-    return (f'\n{caption}\n' if caption is not None else '') + '\n' + '\n'.join('\t'.join(
-        f'{d:<{w}}' for (w, d) in zip(widths, r)
-    ) for r in data) + '\n'
-
+    return (
+        (f'\n{caption}\n' if caption is not None else '')
+        + '\n'
+        + '\n'.join(
+            '\t'.join(f'{d:<{w}}' for (w, d) in zip(widths, r)) for r in data
+        )
+        + '\n'
+    )
 
 
 class WikiText:
-
     # In subclasses of WikiText _type is used as the key for _type_to_spans
     # Therefore: self._span can be found in self._type_to_spans[self._type].
     # The following class attribute acts as a default value.
@@ -273,9 +297,12 @@ class WikiText:
             return self._lststr[0][self._span_data[1] + start]
         s, e, _, _ = self._span_data
         return self._lststr[0][
-            s if start is None else (s + start if start >= 0 else e + start):
-            e if stop is None else (s + stop if stop >= 0 else e + stop):
-            step]
+            s
+            if start is None
+            else (s + start if start >= 0 else e + start) : e
+            if stop is None
+            else (s + stop if stop >= 0 else e + stop) : step
+        ]
 
     def _check_index(self, key: Union[slice, int]) -> (int, int):
         """Return adjusted start and stop index as tuple.
@@ -295,7 +322,8 @@ class WikiText:
         # isinstance(key, slice)
         if key.step is not None:
             raise NotImplementedError(
-                'step is not implemented for string setter.')
+                'step is not implemented for string setter.'
+            )
         start = key.start or 0
         stop = key.stop
         if start < 0:
@@ -308,7 +336,8 @@ class WikiText:
             stop += se - ss
         if start > stop:
             raise IndexError(
-                'stop index out of range or start is after the stop')
+                'stop index out of range or start is after the stop'
+            )
         return start + ss, stop + ss
 
     def __setitem__(self, key: Union[slice, int], value: str) -> None:
@@ -334,8 +363,8 @@ class WikiText:
             self._insert_update(abs_start, len_change)
         elif len_change < 0:
             self._del_update(
-                rmstart=abs_stop + len_change,  # new stop
-                rmstop=abs_stop)  # old stop
+                rmstart=abs_stop + len_change, rmstop=abs_stop  # new stop
+            )  # old stop
         # Add the newly added spans contained in the value.
         type_to_spans = self._type_to_spans
         for type_, value_spans in parse_to_spans(val_ba).items():
@@ -384,9 +413,7 @@ class WikiText:
         lststr[0] = lststr0[:index] + string + lststr0[index:]
         string_len = len(string)
         # Update spans
-        self._insert_update(
-            index=index,
-            length=string_len)
+        self._insert_update(index=index, length=string_len)
         # Remember newly added spans by the string.
         type_to_spans = self._type_to_spans
         byte_array = bytearray(string, 'ascii', 'replace')
@@ -394,7 +421,8 @@ class WikiText:
             for s, e, _, _ in spans:
                 insort_right(
                     type_to_spans[type_],
-                    [index + s, index + e, None, byte_array])
+                    [index + s, index + e, None, byte_array],
+                )
 
     @property
     def span(self) -> tuple:
@@ -432,7 +460,7 @@ class WikiText:
         for spans in self._type_to_spans.values():
             b = bisect_left(spans, [start])
             for i, (s, e, _, _) in enumerate(
-                spans[b:bisect_right(spans, [stop], b)]
+                spans[b : bisect_right(spans, [stop], b)]
             ):
                 if e <= stop:
                     if ss != s or se != e:
@@ -514,9 +542,10 @@ class WikiText:
                     span[3] = None  # todo: update instead
                     # index is before s0, or at s0 but span is not a parent
                     if index < s0 or (
-                            s0 == index
-                            and self_span is not span
-                            and span_type != 'WikiText'):
+                        s0 == index
+                        and self_span is not span
+                        and span_type != 'WikiText'
+                    ):
                         span[0] += length
 
     def _nesting_level(self, parent_types) -> int:
@@ -525,7 +554,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         for type_ in parent_types:
             spans = type_to_spans[type_]
-            for s, e, _, _ in spans[:bisect_right(spans, [ss + 1])]:
+            for s, e, _, _ in spans[: bisect_right(spans, [ss + 1])]:
                 if se <= e:
                     level += 1
         return level
@@ -548,8 +577,9 @@ class WikiText:
         ss, se, m, cached_shadow = span_data = self._span_data
         if cached_shadow is not None:
             return cached_shadow
-        shadow = span_data[3] = \
-            bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
+        shadow = span_data[3] = bytearray(
+            self._lststr[0][ss:se], 'ascii', 'replace'
+        )
         if self._type in SPAN_PARSER_TYPES:
             head = shadow[:2]
             tail = shadow[-2:]
@@ -573,21 +603,31 @@ class WikiText:
         return {
             type_: [
                 [s - ss, e - ss, m, ba[:] if ba is not None else None]
-                for s, e, m, ba in spans[bisect_left(spans, [ss]):] if e <= se
-            ] for type_, spans in self._type_to_spans.items()}
+                for s, e, m, ba in spans[bisect_left(spans, [ss]) :]
+                if e <= se
+            ]
+            for type_, spans in self._type_to_spans.items()
+        }
 
     def plain_text(
-        self, *,
-        replace_templates: Union[bool, Callable[['Template'], Optional[str]]]=True,
-        replace_parser_functions: Union[bool, Callable[['ParserFunction'], Optional[str]]]=True,
+        self,
+        *,
+        replace_templates: Union[
+            bool, Callable[['Template'], Optional[str]]
+        ] = True,
+        replace_parser_functions: Union[
+            bool, Callable[['ParserFunction'], Optional[str]]
+        ] = True,
         replace_parameters=True,
         replace_tags=True,
         replace_external_links=True,
         replace_wikilinks=True,
         unescape_html_entities=True,
         replace_bolds_and_italics=True,
-        replace_tables: Union[Callable[['Table'], Optional[str]], bool] = _table_to_text,
-        _is_root_node=False
+        replace_tables: Union[
+            Callable[['Table'], Optional[str]], bool
+        ] = _table_to_text,
+        _is_root_node=False,
     ) -> str:
         # plain_text_doc will be added to __doc__
         """Return a plain text string representation of self."""
@@ -610,7 +650,7 @@ class WikiText:
         def remove(b: int, e: int):
             lst[b:e] = [None] * (e - b)
 
-        for (b, e, _, _) in tts['Comment']:
+        for b, e, _, _ in tts['Comment']:
             remove(b, e)
 
         if callable(replace_templates):
@@ -621,7 +661,7 @@ class WikiText:
                 lst[b] = replace_templates(template)
                 remove(b + 1, e)
         elif replace_templates:
-            for (b, e, _, _) in tts['Template']:
+            for b, e, _, _ in tts['Template']:
                 remove(b, e)
 
         if callable(replace_parser_functions):
@@ -632,7 +672,7 @@ class WikiText:
                 lst[b] = replace_parser_functions(pf)
                 remove(b + 1, e)
         elif replace_parser_functions:
-            for (b, e, _, _) in tts['ParserFunction']:
+            for b, e, _, _ in tts['ParserFunction']:
                 remove(b, e)
 
         if replace_external_links:
@@ -692,9 +732,9 @@ class WikiText:
                 b, e = table._span_data[:2]  # noqa
                 if lst[b] is None:  # overwritten
                     continue
-                lst[b] = replace_tables(Table(
-                    ''.join([c for c in lst[b:e] if c is not None])
-                ))
+                lst[b] = replace_tables(
+                    Table(''.join([c for c in lst[b:e] if c is not None]))
+                )
                 remove(b + 1, e)
 
         string = ''.join([c for c in lst if c is not None])
@@ -733,7 +773,8 @@ class WikiText:
             stripped_tl_name = template.name.strip(ws)
             template.name = (
                 ' ' + stripped_tl_name + ' '
-                if stripped_tl_name[0] == '{' else stripped_tl_name
+                if stripped_tl_name[0] == '{'
+                else stripped_tl_name
             )
             args = template.arguments
             if not args:
@@ -747,8 +788,7 @@ class WikiText:
             arg_stripped_names = [a.name.strip(ws) for a in args]
             arg_positionalities = [a.positional for a in args]
             arg_name_lengths = [
-                wcswidth(n.replace('لا', '?'))
-                if not p else 0
+                wcswidth(n.replace('لا', '?')) if not p else 0
                 for n, p in zip(arg_stripped_names, arg_positionalities)
             ]
             max_name_len = max(arg_name_lengths)
@@ -772,10 +812,14 @@ class WikiText:
             elif not_a_parser_function:
                 stop_conversion = False
                 last_arg.name = (
-                    ' ' + arg_stripped_names.pop() + ' ' +
-                    ' ' * (max_name_len - arg_name_lengths.pop()))
+                    ' '
+                    + arg_stripped_names.pop()
+                    + ' '
+                    + ' ' * (max_name_len - arg_name_lengths.pop())
+                )
                 last_arg.value = (
-                    ' ' + last_stripped_value + '\n' + indent * (level - 1))
+                    ' ' + last_stripped_value + '\n' + indent * (level - 1)
+                )
             elif last_is_positional:
                 # (last_value == last_stripped_value
                 # and not_a_parser_function is not True)
@@ -791,7 +835,8 @@ class WikiText:
                 last_arg.name = ' ' + last_arg.name.lstrip(ws)
                 if not last_value.endswith('\n' + indent * (level - 1)):
                     last_arg.value = (
-                        last_value.rstrip(ws) + ' ' + last_comment_indent)
+                        last_value.rstrip(ws) + ' ' + last_comment_indent
+                    )
             if not args:
                 continue
             comment_indent = '<!--\n' + indent * (level - 1) + ' -->'
@@ -815,8 +860,11 @@ class WikiText:
                         arg.value += comment_indent
                 elif not_a_parser_function:
                     arg.name = (
-                        ' ' + stripped_name + ' ' +
-                        ' ' * (max_name_len - arg_name_len))
+                        ' '
+                        + stripped_name
+                        + ' '
+                        + ' ' * (max_name_len - arg_name_len)
+                    )
                     arg.value = ' ' + stripped_value + newline_indent
 
         for func in reversed(parsed.parser_functions):
@@ -824,7 +872,7 @@ class WikiText:
             ls_name = name.lstrip(ws)
             lws = len(name) - len(ls_name)
             if lws:
-                del func[2:lws + 2]
+                del func[2 : lws + 2]
             if ls_name.lower() in ('#tag', '#invoke', ''):
                 # The 2nd argument of `tag` parser function is an exception
                 # and cannot be stripped.
@@ -849,7 +897,8 @@ class WikiText:
                 # the first arg is both the first and last argument
                 if arg.positional:
                     arg.value = (
-                        newline_indent + arg.value.strip(ws) + short_indent)
+                        newline_indent + arg.value.strip(ws) + short_indent
+                    )
                 else:
                     # Note that we don't add spaces before and after the
                     # '=' in parser functions because it could be part of
@@ -860,8 +909,9 @@ class WikiText:
             # Special formatting for the first argument
             arg = args[0]
             if arg.positional:
-                arg.value = \
+                arg.value = (
                     newline_indent + arg.value.strip(ws) + newline_indent
+                )
             else:
                 arg.name = newline_indent + arg.name.lstrip(ws)
                 arg.value = arg.value.rstrip(ws) + newline_indent
@@ -889,7 +939,8 @@ class WikiText:
         _type_to_spans = self._type_to_spans
         return [
             Parameter(_lststr, _type_to_spans, span, 'Parameter')
-            for span in self._subspans('Parameter')]
+            for span in self._subspans('Parameter')
+        ]
 
     @property
     def parser_functions(self) -> List['ParserFunction']:
@@ -898,7 +949,8 @@ class WikiText:
         _type_to_spans = self._type_to_spans
         return [
             ParserFunction(_lststr, _type_to_spans, span, 'ParserFunction')
-            for span in self._subspans('ParserFunction')]
+            for span in self._subspans('ParserFunction')
+        ]
 
     @property
     def templates(self) -> List['Template']:
@@ -907,7 +959,8 @@ class WikiText:
         _type_to_spans = self._type_to_spans
         return [
             Template(_lststr, _type_to_spans, span, 'Template')
-            for span in self._subspans('Template')]
+            for span in self._subspans('Template')
+        ]
 
     @property
     def wikilinks(self) -> List['WikiLink']:
@@ -916,7 +969,8 @@ class WikiText:
         _type_to_spans = self._type_to_spans
         return [
             WikiLink(_lststr, _type_to_spans, span, 'WikiLink')
-            for span in self._subspans('WikiLink')]
+            for span in self._subspans('WikiLink')
+        ]
 
     @property
     def comments(self) -> List['Comment']:
@@ -925,7 +979,8 @@ class WikiText:
         _type_to_spans = self._type_to_spans
         return [
             Comment(_lststr, _type_to_spans, span, 'Comment')
-            for span in self._subspans('Comment')]
+            for span in self._subspans('Comment')
+        ]
 
     _relative_contents_end = span
 
@@ -944,17 +999,22 @@ class WikiText:
         append_match = bold_matches.append
         for match in BOLD_ITALIC_FINDITER(shadow_copy):
             if match[4] is not None:  # newline or string end
-                if odd_italics is True and (
-                        len(bold_matches) + odd_bold_italics) % 2:
+                if (
+                    odd_italics is True
+                    and (len(bold_matches) + odd_bold_italics) % 2
+                ):
                     # one of the bold marks needs to be interpreted as italic
                     first_multi_letter_word = first_space = None
                     for bold_match in bold_matches:
                         bold_start = bold_match.start()
-                        if shadow_copy[bold_start - 1:bold_start] == b' ':
+                        if shadow_copy[bold_start - 1 : bold_start] == b' ':
                             if first_space is None:
                                 first_space = bold_start
                             continue
-                        if shadow_copy[bold_start - 2:bold_start - 1] == b' ':
+                        if (
+                            shadow_copy[bold_start - 2 : bold_start - 1]
+                            == b' '
+                        ):
                             shadow_copy[bold_start] = 95  # _
                             break  # first_single_letter_word
                         if first_multi_letter_word is None:
@@ -988,10 +1048,15 @@ class WikiText:
 
     def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
         for prop in (
-                'templates', 'parser_functions', 'parameters', 'wikilinks'):
+            'templates',
+            'parser_functions',
+            'parameters',
+            'wikilinks',
+        ):
             for e in getattr(self, prop):
                 result += e.get_bolds_and_italics(
-                    filter_cls=filter_cls, recursive=False)
+                    filter_cls=filter_cls, recursive=False
+                )
         extension_tags = self._extension_tags
         if not extension_tags:
             return result
@@ -999,7 +1064,8 @@ class WikiText:
         result_spans = {(*i._span_data[:2],) for i in result}
         for e in extension_tags:
             for i in e.get_bolds_and_italics(
-                    filter_cls=filter_cls, recursive=False):
+                filter_cls=filter_cls, recursive=False
+            ):
                 # noinspection PyProtectedMember
                 if (*i._span_data[:2],) not in result_spans:
                     result.append(i)
@@ -1070,8 +1136,11 @@ class WikiText:
                 insort_right(italic_spans, span)
             else:
                 span = old_span
-            append(Italic(
-                _lststr, type_to_spans, span, 'Bold', me != match.end(1)))
+            append(
+                Italic(
+                    _lststr, type_to_spans, span, 'Bold', me != match.end(1)
+                )
+            )
         if recursive and filter_cls is Italic:
             self._bolds_italics_recurse(result, filter_cls)
             result.sort(key=attrgetter('_span_data'))
@@ -1095,7 +1164,8 @@ class WikiText:
             extension tags, etc.
         """
         return self.get_bolds_and_italics(
-            filter_cls=Italic, recursive=recursive)
+            filter_cls=Italic, recursive=recursive
+        )
 
     @property
     def _ext_link_shadow(self):
@@ -1113,8 +1183,11 @@ class WikiText:
             byte_array[s:e] = (e - s) * b' '
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
-                byte_array[s:e] = b'  ' + INVALID_EXT_CHARS_SUB(
-                    b' ', byte_array[s + 2:e - 2]) + b'  '
+                byte_array[s:e] = (
+                    b'  '
+                    + INVALID_EXT_CHARS_SUB(b' ', byte_array[s + 2 : e - 2])
+                    + b'  '
+                )
         return byte_array
 
     @property
@@ -1154,7 +1227,8 @@ class WikiText:
                 else:
                     span = old_span
                 external_links_append(
-                    ExternalLink(lststr, type_to_spans, span, 'ExternalLink'))
+                    ExternalLink(lststr, type_to_spans, span, 'ExternalLink')
+                )
 
         for s, e, _, _ in self._subspans('ExtensionTag'):
             _extract(s, e)
@@ -1267,7 +1341,8 @@ class WikiText:
         if not recursive:
             return_spans = _outer_spans(return_spans)
         return [
-            Table(lststr, type_to_spans, sp, 'Table') for sp in return_spans]
+            Table(lststr, type_to_spans, sp, 'Table') for sp in return_spans
+        ]
 
     @property
     def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
@@ -1278,7 +1353,8 @@ class WikiText:
         """Deprecated, use self.get_lists instead."""
         warn(
             '`lists` method is deprecated, use `get_lists` instead.',
-            DeprecationWarning, 2
+            DeprecationWarning,
+            2,
         )
         return self.get_lists(pattern)
 
@@ -1310,7 +1386,9 @@ class WikiText:
         if pattern is None:
             warn(
                 'calling get_lists with None pattern is deprecated; '
-                'Use the default value instead.', DeprecationWarning, 2
+                'Use the default value instead.',
+                DeprecationWarning,
+                2,
             )
             patterns = (r'\#', r'\*', '[:;]')
         elif isinstance(pattern, str):
@@ -1331,7 +1409,8 @@ class WikiText:
         for pattern in patterns:
             for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode(), 1),
-                shadow, MULTILINE
+                shadow,
+                MULTILINE,
             ):
                 ms, me = m.span()
                 s, e = ss + ms, ss + me
@@ -1341,8 +1420,11 @@ class WikiText:
                     insort_right(spans, span)
                 else:
                     span = old_span
-                lists_append(WikiList(
-                    lststr, pattern, m, type_to_spans, span, 'WikiList'))
+                lists_append(
+                    WikiList(
+                        lststr, pattern, m, type_to_spans, span, 'WikiList'
+                    )
+                )
         lists.sort(key=attrgetter('_span_data'))
         return lists
 
@@ -1350,7 +1432,8 @@ class WikiText:
         """Deprecated, use self.get_tags instead."""
         warn(
             '`tags` method is deprecated, use `get_tags` instead.',
-            DeprecationWarning, 2,
+            DeprecationWarning,
+            2,
         )
         return self.get_tags(name)
 
@@ -1360,7 +1443,8 @@ class WikiText:
         type_to_spans = self._type_to_spans
         return [
             Tag(lststr, type_to_spans, span, 'ExtensionTag')
-            for span in self._subspans('ExtensionTag')]
+            for span in self._subspans('ExtensionTag')
+        ]
 
     def get_tags(self, name=None) -> List['Tag']:
         """Return all tags with the given name."""
@@ -1372,8 +1456,9 @@ class WikiText:
                 return [
                     Tag(lststr, type_to_spans, span, 'ExtensionTag')
                     for span in type_to_spans['ExtensionTag']
-                    if match(
-                        r'<' + name + r'\b', string, pos=span[0]) is not None]
+                    if match(r'<' + name + r'\b', string, pos=span[0])
+                    is not None
+                ]
             tags = []  # type: List['Tag']
         else:
             # There is no name, add all extension tags. Before using shadow.
@@ -1385,15 +1470,23 @@ class WikiText:
         shadow = self._shadow
         if name:
             # There is a name but it is not in TAG_EXTENSIONS.
-            reversed_start_matches = reversed([m for m in regex_compile(
-                START_TAG_PATTERN.replace(
-                    rb'{name}', rb'(?P<name>' + name.encode() + rb')')
-            ).finditer(shadow)])
-            end_search = regex_compile(END_TAG_PATTERN.replace(
-                b'{name}', name.encode())).search
+            reversed_start_matches = reversed(
+                [
+                    m
+                    for m in rc(
+                        START_TAG_PATTERN.replace(
+                            rb'{name}', rb'(?P<name>' + name.encode() + rb')'
+                        )
+                    ).finditer(shadow)
+                ]
+            )
+            end_search = rc(
+                END_TAG_PATTERN.replace(b'{name}', name.encode())
+            ).search
         else:
             reversed_start_matches = reversed(
-                [m for m in NAME_CAPTURING_HTML_START_TAG_FINDITER(shadow)])
+                [m for m in NAME_CAPTURING_HTML_START_TAG_FINDITER(shadow)]
+            )
         shadow_copy = shadow[:]
         spans = type_to_spans.setdefault('Tag', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
@@ -1417,8 +1510,11 @@ class WikiText:
                     # build end_search according to start tag name
                     end_match = search(
                         END_TAG_PATTERN.replace(
-                            b'{name}', start_match['name']),
-                        shadow_copy, pos=sme)
+                            b'{name}', start_match['name']
+                        ),
+                        shadow_copy,
+                        pos=sme,
+                    )
                 if end_match:
                     ems, eme = end_match.span()
                     shadow_copy[ems:eme] = b'_' * (eme - ems)
@@ -1487,7 +1583,7 @@ class SubWikiText(WikiText):
         # The second bisect is an optimization and should be on [se + 1],
         # but empty spans are not desired thus [se] is used.
         b = bisect_left(spans, [ss])
-        for span in spans[b:bisect_right(spans, [se], b)]:
+        for span in spans[b : bisect_right(spans, [se], b)]:
             if span[1] <= se:
                 yield span
 
@@ -1503,7 +1599,7 @@ class SubWikiText(WikiText):
         if type_ is None:
             types = SPAN_PARSER_TYPES
         else:
-            types = type_,
+            types = (type_,)
         lststr = self._lststr
         type_to_spans = self._type_to_spans
         ss, se, _, _ = self._span_data
@@ -1512,7 +1608,7 @@ class SubWikiText(WikiText):
         for type_ in types:
             cls = globals()[type_]
             spans = type_to_spans[type_]
-            for span in spans[:bisect_right(spans, [ss])]:
+            for span in spans[: bisect_right(spans, [ss])]:
                 if se < span[1]:
                     ancestors_append(cls(lststr, type_to_spans, span, type_))
         return sorted(ancestors, key=lambda i: ss - i._span_data[0])
