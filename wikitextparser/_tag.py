@@ -10,32 +10,38 @@ For more info see:
 
 from typing import Any, Dict, List, Optional
 
-from regex import DOTALL, VERBOSE, compile as regex_compile
+from regex import DOTALL, VERBOSE
 
 from ._spans import ATTRS_PATTERN, END_TAG_PATTERN, SPACE_CHARS
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, rc
 
 # HTML elements all have names that only use alphanumeric ASCII characters
 # https://www.w3.org/TR/html5/syntax.html#syntax-tag-name
 # Todo: can the tags method be implemented using a TAG_FINDITER? Will
-# that be more performant?
+#   that be more performant?
 # TAG_FINDITER should not find any tag containing other tags.
 # TAG_CONTENTS = r'(?<contents>(?>(?!{TAG}).)*?)'.format(
 #     TAG=TAG.format(**locals())
 # )
-# TAG_FINDITER = regex_compile(
+# TAG_FINDITER = rc(
 #     TAG.format(**locals()), flags=DOTALL | VERBOSE
 # ).finditer
 # Note that the following regex won't check for nested tags
-TAG_FULLMATCH = regex_compile(
+TAG_FULLMATCH = rc(
     rb'''
-    <(?<name>[A-Za-z0-9]++)''' + ATTRS_PATTERN + rb'''
-    [''' + SPACE_CHARS + rb''']*+
+    <(?<name>[A-Za-z0-9]++)'''
+    + ATTRS_PATTERN
+    + rb'''
+    ['''
+    + SPACE_CHARS
+    + rb''']*+
     (?>
-        >(?<contents>.*)''' + END_TAG_PATTERN.replace(
-            rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)') +  # noqa
-        rb'''|>  # only start; no end tag; could be self-closing
-    )''', DOTALL | VERBOSE).fullmatch
+        >(?<contents>.*)'''
+    + END_TAG_PATTERN.replace(rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)')
+    + rb'''|>  # only start; no end tag; could be self-closing
+    )''',
+    DOTALL | VERBOSE,
+).fullmatch
 
 
 class SubWikiTextWithAttrs(SubWikiText):
@@ -54,10 +60,12 @@ class SubWikiTextWithAttrs(SubWikiText):
         """Return self attributes as a dictionary."""
         spans = self._attrs_match.spans
         string = self.string
-        return dict(zip(
-            (string[s:e] for s, e in spans('attr_name')),
-            (string[s:e] for s, e in spans('attr_value')),
-        ))
+        return dict(
+            zip(
+                (string[s:e] for s, e in spans('attr_name')),
+                (string[s:e] for s, e in spans('attr_value')),
+            )
+        )
 
     def has_attr(self, attr_name: str) -> bool:
         """Return True if self contains an attribute with the given name."""
@@ -95,12 +103,12 @@ class SubWikiTextWithAttrs(SubWikiText):
             if string[s:e] == attr_name:
                 vs, ve = match.spans('attr_value')[-i - 1]
                 q = 1 if match.string[ve] in b'"\'' else 0
-                self[vs - q:ve + q] = f'"{attr_value}"'
+                self[vs - q : ve + q] = f'"{attr_value}"'
                 return
         # The attr_name is new, add a new attribute.
         self.insert(
             match.end('attr_insert'),
-            f' {attr_name}="{attr_value}"' if attr_value else f' {attr_name}'
+            f' {attr_name}="{attr_value}"' if attr_value else f' {attr_name}',
         )
         return
 
@@ -120,7 +128,6 @@ class SubWikiTextWithAttrs(SubWikiText):
 
 
 class Tag(SubWikiTextWithAttrs):
-
     __slots__ = '_match_cache'
 
     def __init__(self, *args, **kwargs):

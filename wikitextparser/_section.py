@@ -1,15 +1,11 @@
-﻿"""Define the Section class."""
-from typing import Optional
+﻿from typing import Optional
 
-from regex import compile as regex_compile
+from ._wikitext import SubWikiText, rc
 
-from ._wikitext import SubWikiText
-
-HEADER_MATCH = regex_compile(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
+HEADER_MATCH = rc(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
 
 
 class Section(SubWikiText):
-
     __slots__ = '_header_match_cache'
 
     def __init__(self, *args, **kwargs):
@@ -51,18 +47,18 @@ class Section(SubWikiText):
             self.insert(m.end(2) + 1, new_equals)
             return
         del self[:level_diff]
-        del self[m.end(2):m.end(2) + level_diff]
+        del self[m.end(2) : m.end(2) + level_diff]
 
     @property
     def title(self) -> Optional[str]:
         """The title of this section.
 
-         getter: Return the title or None for lead sections or sections that
-            don't have any title.
-         setter: Set a new title.
-         deleter: Remove the title, including the equal sign and the newline
-            after it.
-         """
+        getter: Return the title or None for lead sections or sections that
+           don't have any title.
+        setter: Set a new title.
+        deleter: Remove the title, including the equal sign and the newline
+           after it.
+        """
         m = self._header_match
         if m is None:
             return None
@@ -74,15 +70,16 @@ class Section(SubWikiText):
         if m is None:
             raise RuntimeError(
                 "Can't set title for a lead section. "
-                "Try adding it to contents.")
-        self[m.start(2):m.end(2)] = value
+                "Try adding it to contents."
+            )
+        self[m.start(2) : m.end(2)] = value
 
     @title.deleter
     def title(self) -> None:
         m = self._header_match
         if m is None:
             return
-        del self[m.start():m.end()]
+        del self[m.start() : m.end()]
 
     @property
     def contents(self) -> str:
@@ -102,4 +99,4 @@ class Section(SubWikiText):
         if m is None:
             self[:] = value
             return
-        self[m.end():] = value
+        self[m.end() :] = value

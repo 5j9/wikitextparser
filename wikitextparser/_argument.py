@@ -1,14 +1,15 @@
-﻿"""Define the Argument class."""
-from typing import Dict, List, MutableSequence, Optional, Union
+﻿from typing import Dict, List, MutableSequence, Optional, Union
 
-from regex import DOTALL, MULTILINE, compile as regex_compile
+from regex import DOTALL, MULTILINE
 
-from ._wikitext import SECTION_HEADING, SubWikiText
+from ._wikitext import SECTION_HEADING, SubWikiText, rc
 
-ARG_SHADOW_FULLMATCH = regex_compile(
-    rb'[|:](?<pre_eq>(?:[^=]*+(?:' + SECTION_HEADING +
-    rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
-    MULTILINE | DOTALL).fullmatch
+ARG_SHADOW_FULLMATCH = rc(
+    rb'[|:](?<pre_eq>(?:[^=]*+(?:'
+    + SECTION_HEADING
+    + rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
+    MULTILINE | DOTALL,
+).fullmatch
 
 
 class Argument(SubWikiText):
@@ -44,7 +45,7 @@ class Argument(SubWikiText):
         ss, se, _, _ = self._span_data
         parent = self._parent
         ps = parent._span_data[0]
-        shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps:se - ps])
+        shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps : se - ps])
         self._shadow_match_cache = shadow_match, self_string
         return shadow_match
 
@@ -59,7 +60,7 @@ class Argument(SubWikiText):
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             s, e = shadow_match.span('pre_eq')
-            return self._lststr[0][ss + s:ss + e]
+            return self._lststr[0][ss + s : ss + e]
         # positional argument
         position = 1
         parent_find = self._parent._shadow.find
@@ -77,7 +78,7 @@ class Argument(SubWikiText):
     @name.setter
     def name(self, newname: str) -> None:
         if self._shadow_match['eq']:
-            self[1:1 + len(self._shadow_match['pre_eq'])] = newname
+            self[1 : 1 + len(self._shadow_match['pre_eq'])] = newname
         else:
             self.insert(1, newname + '=')
 
@@ -98,7 +99,7 @@ class Argument(SubWikiText):
         if shadow_match['eq']:
             # Keyword argument
             if to_positional:
-                del self[1:shadow_match.end('eq')]
+                del self[1 : shadow_match.end('eq')]
             else:
                 return
         if to_positional:
@@ -108,7 +109,8 @@ class Argument(SubWikiText):
         raise ValueError(
             'Converting positional argument to keyword argument is not '
             'possible without knowing the new name. '
-            'You can use `self.name = somename` instead.')
+            'You can use `self.name = somename` instead.'
+        )
 
     @property
     def value(self) -> str:
@@ -129,7 +131,7 @@ class Argument(SubWikiText):
     def value(self, newvalue: str) -> None:
         shadow_match = self._shadow_match
         if shadow_match['eq']:
-            self[shadow_match.start('post_eq'):] = newvalue
+            self[shadow_match.start('post_eq') :] = newvalue
         else:
             self[1:] = newvalue
 
@@ -141,8 +143,11 @@ class Argument(SubWikiText):
             ls_post_eq = post_eq.lstrip()
             return (
                 bytearray(ls_post_eq),
-                self._span_data[0] + shadow_match.start('post_eq')
-                + len(post_eq) - len(ls_post_eq))
+                self._span_data[0]
+                + shadow_match.start('post_eq')
+                + len(post_eq)
+                - len(ls_post_eq),
+            )
         return bytearray(shadow_match[0][1:]), self._span_data[0] + 1
 
 

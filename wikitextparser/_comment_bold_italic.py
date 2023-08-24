@@ -1,20 +1,20 @@
-﻿"""Define the Comment class."""
-from typing import Dict, List, MutableSequence, Optional, Union
+﻿from typing import Dict, List, MutableSequence, Optional, Union
 
-from regex import DOTALL, MULTILINE, compile as regex_compile
+from regex import DOTALL, MULTILINE
 
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, rc
 
 COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
 COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ")*+"
 COMMENT_COMMA = "(?>" + COMMENT_PATTERN + ")*+'"
-BOLD_FULLMATCH = regex_compile(
+BOLD_FULLMATCH = rc(
     COMMA_COMMENT * 2 + "'(.*?)(?>'" + COMMENT_COMMA * 2 + "|$)",
-    MULTILINE | DOTALL).fullmatch
-ITALIC_FULLMATCH = regex_compile(
-    COMMA_COMMENT + "'(.*?)(?>'" + COMMENT_COMMA + "|$)", DOTALL).fullmatch
-ITALIC_NOEND_FULLMATCH = regex_compile(
-    COMMA_COMMENT + "'(.*)", DOTALL).fullmatch
+    MULTILINE | DOTALL,
+).fullmatch
+ITALIC_FULLMATCH = rc(
+    COMMA_COMMENT + "'(.*?)(?>'" + COMMENT_COMMA + "|$)", DOTALL
+).fullmatch
+ITALIC_NOEND_FULLMATCH = rc(COMMA_COMMENT + "'(.*)", DOTALL).fullmatch
 
 
 class Comment(SubWikiText):
@@ -63,7 +63,7 @@ class Bold(BoldItalic):
 
 
 class Italic(BoldItalic):
-    __slots__ = 'end_token',
+    __slots__ = ('end_token',)
 
     def __init__(
         self,

@@ -1,15 +1,13 @@
-﻿"""Define the Cell class."""
+﻿from typing import Dict, List, Match, MutableSequence, Union
 
-
-from typing import Dict, List, Match, MutableSequence, Union
-
-from regex import DOTALL, VERBOSE, compile as regex_compile
+from regex import DOTALL, VERBOSE
 
 from ._spans import ATTRS_MATCH
 from ._tag import SubWikiTextWithAttrs
+from ._wikitext import rc
 
 # https://regex101.com/r/hB4dX2/17
-NEWLINE_CELL_MATCH = regex_compile(
+NEWLINE_CELL_MATCH = rc(
     rb"""
     # only for matching, not search
     \s*+
@@ -53,13 +51,13 @@ NEWLINE_CELL_MATCH = regex_compile(
         $
     )
     """,
-    VERBOSE
+    VERBOSE,
 ).match
 # https://regex101.com/r/qK1pJ8/5
 # In header rows, any "!!" is treated as "||".
 # See: https://github.com/wikimedia/mediawiki/blob/
 # 558a6b7372ee3b729265b7e540c0a92c1d936bcb/includes/parser/Parser.php#L1123
-INLINE_HAEDER_CELL_MATCH = regex_compile(
+INLINE_HAEDER_CELL_MATCH = rc(
     rb"""
     (?>
         # immediate closure of attrs
@@ -105,10 +103,10 @@ INLINE_HAEDER_CELL_MATCH = regex_compile(
         $
     )
     """,
-    VERBOSE | DOTALL
+    VERBOSE | DOTALL,
 ).match
 # https://regex101.com/r/hW8aZ3/7
-INLINE_NONHAEDER_CELL_MATCH = regex_compile(
+INLINE_NONHAEDER_CELL_MATCH = rc(
     rb"""
     (?P<sep>\|)\| # catch the matching pipe (style holder).
     (?>
@@ -137,12 +135,11 @@ INLINE_NONHAEDER_CELL_MATCH = regex_compile(
         )
     )
     """,
-    VERBOSE
+    VERBOSE,
 ).match
 
 
 class Cell(SubWikiTextWithAttrs):
-
     __slots__ = '_header', '_match_cache', '_attrs_match_cache'
 
     def __init__(
@@ -166,10 +163,14 @@ class Cell(SubWikiTextWithAttrs):
             else:
                 cell_start = _match.start()
                 attrs_start, attrs_end = _match.span('attrs')
-                self._attrs_match_cache = ATTRS_MATCH(
-                    _match[0],
-                    attrs_start - cell_start,
-                    attrs_end - cell_start), string
+                self._attrs_match_cache = (
+                    ATTRS_MATCH(
+                        _match[0],
+                        attrs_start - cell_start,
+                        attrs_end - cell_start,
+                    ),
+                    string,
+                )
         else:
             self._attrs_match_cache = self._match_cache = None, None
 
@@ -214,7 +215,7 @@ class Cell(SubWikiTextWithAttrs):
         m = self._match
         offset = m.start()
         s, e = m.span('data')
-        self[s - offset:e - offset] = new_value
+        self[s - offset : e - offset] = new_value
 
     @property
     def _attrs_match(self):
@@ -249,7 +250,7 @@ class Cell(SubWikiTextWithAttrs):
                 if n == encoded_attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]
                     q = 1 if attrs_m.string[ve] in b'"\'' else 0
-                    self[vs - q:ve + q] = f'"{attr_value}"'
+                    self[vs - q : ve + q] = f'"{attr_value}"'
                     return
             # We have some attributes, but none of them is attr_name
             attr_end = cell_match.end('attrs')
@@ -260,7 +261,8 @@ class Cell(SubWikiTextWithAttrs):
         fmt = ' {}="{}" |' if attr_value else ' {} |'
         if shadow[0] == 10:  # ord('\n')
             self.insert(
-                cell_match.start('sep') + 1, fmt.format(attr_name, attr_value))
+                cell_match.start('sep') + 1, fmt.format(attr_name, attr_value)
+            )
             return
         # An inline cell
         self.insert(2, fmt.format(attr_name, attr_value))

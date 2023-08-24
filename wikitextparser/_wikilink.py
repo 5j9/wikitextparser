@@ -3,22 +3,23 @@
 
 from typing import List, Optional
 
-from regex import DOTALL, compile
+from regex import DOTALL
 
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, rc
 
-FULLMATCH = compile(
+FULLMATCH = rc(
     rb'\[\0*+\['
     rb'('  # 1: target
     rb'([^|#\]]*+)'  # 2: title
     rb'(?>#([^|\]]*+))?'  # 3: fragment
     rb')'
     rb'(?:\|(.*))?'  # 4: text
-    rb'\]\0*+\]', DOTALL).fullmatch
+    rb'\]\0*+\]',
+    DOTALL,
+).fullmatch
 
 
 class WikiLink(SubWikiText):
-
     __slots__ = '_cached_match'
 
     @property
@@ -53,7 +54,7 @@ class WikiLink(SubWikiText):
         if m[4] is None:
             del self[b:e]
             return
-        del self[b:e + 1]
+        del self[b : e + 1]
 
     @property
     def text(self) -> Optional[str]:
@@ -81,7 +82,7 @@ class WikiLink(SubWikiText):
         b, e = self._match.span(4)
         if b == -1:
             return
-        del self[b - 1:e]
+        del self[b - 1 : e]
 
     @property
     def fragment(self) -> Optional[str]:
@@ -110,7 +111,7 @@ class WikiLink(SubWikiText):
         b, e = self._match.span(3)
         if b == -1:
             return
-        del self[b - 1:e]
+        del self[b - 1 : e]
 
     @property
     def title(self) -> str:
@@ -135,7 +136,7 @@ class WikiLink(SubWikiText):
         if m[3] is None:
             del self[s:e]
         else:
-            del self[s:e + 1]
+            del self[s : e + 1]
 
     @property
     def wikilinks(self) -> List['WikiLink']:

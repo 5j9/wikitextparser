@@ -1,11 +1,11 @@
 from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
 
-from regex import REVERSE, compile as rc
+from regex import REVERSE
 
 from ._argument import Argument
 from ._comment_bold_italic import COMMENT_PATTERN
 from ._parser_function import SubWikiTextWithArgs
-from ._wikitext import WS
+from ._wikitext import WS, rc
 
 COMMENT_SUB = rc(COMMENT_PATTERN).sub
 

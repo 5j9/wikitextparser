@@ -1,16 +1,11 @@
-﻿"""Define the ExternalLink class."""
+﻿from typing import List, Optional
 
-from typing import List, Optional
-
-from regex import IGNORECASE, compile as rc
-
-from ._wikitext import BRACKET_EXTERNAL_LINK_URL, SubWikiText
+from ._wikitext import BRACKET_EXTERNAL_LINK_URL, IGNORECASE, SubWikiText, rc
 
 URL_MATCH = rc(BRACKET_EXTERNAL_LINK_URL, IGNORECASE).match
 
 
 class ExternalLink(SubWikiText):
-
     __slots__ = ()
 
     @property
@@ -28,9 +23,9 @@ class ExternalLink(SubWikiText):
     @url.setter
     def url(self, newurl: str) -> None:
         if self(0) == '[':
-            self[1:len('[' + self.url)] = newurl
+            self[1 : len('[' + self.url)] = newurl
         else:
-            self[0:len(self.url)] = newurl
+            self[0 : len(self.url)] = newurl
 
     @property
     def text(self) -> Optional[str]:
@@ -48,7 +43,7 @@ class ExternalLink(SubWikiText):
             if end_char == ']':
                 return None
             if end_char == ' ':
-                return string[url_end + 1:-1]
+                return string[url_end + 1 : -1]
             return string[url_end:-1]
 
     @text.setter
@@ -57,7 +52,7 @@ class ExternalLink(SubWikiText):
         if string[0] == '[':
             text = self.text
             if text:
-                self[-len(text) - 1:-1] = newtext
+                self[-len(text) - 1 : -1] = newtext
                 return
             self.insert(-1, ' ' + newtext)
             return
@@ -71,7 +66,7 @@ class ExternalLink(SubWikiText):
             return
         text = self.text
         if text:
-            del self[-len(text) - 2:-1]
+            del self[-len(text) - 2 : -1]
 
     @property
     def in_brackets(self) -> bool:

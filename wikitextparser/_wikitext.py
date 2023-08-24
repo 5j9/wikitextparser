@@ -20,7 +20,6 @@ from regex import (
     IGNORECASE,
     MULTILINE,
     VERBOSE,
-    compile as rc,
     finditer,
     match,
     search,
@@ -43,6 +42,7 @@ from ._spans import (
     PARSABLE_TAG_EXTENSION_NAME,
     START_TAG_PATTERN,
     parse_to_spans,
+    rc,
 )
 
 NAME_CAPTURING_HTML_START_TAG_FINDITER = rc(

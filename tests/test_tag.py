@@ -1,10 +1,9 @@
 from pytest import mark
-from regex import compile as regex_compile
 
 from wikitextparser import Tag, parse
 
 # noinspection PyProtectedMember
-from wikitextparser._tag import END_TAG_PATTERN, TAG_FULLMATCH
+from wikitextparser._tag import END_TAG_PATTERN, TAG_FULLMATCH, rc
 
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import NAME_CAPTURING_HTML_START_TAG_FINDITER
@@ -21,32 +20,56 @@ def start_tag_finder(string):
 
 def test_start_tag_patterns():
     assert start_tag_finder(b'<b>').groupdict() == {
-        'name': b'b', 'attr': None, 'quote': None,
-        'start_tag': b'<b>', 'attr_name': None,
-        'attr_value': None, 'attr_insert': b'',}
+        'name': b'b',
+        'attr': None,
+        'quote': None,
+        'start_tag': b'<b>',
+        'attr_name': None,
+        'attr_value': None,
+        'attr_insert': b'',
+    }
     assert start_tag_finder(b'<b t>').groupdict() == {
-        'name': b'b', 'attr': b' t', 'quote': None,
-        'start_tag': b'<b t>', 'attr_name': b't', 'attr_value': b'',
-        'attr_insert': b'',}
+        'name': b'b',
+        'attr': b' t',
+        'quote': None,
+        'start_tag': b'<b t>',
+        'attr_name': b't',
+        'attr_value': b'',
+        'attr_insert': b'',
+    }
     assert start_tag_finder(b'<div value=yes>').groupdict() == {
-        'name': b'div', 'attr': b' value=yes', 'quote': None,
-        'start_tag': b'<div value=yes>', 'attr_name': b'value',
-        'attr_value': b'yes', 'attr_insert': b'',}
+        'name': b'div',
+        'attr': b' value=yes',
+        'quote': None,
+        'start_tag': b'<div value=yes>',
+        'attr_name': b'value',
+        'attr_value': b'yes',
+        'attr_insert': b'',
+    }
     assert start_tag_finder(b"<div class='body'>").groupdict() == {
-        'name': b'div', 'attr': b" class='body'", 'quote': b"'",
-        'start_tag': b"<div class='body'>", 'attr_name': b'class',
-        'attr_value': b'body', 'attr_insert': b'',}
+        'name': b'div',
+        'attr': b" class='body'",
+        'quote': b"'",
+        'start_tag': b"<div class='body'>",
+        'attr_name': b'class',
+        'attr_value': b'body',
+        'attr_insert': b'',
+    }
     assert start_tag_finder(b"<table a1=v1 a2=v2>").capturesdict() == {
-        'attr_name': [b'a1', b'a2'], 'start_tag': [b'<table a1=v1 a2=v2>'],
-        'attr': [b' a1=v1', b' a2=v2'], 'quote': [],
+        'attr_name': [b'a1', b'a2'],
+        'start_tag': [b'<table a1=v1 a2=v2>'],
+        'attr': [b' a1=v1', b' a2=v2'],
+        'quote': [],
         'attr_value': [b'v1', b'v2'],
-        'name': [b'table'],  'attr_insert': [b'']}
+        'name': [b'table'],
+        'attr_insert': [b''],
+    }
 
 
 def test_end_tag_patterns():
-    assert regex_compile(
-            END_TAG_PATTERN.replace(b'{name}', b'p')
-        ).search(b'</p>').groupdict() == {'end_tag': b'</p>'}
+    assert rc(END_TAG_PATTERN.replace(b'{name}', b'p')).search(
+        b'</p>'
+    ).groupdict() == {'end_tag': b'</p>'}
 
 
 @mark.xfail
@@ -140,12 +163,14 @@ def test_calling_parsed_content_twice():
 
 def test_attrs():
     assert Tag('<t n1=v1 n2="v2" n3>c</t>').attrs == {
-        'n1': 'v1', 'n2': 'v2', 'n3': ''}
+        'n1': 'v1',
+        'n2': 'v2',
+        'n3': '',
+    }
 
 
 def test_attrs_without_values():
-    assert Tag('<t n1 n2 n3>c</t>').attrs == {
-        'n1': '', 'n2': '', 'n3': ''}
+    assert Tag('<t n1 n2 n3>c</t>').attrs == {'n1': '', 'n2': '', 'n3': ''}
 
 
 def test_contents_contains_tl():

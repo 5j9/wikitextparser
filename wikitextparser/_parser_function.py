@@ -1,16 +1,12 @@
-"""Define the ParserFunction class."""
 from bisect import insort
 from typing import Iterable, List, Union
 
-import regex
-
 from ._argument import Argument
 from ._wikilist import WikiList
-from ._wikitext import SubWikiText
+from ._wikitext import SubWikiText, rc
 
-PF_NAME_ARGS_FULLMATCH = regex.compile(
-    rb'[^:|}]*+'  # name
-    rb'(?<arg>:[^|]*+)?+(?<arg>\|[^|]*+)*+'
+PF_NAME_ARGS_FULLMATCH = rc(
+    rb'[^:|}]*+(?#name)' rb'(?<arg>:[^|]*+)?+(?<arg>\|[^|]*+)*+'
 ).fullmatch
 
 
@@ -50,7 +46,11 @@ class SubWikiTextWithArgs(SubWikiText):
         for arg_self_start, arg_self_end in split_spans:
             # todo: add byte array
             s, e, _, _ = arg_span = [
-                ss + arg_self_start, ss + arg_self_end, None, None]
+                ss + arg_self_start,
+                ss + arg_self_end,
+                None,
+                None,
+            ]
             old_span = span_tuple_to_span_get((s, e))
             if old_span is None:
                 insort(arg_spans, arg_span)
@@ -58,7 +58,9 @@ class SubWikiTextWithArgs(SubWikiText):
                 arg_span = old_span
             arg = Argument(lststr, type_to_spans, arg_span, type_, self)
             arg._shadow_cache = (
-                lststr[0][s:e], shadow[arg_self_start:arg_self_end])
+                lststr[0][s:e],
+                shadow[arg_self_start:arg_self_end],
+            )
             arguments_append(arg)
         return arguments
 
@@ -71,8 +73,11 @@ class SubWikiTextWithArgs(SubWikiText):
         Argument and use the `get_lists` method of that argument instead.
         """
         return [
-            lst for arg in self.arguments
-            for lst in arg.get_lists(pattern) if lst]
+            lst
+            for arg in self.arguments
+            for lst in arg.get_lists(pattern)
+            if lst
+        ]
 
     @property
     def name(self) -> str:
@@ -88,7 +93,7 @@ class SubWikiTextWithArgs(SubWikiText):
 
     @name.setter
     def name(self, newname: str) -> None:
-        self[2:2 + len(self.name)] = newname
+        self[2 : 2 + len(self.name)] = newname
 
     @property
     def _relative_contents_end(self) -> tuple:
@@ -96,7 +101,6 @@ class SubWikiTextWithArgs(SubWikiText):
 
 
 class ParserFunction(SubWikiTextWithArgs):
-
     __slots__ = ()
 
     _name_args_matcher = PF_NAME_ARGS_FULLMATCH

@@ -1,11 +1,8 @@
-﻿"""Define the Table class."""
-
-
-from bisect import insort_right
+﻿from bisect import insort_right
 from collections.abc import Mapping
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
-from regex import DOTALL, VERBOSE, compile as rc
+from regex import DOTALL, VERBOSE
 
 from ._cell import (
     INLINE_HAEDER_CELL_MATCH,
@@ -15,7 +12,7 @@ from ._cell import (
 )
 from ._spans import ATTRS_MATCH
 from ._tag import SubWikiTextWithAttrs
-from ._wikitext import WS
+from ._wikitext import WS, rc
 
 CAPTION_MATCH = rc(
     rb"""
@@ -39,7 +36,9 @@ CAPTION_MATCH = rc(
     )?
     (?P<caption>.*?)
     (?:\n[\|\!]|\|\|)
-    """, DOTALL | VERBOSE).match
+    """,
+    DOTALL | VERBOSE,
+).match
 T = TypeVar('T')
 FIND_ROWS = rc(rb'\|-(.*)').finditer
 
@@ -60,7 +59,6 @@ def head_int(value):
 
 
 class Table(SubWikiTextWithAttrs):
-
     __slots__ = '_attrs_match_cache'
 
     def __init__(self, *args, **kwargs):
@@ -84,7 +82,7 @@ class Table(SubWikiTextWithAttrs):
         for s, e, _, _ in self._subspans('Table'):
             if s == ss:
                 continue
-            shadow[s - ss:e - ss] = b'#' * (e - s)
+            shadow[s - ss : e - ss] = b'#' * (e - s)
         return shadow
 
     @property
@@ -138,10 +136,11 @@ class Table(SubWikiTextWithAttrs):
         return match_table
 
     def data(
-        self, span: bool = True,
+        self,
+        span: bool = True,
         strip: bool = True,
         row: int = None,
-        column: int = None
+        column: int = None,
     ) -> Union[List[List[str]], List[str], str]:
         """Return a list containing lists of row values.
 
@@ -186,9 +185,16 @@ class Table(SubWikiTextWithAttrs):
                     for m in match_row:
                         s, e = m.span('attrs')
                         captures = ATTRS_MATCH(
-                            string.encode('ascii', 'replace'), s, e).captures
-                        row_attrs_append(dict(zip(
-                            captures('attr_name'), captures('attr_value'))))
+                            string.encode('ascii', 'replace'), s, e
+                        ).captures
+                        row_attrs_append(
+                            dict(
+                                zip(
+                                    captures('attr_name'),
+                                    captures('attr_value'),
+                                )
+                            )
+                        )
                 table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:
@@ -199,7 +205,10 @@ class Table(SubWikiTextWithAttrs):
         return table_data[row][column]
 
     def cells(
-        self, row: int = None, column: int = None, span: bool = True,
+        self,
+        row: int = None,
+        column: int = None,
+        span: bool = True,
     ) -> Union[List[List[Cell]], List[Cell], Cell]:
         """Return a list of lists containing Cell objects.
 
@@ -242,16 +251,27 @@ class Table(SubWikiTextWithAttrs):
                     attrs_match = ATTRS_MATCH(shadow[ms:me], s - ms, e - ms)
                     captures = attrs_match.captures
                     # noinspection PyUnboundLocalVariable
-                    row_attrs_append(dict(zip(
-                        captures('attr_name'), captures('attr_value'))))
+                    row_attrs_append(
+                        dict(
+                            zip(captures('attr_name'), captures('attr_value'))
+                        )
+                    )
                 old_span = next((s for s in spans if s == cell_span), None)
                 if old_span is None:
                     insort_right(spans, cell_span)
                 else:
                     cell_span = old_span
-                row_cells.append(Cell(
-                    self._lststr, header, type_to_spans, cell_span, type_, m,
-                    attrs_match))
+                row_cells.append(
+                    Cell(
+                        self._lststr,
+                        header,
+                        type_to_spans,
+                        cell_span,
+                        type_,
+                        m,
+                        attrs_match,
+                    )
+                )
         if table_cells and span:
             table_cells = _apply_attr_spans(table_attrs, table_cells)
         if row is None:
@@ -276,8 +296,9 @@ class Table(SubWikiTextWithAttrs):
         m = CAPTION_MATCH(shadow)
         if m:
             s = m.end('attrs')
-            self[s if s != -1 else m.end('preattrs'):m.end('caption')] =\
-                newcaption
+            self[
+                s if s != -1 else m.end('preattrs') : m.end('caption')
+            ] = newcaption
             return
         # There is no caption. Create one.
         h, s, t = shadow.partition(b'\n')
@@ -315,7 +336,7 @@ class Table(SubWikiTextWithAttrs):
         else:  # Caption and attrs or Caption but no attrs
             end = m.end('attrs')
             if end != -1:
-                self[m.end('preattrs'):end] = attrs
+                self[m.end('preattrs') : end] = attrs
 
     @property
     def row_attrs(self) -> List[dict]:
@@ -331,11 +352,14 @@ class Table(SubWikiTextWithAttrs):
         for row_match in FIND_ROWS(shadow):
             s, e = row_match.span(1)
             spans = ATTRS_MATCH(shadow, s, e).spans
-            append({
-                string[ns: ne]: string[vs: ve]
-                for (ns, ne), (vs, ve) in
-                zip(spans('attr_name'), spans('attr_value'))
-            })
+            append(
+                {
+                    string[ns:ne]: string[vs:ve]
+                    for (ns, ne), (vs, ve) in zip(
+                        spans('attr_name'), spans('attr_value')
+                    )
+                }
+            )
         return attrs
 
     @row_attrs.setter
@@ -344,11 +368,16 @@ class Table(SubWikiTextWithAttrs):
             [*zip(FIND_ROWS(self._table_shadow), attrs)]
         ):
             s, e = row_match.span(1)
-            del self[s: e]
-            self.insert(s, ''.join([
-                f' {name}="{value}"' if value else f' {name}'
-                for name, value in attrs_dict.items()
-            ]))
+            del self[s:e]
+            self.insert(
+                s,
+                ''.join(
+                    [
+                        f' {name}="{value}"' if value else f' {name}'
+                        for name, value in attrs_dict.items()
+                    ]
+                ),
+            )
 
 
 def _apply_attr_spans(
@@ -441,7 +470,8 @@ def _apply_attr_spans(
             # 13.14
             if cell_grows_downward:
                 downward_growing_cells.append(
-                    (current_cell, xcurrent, colspan))
+                    (current_cell, xcurrent, colspan)
+                )
             # 13.15
             xcurrent += colspan
         # 13.16
@@ -481,7 +511,7 @@ def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     # General format of row separators: r'\|-[^\n]*\n'
     ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()
     lsp = _lstrip_increase(shadow, ncl)
-    while shadow[lsp:lsp + 2] == b'|-':
+    while shadow[lsp : lsp + 2] == b'|-':
         # We are on a row separator line.
         pos = shadow.find(10, lsp + 2)  # ord('\n')
         pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()
