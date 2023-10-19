@@ -1264,8 +1264,7 @@ class WikiText:
             if level is not None and current_level != level:
                 continue
             if include_subsections:
-                # Add text of the current_section to any parent section.
-                # Note that section 0 is not a parent for any subsection.
+                # Add text of the subsequent sub-sections to this section.
                 for section_index, section_level in enumerate(
                     levels[current_index:], current_index
                 ):
