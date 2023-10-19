@@ -1242,8 +1242,8 @@ class WikiText:
         The first section will always be the lead section, even if it is an
         empty string.
 
-        :param include_subsections: Only return the leading part of each
-            section if False.
+        :param include_subsections: If true, include the text of subsections
+            in each Section object.
         :param level: Only return sections where section.level == level.
             Return all levels if None (default).
         """
