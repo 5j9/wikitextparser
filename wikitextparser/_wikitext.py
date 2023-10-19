@@ -1,7 +1,7 @@
 from bisect import bisect_left, bisect_right, insort_right
 from copy import deepcopy
 from html import unescape
-from itertools import islice
+from itertools import compress, islice
 from operator import attrgetter
 from typing import (
     Callable,
@@ -1247,31 +1247,33 @@ class WikiText:
         :param level: Only return sections where section.level == level.
             Return all levels if None (default).
         """
-        sections = []  # type: List[Section]
-        sections_append = sections.append
         type_to_spans = self._type_to_spans
-        lststr = self._lststr
-        ss, se, _, ba = self._span_data
-        type_spans = type_to_spans.setdefault('Section', [])
         shadow = self._shadow
         full_match = SECTIONS_FULLMATCH(shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('equals')]
-        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
-        for current_index, (current_level, (ms, me)) in enumerate(
-            zip(levels, section_spans), 1
-        ):
-            if level is not None and current_level != level:
-                continue
-            if include_subsections:
-                # Add text of the subsequent sub-sections to this section.
-                for section_index, section_level in enumerate(
-                    levels[current_index:], current_index
-                ):
-                    if current_level and section_level > current_level:
-                        me = section_spans[section_index][1]
+
+        if include_subsections:
+            z = [*zip(section_spans, levels)]
+            for pi, ((ps, pe), pl) in enumerate(islice(z, 1, None), 1):
+                for (ss, se), sl in islice(z, pi + 1, None):
+                    if sl > pl:
+                        section_spans[pi] = (ps, se)
                     else:
                         break
+
+        if level is not None:
+            section_spans = compress(
+                section_spans, [l == level for l in levels]
+            )
+
+        sections: List[Section] = []
+        sections_append = sections.append
+        ss, se, _, ba = self._span_data
+        type_spans = type_to_spans.setdefault('Section', [])
+        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
+        lststr = self._lststr
+        for ms, me in section_spans:
             s, e = ss + ms, ss + me
             old_span = span_tuple_to_span((s, e))
             if old_span is None:
