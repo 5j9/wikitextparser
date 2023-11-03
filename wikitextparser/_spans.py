@@ -22,7 +22,7 @@ VALID_TITLE_CHARS = rb'[^\|\{\}\[\2\]\3<>\n]*+'
 # See also:
 # https://translatewiki.net/wiki/MediaWiki:Sp-translate-data-MagicWords/fa
 ARGS = rb'(?:\|(?>[^{}]++|{(?!{)|}(?!}))*+)?+'
-PF_TL_FINDITER = rc(  # noqa
+PF_TL_FINDITER = rc(
     rb'\{\{(?>'
     rb'[\s\0]*+'
     rb'(?>'
@@ -60,7 +60,7 @@ EXTERNAL_LINK_URL_TAIL = (
 BARE_EXTERNAL_LINK = BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
-WIKILINK_PARAM_FINDITER = rc(  # noqa
+WIKILINK_PARAM_FINDITER = rc(
     rb'(?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)'  # != 2N + 1
     rb'\[\0*\['
     rb'(?![\ \0]*+' + BARE_EXTERNAL_LINK + rb')' + VALID_TITLE_CHARS + rb'(?>'
@@ -103,7 +103,7 @@ UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(_unparsable_tag_extensions)
 # http://blog.stevenlevithan.com/archives/match-innermost-html-element
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
-CONTENT_AND_END = (  # noqa
+CONTENT_AND_END = (
     rb'(?=[\s>/])'
     rb'[^>]*+'
     rb'(?>'
@@ -114,7 +114,7 @@ CONTENT_AND_END = (  # noqa
     rb')</\g<n>\s*+>'
     rb')'
 )
-EXTENSION_TAGS_FINDITER = rc(  # noqa
+EXTENSION_TAGS_FINDITER = rc(
     rb'<(?>'
     # group m captures comments
     rb'(?<m>!--[\s\S]*?(?>-->|(?=</\g<n>\s*+>)|\Z))'
@@ -156,7 +156,7 @@ ATTR_VAL = (
     # the two. This rule is ignored here.
     rb'(?>['
     + SPACE_CHARS
-    + rb']*+'  # noqa
+    + rb']*+'
     + EQ_WS
     + rb'(?>'
     + UNQUOTED_ATTR_VAL
@@ -167,7 +167,7 @@ ATTR_VAL = (
     + rb')'
 )
 # Ignore ambiguous ampersand for the sake of simplicity.
-ATTRS_PATTERN = (  # noqa
+ATTRS_PATTERN = (
     rb'(?<attr>'
     rb'[' + SPACE_CHARS + rb']*+(?>' + ATTR_NAME + ATTR_VAL + rb')'
     # See https://stackoverflow.com/a/3558200/2705757 for how HTML5
@@ -189,7 +189,7 @@ ATTRS_MATCH = rc(ATTRS_PATTERN).match
 # note that end tags do not accept attributes, but MW currently cleans up and
 # ignores such attributes
 END_TAG_PATTERN = rb'(?<end_tag></{name}(?:>|[' + SPACE_CHARS + rb'][^>]*+>))'
-START_TAG_PATTERN = (  # noqa
+START_TAG_PATTERN = (
     rb'(?<start_tag>'
     rb'<{name}' + ATTRS_PATTERN + rb'[' + SPACE_CHARS + rb']*+>'
     rb')'
