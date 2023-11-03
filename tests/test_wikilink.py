@@ -200,3 +200,9 @@ def test_called_from_plaintext():  # 119
     w0, w1 = parse("[[0]] [[1]]").wikilinks
     del w0[:]
     assert w1.plain_text() == '1'
+
+
+def test_multichar_text():
+    w = WikiLink('[[ab|cd]]')
+    assert w.title == 'ab'
+    assert w.text == 'cd'
