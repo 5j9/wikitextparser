@@ -224,12 +224,12 @@ def test_overwriting_or_extending_selfspan_will_cause_data_loss():
 
 
 def test_template_inside_wikilink():
-    assert 2 == len(WikiText("{{text |  [[ A | {{text|b}} ]] }}").templates)
+    assert 2 == len(WikiText('{{text |  [[ A | {{text|b}} ]] }}').templates)
 
 
 def test_wikilink_in_template():
     # todo: merge with test_spans?
-    s = "{{text |[[A|}}]]}}"
+    s = '{{text |[[A|}}]]}}'
     ts = str(WikiText(s).templates[0])
     assert s == ts
     assert s == str(WikiText('<ref>{{text |[[A|}}]]}}</ref>').templates[0])
@@ -241,30 +241,30 @@ def test_wikilink_containing_closing_braces_in_template():
 
 
 def test_ignore_comments():
-    s1 = "{{text |<!-- }} -->}}"
+    s1 = '{{text |<!-- }} -->}}'
     assert s1 == str(WikiText(s1).templates[0])
 
 
 def test_ignore_nowiki():
-    assert "{{text |<nowiki>}} A </nowiki> }}" == str(
-        WikiText("{{text |<nowiki>}} A </nowiki> }} B").templates[0]
+    assert '{{text |<nowiki>}} A </nowiki> }}' == str(
+        WikiText('{{text |<nowiki>}} A </nowiki> }} B').templates[0]
     )
 
 
 def test_template_inside_extension_tags():
-    s = "<includeonly>{{t}}</includeonly>"
+    s = '<includeonly>{{t}}</includeonly>'
     assert '{{t}}' == str(WikiText(s).templates[0])
 
 
 def test_dont_parse_source_tag():
-    assert 0 == len(WikiText("<source>{{t}}</source>").templates)
+    assert 0 == len(WikiText('<source>{{t}}</source>').templates)
 
 
 # WikiText.parser_functions
 
 
 def test_comment_in_parserfunction_name():
-    assert 1 == len(WikiText("{{<!--c\n}}-->#if:|a}}").parser_functions)
+    assert 1 == len(WikiText('{{<!--c\n}}-->#if:|a}}').parser_functions)
 
 
 # WikiText.wikilinks
@@ -272,8 +272,8 @@ def test_comment_in_parserfunction_name():
 
 def test_wikilink_inside_parser_function():
     assert (
-        "[[u:{{{3}}}|{{{3}}}]]"
-        == WikiText("{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}")
+        '[[u:{{{3}}}|{{{3}}}]]'
+        == WikiText('{{ #if: {{{3|}}} | [[u:{{{3}}}|{{{3}}}]] }}')
         .wikilinks[0]
         .string
     )
@@ -294,7 +294,7 @@ def test_wikilink_target_may_contain_newline():
 
 def test_getting_comment():
     assert (
-        "\n\nc\n{{A}}\n"
+        '\n\nc\n{{A}}\n'
         == WikiText('1 <!--\n\nc\n{{A}}\n-->2').comments[0].contents
     )
 
@@ -370,7 +370,7 @@ def test_dead_index():
 
 
 def test_wikitext_string_set():  # 66
-    parsed = parse("[[a]]")
+    parsed = parse('[[a]]')
     wikilink = parsed.wikilinks[0]
     wikilink.insert(0, 'b')
     assert wikilink.string == 'b[[a]]'

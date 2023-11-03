@@ -32,13 +32,8 @@ def test_inserting_into_sections():
     assert 'c\n== s0 ==\nc\n== s1 ==\nc\n' == wt.string
     s1.insert(len(wt.string), '=== s2 ===\nc\n')
     assert (
-        'c\n'
-        '== s0 ==\n'
-        'c\n'
-        '== s1 ==\n'
-        'c\n'
-        '=== s2 ===\n'
-        'c\n') == wt.string
+        'c\n' '== s0 ==\n' 'c\n' '== s1 ==\n' 'c\n' '=== s2 ===\n' 'c\n'
+    ) == wt.string
     s3 = wt.sections[3]
     assert '=== s2 ===\nc\n' == s3.string
 

@@ -1,4 +1,4 @@
-﻿from bisect import insort_right
+from bisect import insort_right
 from collections.abc import Mapping
 from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
 
@@ -48,7 +48,7 @@ HEAD_DIGITS = rc(rb'\s*+\d+').match
 # Captions are optional and only one should be placed between table-start
 # and the first row. Others captions are not part of the table and will
 # be ignored.
-FIRST_NON_CAPTION_LINE = rc(br'\n[\t \0]*+(\|(?!\+)|!)').search
+FIRST_NON_CAPTION_LINE = rc(rb'\n[\t \0]*+(\|(?!\+)|!)').search
 
 
 def head_int(value):

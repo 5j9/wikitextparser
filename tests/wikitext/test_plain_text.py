@@ -6,10 +6,10 @@ def test_plaintext():
         assert parse(s).plain_text() == p
 
     ap('[https://wikimedia.org/ wm]', 'wm')
-    ap("{{{a}}}", '')
-    ap("<span>a<small>b</small>c</span>", 'abc')
+    ap('{{{a}}}', '')
+    ap('<span>a<small>b</small>c</span>', 'abc')
     ap("<ref>''w''</ref>", 'w')  # could be '' as well
-    ap("[[file:a.jpg|[[w]]]]", '')
+    ap('[[file:a.jpg|[[w]]]]', '')
     ap('<span>a</span>b<span>c</span>', 'abc')  # 39
     ap('{{a}}b{{c}}', 'b')  # 39
     ap('t [[a|b]] t', 't b t')
@@ -21,7 +21,7 @@ def test_plaintext():
     ap('{{#if:a|y|n}}', '')
     ap("'''b'''", 'b')
     ap("''i''", 'i')
-    ap("{{{1|a}}}", 'a')
+    ap('{{{1|a}}}', 'a')
 
 
 def test_plain_text_should_not_mutate():  # 40
@@ -32,7 +32,7 @@ def test_plain_text_should_not_mutate():  # 40
 
 
 def test_remove_markup():
-    assert remove_markup("''a'' {{b}} c <!----> '''d'''") == "a  c  d"
+    assert remove_markup("''a'' {{b}} c <!----> '''d'''") == 'a  c  d'
 
 
 def test_do_not_include_end_tag():
@@ -64,7 +64,7 @@ def test_plain_text_non_root_node():
 def test_extract_unparsable_extension_tags_first():  # 90
     assert (
         parse(
-            "<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>"
+            '<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>'
         ).plain_text()
         == '[b]'
     )
@@ -138,7 +138,7 @@ def test_table():
     )
 
 
-TABLE_WITH_ROW_AND_COL_SPANS = '''{| class="wikitable"
+TABLE_WITH_ROW_AND_COL_SPANS = """{| class="wikitable"
 !colspan="6"|Shopping List
 |-
 |rowspan="2"|Bread & Butter
@@ -151,7 +151,7 @@ TABLE_WITH_ROW_AND_COL_SPANS = '''{| class="wikitable"
 |colspan="2"|Ice cream
 |Butter
 |Yogurt
-|}'''
+|}"""
 
 
 def test_none_in_table_data():
@@ -161,7 +161,7 @@ def test_none_in_table_data():
     )
 
 
-TABLE_WITH_CAPTION = '''{|
+TABLE_WITH_CAPTION = """{|
 |+Food complements
 |-
 |Orange
@@ -172,7 +172,7 @@ TABLE_WITH_CAPTION = '''{|
 |-
 |Butter
 |Ice cream
-|}'''
+|}"""
 
 
 def test_table_caption():

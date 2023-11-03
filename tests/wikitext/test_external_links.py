@@ -216,11 +216,11 @@ def test_external_link_in_pf_in_tl():  # 110
 
 
 def test_ext_link_overwriting_template():  # 74
-    p = parse("{{test}}")
+    p = parse('{{test}}')
     t = p.templates[0]
     # It is could be considered unintuitive for p.templates to still return
     # [Template('[https://link]')]. As it stands, the user who is overwriting
     # the template should keep track of such changes and skip edited templates
     # that have become invalid.
-    t.string = "[https://link]"
-    assert p.external_links[0].string == "[https://link]"
+    t.string = '[https://link]'
+    assert p.external_links[0].string == '[https://link]'

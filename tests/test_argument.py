@@ -63,9 +63,9 @@ def test_value_after_convertion_of_positional_to_keywordk():
 
 
 def test_name_of_positionals():
-    assert \
-        ['1', '2', '3'] == \
-        [a.name for a in parse('{{t|a|b|c}}').templates[0].arguments]
+    assert ['1', '2', '3'] == [
+        a.name for a in parse('{{t|a|b|c}}').templates[0].arguments
+    ]
 
 
 def test_dont_confuse_subspan_equal_with_keyword_arg_equal():
@@ -78,7 +78,7 @@ def test_dont_confuse_subspan_equal_with_keyword_arg_equal():
 
 
 def test_setting_positionality():
-    a = Argument("|1=v")
+    a = Argument('|1=v')
     a.positional = False
     assert '|1=v' == a.string
     a.positional = True
@@ -103,7 +103,7 @@ def test_section_not_keyword_arg():
     assert (a.name, a.value) == ('', '=1==\n')
     # Todo: Prevents forming a template!
     # a = Argument('|\n==1==')
-    # assert 
+    # assert
     #     (a.name == a.value), ('1', '\n==1==')
 
 

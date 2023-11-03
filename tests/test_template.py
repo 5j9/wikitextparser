@@ -39,19 +39,19 @@ def test_name():
     assert (
         ' wrapper '
         == Template(
-            "{{ wrapper | p1 | {{ cite | sp1 | dateformat = ymd}} }}"
+            '{{ wrapper | p1 | {{ cite | sp1 | dateformat = ymd}} }}'
         ).name
     )
 
 
 def test_dont_remove_nonkeyword_argument():
-    assert "{{t|a|a}}" == str(Template("{{t|a|a}}"))
+    assert '{{t|a|a}}' == str(Template('{{t|a|a}}'))
 
 
 def test_set_name():
-    t = Template("{{t|a|a}}")
+    t = Template('{{t|a|a}}')
     t.name = ' u '
-    assert "{{ u |a|a}}" == t.string
+    assert '{{ u |a|a}}' == t.string
 
 
 def test_normal_name():
@@ -70,7 +70,7 @@ def test_normal_name():
 
 
 def test_keyword_and_positional_args():
-    assert '1' == Template("{{t|kw=a|1=|pa|kw2=a|pa2}}").arguments[2].name
+    assert '1' == Template('{{t|kw=a|1=|pa|kw2=a|pa2}}').arguments[2].name
 
 
 def test_rm_first_of_dup_args():
@@ -84,7 +84,7 @@ def test_rm_first_of_dup_args():
     t.rm_first_of_dup_args()
     assert s == str(t)
     # Don't remove duplicate subargs
-    s1 = "{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}"
+    s1 = '{{i| c = {{g}} |p={{t|h={{g}}}} |q={{t|h={{g}}}}}}'
     t = Template(s1)
     t.rm_first_of_dup_args()
     assert s1 == str(t)
@@ -104,7 +104,7 @@ def test_rm_first_of_dup_args():
 
 def test_rm_dup_args_safe():
     # Don't remove duplicate positional args in different positions
-    s = "{{cite|{{t1}}|{{t1}}}}"
+    s = '{{cite|{{t1}}|{{t1}}}}'
     t = Template(s)
     t.rm_dup_args_safe()
     assert s == t.string
@@ -127,9 +127,9 @@ def test_rm_dup_args_safe():
     t.rm_dup_args_safe()
     assert '{{t| v |1=v}}' == t.string
     # Removing a positional argument affects the name of later ones.
-    t = Template("{{t|1=|||}}")
+    t = Template('{{t|1=|||}}')
     t.rm_dup_args_safe()
-    assert "{{t|||}}" == t.string
+    assert '{{t|||}}' == t.string
     # Triple duplicates
     t = Template('{{t|1=v|v|1=v}}')
     t.rm_dup_args_safe()
@@ -194,7 +194,7 @@ def test_overwriting_on_a_string_causes_loss_of_spans():
 
 
 def test_no_param_template_name():
-    assert 'صعود' == Template("{{صعود}}").name
+    assert 'صعود' == Template('{{صعود}}').name
 
 
 def test_lists():
@@ -321,15 +321,15 @@ def test_parser_functions():
 
 
 def test_setting_single_space_arg():  # 97
-    t = Template("{{t|a= }}")
+    t = Template('{{t|a= }}')
     t.set_arg('a', 'v', preserve_spacing=True)
-    assert t.string == "{{t|a=v }}"
+    assert t.string == '{{t|a=v }}'
 
 
 def test_preserve_spacing_left_and_right():
-    t = Template("{{t|a=\tx }}")
+    t = Template('{{t|a=\tx }}')
     t.set_arg('a', 'y', preserve_spacing=True)
-    assert t.string == "{{t|a=\ty }}"
+    assert t.string == '{{t|a=\ty }}'
 
 
 def test_invalid_normal_name():  # 105

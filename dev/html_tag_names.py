@@ -8,19 +8,25 @@ from requests import get, post
 
 
 def parse(text: str) -> bytes:
-    return loads(post('https://www.mediawiki.org/w/api.php', data={
-        'action': 'parse',
-        'text': text,
-        'title': 'Test',
-        'format': 'json',
-        'formatversion': 2,
-        'prop': 'text',
-    }).content)['parse']['text']
+    return loads(
+        post(
+            'https://www.mediawiki.org/w/api.php',
+            data={
+                'action': 'parse',
+                'text': text,
+                'title': 'Test',
+                'format': 'json',
+                'formatversion': 2,
+                'prop': 'text',
+            },
+        ).content
+    )['parse']['text']
 
 
 content = get(  # HTML elements reference
-    'https://developer.mozilla.org/en-US/docs/Web/HTML/Element').content
-soup = BeautifulSoup(content, features="lxml")
+    'https://developer.mozilla.org/en-US/docs/Web/HTML/Element'
+).content
+soup = BeautifulSoup(content, features='lxml')
 tds = soup.select('td a code')
 counts = Counter(td.text.strip()[1:-1] for td in tds)
 names = set(counts)
@@ -33,8 +39,9 @@ names_len = len(names)
 self_ending_wikitext = ('#<{}\n/>\n' * names_len).format(*names)
 start_only_wikitext = ('#<{}\n>\n' * names_len).format(*names)
 end_only_wikitext = ('#</{}\n>\n' * names_len).format(*names)
-start_and_end_wikitext = (
-    '#<{}\n/></{}\n>\n' * names_len).format(*chain(*zip(names, names)))
+start_and_end_wikitext = ('#<{}\n/></{}\n>\n' * names_len).format(
+    *chain(*zip(names, names))
+)
 
 # https://www.mediawiki.org/wiki/API:Parsing_wikitext#Example_2:_Parse_a_section_of_a_page_and_fetch_its_table_data
 self_ending_html = parse(self_ending_wikitext)
@@ -59,7 +66,9 @@ valid_start_and_end_names = names - invalid_start_and_end_names
 assert valid_start_and_end_names == valid_self_ending_names
 
 assert valid_self_ending_names - valid_start_only_names == {
-    'section', 'source'}  # note that both of them are extension tags
+    'section',
+    'source',
+}  # note that both of them are extension tags
 
 # len(valid_start_only_names) == 59
 print(valid_start_only_names)
@@ -73,4 +82,3 @@ print(valid_start_only_names)
 # 'span', 'em', 'sup', 'div', 'h5', 'ol', 'bdi', 'kbd', 'dt', 'p', 'caption',
 # 'samp', 'strike', 'small', 'dl', 'i', 'tr'}
 # to be used in _config.py
-

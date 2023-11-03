@@ -38,7 +38,8 @@ repo_dir = abspath(join(docs_dir, '..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
-    'sphinx.ext.viewcode']
+    'sphinx.ext.viewcode',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -68,7 +69,7 @@ version = search(
     open(
         join(repo_dir, 'wikitextparser', '__init__.py'), encoding='utf8'
     ).read(),
-    MULTILINE
+    MULTILINE,
 ).group(1)
 # The full version, including alpha/beta/rc tags.
 release = version
@@ -134,15 +135,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -151,11 +149,15 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [(
-    master_doc, 'wikitextparser.tex', 'wikitextparser Documentation',
-    '',  # author_texescaped_str
-    'manual',
-)]
+latex_documents = [
+    (
+        master_doc,
+        'wikitextparser.tex',
+        'wikitextparser Documentation',
+        '',  # author_texescaped_str
+        'manual',
+    )
+]
 
 
 # -- Options for manual page output ---------------------------------------
@@ -163,8 +165,7 @@ latex_documents = [(
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'wikitextparser', 'wikitextparser Documentation',
-     [author], 1)
+    (master_doc, 'wikitextparser', 'wikitextparser Documentation', [author], 1)
 ]
 
 
@@ -174,9 +175,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'wikitextparser', 'wikitextparser Documentation',
-     author, 'wikitextparser', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'wikitextparser',
+        'wikitextparser Documentation',
+        author,
+        'wikitextparser',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # If true, “(C) Copyright …” is shown in the HTML footer. Default is True.

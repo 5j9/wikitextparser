@@ -1,4 +1,4 @@
-﻿from pytest import mark
+from pytest import mark
 
 from wikitextparser import Section
 

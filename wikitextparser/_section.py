@@ -1,4 +1,4 @@
-﻿from typing import Optional
+from typing import Optional
 
 from ._wikitext import SubWikiText, rc
 
@@ -70,7 +70,7 @@ class Section(SubWikiText):
         if m is None:
             raise RuntimeError(
                 "Can't set title for a lead section. "
-                "Try adding it to contents."
+                'Try adding it to contents.'
             )
         self[m.start(2) : m.end(2)] = value
 

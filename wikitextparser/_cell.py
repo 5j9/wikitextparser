@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, Match, MutableSequence, Union
+from typing import Dict, List, Match, MutableSequence, Union
 
 from regex import DOTALL, VERBOSE
 

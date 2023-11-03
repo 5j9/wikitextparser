@@ -29,10 +29,14 @@ def test_same_nested_tags():
 
 
 def test_tag_extension_by_name():
-    assert parse('<gallery>pictures</gallery>').get_tags('gallery')[0]. \
-        contents == "pictures"
-    assert parse('<gallery\t>pictures</gallery>').get_tags('gallery')[0]. \
-        contents == "pictures"
+    assert (
+        parse('<gallery>pictures</gallery>').get_tags('gallery')[0].contents
+        == 'pictures'
+    )
+    assert (
+        parse('<gallery\t>pictures</gallery>').get_tags('gallery')[0].contents
+        == 'pictures'
+    )
 
 
 def test_self_closing():
@@ -45,12 +49,12 @@ def test_self_closing():
 def test_start_only():
     """Some elements' end tag may be omitted in certain conditions.
 
-        An li element’s end tag may be omitted if the li element is immediately
-        followed by another li element or if there is no more content in the
-        parent element.
+    An li element’s end tag may be omitted if the li element is immediately
+    followed by another li element or if there is no more content in the
+    parent element.
 
-        See: https://www.w3.org/TR/html51/syntax.html#optional-tags
-        """
+    See: https://www.w3.org/TR/html51/syntax.html#optional-tags
+    """
     parsed = parse('<li>')
     tags = parsed.get_tags()
     assert tags[0].string == '<li>'
@@ -64,9 +68,7 @@ def test_inner_tag():
 
 
 def test_extension_tags_are_not_lost_in_shadows():
-    parsed = parse(
-        'text<ref name="c">citation</ref>\n'
-        '<references/>')
+    parsed = parse('text<ref name="c">citation</ref>\n' '<references/>')
     ref, references = parsed.get_tags()
     ref.set_attr('name', 'z')
     assert ref.string == '<ref name="z">citation</ref>'
@@ -83,10 +85,14 @@ def test_pre():  # 46
 
 
 def test_section_tag_apparently_containing_another_section_tag_start():  # 58
-    assert parse('<section begin=<section begin=t2 />').get_tags(
-        'section')[0].contents == ''
+    assert (
+        parse('<section begin=<section begin=t2 />')
+        .get_tags('section')[0]
+        .contents
+        == ''
+    )
 
 
 def test_tags_in_wikilinks():
-    b, = parse('[[a|a <b>c]] d</b>').get_tags('b')
+    (b,) = parse('[[a|a <b>c]] d</b>').get_tags('b')
     assert b.string == '<b>c]] d</b>'

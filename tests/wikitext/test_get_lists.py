@@ -22,7 +22,7 @@ def test_multiline_tags():
 
 
 def test_definition_list_with_external_link():  # 91
-    assert parse("; http://a.b :d\n").get_lists()[0].items == [
+    assert parse('; http://a.b :d\n').get_lists()[0].items == [
         ' http://a.b ',
         'd',
     ]

@@ -1,4 +1,4 @@
-﻿"""Define the Tag class and tag-related regular expressions.
+"""Define the Tag class and tag-related regular expressions.
 
 Unlike MediaWiki which has very strict HTML rules, regexes
 defined in this module don't follow those restrictions and allow finding
@@ -28,18 +28,18 @@ from ._wikitext import SubWikiText, rc
 # ).finditer
 # Note that the following regex won't check for nested tags
 TAG_FULLMATCH = rc(
-    rb'''
-    <(?<name>[A-Za-z0-9]++)'''
+    rb"""
+    <(?<name>[A-Za-z0-9]++)"""
     + ATTRS_PATTERN
-    + rb'''
-    ['''
+    + rb"""
+    ["""
     + SPACE_CHARS
-    + rb''']*+
+    + rb"""]*+
     (?>
-        >(?<contents>.*)'''
+        >(?<contents>.*)"""
     + END_TAG_PATTERN.replace(rb'{name}', rb'(?<end_name>[A-Za-z0-9]++)')
-    + rb'''|>  # only start; no end tag; could be self-closing
-    )''',
+    + rb"""|>  # only start; no end tag; could be self-closing
+    )""",
     DOTALL | VERBOSE,
 ).fullmatch
 

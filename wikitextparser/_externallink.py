@@ -1,4 +1,4 @@
-﻿from typing import List, Optional
+from typing import List, Optional
 
 from ._wikitext import BRACKET_EXTERNAL_LINK_URL, IGNORECASE, SubWikiText, rc
 

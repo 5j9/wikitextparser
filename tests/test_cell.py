@@ -1,4 +1,4 @@
-﻿from wikitextparser import parse
+from wikitextparser import parse
 
 # noinspection PyProtectedMember
 from wikitextparser._table import Cell, Table
@@ -7,7 +7,7 @@ from wikitextparser._table import Cell, Table
 def test_value():
     c = Cell('\n| a ')
     assert ' a ' == c.value
-    assert repr(c) == 'Cell(\'\\n| a \')'
+    assert repr(c) == "Cell('\\n| a ')"
     assert c.attrs == {}
     # Use _cached_attrs
     assert c.attrs == {}

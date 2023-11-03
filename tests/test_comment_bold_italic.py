@@ -1,4 +1,4 @@
-﻿from wikitextparser import Bold, Comment, Italic
+from wikitextparser import Bold, Comment, Italic
 
 
 def test_comment():
@@ -16,7 +16,7 @@ def test_bold():
 def test_italic():
     assert Italic("''i").text == 'i'
     assert Italic("'''''i'''''").text == "'''i'''"
-    assert Italic("''i<!---->'<!---->'").text == "i<!---->"
+    assert Italic("''i<!---->'<!---->'").text == 'i<!---->'
     assert Italic("''i'''").text == "i'"
     # searching "''' ''i'''" for italics gives "''i'''", but it has not end
     assert Italic("''i'''", end_token=False).text == "i'''"
@@ -47,7 +47,12 @@ def test_sub_italics():
 
 
 def test_ref_text():  # 61
-    assert Bold("'''<ref>\n</ref>", ).text == '<ref>\n</ref>'
+    assert (
+        Bold(
+            "'''<ref>\n</ref>",
+        ).text
+        == '<ref>\n</ref>'
+    )
 
 
 def test_close_only_comment():

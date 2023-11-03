@@ -12,11 +12,7 @@ import wikitextparser as wtp
 #
 # print('len(text):', len(text))
 
-repeat = partial(
-    repeat,
-    number=1,
-    repeat=10000,
-    globals=globals())
+repeat = partial(repeat, number=1, repeat=10000, globals=globals())
 
 
 def print_min(marker, statement):
@@ -24,20 +20,23 @@ def print_min(marker, statement):
 
 
 # Note that if the parse time is included, then wtp will be faster than mwp
-p1 = wtp.parse("{{t|a|b|c|d}}")
+p1 = wtp.parse('{{t|a|b|c|d}}')
 print_min(
     'wtp,arg_val_assign',
     'p1.templates[0].arguments',
 )  # 1.96000000000085e-05
 
-p2 = mwp.parse("{{t|a|b|c|d}}")
+p2 = mwp.parse('{{t|a|b|c|d}}')
 print_min(
     'mwp,arg_val_assign',
     'p2.filter_templates()[0].params',
 )  # 9.199999999986996e-06
 
 
-assert p2.filter_templates()[0].params[3].name == p1.templates[0].arguments[3].name
+assert (
+    p2.filter_templates()[0].params[3].name
+    == p1.templates[0].arguments[3].name
+)
 
 profiler = cProfile.Profile()
 

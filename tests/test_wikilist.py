@@ -70,10 +70,10 @@ def test_subitems_for_the_second_item():
 
 
 def test_link_in_definition_list():
-    wl = WikiList("; https://github.com : definition", pattern=r'[:;]\s*')
-    assert wl.items == ["https://github.com ", " definition"]
-    wl = WikiList("; https://a.b : c https://d.e : f", pattern=r'[:;]\s*')
-    assert wl.items == ["https://a.b ", " c https://d.e : f"]
+    wl = WikiList('; https://github.com : definition', pattern=r'[:;]\s*')
+    assert wl.items == ['https://github.com ', ' definition']
+    wl = WikiList('; https://a.b : c https://d.e : f', pattern=r'[:;]\s*')
+    assert wl.items == ['https://a.b ', ' c https://d.e : f']
 
 
 def test_mixed_definition_lists():
@@ -97,9 +97,9 @@ def test_mixed_definition_lists():
 
 
 def test_order_definition_lists():
-    wl = WikiList("; Item 1 : definition 1\n", pattern=r'[:;]\s*')
-    assert wl.items == ["Item 1 ", " definition 1"]
-    assert wl.fullitems == ["; Item 1 : definition 1\n", ": definition 1"]
+    wl = WikiList('; Item 1 : definition 1\n', pattern=r'[:;]\s*')
+    assert wl.items == ['Item 1 ', ' definition 1']
+    assert wl.fullitems == ['; Item 1 : definition 1\n', ': definition 1']
 
 
 def test_travese_mixed_list_completely():
@@ -151,7 +151,7 @@ def test_cache_update():
 
 
 def test_external_link_colon_shadow():  # 91
-    assert parse("===abc===\n; https://github.com : definition\n").get_lists(
+    assert parse('===abc===\n; https://github.com : definition\n').get_lists(
         r'[:;]'
     )[0]._list_shadow == bytearray(b'; __________________ : definition\n')
 

@@ -362,7 +362,8 @@ class WikiText:
             self._insert_update(abs_start, len_change)
         elif len_change < 0:
             self._del_update(
-                rmstart=abs_stop + len_change, rmstop=abs_stop  # new stop
+                rmstart=abs_stop + len_change,
+                rmstop=abs_stop,  # new stop
             )  # old stop
         # Add the newly added spans contained in the value.
         type_to_spans = self._type_to_spans

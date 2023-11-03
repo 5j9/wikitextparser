@@ -34,8 +34,10 @@ def test_two_tables():
 
 
 def test_nested_tables():
-    s = 'text1\n{|class=wikitable\n|a\n|\n' \
-            '{|class=wikitable\n|b\n|}\n|}\ntext2'
+    s = (
+        'text1\n{|class=wikitable\n|a\n|\n'
+        '{|class=wikitable\n|b\n|}\n|}\ntext2'
+    )
     p = parse(s)
     assert 1 == len(p.get_tables())  # non-recursive
     tables = p.tables  # recursive
@@ -82,23 +84,27 @@ def test_comments_between_indentation():
 
 
 def test_comments_between_indentation_after_them():
-    assert parse(
-        ':<!-- c -->: <!-- c -->{|class=wikitable\n|a\n|}'
-    ).tables[0].string == '{|class=wikitable\n|a\n|}'
+    assert (
+        parse(':<!-- c -->: <!-- c -->{|class=wikitable\n|a\n|}')
+        .tables[0]
+        .string
+        == '{|class=wikitable\n|a\n|}'
+    )
 
 
 def test_indentation_cannot_be_inside_nowiki():
     """A very unusual case. It would be OK to have false positives here.
 
-        Also false positive for tables are pretty much harmless here.
+    Also false positive for tables are pretty much harmless here.
 
-        The same thing may happen for tables which start right after a
-        templates, parser functions, wiki links, comments, or
-        other extension tags.
+    The same thing may happen for tables which start right after a
+    templates, parser functions, wiki links, comments, or
+    other extension tags.
 
-        """
-    assert len(parse(
-        '<nowiki>:</nowiki>{|class=wikitable\n|a\n|}').tables) == 0
+    """
+    assert (
+        len(parse('<nowiki>:</nowiki>{|class=wikitable\n|a\n|}').tables) == 0
+    )
 
 
 def test_template_before_or_after_table():
@@ -136,32 +142,35 @@ def test_nested_tables_sorted():
         '{| style="border: 2px solid black; background:red; float:right"\n'
         '| style="border: 2px solid darkgray;" | 4_R00\n'
         '|}\n'
-        '|}')
+        '|}'
+    )
     p = parse(s)
     assert 1 == len(p.get_tables())  # non-recursive
     tables = p.tables
     assert tables == sorted(tables, key=attrgetter('_span_data'))
     t0 = tables[0]
     assert s == t0.string
-    assert t0.data(strip=False) == [[
-        ' 0',
-        ' 1\n'
-        '{| style="border: 2px solid black; background: green;" '
-        '<!-- The nested table must be on a new line -->\n'
-        '| style="border: 2px solid darkgray;" | 1_G00\n|-\n'
-        '| style="border: 2px solid darkgray;" | 1_G10\n'
-        '|}',
-        ' 2',
-        '\n{| style="border: 2px solid black; background: yellow"\n'
-        '| style="border: 2px solid darkgray;" | 3_Y00\n|}\n'
-        '{| style="border: 2px solid black; background: Orchid"\n'
-        '| style="border: 2px solid darkgray;" | 3_O00\n'
-        '| style="border: 2px solid darkgray;" | 3_O01\n|}',
-        '\n{| style="border: 2px solid black; background:blue; float:left"'
-        '\n| style="border: 2px solid darkgray;" | 4_B00\n|}\n'
-        '{| style="border: 2px solid black; background:red; float:right"\n'
-        '| style="border: 2px solid darkgray;" | 4_R00\n|}'
-    ]]
+    assert t0.data(strip=False) == [
+        [
+            ' 0',
+            ' 1\n'
+            '{| style="border: 2px solid black; background: green;" '
+            '<!-- The nested table must be on a new line -->\n'
+            '| style="border: 2px solid darkgray;" | 1_G00\n|-\n'
+            '| style="border: 2px solid darkgray;" | 1_G10\n'
+            '|}',
+            ' 2',
+            '\n{| style="border: 2px solid black; background: yellow"\n'
+            '| style="border: 2px solid darkgray;" | 3_Y00\n|}\n'
+            '{| style="border: 2px solid black; background: Orchid"\n'
+            '| style="border: 2px solid darkgray;" | 3_O00\n'
+            '| style="border: 2px solid darkgray;" | 3_O01\n|}',
+            '\n{| style="border: 2px solid black; background:blue; float:left"'
+            '\n| style="border: 2px solid darkgray;" | 4_B00\n|}\n'
+            '{| style="border: 2px solid black; background:red; float:right"\n'
+            '| style="border: 2px solid darkgray;" | 4_R00\n|}',
+        ]
+    ]
     assert tables[3].data() == [['3_O00', '3_O01']]
     assert 5 == len(tables[0].tables)
     # noinspection PyProtectedMember
@@ -177,5 +186,5 @@ def test_nested_tables_sorted():
 
 
 def test_tables_in_parsable_tag_extensions():  # 85
-    table, = parse('<onlyinclude>\n{|\n|}\n</onlyinclude>').tables
+    (table,) = parse('<onlyinclude>\n{|\n|}\n</onlyinclude>').tables
     assert table.span == (14, 19)

@@ -1,4 +1,4 @@
-﻿from typing import Dict, List
+from typing import Dict, List
 
 from pytest import mark
 
@@ -153,7 +153,7 @@ def test_unicode_parameters():
 # noinspection PyProtectedMember
 def test_image_containing_wikilink():
     (a, b, _, _), (c, d, _, _), (e, f, _, _) = parse(
-        "[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 " "[[Wikilink2]].]]"
+        '[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 ' '[[Wikilink2]].]]'
     )._type_to_spans['WikiLink']
     assert a == 0
     assert b == 65
@@ -175,7 +175,7 @@ def test_extracting_sections():
     assert (
         "[Section('\\n'), Section('== 1 ==\\n'), "
         "Section('== 2 ==\\n=== 2.1 ===\\n==== 2.1.1 ====\\n"
-        "===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n"
+        '===== 2.1.1.1 =====\\n=== 2.2 ===\\n=== 2.3 ===\\n'
         "==== 2.3.1 ====\\n2.3.1\\n'), Section('=== 2.1 ===\\n"
         "==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
         "Section('==== 2.1.1 ====\\n===== 2.1.1.1 =====\\n'), "
@@ -204,7 +204,7 @@ def test_section_title_may_contain_template_newline_etc():
 
 
 def test_keyword_and_positional_args_removal():
-    wt = WikiText("text{{t1|kw=a|1=|pa|kw2=a|pa2}}{{t2|a|1|1=}}text")
+    wt = WikiText('text{{t1|kw=a|1=|pa|kw2=a|pa2}}{{t2|a|1|1=}}text')
     t1, t2 = wt.templates
     t1_args = t1.arguments
     t2_args = t2.arguments
@@ -226,7 +226,7 @@ def test_keyword_and_positional_args_removal():
     del t1_args[1][:]
     t1_args = t1.arguments
     t2_args = t2.arguments
-    assert "text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text" == wt.string
+    assert 'text{{t1|1=|kw2=a|pa2}}{{t2|a|1|1=}}text' == wt.string
     assert 'pa2' == t1_args[2].value
     assert '1' == t1_args[2].name
     assert 'a' == t2_args[0].value
@@ -625,4 +625,7 @@ def test_invalid_reverse_pipe_trick():
 def test_invalid_tag():  # 121
     assert bpts(
         b'<ref[oanda.com, March 9, 2022]/ref><ref name=cp/><ref>a</ref>'
-    )['ExtensionTag'] == [[35, 49], [49, 61]]
+    )['ExtensionTag'] == [
+        [35, 49],
+        [49, 61],
+    ]

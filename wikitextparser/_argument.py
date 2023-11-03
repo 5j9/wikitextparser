@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, MutableSequence, Optional, Union
+from typing import Dict, List, MutableSequence, Optional, Union
 
 from regex import DOTALL, MULTILINE
 

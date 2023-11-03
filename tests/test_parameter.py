@@ -1,4 +1,4 @@
-﻿from pytest import warns
+from pytest import warns
 
 from wikitextparser import Parameter
 

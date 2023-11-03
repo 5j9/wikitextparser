@@ -15,24 +15,30 @@ def test_get_bolds():
     anb("''i1'''s")
     anb("<!--'''b'''-->")
     ab(
-        "a<!---->'<!---->'<!---->'<!---->"
-        "b<!---->'<!---->'<!---->'<!---->d",
-        "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'")
+        "a<!---->'<!---->'<!---->'<!---->" "b<!---->'<!---->'<!---->'<!---->d",
+        "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'",
+    )
     ab("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
     ab("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
     ab("{{text|'''b'''}}", "'''b'''")
     ab("{{text|'''b}}", "'''b")  # ?
     ab("[[a|'''b]] c", "'''b")
     ab("{{{PARAM|'''b}}} c", "'''b")  # ?
-    assert repr(parse("'''b\na'''c").get_bolds()) ==\
-        """[Bold("'''b"), Bold("'''c")]"""
+    assert (
+        repr(parse("'''b\na'''c").get_bolds())
+        == """[Bold("'''b"), Bold("'''c")]"""
+    )
     ab("'''<S>b</S>'''", "'''<S>b</S>'''")
     ab("'''b<S>r'''c</S>", "'''b<S>r'''")
     ab("'''''b'''i", "'''b'''")
-    assert repr(parse("'''b<ref>r'''c</ref>a").get_bolds()) == \
-        """[Bold("'''b<ref>r'''c</ref>a"), Bold("'''c")]"""
-    assert repr(parse("'''b<ref>r'''c</ref>a").get_bolds(False)) ==\
-        """[Bold("'''b<ref>r'''c</ref>a")]"""
+    assert (
+        repr(parse("'''b<ref>r'''c</ref>a").get_bolds())
+        == """[Bold("'''b<ref>r'''c</ref>a"), Bold("'''c")]"""
+    )
+    assert (
+        repr(parse("'''b<ref>r'''c</ref>a").get_bolds(False))
+        == """[Bold("'''b<ref>r'''c</ref>a")]"""
+    )
     ab("'''b{{{p|'''}}}", "'''b{{{p|'''}}}")  # ?
     ab("<nowiki>'''a</nowiki>'''b", "'''a")
     anb("' ' ' a ' ' '")
@@ -53,14 +59,15 @@ def test_get_italics():
     ai("a'' ''' ib ''' ''c", "'' ''' ib ''' ''")
     ai("''i''", "''i''")
     ai(
-        "A<!---->"
+        'A<!---->'
         "'<!---->'<!---->'<!---->'<!---->'"
-        "<!---->i<!---->"
+        '<!---->i<!---->'
         "'<!---->'<!---->'<!---->'<!---->'"
-        "<!---->B",
+        '<!---->B',
         "'<!---->'<!---->'<!---->'<!---->'"
-        "<!---->i<!---->"
-        "'<!---->'<!---->'<!---->'<!---->'")
+        '<!---->i<!---->'
+        "'<!---->'<!---->'<!---->'<!---->'",
+    )
     ai("''' ''i'''", "''i'''")
 
 
@@ -71,7 +78,7 @@ def test_bold_italic_index_change():
     b1.text = '1'
     assert p.string == "'''1''' ''i1'' '''b2'''"
     assert i1.string == "''i1''"
-    assert b2.text == "b2"
+    assert b2.text == 'b2'
 
 
 def test_do_not_return_duplicate_bolds_italics():  # 42
@@ -86,32 +93,32 @@ def test_multiline_italics():
 
 
 def test_first_single_letter_word_condition_in_doquotes():
-    b, = parse("'''a'' b'''c'' '''d''").get_bolds()
+    (b,) = parse("'''a'' b'''c'' '''d''").get_bolds()
     assert b.string == "'''a'' b'''c'' '''"
 
 
 def test_first_space_condition_in_doquotes_not_used():
-    b, = parse("'''a'' '''b'' '''c''").get_bolds()
+    (b,) = parse("'''a'' '''b'' '''c''").get_bolds()
     assert b.string == "'''b'' '''"
 
 
 def test_first_space_condition_in_balanced_quotes_shadow():
-    b, = parse("a '''b'' '''c'' '''d''").get_bolds()
+    (b,) = parse("a '''b'' '''c'' '''d''").get_bolds()
     assert b.string == "'''c'' '''"
 
 
 def test_ignore_head_apostrophes():
-    b, = parse("''''''''a").get_italics()
+    (b,) = parse("''''''''a").get_italics()
     assert b.string == "'''''a"
 
 
 def test_bold_ends_4_apostrophes():
-    b, = parse("''a'''b''''").get_bolds()
+    (b,) = parse("''a'''b''''").get_bolds()
     assert b.text == "b'"
 
 
 def test_single_bold_italic():
-    i, = parse("'''''a").get_italics()
+    (i,) = parse("'''''a").get_italics()
     assert i.text == "'''a"
 
 
@@ -130,8 +137,9 @@ def test_bold_italics_order():
 
 
 def test_wikilinks_in_extension_tags_should_not_create_duplicates():  # 57
-    assert len(
-        parse("<ref>\n[[a|''b'']]\n</ref>").get_bolds_and_italics()) == 1
+    assert (
+        len(parse("<ref>\n[[a|''b'']]\n</ref>").get_bolds_and_italics()) == 1
+    )
 
 
 def test_italic_end_token():

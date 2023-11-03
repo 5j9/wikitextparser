@@ -197,7 +197,7 @@ def test_title_and_fragment_deleters():
 
 
 def test_called_from_plaintext():  # 119
-    w0, w1 = parse("[[0]] [[1]]").wikilinks
+    w0, w1 = parse('[[0]] [[1]]').wikilinks
     del w0[:]
     assert w1.plain_text() == '1'
 

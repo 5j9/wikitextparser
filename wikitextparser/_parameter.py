@@ -1,4 +1,4 @@
-﻿from typing import List, Optional
+from typing import List, Optional
 
 from ._wikitext import WS, SubWikiText
 
@@ -97,7 +97,7 @@ class Parameter(SubWikiText):
                 len('{{{' + name + '|') : len(
                     '{{{' + name + '|' + innermost_default
                 )
-            ] = ('{{{' + new_default_name + '|' + innermost_default + '}}}')
+            ] = '{{{' + new_default_name + '|' + innermost_default + '}}}'
 
     @property
     def parameters(self) -> List['Parameter']:

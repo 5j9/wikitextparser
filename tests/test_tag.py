@@ -55,7 +55,7 @@ def test_start_tag_patterns():
         'attr_value': b'body',
         'attr_insert': b'',
     }
-    assert start_tag_finder(b"<table a1=v1 a2=v2>").capturesdict() == {
+    assert start_tag_finder(b'<table a1=v1 a2=v2>').capturesdict() == {
         'attr_name': [b'a1', b'a2'],
         'start_tag': [b'<table a1=v1 a2=v2>'],
         'attr': [b' a1=v1', b' a2=v2'],
@@ -116,7 +116,7 @@ def test_get_attr_value():
 
 
 def test_set_attr_value():
-    t = Tag('<t n1=v1 n2=v2 n1=\'v3\'>c</t>')
+    t = Tag("<t n1=v1 n2=v2 n1='v3'>c</t>")
     t.set_attr('n1', 'v4')
     t.set_attr('n2', 'v5')
     assert t.string == '<t n1=v1 n2="v5" n1="v4">c</t>'

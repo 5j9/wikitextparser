@@ -1,4 +1,4 @@
-﻿"""Define the functions required for parsing wikitext into spans."""
+"""Define the functions required for parsing wikitext into spans."""
 from functools import partial
 from typing import Callable, Dict, Optional
 
@@ -27,7 +27,9 @@ PF_TL_FINDITER = rc(
     rb'[\s\0]*+'
     rb'(?>'
     rb'\#[^{}\s:|]++'  # parser function
-    rb'|' + regex_pattern(_parser_functions)[3:] +  # )
+    rb'|'
+    + regex_pattern(_parser_functions)[3:]  # )
+    +
     # should not have any arguments or the arg should start with a :
     rb'(?:'
     rb':(?>[^{}]*+|}(?!})|{(?!{))*+'
@@ -93,8 +95,8 @@ WIKILINK_PARAM_FINDITER = rc(
 ).finditer
 
 MARKUP = b''.maketrans(b"|[]'{}", b'_\2\3___')
-BRACES_PIPE_NEWLINE = b''.maketrans(b"|{}\n", b'____')
-BRACKETS = b''.maketrans(b"[]", b'__')
+BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\n', b'____')
+BRACKETS = b''.maketrans(b'[]', b'__')
 
 PARSABLE_TAG_EXTENSION_NAME = regex_pattern(_parsable_tag_extensions)
 UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(_unparsable_tag_extensions)
@@ -169,7 +171,12 @@ ATTR_VAL = (
 # Ignore ambiguous ampersand for the sake of simplicity.
 ATTRS_PATTERN = (
     rb'(?<attr>'
-    rb'[' + SPACE_CHARS + rb']*+(?>' + ATTR_NAME + ATTR_VAL + rb')'
+    rb'['
+    + SPACE_CHARS
+    + rb']*+(?>'
+    + ATTR_NAME
+    + ATTR_VAL
+    + rb')'
     # See https://stackoverflow.com/a/3558200/2705757 for how HTML5
     # treats self-closing marks.
     + rb'|[^>]++'
@@ -316,9 +323,10 @@ def _parse_sub_spans(
     tls_append: Callable,
     wls_append: Callable,
 ) -> None:
-    start_and_end_tags = *HTML_START_TAG_FINDITER(
-        byte_array, start, end
-    ), *HTML_END_TAG_FINDITER(byte_array, start, end)
+    start_and_end_tags = (
+        *HTML_START_TAG_FINDITER(byte_array, start, end),
+        *HTML_END_TAG_FINDITER(byte_array, start, end),
+    )
     for match in start_and_end_tags:
         ms, me = match.span()
         byte_array[ms:me] = byte_array[ms:me].translate(BRACKETS)

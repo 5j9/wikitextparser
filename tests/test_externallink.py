@@ -1,4 +1,4 @@
-﻿from wikitextparser import ExternalLink
+from wikitextparser import ExternalLink
 
 
 def test_externallinks():
@@ -6,15 +6,18 @@ def test_externallinks():
 
 
 def test_repr():
-    assert repr(ExternalLink('HTTP://mediawiki.org')) == \
-        "ExternalLink('HTTP://mediawiki.org')"
+    assert (
+        repr(ExternalLink('HTTP://mediawiki.org'))
+        == "ExternalLink('HTTP://mediawiki.org')"
+    )
 
 
 def test_numberedmailto_change_none_to_empty():
     s = (
         '[mailto:'
         'info@example.org?Subject=URL%20Encoded%20Subject&body='
-        'Body%20Textinfo]')
+        'Body%20Textinfo]'
+    )
     el = ExternalLink(s)
     assert s[1:-1] == el.url
     assert el.text is None
