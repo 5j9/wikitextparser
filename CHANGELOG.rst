@@ -1,6 +1,7 @@
 Unreleased
 ----------
 - Fixed some bugs in ``plain_text`` method. (#119, #120)
+- Fixed bug in ``get_tags``. (#121)
 
 v0.54.0
 -------

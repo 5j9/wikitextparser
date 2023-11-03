@@ -104,7 +104,8 @@ UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(_unparsable_tag_extensions)
 # But it's not bullet proof:
 # https://stackoverflow.com/questions/3076219/
 CONTENT_AND_END = (  # noqa
-    rb'\b[^>]*+'
+    rb'(?=[\s>/])'
+    rb'[^>]*+'
     rb'(?>'
     rb'(?<=/)>'  # self-closing
     # group c captures contents
