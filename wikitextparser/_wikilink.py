@@ -8,13 +8,13 @@ from regex import DOTALL
 from ._wikitext import SubWikiText, rc
 
 FULLMATCH = rc(
-    rb'\[\0*+\['
+    rb'[\[\2]\0*+[\[\2]'
     rb'('  # 1: target
-    rb'([^|#\]]*+)'  # 2: title
-    rb'(?>#([^|\]]*+))?'  # 3: fragment
+    rb'([^|#[\]\3]]*+)'  # 2: title
+    rb'(?>#([^|[\]\3]]*+))?'  # 3: fragment
     rb')'
     rb'(?:\|(.*))?'  # 4: text
-    rb'\]\0*+\]',
+    rb'[\]\3]\0*+[\]\3]',
     DOTALL,
 ).fullmatch
 

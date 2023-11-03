@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in ``plain_text`` method. (#119)
+
 v0.54.0
 -------
 - Fixed a bug in ``WikiText.external_links`` not detecting external links inserted via overwriting a template string. (#74)

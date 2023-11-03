@@ -1,10 +1,11 @@
-from wikitextparser import WikiLink
+from wikitextparser import WikiLink, parse
 
 
 def test_wikilinks():
-    assert repr(
-        WikiLink('[[File:example.jpg|frame|[[caption]]]]').wikilinks
-    ) == "[WikiLink('[[caption]]')]"
+    assert (
+        repr(WikiLink('[[File:example.jpg|frame|[[caption]]]]').wikilinks)
+        == "[WikiLink('[[caption]]')]"
+    )
 
 
 def test_repr():
@@ -64,9 +65,9 @@ def test_dont_confuse_pipe_in_target_template_with_wl_pipe():
 def test_tricks():
     """Test unsupported wikilink tricks.
 
-        Currently WikiLink.text returns the piped text literally and does not
-        expand these tricks (which by the way do not always work as expected).
-        """
+    Currently WikiLink.text returns the piped text literally and does not
+    expand these tricks (which by the way do not always work as expected).
+    """
     # Pipe trick
     # Note that pipe trick does not work in ref or gallery tags (T4700),
     # also not with links that have anchors, or edit summery links; see:
@@ -193,3 +194,9 @@ def test_title_and_fragment_deleters():
     del wl.fragment
     del wl.title
     assert wl.string == '[[|#]]'
+
+
+def test_called_from_plaintext():  # 119
+    w0, w1 = parse("[[0]] [[1]]").wikilinks
+    del w0[:]
+    assert w1.plain_text() == '1'
