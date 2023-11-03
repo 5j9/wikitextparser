@@ -1,6 +1,6 @@
 Unreleased
 ----------
-- Fixed a bug in ``plain_text`` method. (#119)
+- Fixed some bugs in ``plain_text`` method. (#119, #120)
 
 v0.54.0
 -------

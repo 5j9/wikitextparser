@@ -174,6 +174,8 @@ def _table_to_text(t: 'Table') -> str:
         [(cell if cell is not None else '') for cell in row]
         for row in t.data()
     ]
+    if not data:
+        return ''
     widths = [0] * len(data[0])
     for row in data:
         for ri, d in enumerate(row[:-1]):

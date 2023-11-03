@@ -4,6 +4,7 @@ from wikitextparser import Template, parse, remove_markup
 def test_plaintext():
     def ap(s, p):
         assert parse(s).plain_text() == p
+
     ap('[https://wikimedia.org/ wm]', 'wm')
     ap("{{{a}}}", '')
     ap("<span>a<small>b</small>c</span>", 'abc')
@@ -44,9 +45,12 @@ def test_nested_bold_or_italic_plain_text():
 
 
 def test_nested_tag_extensions_plain_text():
-    assert parse(
-        '<noinclude><pagequality level="4" user="Zabia" /></noinclude>'
-    ).plain_text() == ''
+    assert (
+        parse(
+            '<noinclude><pagequality level="4" user="Zabia" /></noinclude>'
+        ).plain_text()
+        == ''
+    )
 
 
 def test_plain_text_when_the_whole_content_of_bold_is_a_template():
@@ -58,9 +62,12 @@ def test_plain_text_non_root_node():
 
 
 def test_extract_unparsable_extension_tags_first():  # 90
-    assert parse(
-        "<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>"
-    ).plain_text() == '[b]'
+    assert (
+        parse(
+            "<noinclude>[[a|<nowiki>[</nowiki>b<nowiki>]</nowiki>]]</noinclude>"
+        ).plain_text()
+        == '[b]'
+    )
 
 
 def test_self_closing_tag_contents():  # 88
@@ -74,31 +81,33 @@ def test_replace_fuctions():
     def f(_):
         return 'F'
 
-    assert parse(
-        'a {{tt}} b {{tt}} a {{#if:}} b {{#if:}} c'
-    ).plain_text(
-        replace_templates=t,
-        replace_parser_functions=f,
-    ) == 'a T b T a F b F c'
+    assert (
+        parse('a {{tt}} b {{tt}} a {{#if:}} b {{#if:}} c').plain_text(
+            replace_templates=t,
+            replace_parser_functions=f,
+        )
+        == 'a T b T a F b F c'
+    )
 
 
 def test_nested_template_function_replace():
     def t(_):
         return 'T'
-    assert parse('{{tt|{{tt}}}}').plain_text(replace_templates=t) == \
-        'T'
+
+    assert parse('{{tt|{{tt}}}}').plain_text(replace_templates=t) == 'T'
 
 
 def test_replace_nested_template_functions():
     def t(_):
         return 'T'
 
-    assert parse(
-        '{{tt|{{#if:}}}}'
-    ).plain_text(
-        replace_templates=t,
-        replace_parser_functions=t,  # tests for
-    ) == 'T'
+    assert (
+        parse('{{tt|{{#if:}}}}').plain_text(
+            replace_templates=t,
+            replace_parser_functions=t,  # tests for
+        )
+        == 'T'
+    )
 
 
 def test_after_tag_deletion():  # 113
@@ -123,7 +132,10 @@ def test_table():
         '|}\n'
         'b'
     )
-    assert p.plain_text() == 'a\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n\nb'
+    assert (
+        p.plain_text()
+        == 'a\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n\nb'
+    )
 
 
 TABLE_WITH_ROW_AND_COL_SPANS = '''{| class="wikitable"
@@ -149,7 +161,6 @@ def test_none_in_table_data():
     )
 
 
-
 TABLE_WITH_CAPTION = '''{|
 |+Food complements
 |-
@@ -168,3 +179,8 @@ def test_table_caption():
     assert parse(TABLE_WITH_CAPTION).plain_text() == (
         '\nFood complements\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n'
     )
+
+
+def test_table_with_no_data():  # 120
+    text = """{|{{t1|a=v}}{{t2|a2=v2]]}}\n|}"""
+    assert parse(text).plain_text() == ''
