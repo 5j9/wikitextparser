@@ -16,7 +16,7 @@ from ._config import (
 rc = partial(rc, cache_pattern=False)
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS = rb'[^\1-\6\|\{\}\[\]<>\n]*+'
+VALID_TITLE_CHARS = rb'[^\|\{\}\[\2\]\3<>\n]*+'
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
@@ -92,10 +92,9 @@ WIKILINK_PARAM_FINDITER = rc(  # noqa
     REVERSE,
 ).finditer
 
-# these characters interfere with detection of (args|tls|wlinks|wlists)
-pbba_tt = b''.maketrans(b"|[]'{}", b'\1\2\3\7\5\6')
-blank_sensitive_chars = partial(rc(br'[\|\{\}\n]').sub, br' ')
-blank_brackets = partial(rc(br'[\[\]]').sub, br' ')
+MARKUP = b''.maketrans(b"|[]'{}", b'_\2\3___')
+BRACES_PIPE_NEWLINE = b''.maketrans(b"|{}\n", b'____')
+BRACKETS = b''.maketrans(b"[]", b'__')
 
 PARSABLE_TAG_EXTENSION_NAME = regex_pattern(_parsable_tag_extensions)
 UNPARSABLE_TAG_EXTENSION_NAME = regex_pattern(_unparsable_tag_extensions)
@@ -321,7 +320,7 @@ def _parse_sub_spans(
     ), *HTML_END_TAG_FINDITER(byte_array, start, end)
     for match in start_and_end_tags:
         ms, me = match.span()
-        byte_array[ms:me] = blank_brackets(byte_array[ms:me])
+        byte_array[ms:me] = byte_array[ms:me].translate(BRACKETS)
     while True:
         while True:
             match: Optional[Match] = None
@@ -339,7 +338,7 @@ def _parse_sub_spans(
                         wls_append,
                     )
                     # keep tags
-                    byte_array[ms:me] = byte_array[ms:me].translate(pbba_tt)
+                    byte_array[ms:me] = byte_array[ms:me].translate(MARKUP)
                 else:
                     pms_append([ms, me, match, byte_array[ms:me]])
                     _parse_sub_spans(
@@ -370,4 +369,4 @@ def _parse_sub_spans(
             break
     for match in start_and_end_tags:
         ms, me = match.span()
-        byte_array[ms:me] = blank_sensitive_chars(byte_array[ms:me])
+        byte_array[ms:me] = byte_array[ms:me].translate(BRACES_PIPE_NEWLINE)
