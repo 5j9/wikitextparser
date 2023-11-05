@@ -1248,7 +1248,7 @@ class WikiText:
         return external_links
 
     def _section_spans_to_sections(
-        self, section_spans: List[Tuple[int, int]], shadow: bytearray, /
+        self, section_spans: List[Tuple[int, int]], shadow: bytearray
     ) -> List['Section']:
         type_to_spans = self._type_to_spans
         sections: List[Section] = []
@@ -1270,7 +1270,7 @@ class WikiText:
 
     @property
     def sections(self) -> List['Section']:
-        """Return self.get_section(include_subsections=True)."""
+        """Return self.get_sections(include_subsections=True)."""
         return self.get_sections()
 
     def get_sections(
