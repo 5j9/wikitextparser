@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.0
+-------
 - Added:  ``top_levels_only`` argument to ``get_sections``.
 - Deprecated: Calling ``get_sections`` with positional arguments is now deprecated.
 
