@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, warns
 
 from wikitextparser import WikiText, parse
 
@@ -100,3 +100,36 @@ def test_by_heading_pattern():
     h1, h = wt.get_sections(include_subsections=False, level=1)
     assert h1.string == '= h1 =\n'
     assert h.string == '= h =\nend'
+
+
+text = """\
+lead
+===1===
+1
+====1.1====
+1.1
+==2==
+2
+===2.1===
+2.1
+==3==
+3
+===3.1===
+3.1
+"""
+
+
+def test_top_levels_only():
+    sections = parse(text).get_sections(top_levels_only=True)
+    print(sections)
+    assert len(sections) == 4
+    assert sections[2].string == '==2==\n2\n===2.1===\n2.1\n'
+
+
+def test_positional_args():
+    p = parse('')
+    m = 'calling get_sections with positional arguments is deprecated'
+    with warns(DeprecationWarning, match=m):
+        p.get_sections(False)
+    with warns(DeprecationWarning, match=m):
+        p.get_sections(False, 1)

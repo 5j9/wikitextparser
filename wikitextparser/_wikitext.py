@@ -14,6 +14,7 @@ from typing import (
     Tuple,
     Union,
 )
+from warnings import warn
 
 from regex import (
     DOTALL,
@@ -73,10 +74,24 @@ INVALID_EXT_CHARS_SUB = rc(  # the [:-4] slice allows \[ and \]
 
 # Sections
 SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
+SUBSECTION_HEADING = rb'^(?P=equals)=[^\n]+?(?P=equals)=[ \t]*+$'
+LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
-    rb'(?<section>(?<equals>).*?)'  # lead section
-    rb'(?<section>' + SECTION_HEADING + rb'.*?'  # heading  # section content
-    rb')*',  # Todo: why can't be made possessive?
+    LEAD_SECTION
+    + rb'(?<section>'
+    + SECTION_HEADING
+    + rb'.*?'  # heading  # section content
+    rb')*',
+    DOTALL | MULTILINE | VERBOSE,
+).fullmatch
+SECTIONS_TOP_LEVELS_ONLY = rc(
+    LEAD_SECTION
+    + rb'(?<section>'
+    + SECTION_HEADING
+    + rb'.*?'
+    + SUBSECTION_HEADING
+    + rb'.*?'
+    rb')*',
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
 
@@ -1232,13 +1247,38 @@ class WikiText:
         _extract(None, None)
         return external_links
 
+    def _section_spans_to_sections(
+        self, section_spans: list[tuple[int, int]], shadow: bytearray, /
+    ) -> List['Section']:
+        type_to_spans = self._type_to_spans
+        sections: List[Section] = []
+        sections_append = sections.append
+        ss, se, _, ba = self._span_data
+        type_spans = type_to_spans.setdefault('Section', [])
+        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
+        lststr = self._lststr
+        for ms, me in section_spans:
+            s, e = ss + ms, ss + me
+            old_span = span_tuple_to_span((s, e))
+            if old_span is None:
+                span = [s, e, None, shadow[ms:me]]
+                insort_right(type_spans, span)
+            else:
+                span = old_span
+            sections_append(Section(lststr, type_to_spans, span, 'Section'))
+        return sections
+
     @property
     def sections(self) -> List['Section']:
         """Return self.get_section(include_subsections=True)."""
         return self.get_sections()
 
     def get_sections(
-        self, include_subsections=True, level=None
+        self,
+        *args,
+        include_subsections=True,
+        level=None,
+        top_levels_only=False,
     ) -> List['Section']:
         """Return a list of sections in current wikitext.
 
@@ -1249,9 +1289,30 @@ class WikiText:
             in each Section object.
         :param level: Only return sections where section.level == level.
             Return all levels if None (default).
+        :param top_levels_only: Only return sections that are not subsections
+            of other sections. In this mode, level cannot be specified and
+            `include_subsections` must be True.
         """
-        type_to_spans = self._type_to_spans
+        if args:
+            warn(
+                'calling get_sections with positional arguments is deprecated',
+                DeprecationWarning,
+                2,
+            )
+            if len(args) == 1:
+                include_subsections = args[0]
+            else:
+                include_subsections, level = args
+
         shadow = self._shadow
+        if top_levels_only:
+            assert level is None
+            assert include_subsections
+            full_match = SECTIONS_TOP_LEVELS_ONLY(shadow)
+            return self._section_spans_to_sections(
+                full_match.spans('section'), shadow
+            )
+
         full_match = SECTIONS_FULLMATCH(shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('equals')]
@@ -1270,22 +1331,7 @@ class WikiText:
                 section_spans, [l == level for l in levels]
             )
 
-        sections: List[Section] = []
-        sections_append = sections.append
-        ss, se, _, ba = self._span_data
-        type_spans = type_to_spans.setdefault('Section', [])
-        span_tuple_to_span = {(s[0], s[1]): s for s in type_spans}.get
-        lststr = self._lststr
-        for ms, me in section_spans:
-            s, e = ss + ms, ss + me
-            old_span = span_tuple_to_span((s, e))
-            if old_span is None:
-                span = [s, e, None, shadow[ms:me]]
-                insort_right(type_spans, span)
-            else:
-                span = old_span
-            sections_append(Section(lststr, type_to_spans, span, 'Section'))
-        return sections
+        return self._section_spans_to_sections(section_spans, shadow)
 
     @property
     def tables(self) -> List['Table']:

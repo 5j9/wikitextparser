@@ -1,3 +1,8 @@
+Unreleased
+==========
+- Added:  ``top_levels_only`` argument to ``get_sections``.
+- Deprecated: Calling ``get_sections`` with positional arguments is now deprecated.
+
 v0.54.1
 -------
 - Fixed some bugs in ``plain_text`` method. (#119, #120)
