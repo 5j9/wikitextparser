@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed and improved handling of tables and images in ``plain_text`` (#122)
+
 v0.55.0
 -------
 - Added:  ``top_levels_only`` argument to ``get_sections``.

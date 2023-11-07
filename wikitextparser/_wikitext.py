@@ -730,7 +730,7 @@ class WikiText:
         if replace_wikilinks:
             for w in parsed.wikilinks:
                 b, e = w.span
-                if w.wikilinks:
+                if w.title.partition(':')[2].partition('.')[2]:
                     remove(b, e)  # image
                 else:
                     tb, te = w._match.span(4)  # noqa, text span

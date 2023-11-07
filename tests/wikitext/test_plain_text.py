@@ -201,7 +201,4 @@ TABLE_IN_IMAGE = """
 
 def test_table_in_image():  # 122
     parsed = parse(TABLE_IN_IMAGE)
-    assert (
-        parsed.wikilinks[0].plain_text()
-        == 'thumb|\n\nSymbol\tCode\na1    \t0\n\n'
-    )
+    assert parsed.wikilinks[0].plain_text() == ''
