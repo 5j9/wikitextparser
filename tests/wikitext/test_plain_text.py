@@ -184,3 +184,24 @@ def test_table_caption():
 def test_table_with_no_data():  # 120
     text = """{|{{t1|a=v}}{{t2|a2=v2]]}}\n|}"""
     assert parse(text).plain_text() == ''
+
+
+TABLE_IN_IMAGE = """
+1234567890123456789012345678901234567890123456789012345
+[[Image:Huffman coding example.svg|thumb|
+{|class="wikitable"
+! Symbol !! Code
+|-
+|a1 || 0
+|-
+|}
+]]
+"""
+
+
+def test_table_in_image():  # 122
+    parsed = parse(TABLE_IN_IMAGE)
+    assert (
+        parsed.wikilinks[0].plain_text()
+        == 'thumb|\n\nSymbol\tCode\na1    \t0\n\n'
+    )

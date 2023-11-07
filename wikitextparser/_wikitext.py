@@ -743,7 +743,7 @@ class WikiText:
                         remove(b + te, e)
 
         if callable(replace_tables):
-            for table in self.get_tables():
+            for table in parsed.get_tables():
                 b, e = table._span_data[:2]  # noqa
                 if lst[b] is None:  # overwritten
                     continue
