@@ -1,3 +1,7 @@
+Unreleased
+----------
+- ``plain_text`` method now uses a more accurate image-detection algorithm.
+
 v0.55.3
 -------
 - Fixed and improved handling of tables and images in ``plain_text`` (#122)

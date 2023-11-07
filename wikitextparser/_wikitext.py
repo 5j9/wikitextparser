@@ -154,6 +154,45 @@ SPAN_PARSER_TYPES = {
 
 WS = '\r\n\t '
 
+# https://github.com/wikimedia/mediawiki/blob/de18cff244e8fab2e1ab2470c3b444e76b305e12/includes/libs/mime/MimeAnalyzer.php#L425
+KNOWN_FILE_EXTENSIONS = {
+    'bmp',
+    'djvu',
+    'gif',
+    'iff',
+    'jb2',
+    'jp2',
+    'jpc',
+    'jpeg',
+    'jpg',
+    'jpx',
+    'mid',
+    'mka',
+    'mkv',
+    'mp3',
+    'oga',
+    'ogg',
+    'ogv',
+    'ogx',
+    'opus',
+    'pdf',
+    'png',
+    'psd',
+    'spx',
+    'stl',
+    'svg',
+    'swc',
+    'swf',
+    'tif',
+    'tiff',
+    'wbmp',
+    'webm',
+    'webp',
+    'wmf',
+    'xbm',
+    'xcf',
+}
+
 
 class DeadIndexError(TypeError):
     pass
@@ -730,7 +769,11 @@ class WikiText:
         if replace_wikilinks:
             for w in parsed.wikilinks:
                 b, e = w.span
-                if w.title.partition(':')[2].partition('.')[2]:
+                title = w.title
+                if title[0] != ':' and (
+                    title.partition(':')[2].partition('.')[2]
+                    in KNOWN_FILE_EXTENSIONS
+                ):
                     remove(b, e)  # image
                 else:
                     tb, te = w._match.span(4)  # noqa, text span

@@ -202,3 +202,17 @@ TABLE_IN_IMAGE = """
 def test_table_in_image():  # 122
     parsed = parse(TABLE_IN_IMAGE)
     assert parsed.wikilinks[0].plain_text() == ''
+
+
+def test_file_links():
+    # https://www.mediawiki.org/wiki/Help:Linking_to_files
+    assert parse('[[:File:Example.jpg]]').plain_text() == ':File:Example.jpg'
+    assert parse('[[:File:n.jpg|Sunflowers]]').plain_text() == 'Sunflowers'
+    # just having : and . in title does not mean it is a file. Real example:
+    assert (
+        parse('[[Survivor: Brains vs. Brawn vs. Beauty]]').plain_text()
+        == 'Survivor: Brains vs. Brawn vs. Beauty'
+    )
+    # Fails for the following cases:
+    # assert parse('[[Media:Example.jpg]]').plain_text() == 'Media:Example.jpg'
+    # assert parse('[[Media:n.jpg|Sunflowers]]').plain_text() == 'Sunflowers'
