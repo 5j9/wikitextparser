@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.4
+-------
 - ``plain_text`` method now uses a more accurate image-detection algorithm.
 
 v0.55.3
