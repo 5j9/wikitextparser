@@ -34,6 +34,7 @@ from ._config import (
     _parsable_tag_extensions,
     _tag_extensions,
     regex_pattern,
+    KNOWN_FILE_EXTENSIONS,
 )
 from ._spans import (
     BARE_EXTERNAL_LINK,
@@ -153,45 +154,6 @@ SPAN_PARSER_TYPES = {
 }
 
 WS = '\r\n\t '
-
-# https://github.com/wikimedia/mediawiki/blob/de18cff244e8fab2e1ab2470c3b444e76b305e12/includes/libs/mime/MimeAnalyzer.php#L425
-KNOWN_FILE_EXTENSIONS = {
-    'bmp',
-    'djvu',
-    'gif',
-    'iff',
-    'jb2',
-    'jp2',
-    'jpc',
-    'jpeg',
-    'jpg',
-    'jpx',
-    'mid',
-    'mka',
-    'mkv',
-    'mp3',
-    'oga',
-    'ogg',
-    'ogv',
-    'ogx',
-    'opus',
-    'pdf',
-    'png',
-    'psd',
-    'spx',
-    'stl',
-    'svg',
-    'swc',
-    'swf',
-    'tif',
-    'tiff',
-    'wbmp',
-    'webm',
-    'webp',
-    'wmf',
-    'xbm',
-    'xcf',
-}
 
 
 class DeadIndexError(TypeError):
