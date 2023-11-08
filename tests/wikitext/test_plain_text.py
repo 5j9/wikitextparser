@@ -213,6 +213,7 @@ def test_file_links():
         parse('[[Survivor: Brains vs. Brawn vs. Beauty]]').plain_text()
         == 'Survivor: Brains vs. Brawn vs. Beauty'
     )
+    assert parse('[[#f|t]]').plain_text() == 't'  # 123
     # Fails for the following cases:
     # assert parse('[[Media:Example.jpg]]').plain_text() == 'Media:Example.jpg'
     # assert parse('[[Media:n.jpg|Sunflowers]]').plain_text() == 'Sunflowers'

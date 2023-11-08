@@ -732,7 +732,7 @@ class WikiText:
             for w in parsed.wikilinks:
                 b, e = w.span
                 title = w.title
-                if title[0] != ':' and (
+                if title[:1] != ':' and (
                     title.partition(':')[2].partition('.')[2]
                     in KNOWN_FILE_EXTENSIONS
                 ):
