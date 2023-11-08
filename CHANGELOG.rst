@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.5
+-------
 - Fixed: regression in ``plain_text`` not being  able to handle wikilinks only containing fragment/anchor, not title.
 
 v0.55.4
