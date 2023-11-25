@@ -130,7 +130,11 @@ class Table(SubWikiTextWithAttrs):
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
+                    m = FIRST_NON_CAPTION_LINE(table_shadow, pos)
+                    try:
+                        pos = m.start()
+                    except AttributeError:  # m is None, table ended abruptly
+                        return match_table
                     m = NEWLINE_CELL_MATCH(table_shadow, pos)
             rsp = _row_separator_increase(table_shadow, pos)
         return match_table

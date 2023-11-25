@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed bug in parsing tables that end without a ``|}`` mark. (#124)
+
 v0.55.5
 -------
 - Fixed: regression in ``plain_text`` not being  able to handle wikilinks only containing fragment/anchor, not title.

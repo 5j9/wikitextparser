@@ -188,3 +188,13 @@ def test_nested_tables_sorted():
 def test_tables_in_parsable_tag_extensions():  # 85
     (table,) = parse('<onlyinclude>\n{|\n|}\n</onlyinclude>').tables
     assert table.span == (14, 19)
+
+
+def test_table_with_no_end_mark():  # 124
+    text = """
+    {| class=wikitable
+    ! a !! b
+    {{end}}
+    """
+    parsed = parse(text)
+    assert parsed.tables[0].data() == [['a', 'b\n    {{end}}']]
