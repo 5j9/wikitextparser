@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.6
+-------
 - Fixed bug in parsing tables that end without a ``|}`` mark. (#124)
 
 v0.55.5
