@@ -2,7 +2,7 @@ from wikitextparser import Bold, Italic, parse
 
 
 def assert_bold(
-    input_string: str, expected_bold_string: str, recursive: bool = True, /
+    input_string: str, expected_bold_string: str, recursive: bool = True
 ):
     assert (
         parse(input_string).get_bolds(recursive)[0].string
