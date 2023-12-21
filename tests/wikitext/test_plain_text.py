@@ -217,3 +217,16 @@ def test_file_links():
     # Fails for the following cases:
     # assert parse('[[Media:Example.jpg]]').plain_text() == 'Media:Example.jpg'
     # assert parse('[[Media:n.jpg|Sunflowers]]').plain_text() == 'Sunflowers'
+
+
+def test_tag_containing_comment_with_no_end():  # 126
+    parsed = parse(
+        """
+        [[a|b]]
+        <gallery>
+        <!-- 
+        </gallery>
+        """
+    )
+    del parsed.wikilinks[0][:]
+    assert parsed.plain_text().strip() == ''

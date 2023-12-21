@@ -1,36 +1,42 @@
 from wikitextparser import Bold, Italic, parse
 
 
+def assert_bold(
+    input_string: str, expected_bold_string: str, recursive: bool = True, /
+):
+    assert (
+        parse(input_string).get_bolds(recursive)[0].string
+        == expected_bold_string
+    )
+
+
+def assert_no_bold(input_string: str):
+    assert not parse(input_string).get_bolds(True)
+
+
 def test_get_bolds():
-    def ab(s: str, o: str, r: bool = True):
-        assert parse(s).get_bolds(r)[0].string == o
-
-    def anb(s: str):
-        assert not parse(s).get_bolds(True)
-
-    ab("A''''''''''B", "'''B")
-    ab("''''''a''''''", "'''a''''")  # '<i><b>a'</b></i>
-    ab("a'''<!--b-->'''BI", "'''BI")
-    ab("'''b'''", "'''b'''")
-    anb("''i1'''s")
-    anb("<!--'''b'''-->")
-    ab(
+    assert_bold("A''''''''''B", "'''B")
+    assert_bold("''''''a''''''", "'''a''''")  # '<i><b>a'</b></i>
+    assert_bold("a'''<!--b-->'''BI", "'''BI")
+    assert_bold("'''b'''", "'''b'''")
+    assert_no_bold("''i1'''s")
+    assert_no_bold("<!--'''b'''-->")
+    assert_bold(
         "a<!---->'<!---->'<!---->'<!---->" "b<!---->'<!---->'<!---->'<!---->d",
         "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'",
     )
-    ab("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
-    ab("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
-    ab("{{text|'''b'''}}", "'''b'''")
-    ab("{{text|'''b}}", "'''b")  # ?
-    ab("[[a|'''b]] c", "'''b")
-    ab("{{{PARAM|'''b}}} c", "'''b")  # ?
+    assert_bold("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
+    assert_bold("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
+    assert_bold("{{text|'''b'''}}", "'''b'''")
+    assert_bold("{{text|'''b}}", "'''b")  # ?
+    assert_bold("{{{PARAM|'''b}}} c", "'''b")  # ?
     assert (
         repr(parse("'''b\na'''c").get_bolds())
         == """[Bold("'''b"), Bold("'''c")]"""
     )
-    ab("'''<S>b</S>'''", "'''<S>b</S>'''")
-    ab("'''b<S>r'''c</S>", "'''b<S>r'''")
-    ab("'''''b'''i", "'''b'''")
+    assert_bold("'''<S>b</S>'''", "'''<S>b</S>'''")
+    assert_bold("'''b<S>r'''c</S>", "'''b<S>r'''")
+    assert_bold("'''''b'''i", "'''b'''")
     assert (
         repr(parse("'''b<ref>r'''c</ref>a").get_bolds())
         == """[Bold("'''b<ref>r'''c</ref>a"), Bold("'''c")]"""
@@ -39,12 +45,16 @@ def test_get_bolds():
         repr(parse("'''b<ref>r'''c</ref>a").get_bolds(False))
         == """[Bold("'''b<ref>r'''c</ref>a")]"""
     )
-    ab("'''b{{{p|'''}}}", "'''b{{{p|'''}}}")  # ?
-    ab("<nowiki>'''a</nowiki>'''b", "'''a")
-    anb("' ' ' a ' ' '")
-    ab("x''' '''y", "''' '''")
-    ab("x''''''y", "'''y")
-    ab("{{text|{{text|'''b'''}}}}", "'''b'''")
+    assert_bold("'''b{{{p|'''}}}", "'''b{{{p|'''}}}")  # ?
+    assert_bold("<nowiki>'''a</nowiki>'''b", "'''a")
+    assert_no_bold("' ' ' a ' ' '")
+    assert_bold("x''' '''y", "''' '''")
+    assert_bold("x''''''y", "'''y")
+    assert_bold("{{text|{{text|'''b'''}}}}", "'''b'''")
+
+
+def test_no_end_in_wikilink():
+    assert_bold("[[a|'''b]] c", "'''b")
 
 
 def test_get_italics():

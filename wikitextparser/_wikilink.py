@@ -1,7 +1,7 @@
 """Define the WikiLink class."""
 
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from regex import DOTALL
 
@@ -21,6 +21,13 @@ FULLMATCH = rc(
 
 class WikiLink(SubWikiText):
     __slots__ = '_cached_match'
+
+    @property
+    def _content_span(self) -> Tuple[int, int]:
+        s = self.string
+        f = s.find
+        rf = s.rfind
+        return f('[', f('[') + 1) + 1, rf(']', None, rf(']'))
 
     @property
     def _match(self):
@@ -141,7 +148,3 @@ class WikiLink(SubWikiText):
     @property
     def wikilinks(self) -> List['WikiLink']:
         return super().wikilinks[1:]
-
-    @property
-    def _relative_contents_end(self) -> tuple:
-        return self._match.span(4)

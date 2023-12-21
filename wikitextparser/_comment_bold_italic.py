@@ -1,4 +1,4 @@
-from typing import Dict, List, MutableSequence, Optional, Union
+from typing import Dict, List, MutableSequence, Optional, Union, Tuple
 
 from regex import DOTALL, MULTILINE
 
@@ -49,7 +49,7 @@ class BoldItalic(SubWikiText):
         self[b:e] = s
 
     @property
-    def _relative_contents_end(self) -> tuple:
+    def _content_span(self) -> Tuple[int, int]:
         # noinspection PyUnresolvedReferences
         return self._match.span(1)
 

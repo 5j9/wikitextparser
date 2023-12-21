@@ -576,6 +576,11 @@ class WikiText:
         return level
 
     @property
+    def _content_span(self) -> Tuple[int, int]:
+        # return content_start, self_len, self_end
+        return 0, len(self)
+
+    @property
     def _shadow(self) -> bytearray:
         """Return a copy of self.string with specific sub-spans replaced.
 
@@ -597,12 +602,14 @@ class WikiText:
             self._lststr[0][ss:se], 'ascii', 'replace'
         )
         if self._type in SPAN_PARSER_TYPES:
-            head = shadow[:2]
-            tail = shadow[-2:]
-            shadow[:2] = shadow[-2:] = b'__'
+            cs, ce = self._content_span
+            head = shadow[:cs]
+            tail = shadow[ce:]
+            shadow[:cs] = b'_' * cs
+            shadow[ce:] = b'_' * len(tail)
             parse_to_spans(shadow)
-            shadow[:2] = head
-            shadow[-2:] = tail
+            shadow[:cs] = head
+            shadow[ce:] = tail
         else:
             parse_to_spans(shadow)
         return shadow
@@ -1002,8 +1009,6 @@ class WikiText:
             for span in self._subspans('Comment')
         ]
 
-    _relative_contents_end = span
-
     @property
     def _balanced_quotes_shadow(self):
         """Return bold and italic match objects according MW's algorithm.
@@ -1110,7 +1115,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         tts_setdefault = type_to_spans.setdefault
         balanced_shadow = self._balanced_quotes_shadow
-        rs, re = self._relative_contents_end
+        rs, re = self._content_span
 
         if filter_cls is None or filter_cls is Bold:
             bold_spans = tts_setdefault('Bold', [])

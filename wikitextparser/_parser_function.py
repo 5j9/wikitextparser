@@ -1,5 +1,5 @@
 from bisect import insort
-from typing import Iterable, List, Union
+from typing import Iterable, List, Union, Tuple
 
 from ._argument import Argument
 from ._wikilist import WikiList
@@ -18,6 +18,10 @@ class SubWikiTextWithArgs(SubWikiText):
 
     _name_args_matcher = NotImplemented
     _first_arg_sep = 0
+
+    @property
+    def _content_span(self) -> Tuple[int, int]:
+        return 2, -2
 
     @property
     def nesting_level(self) -> int:
@@ -94,10 +98,6 @@ class SubWikiTextWithArgs(SubWikiText):
     @name.setter
     def name(self, newname: str) -> None:
         self[2 : 2 + len(self.name)] = newname
-
-    @property
-    def _relative_contents_end(self) -> tuple:
-        return 2, -2
 
 
 class ParserFunction(SubWikiTextWithArgs):

@@ -29,6 +29,10 @@ class Template(SubWikiTextWithArgs):
     _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
 
+    @property
+    def _content_span(self) -> Tuple[int, int]:
+        return 2, -2
+
     def normal_name(
         self,
         rm_namespaces=('Template',),

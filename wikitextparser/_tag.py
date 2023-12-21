@@ -8,7 +8,7 @@ For more info see:
 * https://www.mediawiki.org/wiki/HTML_restriction
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from regex import DOTALL, VERBOSE
 
@@ -215,5 +215,6 @@ class Tag(SubWikiTextWithAttrs):
         return super().get_tags(name)[1:]
 
     @property
-    def _relative_contents_end(self) -> tuple:
-        return self._match.span('contents')
+    def _content_span(self) -> Tuple[int, int]:
+        s = self.string
+        return s.find('>') + 1, s.rfind('<')

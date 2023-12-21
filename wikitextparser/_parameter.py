@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from ._wikitext import WS, SubWikiText
 
@@ -104,5 +104,5 @@ class Parameter(SubWikiText):
         return super().parameters[1:]
 
     @property
-    def _relative_contents_end(self) -> tuple:
+    def _content_span(self) -> Tuple[int, int]:
         return 3, -3
