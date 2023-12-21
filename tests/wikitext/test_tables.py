@@ -198,3 +198,7 @@ def test_table_with_no_end_mark():  # 124
     """
     parsed = parse(text)
     assert parsed.tables[0].data() == [['a', 'b\n    {{end}}']]
+
+
+def test_test_table_with_no_end_mark2():  # 125
+    print(parse('{| class=wikitable\n! a !! b\n|-\n').tables[0].data())

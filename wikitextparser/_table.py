@@ -48,7 +48,7 @@ HEAD_DIGITS = rc(rb'\s*+\d+').match
 # Captions are optional and only one should be placed between table-start
 # and the first row. Others captions are not part of the table and will
 # be ignored.
-FIRST_NON_CAPTION_LINE = rc(rb'\n[\t \0]*+(\|(?!\+)|!)').search
+FIRST_NON_CAPTION_LINE = rc(rb'\n[\t \0]*+(\|(?!\+)|!)|\Z').search
 
 
 def head_int(value):
@@ -130,11 +130,7 @@ class Table(SubWikiTextWithAttrs):
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                    m = FIRST_NON_CAPTION_LINE(table_shadow, pos)
-                    try:
-                        pos = m.start()
-                    except AttributeError:  # m is None, table ended abruptly
-                        return match_table
+                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
                     m = NEWLINE_CELL_MATCH(table_shadow, pos)
             rsp = _row_separator_increase(table_shadow, pos)
         return match_table
