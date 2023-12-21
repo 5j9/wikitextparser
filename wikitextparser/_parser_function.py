@@ -1,5 +1,5 @@
 from bisect import insort
-from typing import Iterable, List, Union, Tuple
+from typing import Iterable, List, Tuple, Union
 
 from ._argument import Argument
 from ._wikilist import WikiList

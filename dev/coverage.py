@@ -1,8 +1,7 @@
+from os import chdir
+from pathlib import Path  # requires path
 from subprocess import check_call
 from webbrowser import open_new_tab
-
-from pathlib import Path  # requires path
-from os import chdir
 
 repo = Path(__file__).parent.parent
 chdir(repo)

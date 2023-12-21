@@ -30,11 +30,11 @@ from wcwidth import wcswidth
 # noinspection PyProtectedMember
 from ._config import (
     _HTML_TAG_NAME,
+    KNOWN_FILE_EXTENSIONS,
     _bare_external_link_schemes,
     _parsable_tag_extensions,
     _tag_extensions,
     regex_pattern,
-    KNOWN_FILE_EXTENSIONS,
 )
 from ._spans import (
     BARE_EXTERNAL_LINK,
