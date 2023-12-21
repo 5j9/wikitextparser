@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.7
+-------
 - Fixed a bug in ``plain_text``. (#126)
 - Fixed another bug in parsing tables that end without a ``|}`` mark. (#125)
 
