@@ -38,9 +38,7 @@ Homepage = "https://github.com/5j9/wikitextparser"
 
 [project.optional-dependencies]
 dev = [
-    "path",
     "coverage",
-    "twine",
 ]
 tests = [
     "pytest",

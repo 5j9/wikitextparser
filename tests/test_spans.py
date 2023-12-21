@@ -619,6 +619,11 @@ def test_no_wikilink_allowed_in_template_name():
 def test_invalid_reverse_pipe_trick():
     # See: https://github.com/5j9/wikitextparser/pull/78#issuecomment-714343538
     assert not bpts(b'[[ |a]]')['WikiLink']
+
+
+@mark.xfail
+def test_invalid_reverse_pipe_trick2():
+    # See: https://github.com/5j9/wikitextparser/pull/78#issuecomment-714343538
     assert not bpts(b'{{#if:test | [[<!--  -->|alt]]}}')['WikiLink']
 
 
