@@ -399,7 +399,7 @@ def _apply_attr_spans(
     # if not table_data:
     #     return table_data
     # 11
-    downward_growing_cells = []  # type: List[Tuple[Optional[T], int, int]]
+    downward_growing_cells: List[Tuple[Optional[T], int, int]] = []
     # 13, 18
     # Algorithm for processing rows
     for attrs_row, row in zip(table_attrs, table_data):

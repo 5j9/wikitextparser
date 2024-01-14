@@ -2,7 +2,7 @@
 __version__ = '0.55.8.dev0'
 
 from . import _wikitext
-from ._argument import Argument
+from ._argument import Argument  # noqa: F401
 from ._comment_bold_italic import Bold, Comment, Italic
 from ._externallink import ExternalLink
 from ._parameter import Parameter

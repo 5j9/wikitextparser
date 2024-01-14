@@ -1,6 +1,6 @@
-from pytest import mark, warns
+from pytest import mark
 
-from wikitextparser import ParserFunction, parse
+from wikitextparser import parse
 
 
 def test_get_lists_with_no_pattern():

@@ -1,4 +1,4 @@
-from pytest import raises, warns
+from pytest import raises
 
 from wikitextparser import Template, WikiText, parse
 

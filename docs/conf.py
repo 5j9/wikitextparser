@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # wikitextparser documentation build configuration file, created by
 # sphinx-quickstart on Fri Feb  9 13:54:00 2018.
