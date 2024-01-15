@@ -94,7 +94,7 @@ WIKILINK_PARAM_FINDITER = rc(
     REVERSE,
 ).finditer
 
-MARKUP = b''.maketrans(b"|[]'{}", b'_\2\3___')
+MARKUP = b''.maketrans(b"=|[]'{}", b'\1_\2\3___')
 BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\n', b'____')
 BRACKETS = b''.maketrans(b'[]', b'__')
 
@@ -147,7 +147,7 @@ SPACE_CHARS = rb' \t\n\u000C\r\0'  # \s - \v
 CONTROL_CHARS = rb'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = rb'(?<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'"\'>/=]++)'
-EQ_WS = rb'=[' + SPACE_CHARS + rb']*+'
+EQ_WS = rb'[=\1][' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = rb'(?<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`]++)'
 QUOTED_ATTR_VAL = rb'(?<quote>[\'"])(?<attr_value>.*?)(?P=quote)'
 # May include character references, but for now, ignore the fact that they
@@ -310,7 +310,10 @@ def extract_tag_extensions(
                 tls_append,
                 wls_append,
             )
-            byte_array[cs:ce] = b'_' * (ce - cs)
+            # Extension tags are not nested but need to create separate
+            # environment for bolds, italics, and tables.
+            # Also equal signs are not name-value separators in arguments.
+            byte_array[s:e] = byte_array[s:e].translate(MARKUP)
             continue
 
 

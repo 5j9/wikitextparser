@@ -129,3 +129,7 @@ def test_equal_sign_in_val():
     a, c = Template('{{t|a==b|c}}').arguments
     assert a.value == '=b'
     assert c.name == '1'
+
+
+def test_tag_with_equal_sign():
+    assert Argument('|a<ref name="abc">R</ref>').name == '1'
