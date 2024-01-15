@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.8
+-------
 - Fixed: Equal signs in extension tag attributes are no longer confused with name-value separator in arguments. (#128)
 
 v0.55.7
