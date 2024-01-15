@@ -195,3 +195,12 @@ def test_ref_tag_name():  # 108
     # I think it should be valid and the / should be treated as an invalid
     # attribute and be ignored like in normal HTML tags.
     assert Tag('<ref/ ></ref>').name == 'ref'
+
+
+def test_template_in_tag_attrs():
+    assert Tag('<ref group={{text|1=a}}>R</ref>').attrs == {
+        'group': '{{text|1=a}}'
+    }
+    assert Tag(
+        '<span {{text|style}}="{{text|1=background:red}}">A</span>'
+    ).attrs == {'{{text|style}}': '{{text|1=background:red}}'}
