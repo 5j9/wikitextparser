@@ -279,42 +279,42 @@ def extract_tag_extensions(
             cms_append([s, e, None, byte_array[s:e]])
             byte_array[s:e] = b'\0' * (e - s)
             continue
+
         s, e = span('u')  # unparsable
         if s != -1:
             s -= 1  # <
             ets_append([s, e, match, byte_array[s:e]])
             byte_array[s:e] = (e - s) * b'_'
             continue
+
         s, e = span('p')  # parsable
-        if s != -1:
-            s -= 1  # <
-            ets_append([s, e, match, byte_array[s:e]])
-            cs, ce = span('c')  # content
-            extract_tag_extensions(
-                byte_array,
-                ets_append,
-                cms_append,
-                cs,
-                ce,
-                pms_append,
-                pfs_append,
-                tls_append,
-                wls_append,
-            )
-            _parse_sub_spans(
-                byte_array,
-                s,
-                e,
-                pms_append,
-                pfs_append,
-                tls_append,
-                wls_append,
-            )
-            # Extension tags are not nested but need to create separate
-            # environment for bolds, italics, and tables.
-            # Also equal signs are not name-value separators in arguments.
-            byte_array[s:e] = byte_array[s:e].translate(MARKUP)
-            continue
+        s -= 1  # <
+        ets_append([s, e, match, byte_array[s:e]])
+        cs, ce = span('c')  # content
+        extract_tag_extensions(
+            byte_array,
+            ets_append,
+            cms_append,
+            cs,
+            ce,
+            pms_append,
+            pfs_append,
+            tls_append,
+            wls_append,
+        )
+        _parse_sub_spans(
+            byte_array,
+            s,
+            e,
+            pms_append,
+            pfs_append,
+            tls_append,
+            wls_append,
+        )
+        # Parsable extension tags are not nested but they create separate
+        # environment for bolds, italics, and tables.
+        # Also equal signs are not name-value separators in arguments.
+        byte_array[s:e] = byte_array[s:e].translate(MARKUP)
 
 
 def _parse_sub_spans(
