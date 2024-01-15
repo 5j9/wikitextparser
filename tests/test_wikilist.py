@@ -1,4 +1,3 @@
-
 from wikitextparser import WikiList, parse
 
 
