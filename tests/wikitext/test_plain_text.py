@@ -219,6 +219,15 @@ def test_file_links():
     # assert parse('[[Media:n.jpg|Sunflowers]]').plain_text() == 'Sunflowers'
 
 
+def test_image_name_with_multiple_dots():  # 129
+    assert (
+        parse(
+            'a\n[[File:Julia set (C = 0.285, 0.01).jpg|caption]]\nb'
+        ).plain_text()
+        == 'a\n\nb'
+    )
+
+
 def test_tag_containing_comment_with_no_end():  # 126
     parsed = parse(
         """
