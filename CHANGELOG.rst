@@ -1,3 +1,7 @@
+Unreleased
+----------
+- Fixed a bug in plain text not detecting images with multiple dots correctly. (#129)
+
 v0.55.8
 -------
 - Fixed: Equal signs in extension tag attributes are no longer confused with name-value separator in arguments. (#128)
