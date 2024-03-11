@@ -35,8 +35,7 @@ jobs:
         run: pytest --cov=wikitextparser tests --cov-report=xml --cov-fail-under=80
       - name: Upload coverage to Codecov
         # https://github.com/codecov/codecov-action
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           env_vars: OS,PYTHON
-          fail_ci_if_error: false
