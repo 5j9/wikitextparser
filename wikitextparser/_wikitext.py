@@ -740,7 +740,7 @@ class WikiText:
                 b, e = w.span
                 title = w.title
                 if title[:1] != ':' and (
-                    title.partition(':')[2].partition('.')[2]
+                    title.partition(':')[2].rpartition('.')[2]
                     in KNOWN_FILE_EXTENSIONS
                 ):
                     remove(b, e)  # image
