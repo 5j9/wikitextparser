@@ -1,8 +1,6 @@
 [build-system]
-requires = [
-    "setuptools>=66.1.0",
-]
-build-backend = "setuptools.build_meta"
+requires = ['flit_core >=3.2,<4']
+build-backend = 'flit_core.buildapi'
 
 [project]
 name = "wikitextparser"
@@ -44,15 +42,8 @@ tests = [
     "pytest",
 ]
 
-[tool.setuptools]
-zip-safe = true
-include-package-data = false
-
-[tool.setuptools.packages.find]
-namespaces = false
-
-[tool.setuptools.dynamic.version]
-attr = "wikitextparser.__version__"
+[tool.flit.sdist]
+exclude = ['tests/', 'doc/', 'dev/']
 
 [tool.ruff]
 line-length = 79
@@ -64,6 +55,7 @@ extend-select = [
 ]
 ignore = [
     'UP027',  # list comprehensions are faster than generator expressions
+    'E721',  # Do not compare types, use `isinstance()`
 ]
 
 [tool.pytest.ini_options]
