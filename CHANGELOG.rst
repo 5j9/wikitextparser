@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.55.9
+-------
 - Fixed a bug in plain text not detecting images with multiple dots correctly. (#129)
 
 v0.55.8
