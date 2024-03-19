@@ -1,3 +1,8 @@
+..
+    Unreleased
+    ----------
+    * 
+
 v0.55.10
 --------
 * Fixed a bug in ``plain_text`` causing ``IndexError`` when using a custom function to replace ``templates``/``parser_functions``.
