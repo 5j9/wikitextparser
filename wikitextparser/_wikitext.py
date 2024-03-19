@@ -677,7 +677,7 @@ class WikiText:
             remove(b, e)
 
         if callable(replace_templates):
-            for template in self.templates:
+            for template in parsed.templates:
                 b, e = template._span_data[:2]  # noqa
                 if lst[b] is None:  # overwritten
                     continue
@@ -688,7 +688,7 @@ class WikiText:
                 remove(b, e)
 
         if callable(replace_parser_functions):
-            for pf in self.parser_functions:
+            for pf in parsed.parser_functions:
                 b, e = pf._span_data[:2]
                 if lst[b] is None:  # already overwritten
                     continue

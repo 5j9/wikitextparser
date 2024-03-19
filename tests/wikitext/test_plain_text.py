@@ -239,3 +239,12 @@ def test_tag_containing_comment_with_no_end():  # 126
     )
     del parsed.wikilinks[0][:]
     assert parsed.plain_text().strip() == ''
+
+
+def test_on_list_with_replace_template_function():  # 130
+    assert (
+        parse('\n#:{{a}}')
+        .get_lists()[0]
+        .plain_text(replace_templates=lambda t: t.name)
+        == '#:a'
+    )
