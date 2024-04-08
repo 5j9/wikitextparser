@@ -488,6 +488,7 @@ class WikiText:
         # Note: The following algorithm won't work correctly if spans
         # are not sorted.
         # Note: No span should be removed from _type_to_spans.
+        rmlength = rmstop - rmstart
         for spans in self._type_to_spans.values():
             i = len(spans) - 1
             while i >= 0:
@@ -495,7 +496,6 @@ class WikiText:
                 s, e, _, b = span = spans[i]
                 if rmstop <= s:
                     # rmstart <= rmstop <= s <= e
-                    rmlength = rmstop - rmstart
                     # todo
                     span[:] = s - rmlength, e - rmlength, None, None
                     i -= 1
@@ -508,7 +508,7 @@ class WikiText:
                     if rmstop < e:
                         # rmstart < s <= rmstop < e
                         # todo: update byte_array instead
-                        span[:] = rmstart, e + rmstart - rmstop, None, None
+                        span[:] = rmstart, e - rmlength, None, None
                         i -= 1
                         if i < 0:
                             break
@@ -531,7 +531,7 @@ class WikiText:
                     s, e, _, _ = span = spans[i]
                     continue
                 # s <= rmstart <= rmstop <= e
-                span[1] -= rmstop - rmstart
+                span[1] -= rmlength
                 span[2] = None
                 # todo: update bytearray instead
                 span[3] = None
