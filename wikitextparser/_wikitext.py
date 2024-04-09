@@ -1,5 +1,4 @@
 from bisect import bisect_left, bisect_right, insort_right
-from copy import deepcopy
 from html import unescape
 from itertools import compress, islice
 from operator import attrgetter
@@ -621,8 +620,6 @@ class WikiText:
         self.string.
         """
         ss, se, _, _ = self._span_data
-        if ss == 0 and se == len(self._lststr[0]):
-            return deepcopy(self._type_to_spans)
         return {
             type_: [
                 [s - ss, e - ss, m, ba[:] if ba is not None else None]
