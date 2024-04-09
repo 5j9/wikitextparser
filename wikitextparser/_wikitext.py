@@ -627,9 +627,8 @@ class WikiText:
             type_: [
                 [s - ss, e - ss, m, ba[:] if ba is not None else None]
                 for s, e, m, ba in spans[
-                    bisect_left(spans, [ss]) : bisect_left(spans, [se])
+                    bisect_right(spans, [ss]) : bisect_right(spans, [se])
                 ]
-                if e <= se
             ]
             for type_, spans in self._type_to_spans.items()
         }
