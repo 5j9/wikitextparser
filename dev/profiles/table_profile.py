@@ -1,7 +1,7 @@
 import cProfile
 import sys
 
-from wikitextparser import *
+from wikitextparser import parse
 
 with open('table_profile_input.txt', encoding='utf8') as f:
     text = f.read()

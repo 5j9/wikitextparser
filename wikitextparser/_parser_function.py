@@ -11,7 +11,6 @@ PF_NAME_ARGS_FULLMATCH = rc(
 
 
 class SubWikiTextWithArgs(SubWikiText):
-
     """Define common attributes for `Template` and `ParserFunction`."""
 
     __slots__ = ()

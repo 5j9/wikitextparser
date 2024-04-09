@@ -351,7 +351,7 @@ def test_unicode_data():
     r"""Note the \u201D character at line 2. wikitextparser/issues/9."""
     assert Table(
         '{|class=wikitable\n'
-        '|align="center" rowspan="1"|A\u201D\n'
+        '|align="center" rowspan="1"|A\u201d\n'
         '|align="center" rowspan="1"|B\n'
         '|}'
     ).data() == [['A”', 'B']]

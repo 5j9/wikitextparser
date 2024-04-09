@@ -1,6 +1,5 @@
 """Define the WikiLink class."""
 
-
 from typing import List, Optional, Tuple
 
 from regex import DOTALL

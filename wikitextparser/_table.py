@@ -296,9 +296,9 @@ class Table(SubWikiTextWithAttrs):
         m = CAPTION_MATCH(shadow)
         if m:
             s = m.end('attrs')
-            self[
-                s if s != -1 else m.end('preattrs') : m.end('caption')
-            ] = newcaption
+            self[s if s != -1 else m.end('preattrs') : m.end('caption')] = (
+                newcaption
+            )
             return
         # There is no caption. Create one.
         h, s, t = shadow.partition(b'\n')

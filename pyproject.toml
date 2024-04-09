@@ -48,12 +48,12 @@ exclude = ['tests/', 'doc/', 'dev/']
 [tool.ruff]
 line-length = 79
 format.quote-style = 'single'
-isort.combine-as-imports = true
-extend-select = [
+lint.isort.combine-as-imports = true
+lint.extend-select = [
     'I',  # isort
     'UP',  # pyupgrade
 ]
-ignore = [
+lint.ignore = [
     'UP027',  # list comprehensions are faster than generator expressions
     'E721',  # Do not compare types, use `isinstance()`
 ]

@@ -45,7 +45,6 @@ TAG_FULLMATCH = rc(
 
 
 class SubWikiTextWithAttrs(SubWikiText):
-
     """Define a class for SubWikiText objects that have attributes.
 
     Any class that is going to inherit from SubWikiTextWithAttrs should provide

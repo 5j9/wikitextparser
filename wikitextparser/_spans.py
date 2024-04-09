@@ -1,4 +1,5 @@
 """Define the functions required for parsing wikitext into spans."""
+
 from functools import partial
 from typing import Callable, Dict, Optional
 

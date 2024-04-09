@@ -13,7 +13,6 @@ ARG_SHADOW_FULLMATCH = rc(
 
 
 class Argument(SubWikiText):
-
     """Create a new Argument Object.
 
     Note that in MediaWiki documentation `arguments` are (also) called

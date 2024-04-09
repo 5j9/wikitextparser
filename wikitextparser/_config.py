@@ -1,6 +1,5 @@
 """Utilities to override default configurations."""
 
-
 from collections import defaultdict as _defaultdict
 from typing import Iterable as _Iterable
 

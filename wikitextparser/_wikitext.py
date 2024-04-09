@@ -1024,8 +1024,8 @@ class WikiText:
         odd_bold_italics = False
         shadow_copy = self._shadow[:]
         append_match = bold_matches.append
-        for match in BOLD_ITALIC_FINDITER(shadow_copy):
-            if match[4] is not None:  # newline or string end
+        for m in BOLD_ITALIC_FINDITER(shadow_copy):
+            if m[4] is not None:  # newline or string end
                 if (
                     odd_italics is True
                     and (len(bold_matches) + odd_bold_italics) % 2
@@ -1055,17 +1055,17 @@ class WikiText:
                 bold_matches.clear()
                 odd_italics = False
                 continue
-            if match[2] is None:  # italic
+            if m[2] is None:  # italic
                 odd_italics ^= True
                 continue
-            if match[3] is None:  # bold
-                s, e = match.span(1)
+            if m[3] is None:  # bold
+                s, e = m.span(1)
                 if s != e:  # four apostrophes, hide the first one
                     shadow_copy[s] = 95  # _
-                append_match(match)
+                append_match(m)
                 continue
             # bold-italic
-            s, e = match.span(1)
+            s, e = m.span(1)
             es = e - s
             if es:  # more than 5 apostrophes, hide the previous ones
                 shadow_copy[s:e] = b'_' * es
@@ -1340,7 +1340,7 @@ class WikiText:
 
         if level is not None:
             section_spans = compress(
-                section_spans, [l == level for l in levels]
+                section_spans, [lvl == level for lvl in levels]
             )
 
         return self._section_spans_to_sections(section_spans, shadow)

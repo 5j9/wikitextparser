@@ -18,7 +18,6 @@ T = TypeVar('T')
 
 
 class Template(SubWikiTextWithArgs):
-
     """Convert strings to Template objects.
 
     The string should start with {{ and end with }}.
