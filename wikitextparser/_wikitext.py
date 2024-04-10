@@ -1009,7 +1009,7 @@ class WikiText:
 
     @property
     def _balanced_quotes_shadow(self) -> bytearray:
-        """Return bold and italic match objects according MW's algorithm.
+        """Return a byte array that text (non-markup) apostrophes removed.
 
         The comments at /includes/parser/Parser.php:doQuotes are helpful:
         https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
