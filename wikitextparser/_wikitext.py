@@ -1023,10 +1023,7 @@ class WikiText:
 
         def process_line():
             nonlocal odd_italics
-            if (
-                odd_italics is True
-                and (len(bold_matches) + odd_bold_italics) % 2
-            ):
+            if odd_italics and (len(bold_matches) + odd_bold_italics) % 2:
                 # one of the bold marks needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
                 for bold_match in bold_matches:
@@ -1035,10 +1032,7 @@ class WikiText:
                         if first_space is None:
                             first_space = bold_start
                         continue
-                    if (
-                        shadow_copy[bold_start - 2 : bold_start - 1]
-                        == b' '
-                    ):
+                    if shadow_copy[bold_start - 2 : bold_start - 1] == b' ':
                         shadow_copy[bold_start] = 95  # _
                         break  # first_single_letter_word
                     if first_multi_letter_word is None:
