@@ -1119,8 +1119,8 @@ class WikiText:
             bold_spans = tts_setdefault('Bold', [])
             get_old_bold_span = {(s[0], s[1]): s for s in bold_spans}.get
             bold_matches = list(BOLD_FINDITER(balanced_shadow, rs, re))
-            for match in bold_matches:
-                ms, me = match.span()
+            for m in bold_matches:
+                ms, me = m.span()
                 b, e = s + ms, s + me
                 old_span = get_old_bold_span((b, e))
                 if old_span is None:
@@ -1142,16 +1142,16 @@ class WikiText:
         # filter_cls is None or filter_cls is Italic
 
         # remove bold tokens before searching for italics
-        for match in bold_matches:
-            ms, me = match.span()
-            cs, ce = match.span(1)  # content
+        for m in bold_matches:
+            ms, me = m.span()
+            cs, ce = m.span(1)  # content
             balanced_shadow[ms:cs] = b'_' * (cs - ms)
             balanced_shadow[ce:me] = b'_' * (me - ce)
 
         italic_spans = tts_setdefault('Italic', [])
         get_old_italic_span = {(s[0], s[1]): s for s in italic_spans}.get
-        for match in ITALIC_FINDITER(balanced_shadow, rs, re):
-            ms, me = match.span()
+        for m in ITALIC_FINDITER(balanced_shadow, rs, re):
+            ms, me = m.span()
             b, e = span = s + ms, s + me
             old_span = get_old_italic_span(span)
             if old_span is None:
@@ -1160,9 +1160,7 @@ class WikiText:
             else:
                 span = old_span
             append(
-                Italic(
-                    _lststr, type_to_spans, span, 'Bold', me != match.end(1)
-                )
+                Italic(_lststr, type_to_spans, span, 'Bold', me != m.end(1))
             )
         if recursive and filter_cls is Italic:
             self._bolds_italics_recurse(result, filter_cls)
