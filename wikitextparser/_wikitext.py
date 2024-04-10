@@ -1008,7 +1008,7 @@ class WikiText:
         ]
 
     @property
-    def _balanced_quotes_shadow(self):
+    def _balanced_quotes_shadow(self) -> bytearray:
         """Return bold and italic match objects according MW's algorithm.
 
         The comments at /includes/parser/Parser.php:doQuotes are helpful:
