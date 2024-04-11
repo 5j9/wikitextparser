@@ -1047,8 +1047,9 @@ class WikiText:
             odd_italics = False
 
         last_end = 0
+        find = shadow_copy.find
         for m in BOLD_ITALIC_FINDITER(shadow_copy):
-            if shadow_copy.find(b'\n', last_end, m.start()) > -1:  # newline
+            if find(b'\n', last_end, m.start()) > -1:  # newline
                 process_line()
 
             if m[2] is None:  # italic
