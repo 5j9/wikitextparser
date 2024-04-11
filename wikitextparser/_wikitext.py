@@ -182,7 +182,7 @@ def _table_to_text(t: 'Table') -> str:
     )
 
 
-_MarkupSpans = List[tuple[int, int]]
+_MarkupSpans = List[Tuple[int, int]]
 
 
 class WikiText:
@@ -989,7 +989,7 @@ class WikiText:
     @property
     def _bold_italic_marks(
         self,
-    ) -> tuple[bytearray, _MarkupSpans, _MarkupSpans]:
+    ) -> Tuple[bytearray, _MarkupSpans, _MarkupSpans]:
         """Return (shadow, bold markup spans, italic markup spans).
 
         The comments at /includes/parser/Parser.php:doQuotes are helpful:
