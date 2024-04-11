@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* Performance improvements in extracting bold and italic nodes. (#133)
 
 v0.55.11
 --------
