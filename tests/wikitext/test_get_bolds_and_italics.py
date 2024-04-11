@@ -21,19 +21,10 @@ def test_get_bolds():
     assert_bold("'''b'''", "'''b'''")
     assert_no_bold("''i1'''s")
     assert_no_bold("<!--'''b'''-->")
-    assert_bold(
-        "a<!---->'<!---->'<!---->'<!---->" "b<!---->'<!---->'<!---->'<!---->d",
-        "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'",
-    )
     assert_bold("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
     assert_bold("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
     assert_bold("{{text|'''b'''}}", "'''b'''")
     assert_bold("{{text|'''b}}", "'''b")  # ?
-    assert_bold("{{{PARAM|'''b}}} c", "'''b")  # ?
-    assert (
-        repr(parse("'''b\na'''c").get_bolds())
-        == """[Bold("'''b"), Bold("'''c")]"""
-    )
     assert_bold("'''<S>b</S>'''", "'''<S>b</S>'''")
     assert_bold("'''b<S>r'''c</S>", "'''b<S>r'''")
     assert_bold("'''''b'''i", "'''b'''")
@@ -53,19 +44,37 @@ def test_get_bolds():
     assert_bold("{{text|{{text|'''b'''}}}}", "'''b'''")
 
 
-def test_no_end_in_wikilink():
+def test_hald_bolds_with_newline_in_between():
+    assert (
+        repr(parse("'''b\na'''c").get_bolds())
+        == """[Bold("'''b"), Bold("'''c")]"""
+    )
+
+
+def test_half_bold_in_param():
+    assert_bold("{{{PARAM|'''b}}} c", "'''b")  # ?
+
+
+def test_half_bold_in_wikilink():
     assert_bold("[[a|'''b]] c", "'''b")
 
 
-def test_get_italics():
-    def ai(s: str, o: str, r: bool = True):
-        italics = parse(s).get_italics(r)
-        assert len(italics) == 1
-        assert italics[0].string == o
+def test_comment_before_and_after_bold():
+    assert_bold(
+        "a<!---->'<!---->'<!---->'<!---->" "b<!---->'<!---->'<!---->'<!---->d",
+        "'<!---->'<!---->'<!---->b<!---->'<!---->'<!---->'",
+    )
 
+
+def ai(s: str, o: str, r: bool = True):
+    italics = parse(s).get_italics(r)
+    assert len(italics) == 1
+    assert italics[0].string == o
+
+
+def test_get_italics():
     ai("''i'''", "''i'''")
     ai("a''' '' b '' '''c", "'' b ''")
-    ai("'''''i'''''", "'''''i'''''")
     ai("a'' ''' ib ''' ''c", "'' ''' ib ''' ''")
     ai("''i''", "''i''")
     ai(
@@ -79,6 +88,10 @@ def test_get_italics():
         "'<!---->'<!---->'<!---->'<!---->'",
     )
     ai("''' ''i'''", "''i'''")
+
+
+def test_get_italics_2():
+    ai("'''''i'''''", "'''''i'''''")
 
 
 def test_bold_italic_index_change():

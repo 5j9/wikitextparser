@@ -104,5 +104,5 @@ class Parameter(SubWikiText):
         return super().parameters[1:]
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _relative_content_span(self) -> Tuple[int, int]:
         return 3, -3

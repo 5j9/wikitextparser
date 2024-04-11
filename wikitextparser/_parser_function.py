@@ -19,7 +19,7 @@ class SubWikiTextWithArgs(SubWikiText):
     _first_arg_sep = 0
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _relative_content_span(self) -> Tuple[int, int]:
         return 2, -2
 
     @property

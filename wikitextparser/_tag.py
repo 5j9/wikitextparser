@@ -214,6 +214,6 @@ class Tag(SubWikiTextWithAttrs):
         return super().get_tags(name)[1:]
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _relative_content_span(self) -> Tuple[int, int]:
         s = self.string
         return s.find('>') + 1, s.rfind('<')
