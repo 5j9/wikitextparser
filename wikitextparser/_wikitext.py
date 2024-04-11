@@ -1019,7 +1019,7 @@ class WikiText:
         odd_italics = False
         odd_bold_italics = False
         shadow_copy = self._shadow[:]
-        append_match = bold_matches.append
+        append_bold = bold_matches.append
 
         def process_line():
             nonlocal odd_italics
@@ -1058,7 +1058,7 @@ class WikiText:
                 s, e = m.span(1)
                 if s != e:  # four apostrophes, hide the first one
                     shadow_copy[s] = 95  # _
-                append_match(m)
+                append_bold(m)
             else:  # bold-italic
                 s, e = m.span(1)
                 es = e - s
