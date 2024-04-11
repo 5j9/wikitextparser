@@ -49,7 +49,7 @@ class BoldItalic(SubWikiText):
         self[b:e] = s
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _relative_content_span(self) -> Tuple[int, int]:
         # noinspection PyUnresolvedReferences
         return self._match.span(1)
 

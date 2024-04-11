@@ -22,7 +22,7 @@ class WikiLink(SubWikiText):
     __slots__ = '_cached_match'
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _relative_content_span(self) -> Tuple[int, int]:
         s = self.string
         f = s.find
         rf = s.rfind

@@ -1,4 +1,4 @@
-from bisect import bisect_left, bisect_right, insort_right
+from bisect import bisect_left, bisect_right, insort_left, insort_right
 from html import unescape
 from itertools import compress, islice
 from operator import attrgetter
@@ -114,31 +114,7 @@ TABLE_FINDITER = rc(
 ).finditer
 
 BOLD_ITALIC_FINDITER = rc(  # bold-italic, bold, or italic tokens
-    rb"""((?>'\0*)*?)'\0*+'\0*+('\0*+('\0*+')?+)?+(?=[^']|$)""",
-    MULTILINE | VERBOSE,
-).finditer
-
-BOLD_FINDITER = rc(
-    rb"""
-    # start token
-    '\0*+'\0*+'
-    # content
-    (\0*+[^'\n]++.*?)
-    # end token
-    (?:'\0*+'\0*+'|$)
-""",
-    MULTILINE | VERBOSE,
-).finditer
-
-ITALIC_FINDITER = rc(
-    rb"""
-    # start token
-    '\0*+'
-    # content
-    (\0*+[^'\n]++.*?)
-    # end token
-    (?:'\0*+'|$)
-""",
+    rb"""'\0*+(')(?:\0*+('))?+(?:\0*(')\0*')?+(?=[^']|$)""",
     MULTILINE | VERBOSE,
 ).finditer
 
@@ -204,6 +180,9 @@ def _table_to_text(t: 'Table') -> str:
         )
         + '\n'
     )
+
+
+_MarkupSpans = List[tuple[int, int]]
 
 
 class WikiText:
@@ -575,8 +554,8 @@ class WikiText:
         return level
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
-        # return content_start, self_len, self_end
+    def _relative_content_span(self) -> Tuple[int, int]:
+        # return content_start, content_end
         return 0, len(self)
 
     @property
@@ -601,7 +580,7 @@ class WikiText:
             self._lststr[0][ss:se], 'ascii', 'replace'
         )
         if self._type in SPAN_PARSER_TYPES:
-            cs, ce = self._content_span
+            cs, ce = self._relative_content_span
             head = shadow[:cs]
             tail = shadow[ce:]
             shadow[:cs] = b'_' * cs
@@ -1008,69 +987,105 @@ class WikiText:
         ]
 
     @property
-    def _balanced_quotes_shadow(self) -> bytearray:
-        """Return a byte array with non-markup-apostrophes removed.
+    def _bold_italic_marks(
+        self,
+    ) -> tuple[bytearray, _MarkupSpans, _MarkupSpans]:
+        """Return (shadow, bold markup spans, italic markup spans).
 
         The comments at /includes/parser/Parser.php:doQuotes are helpful:
         https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
         https://phabricator.wikimedia.org/T15227#178834
         """
-        bold_matches = []
-        odd_italics = False
-        odd_bold_italics = False
-        shadow_copy = self._shadow[:]
-        append_bold = bold_matches.append
+        bold_marks = []
+        italic_marks: _MarkupSpans = []
+        line_probably_bolds: _MarkupSpans = []
+        line_italics: _MarkupSpans = []
+        line_bolds = []
+        shadow = self._shadow
+        find = shadow.find
+        cs, ce = self._relative_content_span
+        if ce < -1:
+            ce += self._span_data[1]
 
         def process_line():
-            nonlocal odd_italics
-            if odd_italics and (len(bold_matches) + odd_bold_italics) % 2:
-                # one of the bold marks needs to be interpreted as italic
+            nonlocal bold_marks, italic_marks, line_bolds
+            if (
+                len(line_italics) % 2
+                and (len(line_bolds) + len(line_probably_bolds)) % 2
+            ):
+                # one of the probably_bolds needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
-                for bold_match in bold_matches:
-                    bold_start = bold_match.start()
-                    if shadow_copy[bold_start - 1 : bold_start] == b' ':
+                for i, (lpbs, _) in enumerate(line_probably_bolds):
+                    if shadow[lpbs - 1] == 32:  # space
                         if first_space is None:
-                            first_space = bold_start
+                            first_space = i
                         continue
-                    if shadow_copy[bold_start - 2 : bold_start - 1] == b' ':
-                        shadow_copy[bold_start] = 95  # _
+                    if shadow[lpbs - 2] == 32:  # space
+                        s, e = line_probably_bolds.pop(i)
+                        insort_left(line_italics, (s + 1, e))
                         break  # first_single_letter_word
                     if first_multi_letter_word is None:
-                        first_multi_letter_word = bold_start
+                        first_multi_letter_word = i
                         continue
                 else:  # there was no first_single_letter_word
                     if first_multi_letter_word is not None:
-                        shadow_copy[first_multi_letter_word] = 95  # _
+                        s, e = line_probably_bolds.pop(first_multi_letter_word)
+                        insort_left(line_italics, (s + 1, e))
                     elif first_space is not None:
-                        shadow_copy[first_space] = 95  # _
-            bold_matches.clear()
-            odd_italics = False
+                        s, e = line_probably_bolds.pop(first_space)
+                        insort_left(line_italics, (s + 1, e))
+
+            line_bolds += line_probably_bolds
+            line_bolds.sort()
+            if len(line_italics) % 2:
+                line_end = find(b'\n', line_italics[-1][1], ce)
+                if line_end == -1:
+                    line_end = ce
+                line_italics.append((line_end, line_end))
+            if len(line_bolds) % 2:
+                line_end = find(b'\n', line_bolds[-1][1], ce)
+                if line_end == -1:
+                    line_end = ce
+                line_bolds.append((line_end, line_end))
+
+            bold_marks += line_bolds
+            italic_marks += line_italics
+            line_bolds.clear()
+            line_probably_bolds.clear()
+            line_italics.clear()
+
+        def add_bold_italic():
+            line_bolds.append((ms, m.end(2)))
+            line_italics.append((m.start(3), me))
+
+        def add_italic_bold():
+            line_italics.append((ms, m.end(1)))
+            line_bolds.append((m.start(2), me))
 
         last_end = 0
-        find = shadow_copy.find
-        for m in BOLD_ITALIC_FINDITER(shadow_copy):
-            if find(b'\n', last_end, m.start()) > -1:  # newline
+        for m in BOLD_ITALIC_FINDITER(shadow, cs, ce):
+            ms, me = span = m.span()
+            if find(b'\n', last_end, ms) > -1:  # newline
                 process_line()
 
             if m[2] is None:  # italic
-                odd_italics ^= True
+                line_italics.append(span)
             elif m[3] is None:  # bold
-                s, e = m.span(1)
-                if s != e:  # four apostrophes, hide the first one
-                    shadow_copy[s] = 95  # _
-                append_bold(m)
+                line_probably_bolds.append(span)
             else:  # bold-italic
-                s, e = m.span(1)
-                es = e - s
-                if es:  # more than 5 apostrophes, hide the previous ones
-                    shadow_copy[s:e] = b'_' * es
-                odd_bold_italics ^= True
-                odd_italics ^= True
-            last_end = m.end()
-        process_line()  # string end
-        return shadow_copy
+                # this part might need more tuning or later correction
+                if len(line_italics) % 2:  # odd italics
+                    add_bold_italic()
+                else:  # even italics
+                    add_italic_bold()
 
-    def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
+            last_end = me
+        process_line()  # string end
+        return shadow, bold_marks, italic_marks
+
+    def _bolds_italics_recurse(
+        self, result: List[Union['Bold', 'Italic']], filter_cls: Optional[type]
+    ):
         for prop in (
             'templates',
             'parser_functions',
@@ -1113,19 +1128,19 @@ class WikiText:
         s = self._span_data[0]
         type_to_spans = self._type_to_spans
         tts_setdefault = type_to_spans.setdefault
-        balanced_shadow = self._balanced_quotes_shadow
-        rs, re = self._content_span
+        shadow, bold_marks, italic_marks = self._bold_italic_marks
 
         if filter_cls is None or filter_cls is Bold:
             bold_spans = tts_setdefault('Bold', [])
             get_old_bold_span = {(s[0], s[1]): s for s in bold_spans}.get
-            bold_matches = list(BOLD_FINDITER(balanced_shadow, rs, re))
-            for m in bold_matches:
-                ms, me = m.span()
+            bmi = iter(bold_marks)
+
+            for start_mark, end_mark in zip(bmi, bmi):
+                ms, me = start_mark[0], end_mark[1]
                 b, e = s + ms, s + me
                 old_span = get_old_bold_span((b, e))
                 if old_span is None:
-                    span = [b, e, None, balanced_shadow[ms:me]]
+                    span = [b, e, None, shadow[ms:me]]
                     insort_right(bold_spans, span)
                 else:
                     span = old_span
@@ -1137,31 +1152,25 @@ class WikiText:
                     return result
             elif filter_cls is Bold:
                 return result
-        else:  # filter_cls is Italic
-            bold_matches = BOLD_FINDITER(balanced_shadow, rs, re)
 
         # filter_cls is None or filter_cls is Italic
 
-        # remove bold tokens before searching for italics
-        for m in bold_matches:
-            ms, me = m.span()
-            cs, ce = m.span(1)  # content
-            balanced_shadow[ms:cs] = b'_' * (cs - ms)
-            balanced_shadow[ce:me] = b'_' * (me - ce)
-
         italic_spans = tts_setdefault('Italic', [])
         get_old_italic_span = {(s[0], s[1]): s for s in italic_spans}.get
-        for m in ITALIC_FINDITER(balanced_shadow, rs, re):
-            ms, me = m.span()
+        imi = iter(italic_marks)
+        for start_mark, end_mark in zip(imi, imi):
+            ms, me = start_mark[0], end_mark[1]
             b, e = span = s + ms, s + me
             old_span = get_old_italic_span(span)
             if old_span is None:
-                span = [b, e, None, balanced_shadow[ms:me]]
+                span = [b, e, None, shadow[ms:me]]
                 insort_right(italic_spans, span)
             else:
                 span = old_span
             append(
-                Italic(_lststr, type_to_spans, span, 'Bold', me != m.end(1))
+                Italic(
+                    _lststr, type_to_spans, span, 'Italic', end_mark[0] != me
+                )
             )
         if recursive and filter_cls is Italic:
             self._bolds_italics_recurse(result, filter_cls)
