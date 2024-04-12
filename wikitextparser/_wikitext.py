@@ -117,7 +117,7 @@ substitute_apostrophes = rc(  # bold-italic, bold, or italic tokens
     rb"('\0*+){2,}+(?=[^']|$)",
     MULTILINE | VERBOSE,
 ).sub
-find_lines = rc(rb'(.*?)$', MULTILINE).finditer
+find_lines = rc(rb'(.*?)$').finditer
 
 BOLD_FINDITER = rc(
     rb"""
@@ -1021,78 +1021,69 @@ class WikiText:
         odd_bold_italics = False
         append_bold_start = bold_starts.append
 
-        def process_line() -> None:
+        def process_line(line: bytes) -> bytes:
             nonlocal odd_italics, odd_bold_italics
             if odd_italics and (len(bold_starts) + odd_bold_italics) % 2:
                 # one of the bold marks needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
                 for s in bold_starts:
-                    if shadow_copy[s - 1] == 32:  # space
+                    if line[s - 1] == 32:  # space
                         if first_space is None:
                             first_space = s
                         continue
-                    if shadow_copy[s - 2] == 32:  # space
-                        shadow_copy[s] = 95  # _
+                    if line[s - 2] == 32:  # space
+                        line = line[:s] + b' ' + line[s + 1 :]
                         break  # first_single_letter_word
                     if first_multi_letter_word is None:
                         first_multi_letter_word = s
                         continue
                 else:  # there was no first_single_letter_word
                     if first_multi_letter_word is not None:
-                        shadow_copy[first_multi_letter_word] = 95  # _
-                        # line = (
-                        #     line[:first_multi_letter_word]
-                        #     + b'_'
-                        #     + line[first_multi_letter_word + 1 :]
-                        # )
+                        line = (
+                            line[:first_multi_letter_word]
+                            + b'_'
+                            + line[first_multi_letter_word + 1 :]
+                        )
                     elif first_space is not None:
-                        shadow_copy[first_space] = 95  # _
-                        # line = (
-                        #     line[:first_space] + b'_' + line[first_space + 1 :]
-                        # )
+                        line = (
+                            line[:first_space] + b'_' + line[first_space + 1 :]
+                        )
             # reset state for the next line
             bold_starts.clear()
             odd_italics = False
             odd_bold_italics = False
+            return line
 
-        def repl(m) -> None:
+        def repl(m) -> bytes:
             nonlocal odd_italics, odd_bold_italics
             starts = m.starts(1)
             n = len(starts)
             if n == 2:  # italic
                 odd_italics ^= True
-                return
+                return m[0]
             if n == 3:  # bold
                 append_bold_start(starts[0])
-                return
+                return m[0]
             if n == 5:
                 odd_bold_italics ^= True
                 odd_italics ^= True
-                return
+                return m[0]
             if n == 4:  # four apostrophes -> hide the first one
                 append_bold_start(starts[0])
-                rs = starts[0]
-                re = starts[1]
-                shadow_copy[rs:re] = b'_' * (re - rs)
-                return
+                s = starts[1]
+                return b'_' * (s - starts[0]) + m.string[s : starts[-1] + 1]
             if n > 5:  # more than 5 apostrophes -> hide the prior ones
                 odd_bold_italics ^= True
                 odd_italics ^= True
-                rs = starts[0]
-                re = starts[-5]
-                shadow_copy[rs:re] = b'_' * (re - rs)
-                return
+                s = starts[-5]
+                return b'_' * (s - starts[0]) + m.string[s : starts[-1] + 1]
 
-        shadow_copy = self._shadow[:]
-        for line_match in find_lines(shadow_copy):
-            substitute_apostrophes(
-                repl,
-                shadow_copy,
-                pos=line_match.start(),
-                endpos=line_match.end(),
-            )
-            process_line()
-        return shadow_copy
+        return bytearray(b'\n').join(
+            [
+                process_line(substitute_apostrophes(repl, line))
+                for line in self._shadow.splitlines()
+            ]
+        )
 
     def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
         for prop in (
