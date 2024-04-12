@@ -1028,11 +1028,11 @@ class WikiText:
                 first_multi_letter_word = first_space = None
                 for bold_match in bold_matches:
                     bold_start = bold_match.start()
-                    if shadow_copy[bold_start - 1 : bold_start] == b' ':
+                    if shadow_copy[bold_start - 1] == 32:  # space
                         if first_space is None:
                             first_space = bold_start
                         continue
-                    if shadow_copy[bold_start - 2 : bold_start - 1] == b' ':
+                    if shadow_copy[bold_start - 2] == 32:  # space
                         shadow_copy[bold_start] = 95  # _
                         break  # first_single_letter_word
                     if first_multi_letter_word is None:
