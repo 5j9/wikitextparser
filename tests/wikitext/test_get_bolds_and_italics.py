@@ -179,3 +179,9 @@ def test_wikilinks_in_extension_tags_should_not_create_duplicates():  # 57
 
 def test_italic_end_token():
     assert parse("''i''").get_italics(False)[0].end_token is True
+
+
+def test_four_apostrophe_to_three_to_two():
+    assert [repr(i) for i in parse("''''a''b").get_bolds_and_italics()] == [
+        "Italic(\"''a''\")"
+    ]

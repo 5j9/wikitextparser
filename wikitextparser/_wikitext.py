@@ -1069,8 +1069,8 @@ class WikiText:
                 odd_italics ^= True
                 return m[0]
             if n == 4:  # four apostrophes -> hide the first one
-                append_bold_start(starts[0])
                 s = starts[1]
+                append_bold_start(s)
                 return b'_' * (s - starts[0]) + m.string[s : starts[-1] + 1]
             if n > 5:  # more than 5 apostrophes -> hide the prior ones
                 odd_bold_italics ^= True
