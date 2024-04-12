@@ -1072,12 +1072,11 @@ class WikiText:
                 s = starts[1]
                 append_bold_start(s)
                 return b'_' * (s - starts[0]) + m.string[s : m.end()]
-            if n > 5:  # more than 5 apostrophes -> hide the prior ones
-                odd_bold_italics ^= True
-                odd_italics ^= True
-                s = starts[-5]
-                return b'_' * (s - starts[0]) + m.string[s : m.end()]
-            raise  # execution should never reach here
+            # more than 5 apostrophes -> hide the prior ones
+            odd_bold_italics ^= True
+            odd_italics ^= True
+            s = starts[-5]
+            return b'_' * (s - starts[0]) + m.string[s : m.end()]
 
         return bytearray(b'\n').join(
             [
