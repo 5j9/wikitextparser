@@ -113,10 +113,11 @@ TABLE_FINDITER = rc(
     DOTALL | MULTILINE | VERBOSE,
 ).finditer
 
-BOLD_ITALIC_FINDITER = rc(  # bold-italic, bold, or italic tokens
-    rb"""((?>'\0*)*?)'\0*+'\0*+('\0*+('\0*+')?+)?+(?=[^']|$)""",
+substitute_apostrophes = rc(  # bold-italic, bold, or italic tokens
+    rb"('\0*+){2,}+(?=[^']|$)",
     MULTILINE | VERBOSE,
-).finditer
+).sub
+find_lines = rc(rb'(.*?)$', MULTILINE).finditer
 
 BOLD_FINDITER = rc(
     rb"""
@@ -1015,58 +1016,82 @@ class WikiText:
         https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
         https://phabricator.wikimedia.org/T15227#178834
         """
-        bold_matches = []
+        bold_starts: List[int] = []
         odd_italics = False
         odd_bold_italics = False
-        shadow_copy = self._shadow[:]
-        append_match = bold_matches.append
+        append_bold_start = bold_starts.append
 
-        def process_line():
-            nonlocal odd_italics
-            if odd_italics and (len(bold_matches) + odd_bold_italics) % 2:
+        def process_line() -> None:
+            nonlocal odd_italics, odd_bold_italics
+            if odd_italics and (len(bold_starts) + odd_bold_italics) % 2:
                 # one of the bold marks needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
-                for bold_match in bold_matches:
-                    bold_start = bold_match.start()
-                    if shadow_copy[bold_start - 1] == 32:  # space
+                for s in bold_starts:
+                    if shadow_copy[s - 1] == 32:  # space
                         if first_space is None:
-                            first_space = bold_start
+                            first_space = s
                         continue
-                    if shadow_copy[bold_start - 2] == 32:  # space
-                        shadow_copy[bold_start] = 95  # _
+                    if shadow_copy[s - 2] == 32:  # space
+                        shadow_copy[s] = 95  # _
                         break  # first_single_letter_word
                     if first_multi_letter_word is None:
-                        first_multi_letter_word = bold_start
+                        first_multi_letter_word = s
                         continue
                 else:  # there was no first_single_letter_word
                     if first_multi_letter_word is not None:
                         shadow_copy[first_multi_letter_word] = 95  # _
+                        # line = (
+                        #     line[:first_multi_letter_word]
+                        #     + b'_'
+                        #     + line[first_multi_letter_word + 1 :]
+                        # )
                     elif first_space is not None:
                         shadow_copy[first_space] = 95  # _
-            bold_matches.clear()
+                        # line = (
+                        #     line[:first_space] + b'_' + line[first_space + 1 :]
+                        # )
+            # reset state for the next line
+            bold_starts.clear()
             odd_italics = False
+            odd_bold_italics = False
 
-        last_end = 0
-        for m in BOLD_ITALIC_FINDITER(shadow_copy):
-            if shadow_copy.find(b'\n', last_end, m.start()) > -1:  # newline
-                process_line()
-
-            if m[2] is None:  # italic
+        def repl(m) -> None:
+            nonlocal odd_italics, odd_bold_italics
+            starts = m.starts(1)
+            n = len(starts)
+            if n == 2:  # italic
                 odd_italics ^= True
-            elif m[3] is None:  # bold
-                s, e = m.span(1)
-                if s != e:  # four apostrophes, hide the first one
-                    shadow_copy[s] = 95  # _
-                append_match(m)
-            else:  # bold-italic
-                s, e = m.span(1)
-                es = e - s
-                if es:  # more than 5 apostrophes, hide the previous ones
-                    shadow_copy[s:e] = b'_' * es
+                return
+            if n == 3:  # bold
+                append_bold_start(starts[0])
+                return
+            if n == 5:
                 odd_bold_italics ^= True
                 odd_italics ^= True
-            last_end = m.end()
-        process_line()  # string end
+                return
+            if n == 4:  # four apostrophes -> hide the first one
+                append_bold_start(starts[0])
+                rs = starts[0]
+                re = starts[1]
+                shadow_copy[rs:re] = b'_' * (re - rs)
+                return
+            if n > 5:  # more than 5 apostrophes -> hide the prior ones
+                odd_bold_italics ^= True
+                odd_italics ^= True
+                rs = starts[0]
+                re = starts[-5]
+                shadow_copy[rs:re] = b'_' * (re - rs)
+                return
+
+        shadow_copy = self._shadow[:]
+        for line_match in find_lines(shadow_copy):
+            substitute_apostrophes(
+                repl,
+                shadow_copy,
+                pos=line_match.start(),
+                endpos=line_match.end(),
+            )
+            process_line()
         return shadow_copy
 
     def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):

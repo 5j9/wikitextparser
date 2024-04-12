@@ -14,12 +14,22 @@ def assert_no_bold(input_string: str):
     assert not parse(input_string).get_bolds(True)
 
 
+def test_one_extra_on_each_side():
+    assert_bold("''''''a''''''", "'''a''''")  # '<i><b>a'</b></i>
+
+
+def test_two_tree_letter():
+    assert_no_bold("''i1'''s")
+
+
+def test_italic_bold_letter_bold():
+    assert_bold("'''''b'''i", "'''b'''")
+
+
 def test_get_bolds():
     assert_bold("A''''''''''B", "'''B")
-    assert_bold("''''''a''''''", "'''a''''")  # '<i><b>a'</b></i>
     assert_bold("a'''<!--b-->'''BI", "'''BI")
     assert_bold("'''b'''", "'''b'''")
-    assert_no_bold("''i1'''s")
     assert_no_bold("<!--'''b'''-->")
     assert_bold("'''b{{a|'''}}", "'''b{{a|'''}}")  # ?
     assert_bold("a'''b{{text|c|d}}e'''f", "'''b{{text|c|d}}e'''")
@@ -27,7 +37,6 @@ def test_get_bolds():
     assert_bold("{{text|'''b}}", "'''b")  # ?
     assert_bold("'''<S>b</S>'''", "'''<S>b</S>'''")
     assert_bold("'''b<S>r'''c</S>", "'''b<S>r'''")
-    assert_bold("'''''b'''i", "'''b'''")
     assert (
         repr(parse("'''b<ref>r'''c</ref>a").get_bolds())
         == """[Bold("'''b<ref>r'''c</ref>a"), Bold("'''c")]"""
@@ -72,11 +81,7 @@ def ai(s: str, o: str, r: bool = True):
     assert italics[0].string == o
 
 
-def test_get_italics():
-    ai("''i'''", "''i'''")
-    ai("a''' '' b '' '''c", "'' b ''")
-    ai("a'' ''' ib ''' ''c", "'' ''' ib ''' ''")
-    ai("''i''", "''i''")
+def test_bold_italic_with_comments_in_between_every_apos():
     ai(
         'A<!---->'
         "'<!---->'<!---->'<!---->'<!---->'"
@@ -87,6 +92,13 @@ def test_get_italics():
         '<!---->i<!---->'
         "'<!---->'<!---->'<!---->'<!---->'",
     )
+
+
+def test_get_italics():
+    ai("''i'''", "''i'''")
+    ai("a''' '' b '' '''c", "'' b ''")
+    ai("a'' ''' ib ''' ''c", "'' ''' ib ''' ''")
+    ai("''i''", "''i''")
     ai("''' ''i'''", "''i'''")
 
 
