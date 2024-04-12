@@ -185,3 +185,9 @@ def test_four_apostrophe_to_three_to_two():
     assert [repr(i) for i in parse("''''a''b").get_bolds_and_italics()] == [
         "Italic(\"''a''\")"
     ]
+
+
+def test_comment_at_end_of_four():
+    assert [
+        repr(i) for i in parse("''''<!---->a''b").get_bolds_and_italics()
+    ] == ["Italic(\"''<!---->a''\")"]
