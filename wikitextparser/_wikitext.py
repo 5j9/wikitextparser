@@ -1054,7 +1054,7 @@ class WikiText:
             odd_bold_italics = False
             return line
 
-        def repl(m) -> bytes:
+        def process_apostrophes(m) -> bytes:
             nonlocal odd_italics, odd_bold_italics
             starts = m.starts(1)
             n = len(starts)
@@ -1080,7 +1080,7 @@ class WikiText:
 
         return bytearray(b'\n').join(
             [
-                process_line(substitute_apostrophes(repl, line))
+                process_line(substitute_apostrophes(process_apostrophes, line))
                 for line in self._shadow.splitlines()
             ]
         )
