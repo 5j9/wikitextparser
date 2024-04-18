@@ -20,6 +20,7 @@ from regex import (
     IGNORECASE,
     MULTILINE,
     VERBOSE,
+    Match,
     finditer,
     match,
     search,
@@ -113,11 +114,8 @@ TABLE_FINDITER = rc(
     DOTALL | MULTILINE | VERBOSE,
 ).finditer
 
-substitute_apostrophes = rc(  # bold-italic, bold, or italic tokens
-    rb"('\0*+){2,}+(?=[^']|$)",
-    MULTILINE | VERBOSE,
-).sub
-find_lines = rc(rb'(.*?)$').finditer
+apostrophe_line_sub = rc(rb"^[^']*+[^\n]*+", MULTILINE).sub
+apostrophes_sub = rc(rb"('\0*+){2,}+(?=[^']|$)", MULTILINE).sub
 
 BOLD_FINDITER = rc(
     rb"""
@@ -1021,8 +1019,9 @@ class WikiText:
         odd_bold_italics = False
         append_bold_start = bold_starts.append
 
-        def process_line(line: bytes) -> bytes:
+        def process_line(line_match: Match) -> bytes:
             nonlocal odd_italics, odd_bold_italics
+            line = apostrophes_sub(process_apostrophes, line_match[0])
             if odd_italics and (len(bold_starts) + odd_bold_italics) % 2:
                 # one of the bold marks needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
@@ -1078,12 +1077,7 @@ class WikiText:
             s = starts[-5]
             return b'_' * (s - starts[0]) + m.string[s : m.end()]
 
-        return bytearray(b'\n').join(
-            [
-                process_line(substitute_apostrophes(process_apostrophes, line))
-                for line in self._shadow.splitlines()
-            ]
-        )
+        return bytearray(apostrophe_line_sub(process_line, self._shadow))
 
     def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
         for prop in (
