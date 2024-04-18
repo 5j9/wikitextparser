@@ -40,7 +40,6 @@ from ._spans import (
     END_TAG_PATTERN,
     EXTERNAL_LINK_URL_TAIL,
     INVALID_URL_CHARS,
-    PARSABLE_TAG_EXTENSION_NAME,
     START_TAG_PATTERN,
     parse_to_spans,
     rc,
@@ -51,10 +50,6 @@ NAME_CAPTURING_HTML_START_TAG_FINDITER = rc(
         b'{name}', rb'(?<name>' + _HTML_TAG_NAME + rb')', 1
     )
 ).finditer
-
-PARSABLE_TAG_EXTENSIONS_MATCH = rc(
-    rb'<' + PARSABLE_TAG_EXTENSION_NAME + rb'\b', IGNORECASE
-).match
 
 # External links
 BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
