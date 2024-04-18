@@ -60,10 +60,7 @@ class SubWikiTextWithArgs(SubWikiText):
             else:
                 arg_span = old_span
             arg = Argument(lststr, type_to_spans, arg_span, type_, self)
-            arg._shadow_cache = (
-                lststr[0][s:e],
-                shadow[arg_self_start:arg_self_end],
-            )
+            arg._span_data[3] = shadow[arg_self_start:arg_self_end]
             arguments_append(arg)
         return arguments
 

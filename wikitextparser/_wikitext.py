@@ -204,7 +204,7 @@ class WikiText:
     # The following class attribute acts as a default value.
     _type = 'WikiText'
 
-    __slots__ = '_type_to_spans', '_lststr', '_span_data', '_shadow_cache'
+    __slots__ = '_type_to_spans', '_lststr', '_span_data'
 
     def __init__(
         self,
@@ -232,7 +232,6 @@ class WikiText:
         if _type not in SPAN_PARSER_TYPES:
             type_to_spans = self._type_to_spans = parse_to_spans(byte_array)
             type_to_spans[_type] = [span]
-            self._shadow_cache = string, byte_array
         else:
             # In SPAN_PARSER_TYPES, we can't pass the original byte_array to
             # parser to generate the shadow because it will replace the whole
@@ -250,7 +249,6 @@ class WikiText:
                 byte_array[0] = 3
                 byte_array[-1] = 32
             type_to_spans = parse_to_spans(byte_array)
-            self._shadow_cache = string, byte_array
             type_to_spans[_type].insert(0, span)
             self._type_to_spans = type_to_spans
             if type(self) is Parameter:
