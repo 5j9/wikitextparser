@@ -113,11 +113,7 @@ TABLE_FINDITER = rc(
     DOTALL | MULTILINE | VERBOSE,
 ).finditer
 
-substitute_apostrophes = rc(  # bold-italic, bold, or italic tokens
-    rb"('\0*+){2,}+(?=[^']|$)",
-    MULTILINE | VERBOSE,
-).sub
-find_lines = rc(rb'(.*?)$').finditer
+substitute_apostrophes = rc(rb"('\0*+){2,}+(?=[^']|$)", MULTILINE).sub
 
 BOLD_FINDITER = rc(
     rb"""
