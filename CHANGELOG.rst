@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+*  Fixed a bug in ``Section.level`` resulting in malformed section titles when multiple levels are added (#135)
 
 v0.55.12
 --------

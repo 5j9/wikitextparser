@@ -104,3 +104,9 @@ def test_level_setter_does_not_overwrite_title():
     s.level = 2
     assert '=={{t}}==\nb' == s.string
     assert '{{t}}' == t.string
+
+
+def test_title_after_changing_level():  # 135
+    s = Section('=t=\nb')
+    s.level += 2
+    assert s.title == 't'
