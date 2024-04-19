@@ -44,7 +44,7 @@ class Section(SubWikiText):
         if level_diff < 0:
             new_equals = '=' * abs(level_diff)
             self.insert(0, new_equals)
-            self.insert(m.end(2) + 1, new_equals)
+            self.insert(m.end(2) + abs(level_diff), new_equals)
             return
         del self[:level_diff]
         del self[m.end(2) : m.end(2) + level_diff]
