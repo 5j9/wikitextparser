@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.56.0
+-------
 * Drop Python 3.7 support.
 
 v0.55.14
