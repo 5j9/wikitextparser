@@ -248,3 +248,9 @@ def test_on_list_with_replace_template_function():  # 130
         .plain_text(replace_templates=lambda t: t.name)
         == '#:a'
     )
+
+
+def test_external_starting_with_comment():
+    text = "''[https://<!---->x.com/ x]''"
+    parsed = parse(text)
+    assert parsed.plain_text() == 'x'

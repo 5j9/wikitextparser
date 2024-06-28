@@ -1194,14 +1194,14 @@ class WikiText:
         )
 
     @property
-    def _ext_link_shadow(self):
+    def _ext_link_shadow(self) -> memoryview:
         """Replace the invalid chars of SPAN_PARSER_TYPES with b'_'.
 
         For comments, all characters are replaced, but for ('Template',
         'ParserFunction', 'Parameter') only invalid characters are replaced.
         """
         ss, se, _, _ = self._span_data
-        byte_array = bytearray(self._lststr[0][ss:se], 'ascii', 'replace')
+        byte_array = bytearray(self._lststr[0], 'ascii', 'replace')
         subspans = self._subspans
         for s, e, _, _ in subspans('Comment'):
             byte_array[s:e] = (e - s) * b'_'
@@ -1210,7 +1210,7 @@ class WikiText:
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
                 byte_array[s:e] = INVALID_EXT_CHARS_SUB(b' ', byte_array[s:e])
-        return byte_array
+        return memoryview(byte_array)[ss:se]
 
     @property
     def external_links(self) -> List['ExternalLink']:
