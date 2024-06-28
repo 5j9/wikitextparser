@@ -432,10 +432,7 @@ class WikiText:
     @property
     def span(self) -> tuple:
         """Return the span of self relative to the start of the root node."""
-        # In Python 3.7 and earlier, generalized iterable unpacking in yield
-        # and return statements requires enclosing parentheses:
-        # https://docs.python.org/3.8/whatsnew/3.8.html#other-language-changes
-        return (*self._span_data[:2],)  # noqa
+        return (*self._span_data[:2],)
 
     @property
     def string(self) -> str:
