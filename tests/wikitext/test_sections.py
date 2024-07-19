@@ -121,7 +121,6 @@ lead
 
 def test_top_levels_only():
     sections = parse(text).get_sections(top_levels_only=True)
-    print(sections)
     assert len(sections) == 4
     assert sections[2].string == '==2==\n2\n===2.1===\n2.1\n'
 
@@ -133,3 +132,15 @@ def test_positional_args():
         p.get_sections(False)
     with warns(DeprecationWarning, match=m):
         p.get_sections(False, 1)
+
+
+def test_top_levels_only_multi_sub():
+    sections = parse(
+        '0\n== 1 ==\n=== 2 ===\n2\n==== 3 ====\n3 \n=== 4 ===\n4\n'
+    ).get_sections(top_levels_only=True)
+    print(sections)
+    assert len(sections) == 2
+    assert (
+        sections[1].string
+        == '== 1 ==\n=== 2 ===\n2\n==== 3 ====\n3 \n=== 4 ===\n4\n'
+    )

@@ -69,7 +69,7 @@ INVALID_EXT_CHARS_SUB = rc(  # the [:-4] slice allows \[ and \]
 
 # Sections
 SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
-SUBSECTION_HEADING = rb'^(?P=equals)=[^\n]+?(?P=equals)=[ \t]*+$'
+SUB_SECTION = rb'(?:^(?P=equals)=[^\n]+?(?P=equals)=[ \t]*+$.*?)*'
 LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
     LEAD_SECTION
@@ -84,9 +84,8 @@ SECTIONS_TOP_LEVELS_ONLY = rc(
     + rb'(?<section>'
     + SECTION_HEADING
     + rb'.*?'
-    + SUBSECTION_HEADING
-    + rb'.*?'
-    rb')*',
+    + SUB_SECTION
+    + rb')*',
     DOTALL | MULTILINE | VERBOSE,
 ).fullmatch
 
