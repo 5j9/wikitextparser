@@ -1,7 +1,6 @@
-..
-    Unreleased
-    ----------
-    * 
+Unreleased
+----------
+* Fixed a bug in ``external_links`` property where ``|`` was recognized as part of the link by mistake. (#139)
 
 v0.56.1
 -------

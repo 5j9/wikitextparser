@@ -224,3 +224,10 @@ def test_ext_link_overwriting_template():  # 74
     # that have become invalid.
     t.string = '[https://link]'
     assert p.external_links[0].string == '[https://link]'
+
+
+def test_ext_links_inside_ref_containing_pipe():  # 139
+    (el,) = parse(
+        '<ref>{{t|url=http://www.kismac.de|titre=Germany says: Good-bye KisMAC!|auteur=Michael Rossberg}}</ref>'
+    ).external_links
+    assert el.string == 'http://www.kismac.de'

@@ -63,8 +63,8 @@ EXTERNAL_LINK = (
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
 )
 EXTERNAL_LINK_FINDITER = rc(EXTERNAL_LINK, IGNORECASE).finditer
-INVALID_EXT_CHARS_SUB = rc(  # the [:-4] slice allows \[ and \]
-    rb'[' + INVALID_URL_CHARS[:-4] + rb'{}]'
+INVALID_EL_TPP_CHRS_SUB = rc(  # the [:-4] slice allows \[ and \]
+    rb'[' + INVALID_URL_CHARS[:-4] + rb'{}|]'
 ).sub
 
 # Sections
@@ -1205,7 +1205,7 @@ class WikiText:
             byte_array[s - ss : e - ss] = (e - s) * b' '
         for type_ in 'Template', 'ParserFunction', 'Parameter':
             for s, e, _, _ in subspans(type_):
-                byte_array[s - ss : e - ss] = INVALID_EXT_CHARS_SUB(
+                byte_array[s - ss : e - ss] = INVALID_EL_TPP_CHRS_SUB(
                     b' ', byte_array[s:e]
                 )
         return byte_array
