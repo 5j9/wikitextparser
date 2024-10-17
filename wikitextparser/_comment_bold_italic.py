@@ -1,7 +1,8 @@
-from typing import Dict, List, MutableSequence, Optional, Tuple, Union
+from typing import List, MutableSequence, Optional, Tuple, Union
 
-from regex import DOTALL, MULTILINE
+from regex import DOTALL, MULTILINE, Match
 
+from ._spans import TypeToSpans
 from ._wikitext import SubWikiText, rc
 
 COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
@@ -37,6 +38,9 @@ class BoldItalic(SubWikiText):
     __slots__ = ()
 
     @property
+    def _match(self) -> Match[str]: ...
+
+    @property
     def text(self) -> str:
         """Return text value of self (without triple quotes)."""
         # noinspection PyUnresolvedReferences
@@ -58,8 +62,8 @@ class Bold(BoldItalic):
     __slots__ = ()
 
     @property
-    def _match(self):
-        return BOLD_FULLMATCH(self.string)
+    def _match(self) -> Match[str]:
+        return BOLD_FULLMATCH(self.string)  # type: ignore
 
 
 class Italic(BoldItalic):
@@ -68,7 +72,7 @@ class Italic(BoldItalic):
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
+        _type_to_spans: Optional[TypeToSpans] = None,
         _span: Optional[List[int]] = None,
         _type: Optional[Union[str, int]] = None,
         end_token: bool = True,
@@ -82,7 +86,7 @@ class Italic(BoldItalic):
         self.end_token = end_token
 
     @property
-    def _match(self):
+    def _match(self) -> Match[str]:
         if self.end_token:
-            return ITALIC_FULLMATCH(self.string)
-        return ITALIC_NOEND_FULLMATCH(self.string)
+            return ITALIC_FULLMATCH(self.string)  # type: ignore
+        return ITALIC_NOEND_FULLMATCH(self.string)  # type: ignore

@@ -1,7 +1,7 @@
 """Define the functions required for parsing wikitext into spans."""
 
 from functools import partial
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc
 
@@ -210,7 +210,11 @@ HTML_END_TAG_FINDITER = rc(
 ).finditer
 
 
-def parse_to_spans(byte_array: bytearray) -> Dict[str, list]:
+# [stan_start: int, span_end: int, Match, byte_array]
+TypeToSpans = Dict[Union[str, int], List[List]]
+
+
+def parse_to_spans(byte_array: bytearray) -> TypeToSpans:
     """Calculate and set self._type_to_spans.
 
     Extracted spans will be removed from byte_array.

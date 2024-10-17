@@ -2,7 +2,7 @@
 
 from typing import List, Optional, Tuple
 
-from regex import DOTALL
+from regex import DOTALL, Match
 
 from ._wikitext import SubWikiText, rc
 
@@ -29,13 +29,13 @@ class WikiLink(SubWikiText):
         return f('[', f('[') + 1) + 1, rf(']', None, rf(']'))
 
     @property
-    def _match(self):
+    def _match(self) -> Match[bytes]:
         shadow = self._shadow
         cached_match = getattr(self, '_cached_match', None)
         if cached_match is not None and cached_match.string == shadow:
             return cached_match
         self._cached_match = match = FULLMATCH(shadow)
-        return match
+        return match  # type: ignore
 
     @property
     def target(self) -> str:

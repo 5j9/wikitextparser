@@ -1,6 +1,6 @@
 from typing import Dict, List, MutableSequence, Optional, Union
 
-from regex import DOTALL, MULTILINE
+from regex import DOTALL, MULTILINE, Match
 
 from ._wikitext import SECTION_HEADING, SubWikiText, rc
 
@@ -29,24 +29,24 @@ class Argument(SubWikiText):
         _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
         _span: Optional[List[int]] = None,
         _type: Optional[Union[str, int]] = None,
-        _parent: 'SubWikiTextWithArgs' = None,
+        _parent: 'Optional[SubWikiTextWithArgs]' = None,
     ):
         super().__init__(string, _type_to_spans, _span, _type)
         self._parent = _parent or self
         self._shadow_match_cache = None, None
 
     @property
-    def _shadow_match(self):
+    def _shadow_match(self) -> Match[bytes]:
         cached_shadow_match, cache_string = self._shadow_match_cache
         self_string = str(self)
         if cache_string == self_string:
-            return cached_shadow_match
+            return cached_shadow_match  # type: ignore
         ss, se, _, _ = self._span_data
         parent = self._parent
         ps = parent._span_data[0]
         shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps : se - ps])
         self._shadow_match_cache = shadow_match, self_string
-        return shadow_match
+        return shadow_match  # type: ignore
 
     @property
     def name(self) -> str:
