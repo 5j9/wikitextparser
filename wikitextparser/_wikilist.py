@@ -1,8 +1,9 @@
 from operator import attrgetter
-from typing import Dict, Iterable, List, Match, MutableSequence, Union
+from typing import Iterable, List, MutableSequence, Optional, Union
 
-from regex import MULTILINE, escape, fullmatch
+from regex import MULTILINE, Match, escape, fullmatch
 
+from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
@@ -41,10 +42,10 @@ class WikiList(SubWikiText):
         self,
         string: Union[str, MutableSequence[str]],
         pattern: str,
-        _match: Match = None,
-        _type_to_spans: Dict[str, List[List[int]]] = None,
-        _span: List[int] = None,
-        _type: str = None,
+        _match: Optional[Match] = None,
+        _type_to_spans: Optional[TypeToSpans] = None,
+        _span: Optional[List[int]] = None,
+        _type: Optional[str] = None,
     ) -> None:
         super().__init__(string, _type_to_spans, _span, _type)
         self.pattern = pattern
@@ -72,12 +73,12 @@ class WikiList(SubWikiText):
         return shadow_copy
 
     @property
-    def _match(self):
+    def _match(self) -> Match[bytes]:
         """Return the match object for the current list."""
         cache_match, cache_string = self._match_cache
         string = self.string
         if cache_string == string:
-            return cache_match
+            return cache_match  # type: ignore
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
                 b'{pattern}', self.pattern.encode(), 1
@@ -86,7 +87,7 @@ class WikiList(SubWikiText):
             MULTILINE,
         )
         self._match_cache = cache_match, string
-        return cache_match
+        return cache_match  # type: ignore
 
     @property
     def items(self) -> List[str]:
@@ -127,7 +128,7 @@ class WikiList(SubWikiText):
 
     def sublists(
         self,
-        i: int = None,
+        i: Optional[int] = None,
         pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]'),
     ) -> List['WikiList']:
         """Return the Lists inside the item with the given index.

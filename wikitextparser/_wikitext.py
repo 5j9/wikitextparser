@@ -1,6 +1,6 @@
 from bisect import bisect_left, bisect_right, insort_right
 from html import unescape
-from itertools import compress, islice
+from itertools import islice
 from operator import attrgetter
 from typing import (
     Callable,
@@ -1363,9 +1363,9 @@ class WikiText:
                         break
 
         if level is not None:
-            section_spans = compress(
-                section_spans, [lvl == level for lvl in levels]
-            )
+            section_spans = [
+                ss for (ss, lvl) in zip(section_spans, levels) if lvl == level
+            ]
 
         return self._section_spans_to_sections(section_spans, shadow)
 
