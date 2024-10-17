@@ -1122,7 +1122,7 @@ class WikiText:
         self,
         *,
         recursive=True,
-        filter_cls: Optional[Type['Bold'] | Type['Italic']] = None,
+        filter_cls: Optional[Union[Type['Bold'], Type['Italic']]] = None,
     ) -> Union[List[Union['Bold', 'Italic']], List['Italic'], List['Bold']]:
         """Return a list of bold and italic objects in self.
 
