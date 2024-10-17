@@ -5,10 +5,10 @@ from pytest import mark
 from wikitextparser import WikiText, parse
 
 # noinspection PyProtectedMember
-from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
+from wikitextparser._spans import PF_TL_FINDITER, TypeToSpans, parse_to_spans
 
 
-def bytearray_parse_to_spans(bytes_: bytes) -> dict[str, list[list[int]]]:
+def bytearray_parse_to_spans(bytes_: bytes) -> TypeToSpans:
     return {
         k: [i[:2] for i in v]  # no need for match and byte_array
         for k, v in parse_to_spans(bytearray(bytes_)).items()

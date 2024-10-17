@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import Match, MutableSequence
+from typing import MutableSequence
 
-from regex import DOTALL, VERBOSE
+from regex import DOTALL, VERBOSE, Match
 
-from ._spans import ATTRS_MATCH
+from ._spans import ATTRS_MATCH, TypeToSpans
 from ._tag import SubWikiTextWithAttrs
 from ._wikitext import rc
 
@@ -148,13 +148,12 @@ class Cell(SubWikiTextWithAttrs):
         self,
         string: str | MutableSequence[str],
         header: bool = False,
-        _type_to_spans: dict[str, list[list[int]]] = None,
-        _span: int = None,
-        _type: int = None,
-        _match: Match = None,
-        _attrs_match: Match = None,
+        _type_to_spans: TypeToSpans | None = None,
+        _span: list | None = None,
+        _type: int | None = None,
+        _match: Match | None = None,
+        _attrs_match: Match | None = None,
     ) -> None:
-        """Initialize the object."""
         super().__init__(string, _type_to_spans, _span, _type)
         self._header = header
         if _match:
@@ -177,7 +176,7 @@ class Cell(SubWikiTextWithAttrs):
             self._attrs_match_cache = self._match_cache = None, None
 
     @property
-    def _match(self):
+    def _match(self) -> Match[bytes]:
         """Return the match object for the current tag. Cache the result.
 
         Be extra careful when using this property. The position of match
@@ -187,7 +186,7 @@ class Cell(SubWikiTextWithAttrs):
         cache_match, cache_string = self._match_cache
         string = self.string
         if cache_string == string:
-            return cache_match
+            return cache_match  # type: ignore
         shadow = self._shadow
         if shadow[0] == 10:  # ord('\n')
             m = NEWLINE_CELL_MATCH(shadow)
@@ -198,7 +197,7 @@ class Cell(SubWikiTextWithAttrs):
             m = INLINE_NONHAEDER_CELL_MATCH(shadow)
         self._match_cache = m, string
         self._attrs_match_cache = None, None
-        return m
+        return m  # type: ignore
 
     @property
     def value(self) -> str:

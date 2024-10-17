@@ -1421,7 +1421,7 @@ class WikiText:
         return self._shadow, self._span_data[0]
 
     def get_lists(
-        self, pattern: str | tuple[str, ...] = (r'\#', r'\*', '[:;]')
+        self, pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]')
     ) -> list[WikiList]:
         r"""Return a list of WikiList objects.
 
