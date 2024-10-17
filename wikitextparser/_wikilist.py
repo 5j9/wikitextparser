@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from operator import attrgetter
-from typing import Iterable, List, MutableSequence, Optional, Union
+from typing import Iterable, MutableSequence
 
 from regex import MULTILINE, Match, escape, fullmatch
 
@@ -40,12 +42,12 @@ class WikiList(SubWikiText):
 
     def __init__(
         self,
-        string: Union[str, MutableSequence[str]],
+        string: str | MutableSequence[str],
         pattern: str,
-        _match: Optional[Match] = None,
-        _type_to_spans: Optional[TypeToSpans] = None,
-        _span: Optional[List[int]] = None,
-        _type: Optional[str] = None,
+        _match: Match | None = None,
+        _type_to_spans: TypeToSpans | None = None,
+        _span: list[int] | None = None,
+        _type: str | None = None,
     ) -> None:
         super().__init__(string, _type_to_spans, _span, _type)
         self.pattern = pattern
@@ -90,12 +92,12 @@ class WikiList(SubWikiText):
         return cache_match  # type: ignore
 
     @property
-    def items(self) -> List[str]:
+    def items(self) -> list[str]:
         """Return items as a list of strings.
 
         Do not include sub-items and the start pattern.
         """
-        items: List[str] = []
+        items: list[str] = []
         append = items.append
         string = self.string
         match = self._match
@@ -105,9 +107,9 @@ class WikiList(SubWikiText):
         return items
 
     @property
-    def fullitems(self) -> List[str]:
+    def fullitems(self) -> list[str]:
         """Return list of item strings. Includes their start and sub-items."""
-        fullitems = []  # type: List[str]
+        fullitems: list[str] = []
         append = fullitems.append
         string = self.string
         match = self._match
@@ -128,9 +130,9 @@ class WikiList(SubWikiText):
 
     def sublists(
         self,
-        i: Optional[int] = None,
-        pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]'),
-    ) -> List['WikiList']:
+        i: int | None = None,
+        pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]'),
+    ) -> list[WikiList]:
         """Return the Lists inside the item with the given index.
 
         :param i: The index of the item which its sub-lists are desired.
@@ -144,7 +146,7 @@ class WikiList(SubWikiText):
             patterns = pattern
         self_pattern = self.pattern
         get_lists = super().get_lists
-        sublists = []  # type: List['WikiList']
+        sublists: list[WikiList] = []
         sublists_append = sublists.append
         if i is None:
             # Any sublist is acceptable
@@ -178,6 +180,6 @@ class WikiList(SubWikiText):
         self.pattern = escape(newstart)
 
     def get_lists(
-        self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
-    ) -> List['WikiList']:
+        self, pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]')
+    ) -> list[WikiList]:
         return self.sublists(pattern=pattern)

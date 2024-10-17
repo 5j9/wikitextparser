@@ -1,4 +1,4 @@
-from typing import List, Optional
+from __future__ import annotations
 
 from ._wikitext import BRACKET_EXTERNAL_LINK_URL, IGNORECASE, SubWikiText, rc
 
@@ -28,7 +28,7 @@ class ExternalLink(SubWikiText):
             self[0 : len(self.url)] = newurl
 
     @property
-    def text(self) -> Optional[str]:
+    def text(self) -> str | None:
         """The text part (the part after the url).
 
         getter: Return None if this is a bare link or has no associated text.
@@ -74,5 +74,5 @@ class ExternalLink(SubWikiText):
         return self(0) == '['
 
     @property
-    def external_links(self) -> List['ExternalLink']:
+    def external_links(self) -> list[ExternalLink]:
         return []

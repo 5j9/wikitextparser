@@ -1,4 +1,6 @@
-from typing import Dict, List, Match, MutableSequence, Union
+from __future__ import annotations
+
+from typing import Match, MutableSequence
 
 from regex import DOTALL, VERBOSE
 
@@ -144,9 +146,9 @@ class Cell(SubWikiTextWithAttrs):
 
     def __init__(
         self,
-        string: Union[str, MutableSequence[str]],
+        string: str | MutableSequence[str],
         header: bool = False,
-        _type_to_spans: Dict[str, List[List[int]]] = None,
+        _type_to_spans: dict[str, list[list[int]]] = None,
         _span: int = None,
         _type: int = None,
         _match: Match = None,

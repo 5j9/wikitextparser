@@ -1,7 +1,9 @@
 """Define the functions required for parsing wikitext into spans."""
 
+from __future__ import annotations
+
 from functools import partial
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Union
 
 from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc
 
@@ -325,7 +327,7 @@ def extract_tag_extensions(
 def _parse_sub_spans(
     byte_array: bytearray,
     start: int,
-    end: Optional[int],
+    end: int | None,
     pms_append: Callable,
     pfs_append: Callable,
     tls_append: Callable,
@@ -340,7 +342,7 @@ def _parse_sub_spans(
         byte_array[ms:me] = byte_array[ms:me].translate(BRACKETS)
     while True:
         while True:
-            match: Optional[Match] = None
+            match: Match | None = None
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:

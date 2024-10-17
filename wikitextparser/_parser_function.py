@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from bisect import insort
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable
 
 from ._argument import Argument
 from ._wikilist import WikiList
@@ -19,7 +21,7 @@ class SubWikiTextWithArgs(SubWikiText):
     _first_arg_sep = 0
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         return 2, -2
 
     @property
@@ -32,7 +34,7 @@ class SubWikiTextWithArgs(SubWikiText):
         return self._nesting_level(('Template', 'ParserFunction'))
 
     @property
-    def arguments(self) -> List[Argument]:
+    def arguments(self) -> list[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         shadow = self._shadow
         split_spans = self._name_args_matcher(shadow, 2, -2).spans('arg')
@@ -65,8 +67,8 @@ class SubWikiTextWithArgs(SubWikiText):
         return arguments
 
     def get_lists(
-        self, pattern: Union[str, Iterable[str]] = (r'\#', r'\*', '[:;]')
-    ) -> List[WikiList]:
+        self, pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]')
+    ) -> list[WikiList]:
         """Return the lists in all arguments.
 
         For performance reasons it is usually preferred to get a specific
@@ -103,5 +105,5 @@ class ParserFunction(SubWikiTextWithArgs):
     _first_arg_sep = 58
 
     @property
-    def parser_functions(self) -> List['ParserFunction']:
+    def parser_functions(self) -> list[ParserFunction]:
         return super().parser_functions[1:]

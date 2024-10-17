@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 from ._wikitext import SubWikiText, rc
 
@@ -50,7 +50,7 @@ class Section(SubWikiText):
         del self[m.end(2) : m.end(2) + level_diff]
 
     @property
-    def title(self) -> Optional[str]:
+    def title(self) -> str | None:
         """The title of this section.
 
         getter: Return the title or None for lead sections or sections that

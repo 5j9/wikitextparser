@@ -1,4 +1,6 @@
-from typing import List, MutableSequence, Optional, Union
+from __future__ import annotations
+
+from typing import MutableSequence
 
 from regex import DOTALL, MULTILINE, Match
 
@@ -26,11 +28,11 @@ class Argument(SubWikiText):
 
     def __init__(
         self,
-        string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[TypeToSpans] = None,
-        _span: Optional[List[int]] = None,
-        _type: Optional[Union[str, int]] = None,
-        _parent: 'Optional[SubWikiTextWithArgs]' = None,
+        string: str | MutableSequence[str],
+        _type_to_spans: TypeToSpans | None = None,
+        _span: list[int] | None = None,
+        _type: str | int | None = None,
+        _parent: SubWikiTextWithArgs | None = None,
     ):
         super().__init__(string, _type_to_spans, _span, _type)
         self._parent = _parent or self

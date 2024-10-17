@@ -50,6 +50,7 @@ line-length = 79
 format.quote-style = 'single'
 lint.isort.combine-as-imports = true
 lint.extend-select = [
+    'FA',  # flake8-future-annotations
     'I',  # isort
     'UP',  # pyupgrade
 ]

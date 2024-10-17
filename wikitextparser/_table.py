@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from bisect import insort_right
 from collections.abc import Mapping
-from typing import Any, Dict, List, Optional, Tuple, TypeVar, Union
+from typing import Any, TypeVar
 
 from regex import DOTALL, VERBOSE
 
@@ -86,7 +88,7 @@ class Table(SubWikiTextWithAttrs):
         return shadow
 
     @property
-    def _match_table(self) -> List[List[Any]]:
+    def _match_table(self) -> list[list[Any]]:
         """Return match_table."""
         table_shadow = self._table_shadow
         # Remove table-start and table-end marks.
@@ -141,7 +143,7 @@ class Table(SubWikiTextWithAttrs):
         strip: bool = True,
         row: int = None,
         column: int = None,
-    ) -> Union[List[List[str]], List[str], str]:
+    ) -> list[list[str]] | list[str] | str:
         """Return a list containing lists of row values.
 
         :param span: If true, calculate rows according to rowspans and colspans
@@ -209,7 +211,7 @@ class Table(SubWikiTextWithAttrs):
         row: int = None,
         column: int = None,
         span: bool = True,
-    ) -> Union[List[List[Cell]], List[Cell], Cell]:
+    ) -> list[list[Cell]] | list[Cell] | Cell:
         """Return a list of lists containing Cell objects.
 
         :param span: If is True, rearrange the result according to colspan and
@@ -283,7 +285,7 @@ class Table(SubWikiTextWithAttrs):
         return table_cells[row][column]
 
     @property
-    def caption(self) -> Optional[str]:
+    def caption(self) -> str | None:
         """Caption of the table. Support get and set."""
         m = CAPTION_MATCH(self._shadow)
         if m:
@@ -317,7 +319,7 @@ class Table(SubWikiTextWithAttrs):
         return attrs_match
 
     @property
-    def caption_attrs(self) -> Optional[str]:
+    def caption_attrs(self) -> str | None:
         """Caption attributes. Support get and set operations."""
         m = CAPTION_MATCH(self._shadow)
         if m:
@@ -339,7 +341,7 @@ class Table(SubWikiTextWithAttrs):
                 self[m.end('preattrs') : end] = attrs
 
     @property
-    def row_attrs(self) -> List[dict]:
+    def row_attrs(self) -> list[dict]:
         """Row attributes.
 
         Use the setter of this property to set attributes for all rows.
@@ -363,7 +365,7 @@ class Table(SubWikiTextWithAttrs):
         return attrs
 
     @row_attrs.setter
-    def row_attrs(self, attrs: List[Mapping]):
+    def row_attrs(self, attrs: list[Mapping]):
         for row_match, attrs_dict in reversed(
             [*zip(FIND_ROWS(self._table_shadow), attrs)]
         ):
@@ -381,8 +383,8 @@ class Table(SubWikiTextWithAttrs):
 
 
 def _apply_attr_spans(
-    table_attrs: List[List[Dict[str, str]]], table_data: List[List[T]]
-) -> List[List[T]]:
+    table_attrs: list[list[dict[str, str]]], table_data: list[list[T]]
+) -> list[list[T]]:
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
@@ -399,7 +401,7 @@ def _apply_attr_spans(
     # if not table_data:
     #     return table_data
     # 11
-    downward_growing_cells: List[Tuple[Optional[T], int, int]] = []
+    downward_growing_cells: list[tuple[T | None, int, int]] = []
     # 13, 18
     # Algorithm for processing rows
     for attrs_row, row in zip(table_attrs, table_data):

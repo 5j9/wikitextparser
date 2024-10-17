@@ -1,6 +1,4 @@
-"""Define the WikiLink class."""
-
-from typing import List, Optional, Tuple
+from __future__ import annotations
 
 from regex import DOTALL, Match
 
@@ -22,7 +20,7 @@ class WikiLink(SubWikiText):
     __slots__ = '_cached_match'
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         s = self.string
         f = s.find
         rf = s.rfind
@@ -63,7 +61,7 @@ class WikiLink(SubWikiText):
         del self[b : e + 1]
 
     @property
-    def text(self) -> Optional[str]:
+    def text(self) -> str | None:
         """The [[inner text| of WikiLink ]] (not including the [[link]]trail).
 
         setter: set a new value for self.text. Do not include the pipe.
@@ -91,7 +89,7 @@ class WikiLink(SubWikiText):
         del self[b - 1 : e]
 
     @property
-    def fragment(self) -> Optional[str]:
+    def fragment(self) -> str | None:
         """Fragment identifier.
 
         getter: target's fragment identifier (do not include the # character)
@@ -145,5 +143,5 @@ class WikiLink(SubWikiText):
             del self[s : e + 1]
 
     @property
-    def wikilinks(self) -> List['WikiLink']:
+    def wikilinks(self) -> list[WikiLink]:
         return super().wikilinks[1:]

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from bisect import bisect_left, bisect_right, insort_right
 from html import unescape
 from itertools import islice
@@ -5,12 +7,7 @@ from operator import attrgetter
 from typing import (
     Callable,
     Iterable,
-    List,
     MutableSequence,
-    Optional,
-    Tuple,
-    Type,
-    Union,
     overload,
 )
 from warnings import warn
@@ -177,7 +174,7 @@ DEAD_INDEX = DeadIndex()  # == int() == 0
 DEAD_SPAN = DEAD_INDEX, DEAD_INDEX, None, None
 
 
-def _table_to_text(t: 'Table') -> str:
+def _table_to_text(t: Table) -> str:
     data = [
         [(cell if cell is not None else '') for cell in row]
         for row in t.data()
@@ -209,8 +206,8 @@ class WikiText:
 
     def __init__(
         self,
-        string: Union[MutableSequence[str], str],
-        _type_to_spans: Optional[TypeToSpans] = None,
+        string: MutableSequence[str] | str,
+        _type_to_spans: TypeToSpans | None = None,
     ) -> None:
         """Initialize the object.
 
@@ -270,7 +267,7 @@ class WikiText:
     def __repr__(self) -> str:
         return f'{type(self).__name__}({repr(self.string)})'
 
-    def __contains__(self, value: Union[str, 'WikiText']) -> bool:
+    def __contains__(self, value: str | WikiText) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
 
         Also self and parsed_wikitext should belong to the same parsed
@@ -296,8 +293,8 @@ class WikiText:
     def __call__(
         self,
         start: int,
-        stop: Optional[int] = False,
-        step: Optional[int] = None,
+        stop: int | None = False,
+        step: int | None = None,
     ) -> str:
         """Return `self.string[start]` or `self.string[start:stop]`.
 
@@ -317,7 +314,7 @@ class WikiText:
             else (s + stop if stop >= 0 else e + stop) : step
         ]
 
-    def _check_index(self, key: Union[slice, int]) -> Tuple[int, int]:
+    def _check_index(self, key: slice | int) -> tuple[int, int]:
         """Return adjusted start and stop index as tuple.
 
         Used in  __setitem__ and __delitem__.
@@ -353,7 +350,7 @@ class WikiText:
             )
         return start + ss, stop + ss
 
-    def __setitem__(self, key: Union[slice, int], value: str) -> None:
+    def __setitem__(self, key: slice | int, value: str) -> None:
         """Set a new string for the given slice or character index.
 
         Use this method instead of calling `insert` and `del` consecutively.
@@ -390,7 +387,7 @@ class WikiText:
                     # already exists which has lead to comparing Matches
                     continue
 
-    def __delitem__(self, key: Union[slice, int]) -> None:
+    def __delitem__(self, key: slice | int) -> None:
         """Remove the specified range or character from self.string.
 
         Note: If an operation involves both insertion and deletion, it'll be
@@ -461,7 +458,7 @@ class WikiText:
     def string(self) -> None:
         del self[:]
 
-    def _subspans(self, type_: str) -> List[List[int]]:
+    def _subspans(self, type_: str) -> list[list[int]]:
         """Return all the sub-span including self._span."""
         return self._type_to_spans[type_]
 
@@ -571,7 +568,7 @@ class WikiText:
         return level
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         # return content_start, self_len, self_end
         return 0, len(self)
 
@@ -628,21 +625,16 @@ class WikiText:
     def plain_text(
         self,
         *,
-        replace_templates: Union[
-            bool, Callable[['Template'], Optional[str]]
-        ] = True,
-        replace_parser_functions: Union[
-            bool, Callable[['ParserFunction'], Optional[str]]
-        ] = True,
+        replace_templates: bool | Callable[[Template], str | None] = True,
+        replace_parser_functions: bool
+        | Callable[[ParserFunction], str | None] = True,
         replace_parameters=True,
         replace_tags=True,
         replace_external_links=True,
         replace_wikilinks=True,
         unescape_html_entities=True,
         replace_bolds_and_italics=True,
-        replace_tables: Union[
-            Callable[['Table'], Optional[str]], bool
-        ] = _table_to_text,
+        replace_tables: Callable[[Table], str | None] | bool = _table_to_text,
         _is_root_node=False,
     ) -> str:
         # plain_text_doc will be added to __doc__
@@ -661,7 +653,7 @@ class WikiText:
         else:
             tts = self._type_to_spans
             parsed = self
-        lst: list[Optional[str]] = list(parsed.string)
+        lst: list[str | None] = list(parsed.string)
 
         def remove(b: int, e: int):
             lst[b:e] = [None] * (e - b)
@@ -953,7 +945,7 @@ class WikiText:
         return parsed.string
 
     @property
-    def parameters(self) -> List['Parameter']:
+    def parameters(self) -> list[Parameter]:
         """Return a list of parameter objects."""
         _lststr = self._lststr
         _type_to_spans = self._type_to_spans
@@ -963,7 +955,7 @@ class WikiText:
         ]
 
     @property
-    def parser_functions(self) -> List['ParserFunction']:
+    def parser_functions(self) -> list[ParserFunction]:
         """Return a list of parser function objects."""
         _lststr = self._lststr
         _type_to_spans = self._type_to_spans
@@ -973,7 +965,7 @@ class WikiText:
         ]
 
     @property
-    def templates(self) -> List['Template']:
+    def templates(self) -> list[Template]:
         """Return a list of templates as template objects."""
         _lststr = self._lststr
         _type_to_spans = self._type_to_spans
@@ -983,7 +975,7 @@ class WikiText:
         ]
 
     @property
-    def wikilinks(self) -> List['WikiLink']:
+    def wikilinks(self) -> list[WikiLink]:
         """Return a list of wikilink objects."""
         _lststr = self._lststr
         _type_to_spans = self._type_to_spans
@@ -993,7 +985,7 @@ class WikiText:
         ]
 
     @property
-    def comments(self) -> List['Comment']:
+    def comments(self) -> list[Comment]:
         """Return a list of comment objects."""
         _lststr = self._lststr
         _type_to_spans = self._type_to_spans
@@ -1010,7 +1002,7 @@ class WikiText:
         https://github.com/wikimedia/mediawiki/blob/master/includes/parser/Parser.php
         https://phabricator.wikimedia.org/T15227#178834
         """
-        bold_starts: List[int] = []
+        bold_starts: list[int] = []
         odd_italics = False
         odd_bold_italics = False
         append_bold_start = bold_starts.append
@@ -1079,7 +1071,7 @@ class WikiText:
             ]
         )
 
-    def _bolds_italics_recurse(self, result: list, filter_cls: Optional[type]):
+    def _bolds_italics_recurse(self, result: list, filter_cls: type | None):
         for prop in (
             'templates',
             'parser_functions',
@@ -1105,25 +1097,25 @@ class WikiText:
 
     @overload
     def get_bolds_and_italics(
-        self, *, recursive=True, filter_cls: Type['Bold']
-    ) -> List['Bold']: ...
+        self, *, recursive=True, filter_cls: type[Bold]
+    ) -> list[Bold]: ...
 
     @overload
     def get_bolds_and_italics(
-        self, *, recursive=True, filter_cls: Type['Italic']
-    ) -> List['Italic']: ...
+        self, *, recursive=True, filter_cls: type[Italic]
+    ) -> list[Italic]: ...
 
     @overload
     def get_bolds_and_italics(
         self, *, recursive=True, filter_cls: None = None
-    ) -> List[Union['Bold', 'Italic']]: ...
+    ) -> list[Bold | Italic]: ...
 
     def get_bolds_and_italics(
         self,
         *,
         recursive=True,
-        filter_cls: Optional[Union[Type['Bold'], Type['Italic']]] = None,
-    ) -> Union[List[Union['Bold', 'Italic']], List['Italic'], List['Bold']]:
+        filter_cls: type[Bold] | type[Italic] | None = None,
+    ) -> list[Bold | Italic] | list[Italic] | list[Bold]:
         """Return a list of bold and italic objects in self.
 
         This is faster than calling ``get_bolds`` and ``get_italics``
@@ -1198,7 +1190,7 @@ class WikiText:
             result.sort(key=attrgetter('_span_data'))
         return result
 
-    def get_bolds(self, recursive=True) -> List['Bold']:
+    def get_bolds(self, recursive=True) -> list[Bold]:
         """Return bold parts of self.
 
         :param recursive: if True also look inside templates, parser functions,
@@ -1206,7 +1198,7 @@ class WikiText:
         """
         return self.get_bolds_and_italics(filter_cls=Bold, recursive=recursive)
 
-    def get_italics(self, recursive=True) -> List['Italic']:
+    def get_italics(self, recursive=True) -> list[Italic]:
         """Return italic parts of self.
 
         :param recursive: if True also look inside templates, parser functions,
@@ -1238,7 +1230,7 @@ class WikiText:
         return byte_array
 
     @property
-    def external_links(self) -> List['ExternalLink']:
+    def external_links(self) -> list[ExternalLink]:
         """Return a list of found external link objects.
 
         Note:
@@ -1255,7 +1247,7 @@ class WikiText:
             ...).external_links[0].url
             'http://example.com{{space template}}'
         """
-        external_links = []  # type: List['ExternalLink']
+        external_links: list[ExternalLink] = []
         external_links_append = external_links.append
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -1284,10 +1276,10 @@ class WikiText:
         return external_links
 
     def _section_spans_to_sections(
-        self, section_spans: List[Tuple[int, int]], shadow: bytearray
-    ) -> List['Section']:
+        self, section_spans: list[tuple[int, int]], shadow: bytearray
+    ) -> list[Section]:
         type_to_spans = self._type_to_spans
-        sections: List[Section] = []
+        sections: list[Section] = []
         sections_append = sections.append
         ss, se, _, ba = self._span_data
         type_spans = type_to_spans.setdefault('Section', [])
@@ -1305,7 +1297,7 @@ class WikiText:
         return sections
 
     @property
-    def sections(self) -> List['Section']:
+    def sections(self) -> list[Section]:
         """Return self.get_sections(include_subsections=True)."""
         return self.get_sections()
 
@@ -1315,7 +1307,7 @@ class WikiText:
         include_subsections=True,
         level=None,
         top_levels_only=False,
-    ) -> List['Section']:
+    ) -> list[Section]:
         """Return a list of sections in current wikitext.
 
         The first section will always be the lead section, even if it is an
@@ -1370,11 +1362,11 @@ class WikiText:
         return self._section_spans_to_sections(section_spans, shadow)
 
     @property
-    def tables(self) -> List['Table']:
+    def tables(self) -> list[Table]:
         """Return a list of all tables."""
         return self.get_tables(True)
 
-    def get_tables(self, recursive=False) -> List['Table']:
+    def get_tables(self, recursive=False) -> list[Table]:
         """Return tables. Include nested tables if `recursive` is `True`."""
         type_to_spans = self._type_to_spans
         lststr = self._lststr
@@ -1424,13 +1416,13 @@ class WikiText:
         ]
 
     @property
-    def _lists_shadow_ss(self) -> Tuple[bytearray, int]:
+    def _lists_shadow_ss(self) -> tuple[bytearray, int]:
         """Return appropriate shadow and its offset to be used by `lists`."""
         return self._shadow, self._span_data[0]
 
     def get_lists(
-        self, pattern: Union[str, Tuple[str, ...]] = (r'\#', r'\*', '[:;]')
-    ) -> List['WikiList']:
+        self, pattern: str | tuple[str, ...] = (r'\#', r'\*', '[:;]')
+    ) -> list[WikiList]:
         r"""Return a list of WikiList objects.
 
         :param pattern: The starting pattern for list items.
@@ -1499,7 +1491,7 @@ class WikiText:
             for span in self._subspans('ExtensionTag')
         ]
 
-    def get_tags(self, name=None) -> List['Tag']:
+    def get_tags(self, name=None) -> list[Tag]:
         """Return all tags with the given name."""
         lststr = self._lststr
         type_to_spans = self._type_to_spans
@@ -1512,7 +1504,7 @@ class WikiText:
                     if match(r'<' + name + r'\b', string, pos=span[0])
                     is not None
                 ]
-            tags = []  # type: List['Tag']
+            tags: list[Tag] = []
         else:
             # There is no name, add all extension tags. Before using shadow.
             tags = self._extension_tags
@@ -1584,11 +1576,11 @@ class WikiText:
         tags.sort(key=attrgetter('_span_data'))
         return tags
 
-    def parent(self, type_: Optional[str] = None) -> Optional['WikiText']:
+    def parent(self, type_: str | None = None) -> WikiText | None:
         """Return None (The parent of the root node is None)."""
         return None
 
-    def ancestors(self, type_: Optional[str] = None) -> List['WikiText']:
+    def ancestors(self, type_: str | None = None) -> list[WikiText]:
         """Return [] (the root node has no ancestors)."""
         return []
 
@@ -1603,10 +1595,10 @@ class SubWikiText(WikiText):
 
     def __init__(
         self,
-        string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[TypeToSpans] = None,
-        _span: Optional[List[int]] = None,
-        _type: Optional[Union[str, int]] = None,
+        string: str | MutableSequence[str],
+        _type_to_spans: TypeToSpans | None = None,
+        _span: list | None = None,
+        _type: str | int | None = None,
     ) -> None:
         """Initialize the object."""
         if _type is None:
@@ -1623,9 +1615,9 @@ class SubWikiText(WikiText):
             # noinspection PyDunderSlots,PyUnresolvedReferences
             self._type = _type
             super().__init__(string, _type_to_spans)
-            self._span_data: List[int] = _span  # type: ignore
+            self._span_data: list = _span  # type: ignore
 
-    def _subspans(self, type_: str) -> List[List[int]]:
+    def _subspans(self, type_: str) -> list[list[int]]:
         """Yield all the sub-span indices excluding self._span."""
         ss, se, _, _ = self._span_data
         spans = self._type_to_spans[type_]
@@ -1639,7 +1631,7 @@ class SubWikiText(WikiText):
             if span[1] <= se
         ]
 
-    def ancestors(self, type_: Optional[str] = None) -> List['WikiText']:
+    def ancestors(self, type_: str | None = None) -> list[WikiText]:
         """Return the ancestors of the current node.
 
         :param type_: the type of the desired ancestors as a string.
@@ -1664,7 +1656,7 @@ class SubWikiText(WikiText):
                     ancestors_append(cls(lststr, type_to_spans, span, type_))
         return sorted(ancestors, key=lambda i: ss - i._span_data[0])
 
-    def parent(self, type_: Optional[str] = None) -> Optional['WikiText']:
+    def parent(self, type_: str | None = None) -> WikiText | None:
         """Return the parent node of the current object.
 
         :param type_: the type of the desired parent object.
@@ -1680,7 +1672,7 @@ class SubWikiText(WikiText):
         return None
 
 
-def _outer_spans(sorted_spans: List[List[int]]) -> Iterable[List[int]]:
+def _outer_spans(sorted_spans: list[list[int]]) -> Iterable[list[int]]:
     """Yield the outermost intervals."""
     for i, span in enumerate(sorted_spans):
         se = span[1]

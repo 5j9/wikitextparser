@@ -1,4 +1,6 @@
-from typing import Dict, Iterable, List, Optional, Tuple, TypeVar
+from __future__ import annotations
+
+from typing import Iterable, TypeVar
 
 from regex import REVERSE
 
@@ -29,14 +31,14 @@ class Template(SubWikiTextWithArgs):
     _first_arg_sep = 124
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         return 2, -2
 
     def normal_name(
         self,
         rm_namespaces=('Template',),
         *,
-        code: str = None,
+        code: str | None = None,
         capitalize=False,
     ) -> str:
         """Return normal form of self.name.
@@ -110,7 +112,7 @@ class Template(SubWikiTextWithArgs):
             else:
                 names.add(name)
 
-    def rm_dup_args_safe(self, tag: str = None) -> None:
+    def rm_dup_args_safe(self, tag: str | None = None) -> None:
         """Remove duplicate arguments in a safe manner.
 
         Remove the duplicate arguments only in the following situations:
@@ -129,7 +131,7 @@ class Template(SubWikiTextWithArgs):
 
         Also see `rm_first_of_dup_args` function.
         """
-        name_to_lastarg_vals: Dict[str, Tuple[Argument, List[str]]] = {}
+        name_to_lastarg_vals: dict[str, tuple[Argument, list[str]]] = {}
         # Removing positional args affects their name. By reversing the list
         # we avoid encountering those kind of args.
         for arg in reversed(self.arguments):
@@ -171,9 +173,9 @@ class Template(SubWikiTextWithArgs):
         self,
         name: str,
         value: str,
-        positional: bool = None,
-        before: str = None,
-        after: str = None,
+        positional: bool | None = None,
+        before: str | None = None,
+        after: str | None = None,
         preserve_spacing=False,
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
@@ -272,14 +274,14 @@ class Template(SubWikiTextWithArgs):
                 # positional AND is to be added at the end of the template.
                 self.insert(-2, addstring)
 
-    def get_arg(self, name: str) -> Optional[Argument]:
+    def get_arg(self, name: str) -> Argument | None:
         """Return the last argument with the given name.
 
         Return None if no argument with that name is found.
         """
         return get_arg(name, reversed(self.arguments))
 
-    def has_arg(self, name: str, value: str = None) -> bool:
+    def has_arg(self, name: str, value: str | None = None) -> bool:
         """Return true if the is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -308,11 +310,11 @@ class Template(SubWikiTextWithArgs):
                 del arg[:]
 
     @property
-    def templates(self) -> List['Template']:
+    def templates(self) -> list[Template]:
         return super().templates[1:]
 
 
-def mode(list_: List[T]) -> T:
+def mode(list_: list[T]) -> T:
     """Return the most common item in the list.
 
     Return the first one if there are more than one most common items.
@@ -330,7 +332,7 @@ def mode(list_: List[T]) -> T:
     return max(set(list_), key=list_.count)
 
 
-def get_arg(name: str, args: Iterable[Argument]) -> Optional[Argument]:
+def get_arg(name: str, args: Iterable[Argument]) -> Argument | None:
     """Return the first argument in the args that has the given name.
 
     Return None if no such argument is found.

@@ -8,7 +8,9 @@ For more info see:
 * https://www.mediawiki.org/wiki/HTML_restriction
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from __future__ import annotations
+
+from typing import Any
 
 from regex import DOTALL, VERBOSE
 
@@ -55,7 +57,7 @@ class SubWikiTextWithAttrs(SubWikiText):
     __slots__ = '_attrs_match'
 
     @property
-    def attrs(self) -> Dict[str, str]:
+    def attrs(self) -> dict[str, str]:
         """Return self attributes as a dictionary."""
         spans = self._attrs_match.spans
         string = self.string
@@ -73,7 +75,7 @@ class SubWikiTextWithAttrs(SubWikiText):
             string[s:e] for s, e in self._attrs_match.spans('attr_name')
         )
 
-    def get_attr(self, attr_name: str) -> Optional[str]:
+    def get_attr(self, attr_name: str) -> str | None:
         """Return the value of the last attribute with the given name.
 
         Return None if the attr_name does not exist in self.
@@ -163,7 +165,7 @@ class Tag(SubWikiTextWithAttrs):
         self[start:end] = name
 
     @property
-    def contents(self) -> Optional[str]:
+    def contents(self) -> str | None:
         """Tag contents. Support both get and set operations.
 
         setter:
@@ -210,10 +212,10 @@ class Tag(SubWikiTextWithAttrs):
     def _extension_tags(self):
         return super()._extension_tags[1:]
 
-    def get_tags(self, name=None) -> List['Tag']:
+    def get_tags(self, name=None) -> list[Tag]:
         return super().get_tags(name)[1:]
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         s = self.string
         return s.find('>') + 1, s.rfind('<')

@@ -1,4 +1,6 @@
-from typing import List, MutableSequence, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import MutableSequence
 
 from regex import DOTALL, MULTILINE, Match
 
@@ -30,7 +32,7 @@ class Comment(SubWikiText):
         return s[4:]
 
     @property
-    def comments(self) -> List['Comment']:
+    def comments(self) -> list[Comment]:
         return []
 
 
@@ -53,7 +55,7 @@ class BoldItalic(SubWikiText):
         self[b:e] = s
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         # noinspection PyUnresolvedReferences
         return self._match.span(1)
 
@@ -71,10 +73,10 @@ class Italic(BoldItalic):
 
     def __init__(
         self,
-        string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[TypeToSpans] = None,
-        _span: Optional[List[int]] = None,
-        _type: Optional[Union[str, int]] = None,
+        string: str | MutableSequence[str],
+        _type_to_spans: TypeToSpans | None = None,
+        _span: list[int] | None = None,
+        _type: str | int | None = None,
         end_token: bool = True,
     ):
         """Initialize the Italic object.

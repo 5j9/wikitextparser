@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from __future__ import annotations
 
 from ._wikitext import WS, SubWikiText
 
@@ -35,7 +35,7 @@ class Parameter(SubWikiText):
         return '|' if self._shadow.find(124) != -1 else ''
 
     @property
-    def default(self) -> Optional[str]:
+    def default(self) -> str | None:
         """The default value of current parameter.
 
         getter: Return None if there is no default.
@@ -100,9 +100,9 @@ class Parameter(SubWikiText):
             ] = '{{{' + new_default_name + '|' + innermost_default + '}}}'
 
     @property
-    def parameters(self) -> List['Parameter']:
+    def parameters(self) -> list[Parameter]:
         return super().parameters[1:]
 
     @property
-    def _content_span(self) -> Tuple[int, int]:
+    def _content_span(self) -> tuple[int, int]:
         return 3, -3

@@ -1,4 +1,4 @@
-from typing import Dict, List
+from __future__ import annotations
 
 from pytest import mark
 
@@ -8,7 +8,7 @@ from wikitextparser import WikiText, parse
 from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 
 
-def bytearray_parse_to_spans(bytes_: bytes) -> Dict[str, List[List[int]]]:
+def bytearray_parse_to_spans(bytes_: bytes) -> dict[str, list[list[int]]]:
     return {
         k: [i[:2] for i in v]  # no need for match and byte_array
         for k, v in parse_to_spans(bytearray(bytes_)).items()
