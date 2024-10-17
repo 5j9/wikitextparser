@@ -1,7 +1,8 @@
-from typing import Dict, List, MutableSequence, Optional, Union
+from typing import List, MutableSequence, Optional, Union
 
 from regex import DOTALL, MULTILINE, Match
 
+from ._spans import TypeToSpans
 from ._wikitext import SECTION_HEADING, SubWikiText, rc
 
 ARG_SHADOW_FULLMATCH = rc(
@@ -26,7 +27,7 @@ class Argument(SubWikiText):
     def __init__(
         self,
         string: Union[str, MutableSequence[str]],
-        _type_to_spans: Optional[Dict[str, List[List[int]]]] = None,
+        _type_to_spans: Optional[TypeToSpans] = None,
         _span: Optional[List[int]] = None,
         _type: Optional[Union[str, int]] = None,
         _parent: 'Optional[SubWikiTextWithArgs]' = None,
