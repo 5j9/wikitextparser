@@ -60,3 +60,12 @@ lint.ignore = [
 
 [tool.pytest.ini_options]
 addopts = '--quiet --tb=short'
+
+[tool.pyright]
+typeCheckingMode = 'standard'
+reportDeprecated = "warning"
+reportPropertyTypeMismatch = "warning"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryContains = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnnecessaryTypeIgnoreComment = true
