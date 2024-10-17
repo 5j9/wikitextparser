@@ -9,7 +9,9 @@ from typing import (
     MutableSequence,
     Optional,
     Tuple,
+    Type,
     Union,
+    overload,
 )
 from warnings import warn
 
@@ -1101,9 +1103,27 @@ class WikiText:
                 if (*i._span_data[:2],) not in result_spans:
                     result.append(i)
 
+    @overload
     def get_bolds_and_italics(
-        self, *, recursive=True, filter_cls: Optional[type] = None
-    ) -> List[Union['Bold', 'Italic']]:
+        self, *, recursive=True, filter_cls: Type['Bold']
+    ) -> List['Bold']: ...
+
+    @overload
+    def get_bolds_and_italics(
+        self, *, recursive=True, filter_cls: Type['Italic']
+    ) -> List['Italic']: ...
+
+    @overload
+    def get_bolds_and_italics(
+        self, *, recursive=True, filter_cls: None = None
+    ) -> List[Union['Bold', 'Italic']]: ...
+
+    def get_bolds_and_italics(
+        self,
+        *,
+        recursive=True,
+        filter_cls: Optional[Type['Bold'] | Type['Italic']] = None,
+    ) -> Union[List[Union['Bold', 'Italic']], List['Italic'], List['Bold']]:
         """Return a list of bold and italic objects in self.
 
         This is faster than calling ``get_bolds`` and ``get_italics``
