@@ -1512,7 +1512,7 @@ class WikiText:
         # Get the left-most start tag, match it to right-most end tag
         # and so on.
         ss = self._span_data[0]
-        shadow = self._shadow
+        byte_array = bytearray(self.string, 'ascii', 'replace')
         if name:
             # There is a name but it is not in TAG_EXTENSIONS.
             reversed_start_matches = reversed(
@@ -1522,7 +1522,7 @@ class WikiText:
                         START_TAG_PATTERN.replace(
                             rb'{name}', rb'(?P<name>' + name.encode() + rb')'
                         )
-                    ).finditer(shadow)
+                    ).finditer(byte_array)
                 ]
             )
             end_search = rc(
@@ -1530,9 +1530,9 @@ class WikiText:
             ).search
         else:
             reversed_start_matches = reversed(
-                [m for m in NAME_CAPTURING_HTML_START_TAG_FINDITER(shadow)]
+                [m for m in NAME_CAPTURING_HTML_START_TAG_FINDITER(byte_array)]
             )
-        shadow_copy = shadow[:]
+        ba_copy = byte_array[:]
         spans = type_to_spans.setdefault('Tag', [])
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         spans_append = spans.append
@@ -1543,29 +1543,29 @@ class WikiText:
                 # as start tag in HTML5, see:
                 # https://stackoverflow.com/questions/3558119/
                 ms, me = start_match.span()
-                span = [ss + ms, ss + me, None, shadow_copy[ms:me]]
+                span = [ss + ms, ss + me, None, ba_copy[ms:me]]
             else:
                 # look for the end-tag
                 sms, sme = start_match.span()
                 if name:
                     # the end_search is already available
-                    end_match = end_search(shadow_copy, sme)  # type: ignore
+                    end_match = end_search(ba_copy, sme)  # type: ignore
                 else:
                     # build end_search according to start tag name
                     end_match = search(
                         END_TAG_PATTERN.replace(
                             b'{name}', start_match['name']
                         ),
-                        shadow_copy,
+                        ba_copy,
                         pos=sme,
                     )
                 if end_match:
                     ems, eme = end_match.span()
-                    shadow_copy[ems:eme] = b'_' * (eme - ems)
-                    span = [ss + sms, ss + eme, None, shadow[sms:eme]]
+                    ba_copy[ems:eme] = b'_' * (eme - ems)
+                    span = [ss + sms, ss + eme, None, byte_array[sms:eme]]
                 else:
                     # Assume start-only tag.
-                    span = [ss + sms, ss + sme, None, shadow_copy[sms:sme]]
+                    span = [ss + sms, ss + sme, None, ba_copy[sms:sme]]
             old_span = span_tuple_to_span_get((span[0], span[1]))
             if old_span is None:
                 spans_append(span)

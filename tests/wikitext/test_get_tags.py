@@ -96,3 +96,7 @@ def test_section_tag_apparently_containing_another_section_tag_start():  # 58
 def test_tags_in_wikilinks():
     (b,) = parse('[[a|a <b>c]] d</b>').get_tags('b')
     assert b.string == '<b>c]] d</b>'
+
+
+def test_tag_in_template():
+    assert parse('{{t|<br/>a}}').get_tags('br')[0].string == '<br/>'
