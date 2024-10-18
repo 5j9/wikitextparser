@@ -1,5 +1,5 @@
-Unreleased
-----------
+v0.56.3 (2024-10-18)
+--------------------
 * Fixed a bug in detecting HTML tags nested in wiki markup. (#140)
 * Improved type hints.
 
