@@ -9,13 +9,11 @@ from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
-SUBLIST_PATTERN = (  # noqa
-    rb'(?>^' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\n|\Z)' rb')*+'
-)
-SUBLIST_WITH_SECOND_PATTERN = (  # noqa
+SUBLIST_PATTERN = rb'(?>^' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\n|\Z)' rb')*+'
+SUBLIST_WITH_SECOND_PATTERN = (
     rb'[*#;:].*+(?>\n|\Z)' rb'(?>' rb'(?&pattern)[*#;:].*+(?>\n|\Z)' rb')*+'
 )
-LIST_PATTERN_FORMAT = (  # noqa
+LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>^'
     rb'(?<pattern>{pattern})'
     rb'(?>'
@@ -38,7 +36,7 @@ LIST_PATTERN_FORMAT = (  # noqa
 class WikiList(SubWikiText):
     """Class to represent ordered, unordered, and definition lists."""
 
-    __slots__ = 'pattern', '_match_cache'
+    __slots__ = '_match_cache', 'pattern'
 
     def __init__(
         self,

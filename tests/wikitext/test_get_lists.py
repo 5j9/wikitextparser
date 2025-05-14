@@ -29,7 +29,7 @@ def test_definition_list_with_external_link():  # 91
 
 
 def test_first_item_is_list():  # 70
-    l0 = parse('a\n' '###b\n' '###c\n' '##d\n' '#e\n' 'f').get_lists()[0]
+    l0 = parse('a\n###b\n###c\n##d\n#e\nf').get_lists()[0]
     assert l0.fullitems == ['###b\n###c\n##d\n', '#e\n']
     assert l0.items == ['', 'e']
     l0_0 = l0.get_lists()[0]
@@ -62,9 +62,7 @@ def test_listitems_with_different_patterns():
     #     </li>
     #     <li>g</li>
     # </ol>
-    lists = parse(
-        'a\n' '###b\n' '##*c\n' '##;d\n' '###e\n' '##f\n' '#g\n' 'h\n'
-    ).get_lists()
+    lists = parse('a\n###b\n##*c\n##;d\n###e\n##f\n#g\nh\n').get_lists()
     assert len(lists) == 1
     l0 = lists[0]
     assert l0.items == ['', 'g']

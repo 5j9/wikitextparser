@@ -68,7 +68,7 @@ def test_inner_tag():
 
 
 def test_extension_tags_are_not_lost_in_shadows():
-    parsed = parse('text<ref name="c">citation</ref>\n' '<references/>')
+    parsed = parse('text<ref name="c">citation</ref>\n<references/>')
     ref, references = parsed.get_tags()
     ref.set_attr('name', 'z')
     assert ref.string == '<ref name="z">citation</ref>'

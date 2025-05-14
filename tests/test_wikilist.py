@@ -27,7 +27,7 @@ def test_subitem_are_part_of_item():
 def test_commented_list_item():
     """One of the list items is commented through the wikitext."""
     wl = WikiList(
-        '#1\n' '##1-1\n' '##1-2<!-- \n' '##1-3\n' ' -->\n' '#2\n',
+        '#1\n##1-1\n##1-2<!-- \n##1-3\n -->\n#2\n',
         pattern=r'\#',
     )
     assert wl.items[1] == '2'
@@ -39,9 +39,7 @@ def test_dont_return_shadow():
 
 
 def test_subitems_for_the_first_item():
-    wl = WikiList(
-        '# 0\n' '## 0.0\n' '## 0.1\n' '#* 0.0\n' '# 2\n', pattern=r'\#'
-    )
+    wl = WikiList('# 0\n## 0.0\n## 0.1\n#* 0.0\n# 2\n', pattern=r'\#')
     items = wl.items[0]
     assert items == ' 0'
     subitems0 = wl.sublists(0, r'\#')[0]
@@ -129,12 +127,12 @@ def test_travese_mixed_list_completely():
 
 def test_convert():
     wl = WikiList(
-        ':*A1\n' ':*#B1\n' ':*#B2\n' ':*:continuing A1\n' ':*A2',
+        ':*A1\n:*#B1\n:*#B2\n:*:continuing A1\n:*A2',
         pattern=r':\*',
     )
     assert wl.level == 2
     wl.convert('#')
-    assert wl.string == ('#A1\n' '##B1\n' '##B2\n' '#:continuing A1\n' '#A2')
+    assert wl.string == ('#A1\n##B1\n##B2\n#:continuing A1\n#A2')
     assert wl.pattern == r'\#'
     assert wl.level == 1
 

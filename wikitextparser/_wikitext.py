@@ -202,7 +202,7 @@ class WikiText:
     # The following class attribute acts as a default value.
     _type = 'WikiText'
 
-    __slots__ = '_type_to_spans', '_lststr', '_span_data'
+    __slots__ = '_lststr', '_span_data', '_type_to_spans'
 
     def __init__(
         self,
@@ -265,7 +265,7 @@ class WikiText:
         return self.string
 
     def __repr__(self) -> str:
-        return f'{type(self).__name__}({repr(self.string)})'
+        return f'{type(self).__name__}({self.string!r})'
 
     def __contains__(self, value: str | WikiText) -> bool:
         """Return True if parsed_wikitext is inside self. False otherwise.
@@ -663,7 +663,7 @@ class WikiText:
 
         if callable(replace_templates):
             for template in parsed.templates:
-                b, e = template._span_data[:2]  # noqa
+                b, e = template._span_data[:2]
                 if lst[b] is None:  # overwritten
                     continue
                 lst[b] = replace_templates(template)
@@ -699,7 +699,7 @@ class WikiText:
         if replace_bolds_and_italics:
             for i in parsed.get_bolds_and_italics():
                 b, e = i.span
-                ib, ie = i._match.span(1)  # noqa, text span
+                ib, ie = i._match.span(1)  # text span
                 remove(b, b + ib)
                 remove(b + ie, e)
         if replace_parameters:
@@ -714,7 +714,7 @@ class WikiText:
         if replace_tags:
             for t in parsed.get_tags():
                 b, e = t.span
-                cb, ce = t._match.span('contents')  # noqa
+                cb, ce = t._match.span('contents')
                 if cb != -1:  # not a self-closing tag
                     remove(b, b + cb)
                     remove(b + ce, e)
@@ -730,18 +730,18 @@ class WikiText:
                 ):
                     remove(b, e)  # image
                 else:
-                    tb, te = w._match.span(4)  # noqa, text span
+                    tb, te = w._match.span(4)  # text span
                     if tb != -1:
                         remove(b, b + tb)
                         remove(b + te, e)
                     else:
-                        tb, te = w._match.span(1)  # noqa, target span
+                        tb, te = w._match.span(1)  # target span
                         remove(b, b + tb)
                         remove(b + te, e)
 
         if callable(replace_tables):
             for table in parsed.get_tables():
-                b, e = table._span_data[:2]  # noqa
+                b, e = table._span_data[:2]
                 if lst[b] is None:  # overwritten
                     continue
                 lst[b] = replace_tables(

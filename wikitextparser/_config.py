@@ -14,7 +14,7 @@ def _plant_trie(strings: _Iterable[str]) -> dict:
     for string in strings:
         d = trie
         for char in string:
-            d[char] = char in d and d[char] or {}
+            d[char] = (char in d and d[char]) or {}
             d = d[char]
         d[''] = None  # EOS
     return trie

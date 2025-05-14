@@ -31,9 +31,7 @@ def test_inserting_into_sections():
     assert '== s0 ==\nc\n' == s0.string
     assert 'c\n== s0 ==\nc\n== s1 ==\nc\n' == wt.string
     s1.insert(len(wt.string), '=== s2 ===\nc\n')
-    assert (
-        'c\n' '== s0 ==\n' 'c\n' '== s1 ==\n' 'c\n' '=== s2 ===\n' 'c\n'
-    ) == wt.string
+    assert ('c\n== s0 ==\nc\n== s1 ==\nc\n=== s2 ===\nc\n') == wt.string
     s3 = wt.sections[3]
     assert '=== s2 ===\nc\n' == s3.string
 
@@ -72,16 +70,7 @@ def test_section_templates():
 
 
 def test_by_heading_pattern():
-    wt = parse(
-        'lead\n'
-        '= h1 =\n'
-        '== h2 ==\n'
-        't2\n'
-        '=== h3 ===\n'
-        '3\n'
-        '= h =\n'
-        'end'
-    )
+    wt = parse('lead\n= h1 =\n== h2 ==\nt2\n=== h3 ===\n3\n= h =\nend')
     lead, h1, h2, h3, h = wt.get_sections(include_subsections=False)
     assert lead.string == 'lead\n'
     assert h1.string == '= h1 =\n'

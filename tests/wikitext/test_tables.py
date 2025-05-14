@@ -34,10 +34,7 @@ def test_two_tables():
 
 
 def test_nested_tables():
-    s = (
-        'text1\n{|class=wikitable\n|a\n|\n'
-        '{|class=wikitable\n|b\n|}\n|}\ntext2'
-    )
+    s = 'text1\n{|class=wikitable\n|a\n|\n{|class=wikitable\n|b\n|}\n|}\ntext2'
     p = parse(s)
     assert 1 == len(p.get_tables())  # non-recursive
     tables = p.tables  # recursive

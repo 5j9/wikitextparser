@@ -16,16 +16,7 @@ from wikitextparser import Table, WikiText
 
 def test_each_row_on_a_newline():
     assert Table(
-        '{|\n'
-        '|Orange\n'
-        '|Apple\n'
-        '|-\n'
-        '|Bread\n'
-        '|Pie\n'
-        '|-\n'
-        '|Butter\n'
-        '|Ice cream \n'
-        '|}'
+        '{|\n|Orange\n|Apple\n|-\n|Bread\n|Pie\n|-\n|Butter\n|Ice cream \n|}'
     ).data() == [
         ['Orange', 'Apple'],
         ['Bread', 'Pie'],
@@ -35,12 +26,7 @@ def test_each_row_on_a_newline():
 
 def test_with_optional_rowseprator_on_first_row():
     assert Table(
-        '{| class=wikitable | g\n'
-        ' |- 132131 |||\n'
-        '  | a | b\n'
-        ' |-\n'
-        '  | c\n'
-        '|}'
+        '{| class=wikitable | g\n |- 132131 |||\n  | a | b\n |-\n  | c\n|}'
     ).data() == [
         ['b'],
         ['c'],
@@ -48,9 +34,7 @@ def test_with_optional_rowseprator_on_first_row():
 
 
 def test_all_rows_are_on_a_single_line():
-    assert Table(
-        '{|\n' '|a||b||c\n' '|-\n' '|d||e||f\n' '|-\n' '|g||h||i\n' '|}'
-    ).data() == [
+    assert Table('{|\n|a||b||c\n|-\n|d||e||f\n|-\n|g||h||i\n|}').data() == [
         ['a', 'b', 'c'],
         ['d', 'e', 'f'],
         ['g', 'h', 'i'],
@@ -119,15 +103,11 @@ def test_with_caption():
 
 
 def test_with_caption_attrs():
-    assert Table(
-        '{|class=wikitable\n' '|+ sal | no\n' '|a \n' '|}'
-    ).data() == [['a']]
+    assert Table('{|class=wikitable\n|+ sal | no\n|a \n|}').data() == [['a']]
 
 
 def test_second_caption_is_ignored():
-    assert Table(
-        '{|\n' '  |+ c1\n' '  |+ c2\n' '|-\n' '|1\n' '|2\n' '|}'
-    ).data() == [['1', '2']]
+    assert Table('{|\n  |+ c1\n  |+ c2\n|-\n|1\n|2\n|}').data() == [['1', '2']]
 
 
 def test_unneeded_newline_after_table_start():
@@ -135,9 +115,7 @@ def test_unneeded_newline_after_table_start():
 
 
 def test_text_after_tablestart_is_not_actually_inside_the_table():
-    assert Table('{|\n' '  text\n' '|-\n' '|c1\n' '|c2\n' '|}').data() == [
-        ['c1', 'c2']
-    ]
+    assert Table('{|\n  text\n|-\n|c1\n|c2\n|}').data() == [['c1', 'c2']]
 
 
 def test_empty_table():
@@ -145,7 +123,7 @@ def test_empty_table():
 
 
 def test_empty_table_comment_end():
-    assert Table('{|class=wikitable\n' '<!-- c -->|}').data() == []
+    assert Table('{|class=wikitable\n<!-- c -->|}').data() == []
 
 
 def test_empty_table_semi_caption_comment():
@@ -163,7 +141,7 @@ def test_pipe_as_text():
 
 
 def test_meaningless_rowsep():
-    assert Table('{|class=wikitable\n' '||a || || c\n' '|-\n' '|}').data() == [
+    assert Table('{|class=wikitable\n||a || || c\n|-\n|}').data() == [
         ['a', '', 'c']
     ]
 
@@ -254,9 +232,9 @@ def test_inline_colspan_and_rowspan():
 
 
 def test_growing_downward_growing_cells():
-    assert Table(
-        '{|class=wikitable\n' '| a || rowspan=0 | b\n' '|-\n' '| c\n' '|}'
-    ).data(span=True) == [
+    assert Table('{|class=wikitable\n| a || rowspan=0 | b\n|-\n| c\n|}').data(
+        span=True
+    ) == [
         ['a', 'b'],
         ['c', 'b'],
     ]
@@ -264,7 +242,7 @@ def test_growing_downward_growing_cells():
 
 def test_colspan_0():
     assert Table(
-        '{|class=wikitable\n' '| colspan=0 | a || b\n' '|-\n' '| c || d\n' '|}'
+        '{|class=wikitable\n| colspan=0 | a || b\n|-\n| c || d\n|}'
     ).data(span=True) == [
         ['a', 'b'],
         ['c', 'd'],
@@ -273,7 +251,7 @@ def test_colspan_0():
 
 def test_ending_row_group():
     assert Table(
-        '{|class=wikitable\n' '| rowspan = 3 | a || b\n' '|-\n' '| c\n' '|}'
+        '{|class=wikitable\n| rowspan = 3 | a || b\n|-\n| c\n|}'
     ).data(span=True) == [
         ['a', 'b'],
         ['a', 'c'],
@@ -320,31 +298,27 @@ def test_header_attr_with_exclamation_mark():
 
 def test_nonheader_attr_with_exclamation_mark():
     assert Table(
-        '{|class=wikitable\n' '| 1 !! 1 ! 1 |||| 3 || a4 ! a4 | 4\n' '|}'
+        '{|class=wikitable\n| 1 !! 1 ! 1 |||| 3 || a4 ! a4 | 4\n|}'
     ).data() == [['1 !! 1 ! 1', '', '3', '4']]
 
 
 def test_single_exclamation_is_not_attribute_data_separator():
     assert Table(
-        '{|class=wikitable\n' '! 1 !! 2 ! 2 !!!! 4 || a5 ! a5 | 5\n' '|}'
+        '{|class=wikitable\n! 1 !! 2 ! 2 !!!! 4 || a5 ! a5 | 5\n|}'
     ).data() == [['1', '2 ! 2', '', '4', '5']]
 
 
 def test_newline_cell_attr_closure_cant_be_cell_sep():
-    assert Table('{|class=wikitable\n' '||||| 2 ! 2\n' '|}').data() == [
+    assert Table('{|class=wikitable\n||||| 2 ! 2\n|}').data() == [
         ['', '', '2 ! 2']
     ]
 
 
 def test_attr_delimiter_cant_be_adjacent_to_cell_delimiter():
     """Couldn't find a logical explanation for MW's behaviour."""
-    assert Table('{|class=wikitable\n' '!a| !!b|c\n' '|}').data() == [
-        ['', 'c']
-    ]
+    assert Table('{|class=wikitable\n!a| !!b|c\n|}').data() == [['', 'c']]
     # Remove one space and...
-    assert Table('{|class=wikitable\n' '!a|!!b|c\n' '|}').data() == [
-        ['a', 'b|c']
-    ]
+    assert Table('{|class=wikitable\n!a|!!b|c\n|}').data() == [['a', 'b|c']]
 
 
 def test_unicode_data():
@@ -589,9 +563,10 @@ def test_table_attr_span_false():  # 71
 
 
 def test_comment_line():  # 98
-    assert Table(
-        '{|class=wikitable' '\n!a' '\n|-' '\n<!---->' '\n|b' '\n|}'
-    ).data() == [['a'], ['b']]
+    assert Table('{|class=wikitable\n!a\n|-\n<!---->\n|b\n|}').data() == [
+        ['a'],
+        ['b'],
+    ]
 
 
 def test_partially_invalid_table():  # 107
@@ -619,7 +594,7 @@ def test_row_attrs_getter():
 
     # multiple attrs on a row
     assert Table(
-        '{|\n' '|-style="color: red;" bgcolor=yellow"\n' '| cell1\n' '|}'
+        '{|\n|-style="color: red;" bgcolor=yellow"\n| cell1\n|}'
     ).row_attrs == [
         {'style': 'color: red;', 'bgcolor': 'yellow'},
     ]
@@ -643,10 +618,7 @@ def test_row_attrs_getter():
 
 def test_row_attrs_containing_comment():
     assert Table(
-        '{|\n'
-        '|- style="color: red;" <!--comment--> bgcolor=yellow\n'
-        '| cell1\n'
-        '|}'
+        '{|\n|- style="color: red;" <!--comment--> bgcolor=yellow\n| cell1\n|}'
     ).row_attrs == [
         {'style': 'color: red;', 'bgcolor': 'yellow'},
     ]
@@ -654,7 +626,7 @@ def test_row_attrs_containing_comment():
 
 def test_row_attrs_containing_template():
     assert Table(
-        '{|\n' '|- style={{text|"color: red;"}}\n' '| cell1\n' '|}'
+        '{|\n|- style={{text|"color: red;"}}\n| cell1\n|}'
     ).row_attrs == [
         {'style': '{{text|"color: red;"}}'},
     ]

@@ -24,7 +24,7 @@ class Argument(SubWikiText):
     See https://www.mediawiki.org/wiki/Help:Templates for more information.
     """
 
-    __slots__ = '_shadow_match_cache', '_parent'
+    __slots__ = '_parent', '_shadow_match_cache'
 
     def __init__(
         self,

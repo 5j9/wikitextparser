@@ -49,17 +49,13 @@ def test_invoke():
 def test_on_parserfunction():
     s = '{{#if:c|abcde = f| g=h}}'
     wt = parse(s)
-    assert (
-        '{{#if:\n' '    c\n' '    | abcde = f\n' '    | g=h\n' '}}'
-    ) == wt.pformat()
+    assert ('{{#if:\n    c\n    | abcde = f\n    | g=h\n}}') == wt.pformat()
 
 
 def test_parserfunction_with_no_pos_arg():
     s = '{{#switch:case|a|b}}'
     wt = parse(s)
-    assert (
-        '{{#switch:\n' '    case\n' '    | a\n' '    | b\n' '}}'
-    ) == wt.pformat()
+    assert ('{{#switch:\n    case\n    | a\n    | b\n}}') == wt.pformat()
 
 
 def test_convert_positional_to_keyword_if_possible():
@@ -84,12 +80,12 @@ def test_inconvertible_positionals():
     Use <!--comments--> to align positional arguments where necessary.
 
     """
-    assert ('{{t\n' '    |a<!--\n' ' -->| b <!--\n' '-->}}') == parse(
+    assert ('{{t\n    |a<!--\n -->| b <!--\n-->}}') == parse(
         '{{t|a| b }}'
     ).pformat()
-    assert (
-        '{{t\n' '    | a <!--\n' ' -->| 2 = b\n' '    | 3 = c\n' '}}'
-    ) == parse('{{t| a |b|c}}').pformat()
+    assert ('{{t\n    | a <!--\n -->| 2 = b\n    | 3 = c\n}}') == parse(
+        '{{t| a |b|c}}'
+    ).pformat()
 
 
 def test_commented_repformat():
@@ -103,25 +99,19 @@ def test_dont_treat_parser_function_arguments_as_kwargs():
     Another example: {{fullurl:Category:Top level|action=edit}}.
     """
     assert (
-        '{{#if:\n'
-        '    true\n'
-        '    | <span style="color:Blue;">text</span>\n'
-        '}}'
+        '{{#if:\n    true\n    | <span style="color:Blue;">text</span>\n}}'
     ) == parse('{{#if:true|<span style="color:Blue;">text</span>}}').pformat()
 
 
 def test_ignore_zwnj_for_alignment():
     assert (
-        '{{ا\n    | نیم\u200cفاصله       = ۱\n    |' ' بدون نیم فاصله = ۲\n}}'
+        '{{ا\n    | نیم\u200cفاصله       = ۱\n    | بدون نیم فاصله = ۲\n}}'
     ) == parse('{{ا|نیم‌فاصله=۱|بدون نیم فاصله=۲}}').pformat()
 
 
 def test_equal_sign_alignment():
     assert (
-        '{{t\n'
-        '    | long_argument_name = 1\n'
-        '    | 2                  = 2\n'
-        '}}'
+        '{{t\n    | long_argument_name = 1\n    | 2                  = 2\n}}'
     ) == parse('{{t|long_argument_name=1|2=2}}').pformat()
 
 
@@ -141,36 +131,31 @@ def test_arabic_ligature_lam_with_alef():
 def test_pf_inside_t():
     wt = parse('{{t|a= {{#if:I|I}} }}')
     assert (
-        '{{t\n'
-        '    | a = {{#if:\n'
-        '        I\n'
-        '        | I\n'
-        '    }}\n'
-        '}}'
+        '{{t\n    | a = {{#if:\n        I\n        | I\n    }}\n}}'
     ) == wt.pformat()
 
 
 def test_nested_pf_inside_tl():
     wt = parse('{{t1|{{t2}}{{#pf:a}}}}')
     assert (
-        '{{t1\n' '    | 1 = {{t2}}{{#pf:\n' '        a\n' '    }}\n' '}}'
+        '{{t1\n    | 1 = {{t2}}{{#pf:\n        a\n    }}\n}}'
     ) == wt.pformat()
 
 
 def test_html_tag_equal():
     wt = parse('{{#iferror:<t a="">|yes|no}}')
     assert (
-        '{{#iferror:\n' '    <t a="">\n' '    | yes\n' '    | no\n' '}}'
+        '{{#iferror:\n    <t a="">\n    | yes\n    | no\n}}'
     ) == wt.pformat()
 
 
 def test_pformat_tl_directly():
-    assert ('{{t\n' '    | 1 = a\n' '}}') == Template('{{t|a}}').pformat()
+    assert ('{{t\n    | 1 = a\n}}') == Template('{{t|a}}').pformat()
 
 
 def test_pformat_pf_directly():
     assert (
-        '{{#iferror:\n' '    <t a="">\n' '    | yes\n' '    | no\n' '}}'
+        '{{#iferror:\n    <t a="">\n    | yes\n    | no\n}}'
     ) == ParserFunction('{{#iferror:<t a="">|yes|no}}').pformat()
 
 
@@ -206,45 +191,35 @@ def test_parser_template_parser():
 
 def test_pfromat_first_arg_of_functions():
     assert (
-        '{{#time:\n'
-        '    {{#if:\n'
-        '        1\n'
-        '        | y\n'
-        '        | \n'
-        '    }}\n'
-        '}}'
+        '{{#time:\n    {{#if:\n        1\n        | y\n        | \n    }}\n}}'
     ) == parse('{{#time:{{#if:1|y|}}}}').pformat()
 
 
 def test_pformat_pf_whitespace():
-    assert ('{{#if:\n' '    a\n' '}}') == parse('{{#if: a}}').pformat()
-    assert ('{{#if:\n' '    a\n' '}}') == parse('{{#if:a }}').pformat()
-    assert ('{{#if:\n' '    a\n' '}}') == parse('{{#if: a }}').pformat()
-    assert ('{{#if:\n' '    a= b\n' '}}') == parse('{{#if: a= b }}').pformat()
-    assert ('{{#if:\n' '    a = b\n' '}}') == parse('{{#if:a = b }}').pformat()
+    assert ('{{#if:\n    a\n}}') == parse('{{#if: a}}').pformat()
+    assert ('{{#if:\n    a\n}}') == parse('{{#if:a }}').pformat()
+    assert ('{{#if:\n    a\n}}') == parse('{{#if: a }}').pformat()
+    assert ('{{#if:\n    a= b\n}}') == parse('{{#if: a= b }}').pformat()
+    assert ('{{#if:\n    a = b\n}}') == parse('{{#if:a = b }}').pformat()
 
 
 def test_pformat_tl_whitespace():
     assert '{{t}}' == parse('{{ t }}').pformat()
-    assert ('{{ {{t}} \n' '    | a = b\n' '}}') == parse(
-        '{{ {{t}}|a=b}}'
-    ).pformat()
+    assert ('{{ {{t}} \n    | a = b\n}}') == parse('{{ {{t}}|a=b}}').pformat()
 
 
 def test_zwnj_is_not_whitespace():
-    assert ('{{#if:\n' '    \u200c\n' '}}') == parse(
-        '{{#if:\u200c}}'
-    ).pformat()
+    assert ('{{#if:\n    \u200c\n}}') == parse('{{#if:\u200c}}').pformat()
 
 
 def test_colon_in_tl_name():
-    assert ('{{en:text\n' '    |text<!--\n' '-->}}') == parse(
+    assert ('{{en:text\n    |text<!--\n-->}}') == parse(
         '{{en:text|text}}'
     ).pformat()
-    assert ('{{en:text\n' '    |1<!--\n' ' -->|2<!--\n' '-->}}') == parse(
+    assert ('{{en:text\n    |1<!--\n -->|2<!--\n-->}}') == parse(
         '{{en:text|1|2}}'
     ).pformat()
-    assert ('{{en:text\n' '    |1<!--\n' ' -->| 2=v <!--\n' '-->}}') == parse(
+    assert ('{{en:text\n    |1<!--\n -->| 2=v <!--\n-->}}') == parse(
         '{{en:text|1|2=v}}'
     ).pformat()
 
@@ -254,9 +229,7 @@ def test_parser_function_with_an_empty_argument():
 
     The code could benefit from a little improvement.
     """
-    assert ('{{#rel2abs:\n' '    \n' '}}') == parse(
-        '{{ #rel2abs: }}'
-    ).pformat()
+    assert ('{{#rel2abs:\n    \n}}') == parse('{{ #rel2abs: }}').pformat()
 
 
 def test_parser_function_with_no_args():
@@ -264,14 +237,14 @@ def test_parser_function_with_no_args():
 
 
 def test_pf_one_kw_arg():
-    assert ('{{#expr:\n' '    2  =   3\n' '}}') == parse(
+    assert ('{{#expr:\n    2  =   3\n}}') == parse(
         '{{#expr: 2  =   3}}'
     ).pformat()
 
 
 def test_pformat_inner_template():
     a, b, c = WikiText('{{a|{{b|{{c}}}}}}').templates
-    assert ('{{b\n' '    | 1 = {{c}}\n' '}}') == b.pformat()
+    assert ('{{b\n    | 1 = {{c}}\n}}') == b.pformat()
 
 
 def test_repformat():
@@ -325,21 +298,13 @@ def test_last_arg_last_char_is_newline():
         '{{text\n    |a\n    | 2 = b\n}}'
         == WikiText('{{text|a\n    |2=b\n}}').pformat()
     )
-    assert ('{{en:text\n' '    | n=v\n' '}}') == parse(
-        '{{en:text|n=v\n}}'
-    ).pformat()
+    assert ('{{en:text\n    | n=v\n}}') == parse('{{en:text|n=v\n}}').pformat()
 
 
 def test_no_error():
     # the errors were actually found in shrink/insert/extend
     assert parse('{{#f1:{{#f2:}}{{t|}}}}').pformat() == (
-        '{{#f1:'
-        '\n    {{#f2:'
-        '\n        '
-        '\n    }}{{t'
-        '\n        | 1 = '
-        '\n    }}'
-        '\n}}'
+        '{{#f1:\n    {{#f2:\n        \n    }}{{t\n        | 1 = \n    }}\n}}'
     )
     assert parse('{{{{#t2:{{{p1|}}}}}{{#t3:{{{p2|}}}\n}}}}\n').pformat() == (
         '{{ {{#t2:'

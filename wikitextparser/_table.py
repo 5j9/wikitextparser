@@ -141,8 +141,8 @@ class Table(SubWikiTextWithAttrs):
         self,
         span: bool = True,
         strip: bool = True,
-        row: int = None,
-        column: int = None,
+        row: int | None = None,
+        column: int | None = None,
     ) -> list[list[str]] | list[str] | str:
         """Return a list containing lists of row values.
 
@@ -208,8 +208,8 @@ class Table(SubWikiTextWithAttrs):
 
     def cells(
         self,
-        row: int = None,
-        column: int = None,
+        row: int | None = None,
+        column: int | None = None,
         span: bool = True,
     ) -> list[list[Cell]] | list[Cell] | Cell:
         """Return a list of lists containing Cell objects.

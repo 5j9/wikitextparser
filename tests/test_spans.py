@@ -43,7 +43,7 @@ def test_template_in_template():
 # noinspection PyProtectedMember
 def test_textmixed_multitemplate():
     assert bpts(
-        b'text1{{cite|{{t1}}|{{t2}}}}' b'text2{{cite|{{t3}}|{{t4}}}}text3'
+        b'text1{{cite|{{t1}}|{{t2}}}}text2{{cite|{{t3}}|{{t4}}}}text3'
     )['Template'] == [
         [5, 27],
         [12, 18],
@@ -153,7 +153,7 @@ def test_unicode_parameters():
 # noinspection PyProtectedMember
 def test_image_containing_wikilink():
     (a, b, _, _), (c, d, _, _), (e, f, _, _) = parse(
-        '[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 ' '[[Wikilink2]].]]'
+        '[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 [[Wikilink2]].]]'
     )._type_to_spans['WikiLink']
     assert a == 0
     assert b == 65
@@ -193,7 +193,7 @@ def test_extracting_sections():
 
 def test_section_title_may_contain_template_newline_etc():
     sections = WikiText(
-        '=== h3 {{z\n\n|text}}<!-- \nc --><nowiki>\nnw' '\n</nowiki> ===\nt3'
+        '=== h3 {{z\n\n|text}}<!-- \nc --><nowiki>\nnw\n</nowiki> ===\nt3'
     ).sections
     assert 2 == len(sections)
     assert (

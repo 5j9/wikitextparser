@@ -142,7 +142,7 @@ INLINE_NONHAEDER_CELL_MATCH = rc(
 
 
 class Cell(SubWikiTextWithAttrs):
-    __slots__ = '_header', '_match_cache', '_attrs_match_cache'
+    __slots__ = '_attrs_match_cache', '_header', '_match_cache'
 
     def __init__(
         self,
