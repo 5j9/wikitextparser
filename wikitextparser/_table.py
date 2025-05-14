@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from bisect import insort_right
-from collections.abc import Mapping
 from typing import Any, TypeVar, overload
 
 from regex import DOTALL, VERBOSE
@@ -402,7 +401,7 @@ class Table(SubWikiTextWithAttrs):
                 self[m.end('preattrs') : end] = attrs
 
     @property
-    def row_attrs(self) -> list[dict]:
+    def row_attrs(self) -> list[dict[str, str]]:
         """Row attributes.
 
         Use the setter of this property to set attributes for all rows.
@@ -426,7 +425,7 @@ class Table(SubWikiTextWithAttrs):
         return attrs
 
     @row_attrs.setter
-    def row_attrs(self, attrs: list[Mapping]):
+    def row_attrs(self, attrs: list[dict[str, str]]):
         for row_match, attrs_dict in reversed(
             [*zip(FIND_ROWS(self._table_shadow), attrs)]
         ):
