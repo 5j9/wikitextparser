@@ -421,7 +421,9 @@ def test_attr_contains_template_newline_invalid_chars():
 
 def test_pipe_in_text():
     table = Table('{|\n| colspan="2" | text | with pipe\n|}')
-    assert table.cells()[0][0].attrs == {'colspan': '2'}
+    c = table.cells()[0][0]
+    assert c is not None
+    assert c.attrs == {'colspan': '2'}
 
 
 # Table.cells
@@ -453,28 +455,30 @@ def test_cell_extraction():
     )
     for r in cells:
         for i, c in enumerate(r):
+            assert c is not None
             assert c.string == cell_string[i]
     # Single cell
-    assert table.cells(row=0, column=4).string == cell_string[4]
+    assert str(table.cells(row=0, column=4)) == cell_string[4]
     # Column only
-    assert table.cells(column=4)[0].string == cell_string[4]
+    assert str(table.cells(column=4)[0]) == cell_string[4]
     # Row only
-    assert table.cells(row=0)[4].string == cell_string[4]
+    assert str(table.cells(row=0)[4]) == cell_string[4]
 
 
 def test_cell_spans():
-    assert (
+    c = (
         WikiText('<!-- c -->{|class=wikitable\n| a \n|}')
         .tables[0]
         .cells(row=0, column=0)
-        .value
-        == ' a '
     )
+    assert c is not None
+    assert c.value == ' a '
 
 
 def test_changing_cell_should_effect_the_table():
     t = Table('{|class=wikitable\n|a=b|c\n|}')
     c = t.cells(0, 0)
+    assert c is not None
     c.value = 'v'
     assert c.value == 'v'
     c.set_attr('a', 'b2')
@@ -538,27 +542,22 @@ def test_caption_multiline_rows():
 
 
 def test_cell_header():
-    assert (
-        Table('{|\n!1!!style="color:red;"|2\n|}')
-        .cells(row=0, column=1)
-        .is_header
-        is True
-    )
+    c = Table('{|\n!1!!style="color:red;"|2\n|}').cells(row=0, column=1)
+    assert c is not None
+    assert c.is_header is True
 
 
 def test_not_cell_header():
-    assert (
-        Table('{|\n!Header\n|Not a header\n|}')
-        .cells(row=0, column=1)
-        .is_header
-        is False
-    )
+    c = Table('{|\n!Header\n|Not a header\n|}').cells(row=0, column=1)
+    assert c is not None
+    assert c.is_header is False
 
 
 def test_table_attr_span_false():  # 71
     cell = Table('{|\n|colspan=2| Test1 \n|| Test 2 \n|| Test 3 \n|}').cells(
         span=False
     )[0][0]
+    assert cell is not None
     assert cell.attrs == {'colspan': '2'}
 
 
@@ -658,3 +657,8 @@ def test_row_attrs_setter():
         '| cell3\n'
         '|}'
     )
+
+
+def test_cells_may_be_none():
+    t = Table('{|\n|-\n| 1 || 2 \n|-\n| 3\n|}')
+    assert t.cells()[2][2] is None

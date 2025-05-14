@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from bisect import insort_right
 from collections.abc import Mapping
-from typing import Any, TypeVar
+from typing import Any, TypeVar, overload
 
 from regex import DOTALL, VERBOSE
 
@@ -105,7 +105,7 @@ class Table(SubWikiTextWithAttrs):
             return [[]]
         # Start of the first row
         match_table = []
-        pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
+        pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()  # type: ignore
         rsp = _row_separator_increase(table_shadow, pos)
         pos = -1
         while pos != rsp:
@@ -114,7 +114,7 @@ class Table(SubWikiTextWithAttrs):
             m = NEWLINE_CELL_MATCH(table_shadow, pos)
             # Don't add a row if there are no new cells.
             if m:
-                match_row = []  # type: List[Any]
+                match_row: list[Any] = []
                 match_table.append(match_row)
                 while m is not None:
                     match_row.append(m)
@@ -132,18 +132,52 @@ class Table(SubWikiTextWithAttrs):
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
+                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()  # type: ignore
                     m = NEWLINE_CELL_MATCH(table_shadow, pos)
             rsp = _row_separator_increase(table_shadow, pos)
         return match_table
 
+    @overload
     def data(
+        self,
+        row: int,
+        column: int,
+        span: bool = ...,
+        strip: bool = ...,
+    ) -> str | None: ...
+
+    @overload
+    def data(
+        self,
+        row: int,
+        column: None = ...,
+        span: bool = ...,
+        strip: bool = ...,
+    ) -> list[str | None]: ...
+
+    @overload
+    def data(
+        self,
+        row: None = ...,
+        column: None = ...,
+        span: bool = ...,
+        strip: bool = ...,
+    ) -> list[list[str | None]]: ...
+    @overload
+    def data(
+        self,
+        row: None = ...,
+        column: int = ...,
+        span: bool = ...,
+        strip: bool = ...,
+    ) -> list[list[str | None]]: ...
+    def data(  # type: ignore
         self,
         span: bool = True,
         strip: bool = True,
         row: int | None = None,
         column: int | None = None,
-    ) -> list[list[str]] | list[str] | str:
+    ) -> list[list[str | None]] | list[str | None] | str | None:
         """Return a list containing lists of row values.
 
         :param span: If true, calculate rows according to rowspans and colspans
@@ -161,10 +195,10 @@ class Table(SubWikiTextWithAttrs):
         # Note string is only used for extracting data, matching is done over
         # the shadow.
         string = self.string
-        table_data = []  # type: List[List[str]]
+        table_data: list[list[str | None]] = []
         if strip:
             for match_row in match_table:
-                row_data = []  # type: List[str]
+                row_data: list[str | None] = []
                 table_data.append(row_data)
                 for m in match_row:
                     # Spaces after the first newline can be meaningful
@@ -179,16 +213,16 @@ class Table(SubWikiTextWithAttrs):
                     row_data.append(string[s:e])
         if table_data:
             if span:
-                table_attrs = []  # type: List[List[Dict[str, str]]]
+                table_attrs: list[list[dict[bytes, bytes]]] = []
                 for match_row in match_table:
-                    row_attrs = []  # type: List[Dict[str, str]]
+                    row_attrs: list[dict[bytes, bytes]] = []
                     table_attrs.append(row_attrs)
                     row_attrs_append = row_attrs.append
                     for m in match_row:
                         s, e = m.span('attrs')
                         captures = ATTRS_MATCH(
                             string.encode('ascii', 'replace'), s, e
-                        ).captures
+                        ).captures  # type: ignore
                         row_attrs_append(
                             dict(
                                 zip(
@@ -206,12 +240,40 @@ class Table(SubWikiTextWithAttrs):
             return table_data[row]
         return table_data[row][column]
 
+    @overload
+    def cells(
+        self,
+        row: int,
+        column: int,
+        span: bool = True,
+    ) -> Cell | None: ...
+    @overload
+    def cells(
+        self,
+        row: int,
+        column: None = None,
+        span: bool = True,
+    ) -> list[Cell | None]: ...
+    @overload
+    def cells(
+        self,
+        row: None = None,
+        column: int = 0,
+        span: bool = True,
+    ) -> list[list[Cell | None]]: ...
+    @overload
+    def cells(
+        self,
+        row: None = None,
+        column: None = None,
+        span: bool = True,
+    ) -> list[list[Cell | None]]: ...
     def cells(
         self,
         row: int | None = None,
         column: int | None = None,
         span: bool = True,
-    ) -> list[list[Cell]] | list[Cell] | Cell:
+    ) -> list[list[Cell | None]] | list[Cell | None] | Cell | None:
         """Return a list of lists containing Cell objects.
 
         :param span: If is True, rearrange the result according to colspan and
@@ -231,14 +293,14 @@ class Table(SubWikiTextWithAttrs):
         type_ = id(tbl_span)
         type_to_spans = self._type_to_spans
         spans = type_to_spans.setdefault(type_, [])
-        table_cells = []  # type: List[List[Cell]]
-        table_attrs = []  # type: List[List[Dict[str, str]]]
+        table_cells: list[list[Cell | None]] = []
+        table_attrs: list[list[dict[bytes, bytes]]] = []
         attrs_match = None
         for match_row in match_table:
-            row_cells = []  # type: List[Cell]
+            row_cells: list[Cell | None] = []
             table_cells.append(row_cells)
             if span:
-                row_attrs = []  # type: List[Dict[str, str]]
+                row_attrs: list[dict[bytes, bytes]] = []
                 table_attrs.append(row_attrs)
                 row_attrs_append = row_attrs.append
             for m in match_row:
@@ -251,9 +313,8 @@ class Table(SubWikiTextWithAttrs):
                     # Also ATTRS_MATCH should match against the cell string
                     # so that it can be used easily as cache later in Cells.
                     attrs_match = ATTRS_MATCH(shadow[ms:me], s - ms, e - ms)
-                    captures = attrs_match.captures
-                    # noinspection PyUnboundLocalVariable
-                    row_attrs_append(
+                    captures = attrs_match.captures  # type: ignore
+                    row_attrs_append(  # type: ignore
                         dict(
                             zip(captures('attr_name'), captures('attr_value'))
                         )
@@ -353,7 +414,7 @@ class Table(SubWikiTextWithAttrs):
         append = attrs.append
         for row_match in FIND_ROWS(shadow):
             s, e = row_match.span(1)
-            spans = ATTRS_MATCH(shadow, s, e).spans
+            spans = ATTRS_MATCH(shadow, s, e).spans  # type: ignore
             append(
                 {
                     string[ns:ne]: string[vs:ve]
@@ -383,8 +444,8 @@ class Table(SubWikiTextWithAttrs):
 
 
 def _apply_attr_spans(
-    table_attrs: list[list[dict[str, str]]], table_data: list[list[T]]
-) -> list[list[T]]:
+    table_attrs: list[list[dict[bytes, bytes]]], table_data: list[list[T]]
+) -> list[list[T | None]]:
     """Apply row and column spans and return table_data."""
     # The following code is based on the table forming algorithm described
     # at http://www.w3.org/TR/html5/tabular-data.html#processing-model-1
@@ -394,7 +455,7 @@ def _apply_attr_spans(
     # 4
     # The xwidth and yheight variables give the table's dimensions.
     # The table is initially empty.
-    table = []  # type: List[List[Optional[T]]]
+    table: list[list[T | None]] = []
     append_row = table.append
     # Table.data won't call this function if table_data is empty.
     # 5
@@ -511,11 +572,11 @@ def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     Also skips any semi-caption lines before and after the separator.
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()
+    ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()  # type: ignore
     lsp = _lstrip_increase(shadow, ncl)
-    while shadow[lsp : lsp + 2] == b'|-':
+    while shadow[lsp : lsp + 2] == b'|-':  # type: ignore
         # We are on a row separator line.
         pos = shadow.find(10, lsp + 2)  # ord('\n')
-        pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()
+        pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()  # type: ignore
         lsp = _lstrip_increase(shadow, pos)
     return pos

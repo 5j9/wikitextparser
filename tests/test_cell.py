@@ -78,6 +78,7 @@ def test_delete():
 def test_update_match_from_shadow():
     t = Table('{|class=wikitable\n|{{text|s}}\n|}')
     c = t.cells(0, 0)
+    assert c is not None
     assert c.value == '{{text|s}}'
     t = c.templates[0]
     t.arguments[0].value = 't'
@@ -99,4 +100,5 @@ def test_cached_attrs_expiry():
 
 def test_cell_attrs_using_table_match():
     c = parse('text\n{|\n!a=b| c\n|}').tables[0].cells(0, 0)
+    assert c is not None
     assert c.attrs == {'a': 'b'}
