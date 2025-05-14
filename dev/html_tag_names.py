@@ -7,7 +7,7 @@ from regex import findall
 from requests import get, post
 
 
-def parse(text: str) -> bytes:
+def parse(text: str) -> str:
     return loads(
         post(
             'https://www.mediawiki.org/w/api.php',

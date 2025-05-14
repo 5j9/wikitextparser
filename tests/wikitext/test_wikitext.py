@@ -87,8 +87,8 @@ def test_overwriting_template_args():
     assert '|c' == c.string
     t.string = '{{t|0|a|b|c}}'
     assert '' == c.string
-    assert '0' == t.get_arg('1').value
-    assert 'c' == t.get_arg('4').value
+    assert '0' == t.get_arg('1').value  # type: ignore
+    assert 'c' == t.get_arg('4').value  # type: ignore
 
 
 def test_delitem():
@@ -339,8 +339,8 @@ def test_ancestors_and_parent():
     assert parsed.ancestors() == []
     c = parsed.comments[0]
     c_parent = c.parent()
-    assert c_parent.string == '{{c<!---->}}'
-    assert c_parent.parent().string == '{{b{{c<!---->}}}}'
+    assert c_parent.string == '{{c<!---->}}'  # type: ignore
+    assert c_parent.parent().string == '{{b{{c<!---->}}}}'  # type: ignore
     assert len(c.ancestors()) == 4
     assert len(c.ancestors(type_='Template')) == 3
     assert len(c.ancestors(type_='ParserFunction')) == 1

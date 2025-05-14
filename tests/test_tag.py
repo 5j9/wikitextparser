@@ -69,13 +69,15 @@ def test_start_tag_patterns():
 def test_end_tag_patterns():
     assert rc(END_TAG_PATTERN.replace(b'{name}', b'p')).search(
         b'</p>'
-    ).groupdict() == {'end_tag': b'</p>'}
+    ).groupdict() == {'end_tag': b'</p>'}  # type: ignore
 
 
 @mark.xfail
 def test_content_cannot_contain_another_start():
     """Checking for such situations is not currently required."""
-    assert TAG_FULLMATCH.search('<a><a>c</a></a>')[0] == '<a>c</a>'
+    m = TAG_FULLMATCH(b'<a><a>c</a></a>')
+    assert m is not None
+    assert m[0] == b'<a>c</a>'
 
 
 def test_name():

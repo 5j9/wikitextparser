@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from regex import Match
+
 from ._wikitext import SubWikiText, rc
 
 HEADER_MATCH = rc(rb'(={1,6})([^\n]+?)\1[ \t]*(\n|\Z)').match
@@ -37,7 +39,7 @@ class Section(SubWikiText):
 
     @level.setter
     def level(self, value: int) -> None:
-        m = self._header_match
+        m: Match[bytes] = self._header_match  # type: ignore
         level_diff = len(m[1]) - value
         if level_diff == 0:
             return

@@ -104,7 +104,7 @@ class Template(SubWikiTextWithArgs):
 
         Also see `rm_dup_args_safe` function.
         """
-        names = set()  # type: set
+        names = set()
         for a in reversed(self.arguments):
             name = a.name.strip(WS)
             if name in names:
@@ -214,14 +214,14 @@ class Template(SubWikiTextWithArgs):
                 aname = arg.name
                 name_len = len(aname)
                 name_lengths.append(name_len)
-                before_names.append(STARTING_WS_MATCH(aname)[0])
+                before_names.append(STARTING_WS_MATCH(aname)[0])  # type: ignore
                 arg_value = arg.value
-                before_values.append(STARTING_WS_MATCH(arg_value)[0])
-                after_values.append(ENDING_WS_MATCH(arg_value)[0])
+                before_values.append(STARTING_WS_MATCH(arg_value)[0])  # type: ignore
+                after_values.append(ENDING_WS_MATCH(arg_value)[0])  # type: ignore
             pre_name_ws_mode = mode(before_names)
             name_length_mode = mode(name_lengths)
             post_value_ws_mode = mode(
-                [SPACE_AFTER_SEARCH(self.string)[0]] + after_values[1:]
+                [SPACE_AFTER_SEARCH(self.string)[0]] + after_values[1:]  # type: ignore
             )
             pre_value_ws_mode = mode(before_values)
         else:
@@ -232,26 +232,25 @@ class Template(SubWikiTextWithArgs):
             addstring = '|' + value
         else:
             if preserve_spacing:
-                # noinspection PyUnboundLocalVariable
                 addstring = (
                     '|'
-                    + (pre_name_ws_mode + name.strip(WS)).ljust(
-                        name_length_mode
+                    + (pre_name_ws_mode + name.strip(WS)).ljust(  # type: ignore
+                        name_length_mode  # type: ignore
                     )
                     + '='
-                    + pre_value_ws_mode
+                    + pre_value_ws_mode  # type: ignore
                     + value
-                    + post_value_ws_mode
+                    + post_value_ws_mode  # type: ignore
                 )
             else:
                 addstring = '|' + name + '=' + value
         # Place the addstring in the right position.
         if before:
             arg = get_arg(before, args)
-            arg.insert(0, addstring)
+            arg.insert(0, addstring)  # type: ignore
         elif after:
             arg = get_arg(after, args)
-            arg.insert(len(arg.string), addstring)
+            arg.insert(len(arg.string), addstring)  # type: ignore
         else:
             if args and not positional:
                 arg = args[0]
@@ -263,9 +262,9 @@ class Template(SubWikiTextWithArgs):
                     # noinspection PyUnboundLocalVariable
                     arg[0 : len(arg_string)] = (
                         arg.string.rstrip(WS)
-                        + post_value_ws_mode
+                        + post_value_ws_mode  # type: ignore
                         + addstring.rstrip(WS)
-                        + after_values[0]
+                        + after_values[0]  # type: ignore
                     )
                 else:
                     arg.insert(len(arg_string), addstring)

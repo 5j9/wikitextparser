@@ -189,15 +189,15 @@ class Cell(SubWikiTextWithAttrs):
             return cache_match  # type: ignore
         shadow = self._shadow
         if shadow[0] == 10:  # ord('\n')
-            m = NEWLINE_CELL_MATCH(shadow)
+            m: Match[bytes] = NEWLINE_CELL_MATCH(shadow)  # type: ignore
             self._header = m['sep'] == 33  # ord('!')
         elif self._header:
-            m = INLINE_HAEDER_CELL_MATCH(shadow)
+            m = INLINE_HAEDER_CELL_MATCH(shadow)  # type: ignore
         else:
-            m = INLINE_NONHAEDER_CELL_MATCH(shadow)
+            m = INLINE_NONHAEDER_CELL_MATCH(shadow)  # type: ignore
         self._match_cache = m, string
         self._attrs_match_cache = None, None
-        return m  # type: ignore
+        return m
 
     @property
     def value(self) -> str:
@@ -246,7 +246,7 @@ class Cell(SubWikiTextWithAttrs):
         attrs_start, attrs_end = cell_match.span('attrs')
         if attrs_start != -1:
             encoded_attr_name = attr_name.encode()
-            attrs_m = ATTRS_MATCH(shadow, attrs_start, attrs_end)
+            attrs_m: Match[bytes] = ATTRS_MATCH(shadow, attrs_start, attrs_end)  # type: ignore
             for i, n in enumerate(reversed(attrs_m.captures('attr_name'))):
                 if n == encoded_attr_name:
                     vs, ve = attrs_m.spans('attr_value')[-i - 1]

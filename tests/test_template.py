@@ -168,7 +168,7 @@ def test_has_arg():
 
 def test_get_arg():
     get_arg = Template('{{t|a|b=c}}').get_arg
-    assert '|a' == get_arg('1').string
+    assert '|a' == get_arg('1').string  # type: ignore
     assert get_arg('c') is None
 
 

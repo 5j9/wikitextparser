@@ -69,7 +69,7 @@ version = search(
         join(repo_dir, 'wikitextparser', '__init__.py'), encoding='utf8'
     ).read(),
     MULTILINE,
-).group(1)
+).group(1)  # type: ignore
 # The full version, including alpha/beta/rc tags.
 release = version
 

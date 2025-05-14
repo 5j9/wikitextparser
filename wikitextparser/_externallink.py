@@ -17,7 +17,7 @@ class ExternalLink(SubWikiText):
             external links.
         """
         if self(0) == '[':
-            return self(1, URL_MATCH(self._ext_link_shadow, 1).end())
+            return self(1, URL_MATCH(self._ext_link_shadow, 1).end())  # type: ignore
         return self.string
 
     @url.setter
@@ -38,7 +38,7 @@ class ExternalLink(SubWikiText):
         """
         string = self.string
         if string[0] == '[':
-            url_end = URL_MATCH(self._ext_link_shadow, 1).end()
+            url_end = URL_MATCH(self._ext_link_shadow, 1).end()  # type: ignore
             end_char = string[url_end]
             if end_char == ']':
                 return None
