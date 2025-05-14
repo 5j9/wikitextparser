@@ -661,4 +661,4 @@ def test_row_attrs_setter():
 
 def test_cells_may_be_none():
     t = Table('{|\n|-\n| 1 || 2 \n|-\n| 3\n|}')
-    assert t.cells()[2][2] is None
+    assert t.cells()[1][1] is None
