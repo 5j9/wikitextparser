@@ -254,3 +254,7 @@ def test_external_starting_with_comment():
     text = "''[https://<!---->x.com/ x]''"
     parsed = parse(text)
     assert parsed.plain_text() == 'x'
+
+
+def test_image_with_capital_case_extension():  # 141
+    assert parse('[[file:a.JPG]]').plain_text() == ''

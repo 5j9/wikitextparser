@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Fixed a bug in detection of images in ``plain_text`` method. (#141)
 
 v0.56.3 (2024-10-18)
 --------------------
