@@ -307,9 +307,7 @@ class WikiText:
             return self._lststr[0][self._span_data[1] + start]
         s, e, _, _ = self._span_data
         return self._lststr[0][
-            s
-            if start is None
-            else (s + start if start >= 0 else e + start) : e
+            (s + start if start >= 0 else e + start) : e
             if stop is None
             else (s + stop if stop >= 0 else e + stop) : step
         ]
