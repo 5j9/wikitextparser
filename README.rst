@@ -113,7 +113,23 @@ WikiLinks
     >>> wl
     WikiLink('[[new_title#new_fragmet]]')
 
-All WikiLink properties support get, set, and delete operations.
+All WikiLink properties support get, set, and delete operations. Categories are special cases of WikiLinks, in that they are prefixed with the category namespace:
+
+.. code:: python
+
+    >>> parsed = wtp.parse("""
+        [[Category:Foo]]
+        [[Category:Bar]]
+        [[Other link]]
+        """)
+    >>> categories = [
+            wl
+            for wl
+            in parsed.wikilinks
+            if wl.title.partition(':')[0].strip() == "Category"
+        ]
+    >>> categories
+    [WikiLink('[[Category:Foo]]'), WikiLink('[[Category:Bar]]')]
 
 Sections
 --------
