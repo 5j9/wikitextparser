@@ -47,21 +47,27 @@ def test_setitem():
 
 def test_setitem_errors():
     w = WikiText('a')
-    raises(IndexError, w.__setitem__, -2, 'b')
+    with raises(IndexError):
+        w[-2] = 'b'
     assert 'a' == w(-9, 9)
-    raises(IndexError, w.__setitem__, 1, 'c')
-    raises(NotImplementedError, w.__setitem__, slice(0, 1, 1), 'd')
+    with raises(IndexError):
+        w[1] = 'c'
+    with raises(NotImplementedError):
+        w[slice(0, 1, 1)] = 'd'
     assert 'a' == w(-1, None)
     assert w(-2, None) == 'a'
-    raises(IndexError, w.__setitem__, slice(-2, None), 'e')
+    with raises(IndexError):
+        w[slice(-2, None)] = 'e'
     assert w(0, -2) == ''
-    raises(IndexError, w.__setitem__, slice(0, -2), 'f')
+    with raises(IndexError):
+        w[slice(0, -2)] = 'f'
     w[0] = 'gg'
     w[1] = 'hh'
     assert w.string == 'ghh'
     # stop and start in range but stop is before start
     assert w(1, 0) == ''
-    raises(IndexError, w.__setitem__, slice(1, 0), 'h')
+    with raises(IndexError):
+        w[slice(1, 0)] = 'h'
 
 
 def test_insert():

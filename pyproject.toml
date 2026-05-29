@@ -83,3 +83,8 @@ venv = ".venv"
 [tool.uv.build-backend]
 module-root = ""
 module-name = "wikitextparser"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
