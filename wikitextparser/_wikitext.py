@@ -1369,7 +1369,7 @@ class WikiText:
         type_to_spans = self._type_to_spans
         lststr = self._lststr
         shadow_copy = self._shadow[:]
-        ss, se, _, _ = self._span_data
+        ss, _se, _, _ = self._span_data
         spans = type_to_spans.setdefault('Table', [])
         spans_append = spans.append
         skip_self_span = self._type == 'Table'
