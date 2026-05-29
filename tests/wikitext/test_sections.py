@@ -127,7 +127,6 @@ def test_top_levels_only_multi_sub():
     sections = parse(
         '0\n== 1 ==\n=== 2 ===\n2\n==== 3 ====\n3 \n=== 4 ===\n4\n'
     ).get_sections(top_levels_only=True)
-    print(sections)
     assert len(sections) == 2
     assert (
         sections[1].string
