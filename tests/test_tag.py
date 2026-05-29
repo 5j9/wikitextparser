@@ -206,3 +206,9 @@ def test_template_in_tag_attrs():
     assert Tag(
         '<span {{text|style}}="{{text|1=background:red}}">A</span>'
     ).attrs == {'{{text|style}}': '{{text|1=background:red}}'}
+
+
+def test_attr_contains_lt_gt_chars():
+    assert Tag('<ref data-user-defined="<>" >x</ref>').attrs == {
+        'data-user-defined': '<>'
+    }
