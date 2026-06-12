@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v1.0.0 (2026-06-12)
 -------------------
 * Fixed handling of CRLF line endings in ``get_sections`` method. (#145)
