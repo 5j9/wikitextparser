@@ -57,7 +57,7 @@ BRACKET_EXTERNAL_LINK_SCHEMES = regex_pattern(
 BRACKET_EXTERNAL_LINK_URL = (
     BRACKET_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
 )
-BRACKET_EXTERNAL_LINK = rb'\[' + BRACKET_EXTERNAL_LINK_URL + rb'[^\]\n]*+\]'
+BRACKET_EXTERNAL_LINK = rb'\[' + BRACKET_EXTERNAL_LINK_URL + rb'[^\]\r\n]*+\]'
 EXTERNAL_LINK = (
     rb'(?>' + BARE_EXTERNAL_LINK + rb'|' + BRACKET_EXTERNAL_LINK + rb')'
 )
@@ -67,8 +67,8 @@ INVALID_EL_TPP_CHRS_SUB = rc(  # the [:-4] slice allows \[ and \]
 ).sub
 
 # Sections
-SECTION_HEADING = rb'^(?<equals>={1,6})[^\n]+?(?P=equals)[ \t]*+$'
-SUB_SECTION = rb'(?:^(?P=equals)=[^\n]+?(?P=equals)=[ \t]*+$.*?)*'
+SECTION_HEADING = rb'^(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t]*+\r?+$'
+SUB_SECTION = rb'(?:^(?P=equals)=[^\r\n]+?(?P=equals)=[ \t]*+\r?+$.*?)*'
 LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
     LEAD_SECTION
@@ -100,7 +100,7 @@ TABLE_FINDITER = rc(
         (?!^\ *+\{\|).
     )*?
     # Table-end
-    \n\s*+
+    \r?\n\s*+
     (?> \|} | \Z )
     """,
     DOTALL | MULTILINE | VERBOSE,
@@ -113,7 +113,7 @@ BOLD_FINDITER = rc(
     # start token
     '\0*+'\0*+'
     # content
-    (\0*+[^'\n]++.*?)
+    (\0*+[^'\r\n]++.*?)
     # end token
     (?:'\0*+'\0*+'|$)
 """,
@@ -125,7 +125,7 @@ ITALIC_FINDITER = rc(
     # start token
     '\0*+'
     # content
-    (\0*+[^'\n]++.*?)
+    (\0*+[^'\r\n]++.*?)
     # end token
     (?:'\0*+'|$)
 """,
@@ -1535,7 +1535,7 @@ class WikiText:
         span_tuple_to_span_get = {(s[0], s[1]): s for s in spans}.get
         spans_append = spans.append
         for start_match in reversed_start_matches:
-            if start_match[0].rstrip(b' \t\n>')[-1] == 47:  # ord('/') == 47
+            if start_match[0].rstrip(b' \t\r\n>')[-1] == 47:  # ord('/') == 47
                 # Self-closing tag. Don't look for the end tag.
                 # todo: some self-closing tags actually should be treated
                 # as start tag in HTML5, see:
