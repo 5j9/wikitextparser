@@ -151,8 +151,10 @@ CONTROL_CHARS = rb'\x00-\x1f\x7f-\x9f'
 # https://www.w3.org/TR/html5/syntax.html#syntax-attributes
 ATTR_NAME = rb'(?<attr_name>[^' + SPACE_CHARS + CONTROL_CHARS + rb'"\'>/=]++)'
 EQ_WS = rb'[=\1][' + SPACE_CHARS + rb']*+'
-UNQUOTED_ATTR_VAL = rb'[\'"]?(?<attr_value>[^' + SPACE_CHARS + rb'"\'=<>`/]++)'
-QUOTED_ATTR_VAL = rb'(?<quote>[\'"])(?<attr_value>[^"\'<>]*?)(?P=quote)'
+QUOTED_ATTR_VAL1 = rb'(?<quote>\')(?<attr_value>[^\'>]*?)(?P=quote)'
+QUOTED_ATTR_VAL2 = rb'(?<quote>\")(?<attr_value>[^\">]*?)(?P=quote)'
+UNQUOTED_ATTR_VAL_1 = rb'[\'"]?(?<attr_value>[^' + SPACE_CHARS + rb'>]+?)(?=/[' + SPACE_CHARS + rb']*?>)'
+UNQUOTED_ATTR_VAL_2 = rb'[\'"]?(?<attr_value>[^' + SPACE_CHARS + rb'>]++)'
 # May include character references, but for now, ignore the fact that they
 # cannot contain an ambiguous ampersand.
 ATTR_VAL = (
@@ -164,9 +166,13 @@ ATTR_VAL = (
     + rb']*+'
     + EQ_WS
     + rb'(?>'
-    + QUOTED_ATTR_VAL
+    + QUOTED_ATTR_VAL1
     + rb'|'
-    + UNQUOTED_ATTR_VAL
+    + QUOTED_ATTR_VAL2
+    + rb'|'
+    + UNQUOTED_ATTR_VAL_1
+    + rb'|'
+    + UNQUOTED_ATTR_VAL_2
     + rb')'
     + rb'|(?<attr_value>)'  # empty attribute
     + rb')'
