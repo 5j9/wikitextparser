@@ -85,7 +85,8 @@ def test_setting_positionality():
     assert '|v' == a.string
     a.positional = True
     assert '|v' == a.string
-    raises(ValueError, setattr, a, 'positional', False)
+    with raises(ValueError):
+        setattr(a, 'positional', False)
 
 
 def test_parser_functions_at_the_end():

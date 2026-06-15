@@ -127,9 +127,16 @@ def test_top_levels_only_multi_sub():
     sections = parse(
         '0\n== 1 ==\n=== 2 ===\n2\n==== 3 ====\n3 \n=== 4 ===\n4\n'
     ).get_sections(top_levels_only=True)
-    print(sections)
     assert len(sections) == 2
     assert (
         sections[1].string
         == '== 1 ==\n=== 2 ===\n2\n==== 3 ====\n3 \n=== 4 ===\n4\n'
     )
+
+
+def test_crlf():
+    wt = 'lead\r\n== s1 ==\r\np1.\r\np2.'
+    sections_crlf = parse(wt).sections
+    sections_lf = parse(wt.replace('\r', '')).sections
+    for s_crlf, s_lf in zip(sections_crlf, sections_lf):
+        assert s_crlf.string.replace('\r', '') == s_lf.string

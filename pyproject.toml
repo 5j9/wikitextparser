@@ -1,6 +1,6 @@
 [build-system]
-requires = ['flit_core >=3.2,<4']
-build-backend = 'flit_core.buildapi'
+requires = ['uv_build>=0.8.3,<0.9.0']
+build-backend = 'uv_build'
 
 [project]
 name = "wikitextparser"
@@ -24,9 +24,7 @@ dependencies = [
     "regex >= 2022.9.11",
     "wcwidth",
 ]
-dynamic = [
-    "version",
-]
+version = "1.0.1.dev1"
 
 [project.license]
 text = "GNU General Public License v3 (GPLv3)"
@@ -42,25 +40,24 @@ tests = [
     "pytest",
 ]
 
-[tool.flit.sdist]
-exclude = ['tests/', 'doc/', 'dev/']
-
 [tool.ruff]
 line-length = 79
 format.quote-style = 'single'
 lint.isort.combine-as-imports = true
 lint.extend-select = [
     'W605', # invalid-escape-sequence
-    'FA',  # flake8-future-annotations
-    'I',  # isort
-    'UP',  # pyupgrade
-    'RUF', # Ruff-specific rules (RUF)
+    'FA',   # flake8-future-annotations
+    'I',    # isort
+    'UP',   # pyupgrade
+    'RUF',  # Ruff-specific rules (RUF)
 ]
 lint.ignore = [
-    'E721',  # Do not compare types, use `isinstance()`
-    'RUF001',  # ambiguous-unicode-character-string	
-    'RUF002',  # ambiguous-unicode-character-docstring
-    'RUF003',  # ambiguous-unicode-character-comment
+    'E721',   # Do not compare types, use `isinstance()`
+    'RUF001', # ambiguous-unicode-character-string
+    'RUF002', # ambiguous-unicode-character-docstring
+    'RUF003', # ambiguous-unicode-character-comment
+    'RUF012', # mutable-class-default
+    'RUF059', # Unpacked variable never used
 ]
 
 [tool.pytest.ini_options]
@@ -78,3 +75,14 @@ reportInvalidStringEscapeSequence = false
 reportConstantRedefinition = 'error'
 reportTypeCommentUsage = 'warning'
 reportUnnecessaryComparison = 'warning'
+venvPath = "."
+venv = ".venv"
+
+[tool.uv.build-backend]
+module-root = ""
+module-name = "wikitextparser"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
