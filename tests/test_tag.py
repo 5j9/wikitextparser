@@ -22,7 +22,6 @@ def test_start_tag_patterns():
     assert start_tag_finder(b'<b>').groupdict() == {
         'name': b'b',
         'attr': None,
-        'quote': None,
         'start_tag': b'<b>',
         'attr_name': None,
         'attr_value': None,
@@ -31,7 +30,6 @@ def test_start_tag_patterns():
     assert start_tag_finder(b'<b t>').groupdict() == {
         'name': b'b',
         'attr': b' t',
-        'quote': None,
         'start_tag': b'<b t>',
         'attr_name': b't',
         'attr_value': b'',
@@ -40,7 +38,6 @@ def test_start_tag_patterns():
     assert start_tag_finder(b'<div value=yes>').groupdict() == {
         'name': b'div',
         'attr': b' value=yes',
-        'quote': None,
         'start_tag': b'<div value=yes>',
         'attr_name': b'value',
         'attr_value': b'yes',
@@ -49,7 +46,6 @@ def test_start_tag_patterns():
     assert start_tag_finder(b"<div class='body'>").groupdict() == {
         'name': b'div',
         'attr': b" class='body'",
-        'quote': b"'",
         'start_tag': b"<div class='body'>",
         'attr_name': b'class',
         'attr_value': b'body',
@@ -59,7 +55,6 @@ def test_start_tag_patterns():
         'attr_name': [b'a1', b'a2'],
         'start_tag': [b'<table a1=v1 a2=v2>'],
         'attr': [b' a1=v1', b' a2=v2'],
-        'quote': [],
         'attr_value': [b'v1', b'v2'],
         'name': [b'table'],
         'attr_insert': [b''],
