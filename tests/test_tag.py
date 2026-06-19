@@ -203,9 +203,9 @@ def test_template_in_tag_attrs():
     ).attrs == {'{{text|style}}': '{{text|1=background:red}}'}
 
 
-def test_attr_contains_lt_gt_chars():
-    assert Tag('<ref data-user-defined="<>" >x</ref>').attrs == {
-        'data-user-defined': '<>'
+def test_attr_contains_odd_chars():
+    assert Tag('<ref data-user-defined="u\'/" >x</ref>').attrs == {
+        'data-user-defined': "u'/"
     }
 
 

@@ -165,11 +165,11 @@ ATTR_VAL = (
     + rb']*+'
     + EQ_WS
     + rb'(?>'
-    + UNQUOTED_ATTR_VAL
+    + DOUBLE_QUOTED_ATTR_VAL
     + rb'|'
     + SINGLE_QUOTED_ATTR_VAL
     + rb'|'
-    + DOUBLE_QUOTED_ATTR_VAL
+    + UNQUOTED_ATTR_VAL
     + rb')'
     + rb'|(?<attr_value>)'  # empty attribute
     + rb')'
