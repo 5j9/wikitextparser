@@ -204,8 +204,8 @@ def test_template_in_tag_attrs():
 
 
 def test_attr_contains_odd_chars():
-    assert Tag('<ref data-user-defined="u\'/" >x</ref>').attrs == {
-        'data-user-defined': "u'/"
+    assert Tag('<ref data-user-defined="u\'/=" >x</ref>').attrs == {
+        'data-user-defined': "u'/="
     }
 
 
@@ -214,3 +214,15 @@ def test_attr_values_are_stripped():
     assert tag.get_attr('style') == 'v1 v2'
     assert tag.attrs == {'style': 'v1 v2'}
 
+
+def test_half_quoted_attrs():
+    assert Tag('<b style="a />B</b>').attrs == {'style': 'a'}
+    assert Tag('<b style="a/>B</b>').attrs == {'style': 'a'}
+
+
+def test_gt_lt_not_allowed_in_attr_val():
+    # this is specific to mediawiki,
+    # standard html parsers parse allow lt and gt
+    tag = Tag('<b style=">" >B</b>')
+    assert tag.contents == '" >B'
+    assert tag.attrs == {'style': ''}

@@ -100,3 +100,13 @@ def test_tags_in_wikilinks():
 
 def test_tag_in_template():
     assert parse('{{t|<br/>a}}').get_tags('br')[0].string == '<br/>'
+
+
+def test_half_quoted_attrs():
+    t0, t1, t2, t3 = parse("""
+        <ref name="a>A</ref>
+        <ref name="a />
+        <ref name="a/>
+        <references />
+    """).get_tags()
+    assert t0.attrs == t1.attrs == t2.attrs == {'name': 'a'}
