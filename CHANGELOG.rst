@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v1.0.1 (2026-06-19)
 -------------------
 * Fixed: Attribute values are now stripped.
