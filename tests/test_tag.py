@@ -212,3 +212,10 @@ def test_attr_contains_lt_gt_chars():
     assert Tag('<ref data-user-defined="<>" >x</ref>').attrs == {
         'data-user-defined': '<>'
     }
+
+
+def test_attr_values_are_stripped():
+    tag = Tag('<b style=" v1 v2 ">b4</b>')
+    assert tag.get_attr('style') == 'v1 v2'
+    assert tag.attrs == {'style': 'v1 v2'}
+

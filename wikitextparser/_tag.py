@@ -64,7 +64,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         return dict(
             zip(
                 (string[s:e] for s, e in spans('attr_name')),
-                (string[s:e] for s, e in spans('attr_value')),
+                (string[s:e].strip() for s, e in spans('attr_value')),
             )
         )
 
@@ -88,7 +88,7 @@ class SubWikiTextWithAttrs(SubWikiText):
         for i, (s, e) in enumerate(reversed(spans('attr_name'))):
             if string[s:e] == attr_name:
                 s, e = spans('attr_value')[-i - 1]
-                return string[s:e]
+                return string[s:e].strip()
         return None
 
     def set_attr(self, attr_name: str, attr_value: str) -> None:
