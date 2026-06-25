@@ -142,3 +142,57 @@ def test_mixed_reference_names_remain_distinct():
         'asd/',
         'ax=sd',
     ]
+
+
+@mark.parametrize(
+    'text, expected',
+    [
+        ('<ref name="asd />', 'asd'),
+        ('<ref name="asd/>', 'asd'),
+        ("<ref name='asd />", 'asd'),
+        ("<ref name='asd/>", 'asd'),
+    ],
+)
+def test_missing_closing_quote(text, expected):
+    assert parse_names(text) == [expected]
+
+
+def test_attr_value_does_not_consume_following_attributes():
+    assert parse_names('<ref name="abc" foo="bar"></ref>') == ['abc']
+
+    assert parse_names('<ref name=abc foo=bar></ref>') == ['abc']
+
+
+@mark.parametrize(
+    'text',
+    [
+        '<ref name="asd" ></ref>',
+        '<ref name="asd"\t></ref>',
+        '<ref name="asd"\n></ref>',
+        '<ref name=asd ></ref>',
+    ],
+)
+def test_space_before_tag_end(text):
+    assert parse_names(text) == ['asd']
+
+
+def test_slash_not_followed_by_tag_close_is_value():
+    assert parse_names('<ref name="a/b"></ref>') == ['a/b']
+    assert parse_names('<ref name="a/ b"></ref>') == ['a/ b']
+
+
+@mark.parametrize(
+    'text',
+    [
+        '<ref name=""></ref>',
+        '<ref name=""/>',
+        "<ref name=''></ref>",
+        "<ref name=''/>",
+    ],
+)
+def test_empty_attr_values(text):
+    assert parse_names(text) == ['']
+
+
+def test_many_slashes_in_value():
+    assert parse_names('<ref name="////////"></ref>') == ['////////']

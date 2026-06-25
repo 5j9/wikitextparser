@@ -154,15 +154,17 @@ EQ_WS = rb'[=\1][' + SPACE_CHARS + rb']*+'
 UNQUOTED_ATTR_VAL = (
     rb'(?<attr_value>(?:[^'
     + SPACE_CHARS
-    + rb'>/]|/(?!['
+    + rb'>/]++|/(?!['
     + SPACE_CHARS
-    + rb']*>))++)'
+    + rb']*+>))++)'
 )
+
 DOUBLE_QUOTED_ATTR_VAL = (
-    rb'"(?<attr_value>(?:[^">/]|/(?![' + SPACE_CHARS + rb']*>))*)"?'
+    rb'"(?<attr_value>(?:[^">/]++|/(?![' + SPACE_CHARS + rb']*+>))*+)"?+'
 )
+
 SINGLE_QUOTED_ATTR_VAL = (
-    rb'\'(?<attr_value>(?:[^\'>/]|/(?![' + SPACE_CHARS + rb']*>))*)\'?'
+    rb"'(?<attr_value>(?:[^'>/]++|/(?![" + SPACE_CHARS + rb"]*+>))*+)'?+"
 )
 # May include character references, but for now, ignore the fact that they
 # cannot contain an ambiguous ampersand.
