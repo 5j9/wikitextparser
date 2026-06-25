@@ -24,7 +24,7 @@ dependencies = [
     "regex >= 2022.9.11",
     "wcwidth",
 ]
-version = "1.0.2.dev1"
+version = "1.0.2"
 
 [project.license]
 text = "GNU General Public License v3 (GPLv3)"
