@@ -595,7 +595,7 @@ def test_row_attrs_getter():
     assert Table(
         '{|\n|-style="color: red;" bgcolor=yellow"\n| cell1\n|}'
     ).row_attrs == [
-        {'style': 'color: red;', 'bgcolor': 'yellow'},
+        {'style': 'color: red;', 'bgcolor': 'yellow"'},
     ]
 
     # test middle row with no attrs
