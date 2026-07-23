@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pytest import mark
 
+import sys
+sys.path.append("../wikitextparser")
 from wikitextparser import WikiText, parse
 
 # noinspection PyProtectedMember

@@ -67,8 +67,8 @@ INVALID_EL_TPP_CHRS_SUB = rc(  # the [:-4] slice allows \[ and \]
 ).sub
 
 # Sections
-SECTION_HEADING = rb'^(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t]*+\r?+$'
-SUB_SECTION = rb'(?:^(?P=equals)=[^\r\n]+?(?P=equals)=[ \t]*+\r?+$.*?)*'
+SECTION_HEADING = rb'^\0*+(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t\0]*+\r?+$'
+SUB_SECTION = rb'(?:^\0*+(?P=equals)=[^\r\n]+?(?P=equals)=[ \t\0]*+\r?+$.*?)*'
 LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
     LEAD_SECTION
@@ -1697,7 +1697,7 @@ plain_text_doc = """
         :keyword replace_parser_functions:
             A function mapping `ParserFunction` objects to strings.
             If True, replace `{{#parser_function:argument}}`s with `''`.
-            If False, ignore parser functions. 
+            If False, ignore parser functions.
         :keyword replace_parameters: Replace `{{{a}}}` with `` and {{{a|b}}}
             with `b`.
         :keyword replace_tags: Replace `<s>text</s>` with `text`.
