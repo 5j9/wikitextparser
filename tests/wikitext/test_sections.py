@@ -140,3 +140,11 @@ def test_crlf():
     sections_lf = parse(wt.replace('\r', '')).sections
     for s_crlf, s_lf in zip(sections_crlf, sections_lf):
         assert s_crlf.string.replace('\r', '') == s_lf.string
+
+def test_text_outside_section_delimiter():
+    w = WikiText('== title == bjkbhj')
+    assert len(w.get_sections(level=2)) == 0
+
+def test_comment_outside_section_delimiter():
+    w = WikiText('<!-- text --><!-- text -->== title == <!-- text -->   <!-- text --><!-- text -->')
+    assert len(w.get_sections(level=2)) == 1
