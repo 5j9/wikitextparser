@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from pytest import mark
 
-import sys
-sys.path.append("../wikitextparser")
 from wikitextparser import WikiText, parse
 
 # noinspection PyProtectedMember
@@ -392,28 +390,26 @@ def test_nested_wikilinks_in_ref():
     } == bpts(b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>')
 
 
-@mark.xfail
 def test_invalid_nested_wikilinks():
+    assert {
+        'Parameter': [],
+        'ParserFunction': [],
+        'Template': [],
+        'WikiLink': [[5, 10]],
+        'Comment': [],
+        'ExtensionTag': [],
+    } == bpts(b'[[L| [[S]] ]]')
+
+
+def test_invalid_nested_wikilinks_in_ref():
     assert {
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
         'WikiLink': [[10, 15]],
         'Comment': [],
-        'ExtTag': [[0, 24]],
+        'ExtensionTag': [[0, 24]],
     } == bpts(b'<ref>[[L| [[S]] ]]</ref>')
-
-
-@mark.xfail
-def test_invalid_nested_wikilinks_in_ref():
-    assert {
-        'Parameter': [],
-        'ParserFunction': [],
-        'Template': [],
-        'WikiLink': [[0, 13]],
-        'Comment': [],
-        'ExtTag': [],
-    } == bpts(b'[[L| [[S]] ]]')
 
 
 def test_nested_parser_functions_containing_param():
