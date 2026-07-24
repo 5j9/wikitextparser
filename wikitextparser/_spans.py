@@ -5,7 +5,7 @@ from __future__ import annotations
 from functools import partial
 from typing import Callable, Dict, List, Union
 
-from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc
+from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc, search
 
 from ._config import (
     _HTML_TAG_NAME,
@@ -361,7 +361,8 @@ def _parse_sub_spans(
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
-                    wls_append([ms, me, match, byte_array[ms:me]])
+                    if search(rb"^\[\[[ \t]*+(?:File|Image)[ \t]*+:", match[0], IGNORECASE) or not search(rb"\x02\x02", match[0], IGNORECASE):
+                        wls_append([ms, me, match, byte_array[ms:me]])
                     _parse_sub_spans(
                         byte_array,
                         ms + 2,
