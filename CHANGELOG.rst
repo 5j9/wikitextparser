@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v1.0.3 (2026-07-31)
 -------------------
 * Improved detection of section titles containing comments. (#147)
