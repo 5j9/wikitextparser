@@ -148,8 +148,8 @@ class WikiList(SubWikiText):
         sublists_append = sublists.append
         if i is None:
             # Any sublist is acceptable
-            for pattern in patterns:
-                for lst in get_lists(self_pattern + pattern):
+            for ptrn in patterns:
+                for lst in get_lists(self_pattern + ptrn):
                     sublists_append(lst)
         else:
             # Only return sub-lists that are within the given item
@@ -160,8 +160,8 @@ class WikiList(SubWikiText):
             s, e = fullitem_spans[i]
             e -= ms - ss
             s -= ms - ss
-            for pattern in patterns:
-                for lst in get_lists(self_pattern + pattern):
+            for ptrn in patterns:
+                for lst in get_lists(self_pattern + ptrn):
                     # noinspection PyProtectedMember
                     ls, le, _, _ = lst._span_data
                     if s <= ls and le <= e:

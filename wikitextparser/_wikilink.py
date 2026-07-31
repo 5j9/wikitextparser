@@ -17,7 +17,7 @@ FULLMATCH = rc(
 
 
 class WikiLink(SubWikiText):
-    __slots__ = '_cached_match'
+    __slots__ = ('_cached_match',)
 
     @property
     def _content_span(self) -> tuple[int, int]:

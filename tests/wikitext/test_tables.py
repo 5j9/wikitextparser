@@ -150,22 +150,28 @@ def test_nested_tables_sorted():
     assert t0.data(strip=False) == [
         [
             ' 0',
-            ' 1\n'
-            '{| style="border: 2px solid black; background: green;" '
-            '<!-- The nested table must be on a new line -->\n'
-            '| style="border: 2px solid darkgray;" | 1_G00\n|-\n'
-            '| style="border: 2px solid darkgray;" | 1_G10\n'
-            '|}',
+            (
+                ' 1\n'
+                '{| style="border: 2px solid black; background: green;" '
+                '<!-- The nested table must be on a new line -->\n'
+                '| style="border: 2px solid darkgray;" | 1_G00\n|-\n'
+                '| style="border: 2px solid darkgray;" | 1_G10\n'
+                '|}'
+            ),
             ' 2',
-            '\n{| style="border: 2px solid black; background: yellow"\n'
-            '| style="border: 2px solid darkgray;" | 3_Y00\n|}\n'
-            '{| style="border: 2px solid black; background: Orchid"\n'
-            '| style="border: 2px solid darkgray;" | 3_O00\n'
-            '| style="border: 2px solid darkgray;" | 3_O01\n|}',
-            '\n{| style="border: 2px solid black; background:blue; float:left"'
-            '\n| style="border: 2px solid darkgray;" | 4_B00\n|}\n'
-            '{| style="border: 2px solid black; background:red; float:right"\n'
-            '| style="border: 2px solid darkgray;" | 4_R00\n|}',
+            (
+                '\n{| style="border: 2px solid black; background: yellow"\n'
+                '| style="border: 2px solid darkgray;" | 3_Y00\n|}\n'
+                '{| style="border: 2px solid black; background: Orchid"\n'
+                '| style="border: 2px solid darkgray;" | 3_O00\n'
+                '| style="border: 2px solid darkgray;" | 3_O01\n|}'
+            ),
+            (
+                '\n{| style="border: 2px solid black; background:blue; float:left"'
+                '\n| style="border: 2px solid darkgray;" | 4_B00\n|}\n'
+                '{| style="border: 2px solid black; background:red; float:right"\n'
+                '| style="border: 2px solid darkgray;" | 4_R00\n|}'
+            ),
         ]
     ]
     assert tables[3].data() == [['3_O00', '3_O01']]

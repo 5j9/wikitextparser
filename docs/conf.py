@@ -63,13 +63,14 @@ author = ''
 # built documents.
 #
 # The short X.Y version.
-version = search(
-    r'^__version__ = [\'"]([^\'"]*)[\'"]',
-    open(
-        join(repo_dir, 'wikitextparser', '__init__.py'), encoding='utf8'
-    ).read(),
-    MULTILINE,
-).group(1)  # type: ignore
+with open(
+    join(repo_dir, 'wikitextparser', '__init__.py'), encoding='utf8'
+) as f:
+    version = search(
+        r'^__version__ = [\'"]([^\'"]*)[\'"]',
+        f.read(),
+        MULTILINE,
+    ).group(1)  # type: ignore
 # The full version, including alpha/beta/rc tags.
 release = version
 

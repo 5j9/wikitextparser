@@ -282,9 +282,7 @@ class WikiText:
             return False
         ps, pe, _, _ = value._span_data
         ss, se, _, _ = self._span_data
-        if ss <= ps and se >= pe:
-            return True
-        return False
+        return ss <= ps and se >= pe
 
     def __len__(self):
         s, e, _, _ = self._span_data
@@ -413,8 +411,7 @@ class WikiText:
         lststr0 = lststr[0]
         if index < 0:
             index += se - ss
-            if index < 0:
-                index = 0
+            index = max(index, 0)
         elif index > se - ss:  # Note that it is not >=. Index can be new.
             index = se - ss
         index += ss
@@ -468,10 +465,9 @@ class WikiText:
             for i, (s, e, _, _) in enumerate(
                 spans[b : bisect_right(spans, [stop], b)]
             ):
-                if e <= stop:
-                    if ss != s or se != e:
-                        spans.pop(i + b)[:] = DEAD_SPAN
-                        b -= 1
+                if e <= stop and (ss != s or se != e):
+                    spans.pop(i + b)[:] = DEAD_SPAN
+                    b -= 1
 
     def _del_update(self, rmstart: int, rmstop: int) -> None:
         """Update self._type_to_spans according to the removed span."""
@@ -1112,7 +1108,7 @@ class WikiText:
         self,
         *,
         recursive=True,
-        filter_cls: type[Bold] | type[Italic] | None = None,
+        filter_cls: type[Bold | Italic] | None = None,
     ) -> list[Bold | Italic] | list[Italic] | list[Bold]:
         """Return a list of bold and italic objects in self.
 
@@ -1458,9 +1454,9 @@ class WikiText:
             for m in EXTERNAL_LINK_FINDITER(shadow):
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
-        for pattern in patterns:
+        for ptrn in patterns:
             for m in finditer(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode(), 1),
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode(), 1),
                 shadow,
                 MULTILINE,
             ):
@@ -1473,9 +1469,7 @@ class WikiText:
                 else:
                     span = old_span
                 lists_append(
-                    WikiList(
-                        lststr, pattern, m, type_to_spans, span, 'WikiList'
-                    )
+                    WikiList(lststr, ptrn, m, type_to_spans, span, 'WikiList')
                 )
         lists.sort(key=attrgetter('_span_data'))
         return lists
@@ -1589,7 +1583,7 @@ class SubWikiText(WikiText):
     Allow focusing on a particular part of WikiText.
     """
 
-    __slots__ = '_type'
+    __slots__ = ('_type',)
 
     def __init__(
         self,
@@ -1646,12 +1640,12 @@ class SubWikiText(WikiText):
         ss, se, _, _ = self._span_data
         ancestors = []
         ancestors_append = ancestors.append
-        for type_ in types:
-            cls = globals()[type_]
-            spans = type_to_spans[type_]
+        for tp in types:
+            cls = globals()[tp]
+            spans = type_to_spans[tp]
             for span in spans[: bisect_right(spans, [ss])]:
                 if se < span[1]:
-                    ancestors_append(cls(lststr, type_to_spans, span, type_))
+                    ancestors_append(cls(lststr, type_to_spans, span, tp))
         return sorted(ancestors, key=lambda i: ss - i._span_data[0])
 
     def parent(self, type_: str | None = None) -> WikiText | None:

@@ -293,12 +293,8 @@ class Template(SubWikiTextWithArgs):
             if arg.name.strip(WS) == name.strip(WS):
                 if value:
                     if arg.positional:
-                        if arg.value == value:
-                            return True
-                        return False
-                    if arg.value.strip(WS) == value.strip(WS):
-                        return True
-                    return False
+                        return arg.value == value
+                    return arg.value.strip(WS) == value.strip(WS)
                 return True
         return False
 

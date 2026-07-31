@@ -60,7 +60,7 @@ def head_int(value):
 
 
 class Table(SubWikiTextWithAttrs):
-    __slots__ = '_attrs_match_cache'
+    __slots__ = ('_attrs_match_cache',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -210,27 +210,26 @@ class Table(SubWikiTextWithAttrs):
                 for m in match_row:
                     s, e = m.span('data')
                     row_data.append(string[s:e])
-        if table_data:
-            if span:
-                table_attrs: list[list[dict[bytes, bytes]]] = []
-                for match_row in match_table:
-                    row_attrs: list[dict[bytes, bytes]] = []
-                    table_attrs.append(row_attrs)
-                    row_attrs_append = row_attrs.append
-                    for m in match_row:
-                        s, e = m.span('attrs')
-                        captures = ATTRS_MATCH(
-                            string.encode('ascii', 'replace'), s, e
-                        ).captures  # type: ignore
-                        row_attrs_append(
-                            dict(
-                                zip(
-                                    captures('attr_name'),
-                                    captures('attr_value'),
-                                )
+        if table_data and span:
+            table_attrs: list[list[dict[bytes, bytes]]] = []
+            for match_row in match_table:
+                row_attrs: list[dict[bytes, bytes]] = []
+                table_attrs.append(row_attrs)
+                row_attrs_append = row_attrs.append
+                for m in match_row:
+                    s, e = m.span('attrs')
+                    captures = ATTRS_MATCH(
+                        string.encode('ascii', 'replace'), s, e
+                    ).captures  # type: ignore
+                    row_attrs_append(
+                        dict(
+                            zip(
+                                captures('attr_name'),
+                                captures('attr_value'),
                             )
                         )
-                table_data = _apply_attr_spans(table_attrs, table_data)
+                    )
+            table_data = _apply_attr_spans(table_attrs, table_data)
         if row is None:
             if column is None:
                 return table_data

@@ -93,7 +93,7 @@ class Argument(SubWikiText):
             Raise ValueError on trying to convert positional to keyword
             argument.
         """
-        return False if self._shadow_match['eq'] else True
+        return not self._shadow_match['eq']
 
     @positional.setter
     def positional(self, to_positional: bool) -> None:
