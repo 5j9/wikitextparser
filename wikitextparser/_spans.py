@@ -5,10 +5,11 @@ from __future__ import annotations
 from functools import partial
 from typing import Callable, Dict, List, Union
 
-from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc, search
+from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc
 
 from ._config import (
     _HTML_TAG_NAME,
+    FILE_NAMESACE,
     _bare_external_link_schemes,
     _parsable_tag_extensions,
     _parser_functions,
@@ -96,7 +97,10 @@ WIKILINK_PARAM_FINDITER = rc(
     rb')++\}\}\}',
     REVERSE,
 ).finditer
-
+image_pattern_search = rc(
+    rb'^\[\[[ \t]*+' + regex_pattern(FILE_NAMESACE) + rb'[ \t]*+:',
+    IGNORECASE,
+).search
 MARKUP = b''.maketrans(b"=|[]'{}", b'\1_\2\3___')
 BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\n', b'____')
 BRACKETS = b''.maketrans(b'[]', b'__')
@@ -361,14 +365,8 @@ def _parse_sub_spans(
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
-                    if (
-                        search(
-                            rb'^\[\[[ \t]*+(?:File|Image)[ \t]*+:',
-                            match[0],
-                            IGNORECASE,
-                        )
-                        or b'\x02\x02' not in match[0]
-                    ):
+                    m0 = match[0]
+                    if image_pattern_search(m0) or b'\x02\x02' not in m0:
                         wls_append([ms, me, match, byte_array[ms:me]])
                     _parse_sub_spans(
                         byte_array,
