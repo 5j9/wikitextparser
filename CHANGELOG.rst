@@ -1,6 +1,7 @@
 Unreleased
 ----------
 * Improved detection of section titles containing comments. (#147)
+* Improved detection nested wikilinks. (#147)
 
 v1.0.2 (2026-06-25)
 -------------------
