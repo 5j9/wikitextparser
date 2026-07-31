@@ -450,8 +450,8 @@ def test_nested_template_with_unmatched_leading_brace():
 
 
 def test_wikilink_with_extra_brackets():
-    assert [0, 7], bpts(b'[[a|b]]]')['WikiLink'][0]
-    assert [0, 9], bpts(b'[[a|[b]]]')['WikiLink'][0]
+    assert [0, 7] == bpts(b'[[a|b]]]')['WikiLink'][0]
+    assert [0, 9] == bpts(b'[[a|[b]]]')['WikiLink'][0]
     assert not bpts(b'[[[a|b]]')['WikiLink']
     assert not bpts(b'[[[a]|b]]')['WikiLink']
 
