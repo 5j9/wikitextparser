@@ -361,7 +361,14 @@ def _parse_sub_spans(
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
                 ms, me = match.span()
                 if match[1] is None:
-                    if search(rb"^\[\[[ \t]*+(?:File|Image)[ \t]*+:", match[0], IGNORECASE) or not search(rb"\x02\x02", match[0], IGNORECASE):
+                    if (
+                        search(
+                            rb'^\[\[[ \t]*+(?:File|Image)[ \t]*+:',
+                            match[0],
+                            IGNORECASE,
+                        )
+                        or b'\x02\x02' not in match[0]
+                    ):
                         wls_append([ms, me, match, byte_array[ms:me]])
                     _parse_sub_spans(
                         byte_array,
