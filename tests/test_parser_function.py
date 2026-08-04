@@ -70,7 +70,17 @@ def test_argument_with_existing_span():
     pf = WikiText('{{formatnum:text}}').parser_functions[0]
     assert pf.arguments[0].value == 'text'
     assert pf.arguments[0].value == 'text'
+    assert pf.string == '{{formatnum:text}}'
 
 
 def test_tag_containing_pipe():
     assert len(ParserFunction('{{text|a<s |>b</s>c}}').arguments) == 1
+
+
+@mark.skip(
+    reason='ParserFunction arguments currently inherit Template "=" semantics'
+)
+def test_equal_in_if_expression():
+    pf = ParserFunction('{{#if: 2==2 | yes | no }}')
+    pf.arguments[0].value = '3'
+    assert pf.string == '{{#if: 3 | yes | no }}'
