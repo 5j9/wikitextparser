@@ -24,7 +24,7 @@ NEWLINE_CELL_MATCH = rc(
         |
         (?P<attrs>
             (?:
-                [^|\n]
+                [^|\r\n]
                 (?!
                     # attrs end with `|`; or `!!` if sep is `!`
                     (?P=sep){2}
@@ -48,9 +48,9 @@ NEWLINE_CELL_MATCH = rc(
         (?P=sep){2}|
         \|!!|
         # start of the next newline-cell
-        \n\s*+[!|]|
+        \R\s*+[!|]|
         # end of cell-string
-        $
+        \Z
     )
     """,
     VERBOSE,
@@ -83,7 +83,7 @@ INLINE_HAEDER_CELL_MATCH = rc(
                 (?:
                     # inline header attrs end with `|` (above) or `!!` (below)
                     (?!!{2})
-                    [^|\n]
+                    [^|\r\n]
                 )*+
             )
             # attrs-data separator
@@ -96,13 +96,13 @@ INLINE_HAEDER_CELL_MATCH = rc(
     (?P<data>.*?)
     (?=
         # start of the next newline-cell
-        \n\s*+[!|]|
+        \R\s*+[!|]|
         # start of the next inline-cell
         \|\||
         !!|
         \|!!|
         # end of cell-string
-        $
+        \Z
     )
     """,
     VERBOSE | DOTALL,
@@ -119,7 +119,7 @@ INLINE_NONHAEDER_CELL_MATCH = rc(
         (?!\|)
         |
         (?P<attrs>
-            [^|\n]*? # non-_header attrs end with a `|`
+            [^|\r\n]*? # non-_header attrs end with a `|`
         )
         # attribute-data separator
         \|
@@ -132,8 +132,8 @@ INLINE_NONHAEDER_CELL_MATCH = rc(
         [^|]*?
         (?=
             \|\|| # start of the next inline-cell
-            \n\s*+[!|]| # start of the next newline-cell
-            $ # end of cell-string
+            \R\s*+[!|]| # start of the next newline-cell
+            \Z # end of cell-string
         )
     )
     """,
@@ -188,7 +188,7 @@ class Cell(SubWikiTextWithAttrs):
         if cache_string == string:
             return cache_match  # type: ignore
         shadow = self._shadow
-        if shadow[0] == 10:  # ord('\n')
+        if shadow[0] == 10 or shadow[0] == 13:  # ord('\n'), ord('\r')
             m: Match[bytes] = NEWLINE_CELL_MATCH(shadow)  # type: ignore
             self._header = m['sep'] == 33  # ord('!')
         elif self._header:
@@ -260,7 +260,7 @@ class Cell(SubWikiTextWithAttrs):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if shadow[0] == 10:  # ord('\n')
+        if shadow[0] == 10 or shadow[0] == 13:  # ord('\n'), ord('\r')
             self.insert(
                 cell_match.start('sep') + 1, fmt.format(attr_name, attr_value)
             )

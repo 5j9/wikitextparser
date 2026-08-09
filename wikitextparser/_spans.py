@@ -20,7 +20,7 @@ from ._config import (
 rc = partial(rc, cache_pattern=False)
 # According to https://www.mediawiki.org/wiki/Manual:$wgLegalTitleChars
 # illegal title characters are: r'[]{}|#<>[\u0000-\u0020]'
-VALID_TITLE_CHARS = rb'[^\|\{\}\[\2\]\3<>\n]*+'
+VALID_TITLE_CHARS = rb'[^\|\{\}\[\2\]\3<>\r\n]*+'
 # Parser functions
 # According to https://www.mediawiki.org/wiki/Help:Magic_words
 # See also:
@@ -49,7 +49,7 @@ PF_TL_FINDITER = rc(
     + rb'\}\})'
 ).finditer
 # External links
-INVALID_URL_CHARS = rb' \t\n"<>\[\]'
+INVALID_URL_CHARS = rb' \t\r\n"<>\[\]'
 VALID_URL_CHARS = rb'[^' + INVALID_URL_CHARS + rb']++'
 # See more info on literal IPv6 see:
 # https://en.wikipedia.org/wiki/IPv6_address#Literal_IPv6_addresses_in_network_resource_identifiers
@@ -67,7 +67,7 @@ BARE_EXTERNAL_LINK = BARE_EXTERNAL_LINK_SCHEMES + EXTERNAL_LINK_URL_TAIL
 # Wikilinks
 # https://www.mediawiki.org/wiki/Help:Links#Internal_links
 WIKILINK_PARAM_FINDITER = rc(
-    rb'(?<!(?>^|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)'  # != 2N + 1
+    rb'(?<!(?>\A|[^\[\0])(?:(?>\[\0*+){2})*+\[\0*+)'  # != 2N + 1
     rb'\[\0*\['
     rb'(?![\ \0]*+' + BARE_EXTERNAL_LINK + rb')' + VALID_TITLE_CHARS + rb'(?>'
     rb'\|'
@@ -98,11 +98,11 @@ WIKILINK_PARAM_FINDITER = rc(
     REVERSE,
 ).finditer
 image_pattern_search = rc(
-    rb'^\[\[[ \t]*+' + regex_pattern(FILE_NAMESACE) + rb'[ \t]*+:',
+    rb'\A\[\[[ \t]*+' + regex_pattern(FILE_NAMESACE) + rb'[ \t]*+:',
     IGNORECASE,
 ).search
 MARKUP = b''.maketrans(b"=|[]'{}", b'\1_\2\3___')
-BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\n', b'____')
+BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\r\n', b'_____')
 BRACKETS = b''.maketrans(b'[]', b'__')
 
 PARSABLE_TAG_EXTENSION_NAME = regex_pattern(_parsable_tag_extensions)
@@ -147,7 +147,7 @@ EXTENSION_TAGS_FINDITER = rc(
 # Tags:
 # https://infra.spec.whatwg.org/#ascii-whitespace
 # \0 was added as a special case for wikitextparser
-SPACE_CHARS = rb' \t\n\u000C\r\0'  # \s - \v
+SPACE_CHARS = rb' \t\r\n\u000C\0'  # \s - \v
 # http://stackoverflow.com/a/93029/2705757
 # chrs = (chr(i) for i in range(sys.maxunicode))
 # control_chars = ''.join(c for c in chrs if unicodedata.category(c) == 'Cc')

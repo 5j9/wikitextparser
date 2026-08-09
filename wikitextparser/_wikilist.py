@@ -3,29 +3,29 @@ from __future__ import annotations
 from operator import attrgetter
 from typing import Iterable, MutableSequence
 
-from regex import MULTILINE, Match, escape, fullmatch
+from regex import Match, escape, fullmatch
 
 from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
-SUBLIST_PATTERN = rb'(?>^' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\n|\Z)' rb')*+'
+SUBLIST_PATTERN = rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\R|\Z)' rb')*+'
 SUBLIST_WITH_SECOND_PATTERN = (
-    rb'[*#;:].*+(?>\n|\Z)' rb'(?>' rb'(?&pattern)[*#;:].*+(?>\n|\Z)' rb')*+'
+    rb'[*#;:].*+(?>\R|\Z)' rb'(?>' rb'(?&pattern)[*#;:].*+(?>\R|\Z)' rb')*+'
 )
 LIST_PATTERN_FORMAT = (
-    rb'(?<fullitem>^'
+    rb'(?<fullitem>(?<=\R|\A)'
     rb'(?<pattern>{pattern})'
     rb'(?>'
     rb'(?(?<=;\s*+)'
     # mark inline definition as an item
-    rb'(?<item>[^:\n]*+)(?<fullitem>:(?<item>.*+))?+'
-    rb'(?>\n|\Z)' + SUBLIST_PATTERN + rb'|'
+    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>.*+))?+'
+    rb'(?>\R|\Z)' + SUBLIST_PATTERN + rb'|'
     # non-definition
     rb'(?>'
     rb'(?<item>)'
     + SUBLIST_WITH_SECOND_PATTERN
-    + rb'|(?<item>.*+)(?>\n|\Z)'
+    + rb'|(?<item>.*+)(?>\R|\Z)'
     + SUBLIST_PATTERN
     + rb')'
     rb')'
@@ -58,7 +58,6 @@ class WikiList(SubWikiText):
                         b'{pattern}', pattern.encode(), 1
                     ),
                     self._list_shadow,
-                    MULTILINE,
                 ),
                 self.string,
             )
@@ -84,7 +83,6 @@ class WikiList(SubWikiText):
                 b'{pattern}', self.pattern.encode(), 1
             ),
             self._list_shadow,
-            MULTILINE,
         )
         self._match_cache = cache_match, string
         return cache_match  # type: ignore

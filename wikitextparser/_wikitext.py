@@ -15,7 +15,6 @@ from warnings import warn
 from regex import (
     DOTALL,
     IGNORECASE,
-    MULTILINE,
     VERBOSE,
     Match,
     finditer,
@@ -67,8 +66,8 @@ INVALID_EL_TPP_CHRS_SUB = rc(  # the [:-4] slice allows \[ and \]
 ).sub
 
 # Sections
-SECTION_HEADING = rb'^\0*+(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t\0]*+\r?+$'
-SUB_SECTION = rb'(?:^\0*+(?P=equals)=[^\r\n]+?(?P=equals)=[ \t\0]*+\r?+$.*?)*'
+SECTION_HEADING = rb'(?<=\R|\A)\0*+(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t\0]*+(?=\R|\Z)'
+SUB_SECTION = rb'(?:(?<=\R|\A)\0*+(?P=equals)=[^\r\n]+?(?P=equals)=[ \t\0]*+(?=\R|\Z).*?)*'
 LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
     LEAD_SECTION
@@ -76,7 +75,7 @@ SECTIONS_FULLMATCH = rc(
     + SECTION_HEADING
     + rb'.*?'  # heading  # section content
     rb')*',
-    DOTALL | MULTILINE | VERBOSE,
+    DOTALL | VERBOSE,
 ).fullmatch
 SECTIONS_TOP_LEVELS_ONLY = rc(
     LEAD_SECTION
@@ -85,7 +84,7 @@ SECTIONS_TOP_LEVELS_ONLY = rc(
     + rb'.*?'
     + SUB_SECTION
     + rb')*',
-    DOTALL | MULTILINE | VERBOSE,
+    DOTALL | VERBOSE,
 ).fullmatch
 
 # Tables
@@ -93,20 +92,20 @@ TABLE_FINDITER = rc(
     rb"""
     # Table-start
     # Always starts on a new line with optional leading spaces or indentation.
-    (?<=^[ :\0]*+)
+    (?<=\R[ :\0]*+|\A[ :\0]*+)
     {\| # Table contents
     (?:
         # Any character, as long as it is not indicating another table-start
-        (?!^\ *+\{\|).
+        (?!\R\ *+\{\|).
     )*?
     # Table-end
-    \r?\n\s*+
+    \R\s*+
     (?> \|} | \Z )
     """,
-    DOTALL | MULTILINE | VERBOSE,
+    DOTALL | VERBOSE,
 ).finditer
 
-substitute_apostrophes = rc(rb"('\0*+){2,}+(?=[^']|$)", MULTILINE).sub
+substitute_apostrophes = rc(rb"('\0*+){2,}+(?=[^']|\R|\Z)").sub
 
 BOLD_FINDITER = rc(
     rb"""
@@ -115,9 +114,9 @@ BOLD_FINDITER = rc(
     # content
     (\0*+[^'\r\n]++.*?)
     # end token
-    (?:'\0*+'\0*+'|$)
+    (?:'\0*+'\0*+'|(?=\R|\Z))
 """,
-    MULTILINE | VERBOSE,
+    VERBOSE,
 ).finditer
 
 ITALIC_FINDITER = rc(
@@ -127,9 +126,9 @@ ITALIC_FINDITER = rc(
     # content
     (\0*+[^'\r\n]++.*?)
     # end token
-    (?:'\0*+'|$)
+    (?:'\0*+'|(?=\R|\Z))
 """,
-    MULTILINE | VERBOSE,
+    VERBOSE,
 ).finditer
 
 # Types which are detected by parse_to_spans
@@ -1458,7 +1457,6 @@ class WikiText:
             for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode(), 1),
                 shadow,
-                MULTILINE,
             ):
                 ms, me = m.span()
                 s, e = ss + ms, ss + me

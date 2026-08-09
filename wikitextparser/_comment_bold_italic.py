@@ -2,22 +2,22 @@ from __future__ import annotations
 
 from typing import MutableSequence
 
-from regex import DOTALL, MULTILINE, Match
+from regex import DOTALL, Match
 
 from ._spans import TypeToSpans
 from ._wikitext import SubWikiText, rc
 
 COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
-COMMA_COMMENT = "'(?>" + COMMENT_PATTERN + ')*+'
-COMMENT_COMMA = '(?>' + COMMENT_PATTERN + ")*+'"
+COMMA_COMMENT = r"'(?>" + COMMENT_PATTERN + r')*+'
+COMMENT_COMMA = r'(?>' + COMMENT_PATTERN + r")*+'"
 BOLD_FULLMATCH = rc(
-    COMMA_COMMENT * 2 + "'(.*?)(?>'" + COMMENT_COMMA * 2 + '|$)',
-    MULTILINE | DOTALL,
+    COMMA_COMMENT * 2 + r"'(.*?)(?>'" + COMMENT_COMMA * 2 + r'|(?=\R|\Z))',
+    DOTALL,
 ).fullmatch
 ITALIC_FULLMATCH = rc(
-    COMMA_COMMENT + "'(.*?)(?>'" + COMMENT_COMMA + '|$)', DOTALL
+    COMMA_COMMENT + r"'(.*?)(?>'" + COMMENT_COMMA + r'|\Z)', DOTALL
 ).fullmatch
-ITALIC_NOEND_FULLMATCH = rc(COMMA_COMMENT + "'(.*)", DOTALL).fullmatch
+ITALIC_NOEND_FULLMATCH = rc(COMMA_COMMENT + r"'(.*)", DOTALL).fullmatch
 
 
 class Comment(SubWikiText):

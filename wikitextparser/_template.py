@@ -13,7 +13,7 @@ COMMENT_SUB = rc(COMMENT_PATTERN).sub
 
 TL_NAME_ARGS_FULLMATCH = rc(rb'[^|}]*+(?#name)(?<arg>\|[^|]*+)*+').fullmatch
 STARTING_WS_MATCH = rc(r'\s*+').match
-ENDING_WS_MATCH = rc(r'(?>\n[ \t]*)*+', REVERSE).match
+ENDING_WS_MATCH = rc(r'(?>\R[ \t]*)*+', REVERSE).match
 SPACE_AFTER_SEARCH = rc(r'\s*+(?=\|)').search
 
 T = TypeVar('T')

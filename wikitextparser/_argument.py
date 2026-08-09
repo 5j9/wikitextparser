@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import MutableSequence
 
-from regex import DOTALL, MULTILINE, Match
+from regex import DOTALL, Match
 
 from ._spans import TypeToSpans
 from ._wikitext import SECTION_HEADING, SubWikiText, rc
@@ -10,8 +10,8 @@ from ._wikitext import SECTION_HEADING, SubWikiText, rc
 ARG_SHADOW_FULLMATCH = rc(
     rb'[|:](?<pre_eq>(?:[^=]*+(?:'
     + SECTION_HEADING
-    + rb'\n)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
-    MULTILINE | DOTALL,
+    + rb'\R)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
+    DOTALL,
 ).fullmatch
 
 

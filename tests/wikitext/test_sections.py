@@ -1,4 +1,4 @@
-from pytest import mark, warns
+from pytest import warns
 
 from wikitextparser import WikiText, parse
 
@@ -13,8 +13,6 @@ def test_blank_lead():
     assert '== s ==\nc\n' == wt.sections[1].string
 
 
-# Todo: Parser should also work with windows line endings.
-@mark.xfail
 def test_multiline_with_carriage_return():
     s = 'text\r\n= s =\r\n{|\r\n| a \r\n|}\r\ntext'
     p = parse(s)
