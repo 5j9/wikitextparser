@@ -157,3 +157,30 @@ def test_sublist_for_missing_level():
         '1',
         '2',
     ]
+
+def test_multiline_with_carriage_return():
+    parsed = parse(
+        'text\n'
+        '* list item a\r\n'
+        '* list item b\r'
+        '** sub-list of b\n'
+        '* list item c\r'
+        'text'
+    )
+    wikilist = parsed.get_lists(pattern=r'\*')[0]
+    assert wikilist.items == [' list item a', ' list item b', ' list item c']
+    sublist = wikilist.sublists(1, r'\*')[0]
+    assert sublist.items == [' sub-list of b']
+
+    parsed = parse(
+        'text\r'
+        '# list item a\r'
+        '# list item b\r'
+        '## sub-list of b\n'
+        '# list item c\r'
+        'text'
+    )
+    wikilist = parsed.get_lists(pattern=r'#')[0]
+    assert wikilist.items == [' list item a', ' list item b', ' list item c']
+    sublist = wikilist.sublists(1, r'#')[0]
+    assert sublist.items == [' sub-list of b']

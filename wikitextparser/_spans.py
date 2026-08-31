@@ -147,7 +147,7 @@ EXTENSION_TAGS_FINDITER = rc(
 # Tags:
 # https://infra.spec.whatwg.org/#ascii-whitespace
 # \0 was added as a special case for wikitextparser
-SPACE_CHARS = rb' \t\r\n\u000C\0'  # \s - \v
+SPACE_CHARS = rb' \t\n\u000C\r\0'  # \s - \v
 # http://stackoverflow.com/a/93029/2705757
 # chrs = (chr(i) for i in range(sys.maxunicode))
 # control_chars = ''.join(c for c in chrs if unicodedata.category(c) == 'Cc')

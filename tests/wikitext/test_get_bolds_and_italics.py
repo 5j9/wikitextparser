@@ -58,6 +58,14 @@ def test_hald_bolds_with_newline_in_between():
         repr(parse("'''b\na'''c").get_bolds())
         == """[Bold("'''b"), Bold("'''c")]"""
     )
+    assert (
+        repr(parse("'''b\r\na'''c").get_bolds())
+        == """[Bold("'''b"), Bold("'''c")]"""
+    )
+    assert (
+        repr(parse("'''b\ra'''c").get_bolds())
+        == """[Bold("'''b"), Bold("'''c")]"""
+    )
 
 
 def test_half_bold_in_param():

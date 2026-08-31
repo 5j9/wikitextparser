@@ -9,9 +9,9 @@ from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
-SUBLIST_PATTERN = rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*].*+' rb'(?>\R|\Z)' rb')*+'
+SUBLIST_PATTERN = rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
 SUBLIST_WITH_SECOND_PATTERN = (
-    rb'[*#;:].*+(?>\R|\Z)' rb'(?>' rb'(?&pattern)[*#;:].*+(?>\R|\Z)' rb')*+'
+    rb'[*#;:][^\r\n]*+(?>\R|\Z)' rb'(?>' rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)' rb')*+'
 )
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>(?<=\R|\A)'
@@ -19,13 +19,13 @@ LIST_PATTERN_FORMAT = (
     rb'(?>'
     rb'(?(?<=;\s*+)'
     # mark inline definition as an item
-    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>.*+))?+'
+    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>[^\r\n]*+))?+'
     rb'(?>\R|\Z)' + SUBLIST_PATTERN + rb'|'
     # non-definition
     rb'(?>'
     rb'(?<item>)'
     + SUBLIST_WITH_SECOND_PATTERN
-    + rb'|(?<item>.*+)(?>\R|\Z)'
+    + rb'|(?<item>[^\r\n]*+)(?>\R|\Z)'
     + SUBLIST_PATTERN
     + rb')'
     rb')'

@@ -662,3 +662,13 @@ def test_row_attrs_setter():
 def test_cells_may_be_none():
     t = Table('{|\n|-\n| 1 || 2 \n|-\n| 3\n|}')
     assert t.cells()[1][1] is None
+
+
+def test_multiline_with_carriage_return():
+    assert Table(
+        '{|\r\n|Orange\n|Apple\r\n|-\r|Bread\n|Pie\r|-\r\n|Butter\n|Ice cream \r|}'
+    ).data() == [
+        ['Orange', 'Apple'],
+        ['Bread', 'Pie'],
+        ['Butter', 'Ice cream'],
+    ]

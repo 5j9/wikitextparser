@@ -20,6 +20,7 @@ from regex import (
     finditer,
     match,
     search,
+    sub,
 )
 from wcwidth import wcswidth
 
@@ -112,7 +113,7 @@ BOLD_FINDITER = rc(
     # start token
     '\0*+'\0*+'
     # content
-    (\0*+[^'\r\n]++.*?)
+    (\0*+[^'\r\n]++[^\r\n]*?)
     # end token
     (?:'\0*+'\0*+'|(?=\R|\Z))
 """,
@@ -124,7 +125,7 @@ ITALIC_FINDITER = rc(
     # start token
     '\0*+'
     # content
-    (\0*+[^'\r\n]++.*?)
+    (\0*+[^'\r\n]++[^\r\n]*?)
     # end token
     (?:'\0*+'|(?=\R|\Z))
 """,
@@ -1057,12 +1058,9 @@ class WikiText:
             s = starts[-5]
             return b'_' * (s - starts[0]) + m.string[s : m.end()]
 
-        return bytearray(b'\n').join(
-            [
-                process_line(substitute_apostrophes(process_apostrophes, line))
-                for line in self._shadow.splitlines()
-            ]
-        )
+        shadow2 = self._shadow
+        shadow2 = sub(rb'[^\r\n]+', lambda m: process_line(substitute_apostrophes(process_apostrophes, m.group(0))), shadow2)
+        return bytearray(shadow2)
 
     def _bolds_italics_recurse(self, result: list, filter_cls: type | None):
         for prop in (
