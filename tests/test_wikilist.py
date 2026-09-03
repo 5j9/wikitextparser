@@ -158,6 +158,7 @@ def test_sublist_for_missing_level():
         '2',
     ]
 
+
 def test_multiline_with_carriage_return():
     parsed = parse(
         'text\n'
