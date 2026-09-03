@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from bisect import insort_right
 from re import Match
-from typing import Any, Callable, TypeVar, overload
+from typing import Any, Callable, TypeVar, cast, overload
 
 from regex import DOTALL, VERBOSE
 
@@ -52,7 +52,7 @@ HEAD_DIGITS = rc(rb'\s*+\d+').match
 # be ignored.
 FIRST_NON_CAPTION_LINE = rc(rb'\R[\t \0]*+(\|(?!\+)|!)|\Z').search
 
-FIRST_LINEBREAK: Callable[..., Match[bytes]] = rc(rb'\R').search  # type: ignore
+FIRST_LINEBREAK = cast(Callable[..., Match[bytes]], rc(rb'\R').search)
 
 
 def head_int(value):

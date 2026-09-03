@@ -20,7 +20,6 @@ from regex import (
     finditer,
     match,
     search,
-    sub,
 )
 from wcwidth import wcswidth
 
@@ -143,6 +142,8 @@ SPAN_PARSER_TYPES = {
     'Parameter',
     'ExtensionTag',
 }
+
+line_sub = rc(rb'[^\r\n]+').sub
 
 WS = '\r\n\t '
 
@@ -1003,8 +1004,11 @@ class WikiText:
         odd_bold_italics = False
         append_bold_start = bold_starts.append
 
-        def process_line(line: bytes) -> bytes:
+        def process_line(line_match: Match[bytes]) -> bytes:
             nonlocal odd_italics, odd_bold_italics
+            line = substitute_apostrophes(
+                process_apostrophes, line_match.group(0)
+            )
             if odd_italics and (len(bold_starts) + odd_bold_italics) % 2:
                 # one of the bold marks needs to be interpreted as italic
                 first_multi_letter_word = first_space = None
@@ -1060,15 +1064,7 @@ class WikiText:
             s = starts[-5]
             return b'_' * (s - starts[0]) + m.string[s : m.end()]
 
-        shadow2 = self._shadow
-        shadow2 = sub(
-            rb'[^\r\n]+',
-            lambda m: process_line(
-                substitute_apostrophes(process_apostrophes, m.group(0))
-            ),
-            shadow2,
-        )
-        return bytearray(shadow2)
+        return bytearray(line_sub(process_line, self._shadow))
 
     def _bolds_italics_recurse(self, result: list, filter_cls: type | None):
         for prop in (

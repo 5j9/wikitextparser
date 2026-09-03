@@ -506,6 +506,7 @@ def test_newline_cell_start_with_carriage_return():
     assert c is not None
     c.value = 'v'
     assert c.value == 'v'
+    assert c.string == '\r|a=b|v'
 
 
 def test_cell_span_false():
@@ -513,7 +514,7 @@ def test_cell_span_false():
 
 
 @mark.parametrize('newline', ['\n', '\r', '\r\n'])
-def test_get_get_tables(newline):
+def test_get_tables(newline):
     table = (
         '{|'
         + newline

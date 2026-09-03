@@ -22,9 +22,8 @@ def test_multiline_tags():
 
 
 def test_multiline_tags_cr():
-    i1, i2, i3 = (
-        parse('#1<br\r/>{{note}}\r#2<s\r>s</s\r>\r#3').get_lists()[0].items
-    )
+    lists = parse('#1<br\r/>{{note}}\r#2<s\r>s</s\r>\r#3').get_lists()[0].items
+    assert len(lists) == 3
 
 
 def test_definition_list_with_external_link():  # 91
