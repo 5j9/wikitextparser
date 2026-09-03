@@ -20,6 +20,7 @@ ITALIC_FULLMATCH = rc(
 ITALIC_NOEND_FULLMATCH = rc(COMMA_COMMENT + r"'(.*)", DOTALL).fullmatch
 BOLD_NOEND_FULLMATCH = rc(COMMA_COMMENT * 2 + r"'(.*)", DOTALL).fullmatch
 
+
 class Comment(SubWikiText):
     __slots__ = ()
 
