@@ -67,7 +67,9 @@ INVALID_EL_TPP_CHRS_SUB = rc(  # the [:-4] slice allows \[ and \]
 ).sub
 
 # Sections
-SECTION_HEADING = rb'(?<=\R|\A)\0*+(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t\0]*+(?=\R|\Z)'
+SECTION_HEADING = (
+    rb'(?<=\R|\A)\0*+(?<equals>={1,6})[^\r\n]+?(?P=equals)[ \t\0]*+(?=\R|\Z)'
+)
 SUB_SECTION = rb'(?:(?<=\R|\A)\0*+(?P=equals)=[^\r\n]+?(?P=equals)=[ \t\0]*+(?=\R|\Z).*?)*'
 LEAD_SECTION = rb'(?<section>(?<equals>).*?)'
 SECTIONS_FULLMATCH = rc(
@@ -1059,7 +1061,13 @@ class WikiText:
             return b'_' * (s - starts[0]) + m.string[s : m.end()]
 
         shadow2 = self._shadow
-        shadow2 = sub(rb'[^\r\n]+', lambda m: process_line(substitute_apostrophes(process_apostrophes, m.group(0))), shadow2)
+        shadow2 = sub(
+            rb'[^\r\n]+',
+            lambda m: process_line(
+                substitute_apostrophes(process_apostrophes, m.group(0))
+            ),
+            shadow2,
+        )
         return bytearray(shadow2)
 
     def _bolds_italics_recurse(self, result: list, filter_cls: type | None):
