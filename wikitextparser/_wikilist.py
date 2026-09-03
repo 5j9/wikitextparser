@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, MutableSequence
 from operator import attrgetter
-from typing import Iterable, MutableSequence
 
 from regex import Match, escape, fullmatch
 

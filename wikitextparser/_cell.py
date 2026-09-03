@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import MutableSequence
+from collections.abc import MutableSequence
 
 from regex import DOTALL, VERBOSE, Match
 

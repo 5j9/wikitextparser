@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from bisect import insort
-from typing import Iterable
+from collections.abc import Iterable
 
 from ._argument import Argument
 from ._wikilist import WikiList

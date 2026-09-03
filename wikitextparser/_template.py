@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Iterable, TypeVar
+from collections.abc import Iterable
+from typing import TypeVar
 
 from regex import REVERSE
 

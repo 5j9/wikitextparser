@@ -1,7 +1,7 @@
 """Utilities to override default configurations."""
 
 from collections import defaultdict as _defaultdict
-from typing import Iterable as _Iterable
+from collections.abc import Iterable as _Iterable
 
 
 def _plant_trie(strings: _Iterable[str]) -> dict:

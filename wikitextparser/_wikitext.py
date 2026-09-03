@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from bisect import bisect_left, bisect_right, insort_right
+from collections.abc import Iterable, MutableSequence
 from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
     Callable,
-    Iterable,
-    MutableSequence,
     overload,
 )
 from warnings import warn
