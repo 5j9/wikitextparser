@@ -34,15 +34,26 @@ def test_definition_list_with_external_link():  # 91
     ]
 
 
-def test_first_item_is_list():  # 70
-    l0 = parse('a\n###b\n###c\n##d\n#e\nf').get_lists()[0]
-    assert l0.fullitems == ['###b\n###c\n##d\n', '#e\n']
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_first_item_is_list(newline):  # 70
+    l0 = parse(
+        f'a{newline}###b{newline}###c{newline}##d{newline}#e{newline}f'
+    ).get_lists()[0]
+
+    assert l0.fullitems == [
+        f'###b{newline}###c{newline}##d{newline}',
+        f'#e{newline}',
+    ]
     assert l0.items == ['', 'e']
+
     l0_0 = l0.get_lists()[0]
     assert l0_0.level == 2
     assert l0_0.pattern == r'\#\#'
     assert l0_0.items == ['', 'd']
-    assert l0_0.fullitems == ['###b\n###c\n', '##d\n']
+    assert l0_0.fullitems == [
+        f'###b{newline}###c{newline}',
+        f'##d{newline}',
+    ]
 
 
 def test_listitems_with_different_patterns():

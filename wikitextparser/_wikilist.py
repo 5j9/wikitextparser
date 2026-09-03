@@ -9,9 +9,14 @@ from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
-SUBLIST_PATTERN = rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
+SUBLIST_PATTERN = (
+    rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
+)
 SUBLIST_WITH_SECOND_PATTERN = (
-    rb'[*#;:][^\r\n]*+(?>\R|\Z)' rb'(?>' rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)' rb')*+'
+    rb'[*#;:][^\r\n]*+(?>\R|\Z)'
+    rb'(?>'
+    rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)'
+    rb')*+'
 )
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>(?<=\R|\A)'
