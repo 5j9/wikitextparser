@@ -314,6 +314,12 @@ def test_newline_cell_attr_closure_cant_be_cell_sep():
     ]
 
 
+def test_newline_cell_attr_closure_cant_be_cell_sep_with_carriage_return():
+    assert Table('{|class=wikitable\r||||| 2 ! 2\r|}').data() == [
+        ['', '', '2 ! 2']
+    ]
+
+
 def test_attr_delimiter_cant_be_adjacent_to_cell_delimiter():
     """Couldn't find a logical explanation for MW's behaviour."""
     assert Table('{|class=wikitable\n!a| !!b|c\n|}').data() == [['', 'c']]
