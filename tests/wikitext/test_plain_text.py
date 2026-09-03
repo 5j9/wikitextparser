@@ -1,3 +1,5 @@
+from pytest import mark
+
 from wikitextparser import Template, parse, remove_markup
 
 
@@ -161,22 +163,26 @@ def test_none_in_table_data():
     )
 
 
-TABLE_WITH_CAPTION = """{|
-|+Food complements
-|-
-|Orange
-|Apple
-|-
-|Bread
-|Pie
-|-
-|Butter
-|Ice cream
-|}"""
+TABLE_WITH_CAPTION = (
+    '{{|{newline}'
+    '|+Food complements{newline}'
+    '|-{newline}'
+    '|Orange{newline}'
+    '|Apple{newline}'
+    '|-{newline}'
+    '|Bread{newline}'
+    '|Pie{newline}'
+    '|-{newline}'
+    '|Butter{newline}'
+    '|Ice cream{newline}'
+    '|}}'
+)
 
 
-def test_table_caption():
-    assert parse(TABLE_WITH_CAPTION).plain_text() == (
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_table_caption(newline):
+    table = TABLE_WITH_CAPTION.format(newline=newline)
+    assert parse(table).plain_text() == (
         '\nFood complements\n\nOrange\tApple\nBread \tPie\nButter\tIce cream\n'
     )
 
