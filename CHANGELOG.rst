@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v2.0.0 (2026-09-03)
 -------------------
 * Minimum required Python version is now 3.9.
