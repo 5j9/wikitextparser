@@ -199,3 +199,7 @@ def test_comment_at_end_of_four():
     assert [
         repr(i) for i in parse("''''<!---->a''b").get_bolds_and_italics()
     ] == ["Italic(\"''<!---->a''\")"]
+
+
+def test_cr_as_italic_end():
+    assert parse("''i\rx").get_italics()[0].string == "''i"
