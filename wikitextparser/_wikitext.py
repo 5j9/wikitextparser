@@ -108,7 +108,7 @@ TABLE_FINDITER = rc(
     DOTALL | VERBOSE,
 ).finditer
 
-substitute_apostrophes = rc(rb"('\0*+){2,}+(?=[^']|\R|\Z)").sub
+substitute_apostrophes = rc(rb"('\0*+){2,}+(?=[^']|\Z)").sub
 
 BOLD_FINDITER = rc(
     rb"""
