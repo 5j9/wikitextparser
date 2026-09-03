@@ -134,3 +134,7 @@ def test_equal_sign_in_val():
 
 def test_tag_with_equal_sign():
     assert Argument('|a<ref name="abc">R</ref>').name == '1'
+
+
+def test_section_heading_with_carriage_return_in_name():
+    assert Argument('|a\r== heading ==\rb=c').name == 'a\r== heading ==\rb'
