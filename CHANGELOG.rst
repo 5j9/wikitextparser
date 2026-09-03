@@ -1,5 +1,5 @@
-Unreleased
-----------
+v2.0.0 (2026-09-03)
+-------------------
 * Minimum required Python version is now 3.9.
 * Added support for ``\r`` as a line ending.
 
