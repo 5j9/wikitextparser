@@ -207,3 +207,9 @@ def test_test_table_with_no_end_mark2():  # 125
     assert parse('{| class=wikitable\n! a !! b\n|-\n').tables[0].data() == [
         ['a', 'b']
     ]
+
+
+def test_table_with_no_end_mark_with_carriage_return():
+    assert parse('{| class=wikitable\r! a !! b\r|-\r').tables[0].data() == [
+        ['a', 'b']
+    ]
