@@ -231,3 +231,7 @@ def test_ext_links_inside_ref_containing_pipe():  # 139
         '<ref>{{t|url=http://www.kismac.de|titre=Germany says: Good-bye KisMAC!|auteur=Michael Rossberg}}</ref>'
     ).external_links
     assert el.string == 'http://www.kismac.de'
+
+
+def test_external_link_invalid_url_chars_cr():
+    assert parse('[https://a\rb c]').external_links[0].string == 'https://a'
