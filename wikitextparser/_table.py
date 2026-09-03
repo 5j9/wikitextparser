@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from bisect import insort_right
-from typing import Any, TypeVar, overload
+from re import Match
+from typing import Any, Callable, TypeVar, overload
 
 from regex import DOTALL, VERBOSE
 
@@ -51,7 +52,7 @@ HEAD_DIGITS = rc(rb'\s*+\d+').match
 # be ignored.
 FIRST_NON_CAPTION_LINE = rc(rb'\R[\t \0]*+(\|(?!\+)|!)|\Z').search
 
-FIRST_LINEBREAK = rc(rb'\R').search
+FIRST_LINEBREAK: Callable[..., Match[bytes]] = rc(rb'\R').search  # type: ignore
 
 
 def head_int(value):
@@ -93,13 +94,13 @@ class Table(SubWikiTextWithAttrs):
         """Return match_table."""
         table_shadow = self._table_shadow
         # Remove table-start and table-end marks.
-        pos = FIRST_LINEBREAK(table_shadow).span()[0]
+        pos = FIRST_LINEBREAK(table_shadow).start()
         lsp = _lstrip_increase(table_shadow, pos)
         # Remove everything until the first row
         try:
             # while condition may raise IndexError of table is empty
             while table_shadow[lsp] not in b'!|':
-                nlp = FIRST_LINEBREAK(table_shadow, lsp).span()[0]
+                nlp = FIRST_LINEBREAK(table_shadow, lsp).start()
                 pos = nlp
                 lsp = _lstrip_increase(table_shadow, pos)
         except IndexError:
@@ -366,7 +367,7 @@ class Table(SubWikiTextWithAttrs):
         # There is no caption. Create one.
         m = FIRST_LINEBREAK(shadow)
         # Insert caption after the first one.
-        self.insert(m.span()[1], '|+' + newcaption + m[0].decode())
+        self.insert(m.end(), '|+' + newcaption + m[0].decode())
 
     @property
     def _attrs_match(self) -> Any:
@@ -375,7 +376,7 @@ class Table(SubWikiTextWithAttrs):
         if cache_string == string:
             return cache_match
         shadow = self._shadow
-        attrs_match = ATTRS_MATCH(shadow, 2, FIRST_LINEBREAK(shadow).span()[0])
+        attrs_match = ATTRS_MATCH(shadow, 2, FIRST_LINEBREAK(shadow).start())
         self._attrs_match_cache = attrs_match, string
         return attrs_match
 
@@ -392,10 +393,10 @@ class Table(SubWikiTextWithAttrs):
     @caption_attrs.setter
     def caption_attrs(self, attrs: str) -> None:
         shadow = self._shadow
-        p = FIRST_LINEBREAK(shadow)
         m = CAPTION_MATCH(shadow)
         if not m:  # There is no caption-line
-            self.insert(p.span()[1], '|+' + attrs + '|' + p[0].decode())
+            flb = FIRST_LINEBREAK(shadow)
+            self.insert(flb.end(), '|+' + attrs + '|' + flb[0].decode())
         else:  # Caption and attrs or Caption but no attrs
             end = m.end('attrs')
             if end != -1:
@@ -576,8 +577,7 @@ def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     lsp = _lstrip_increase(shadow, ncl)
     while shadow[lsp : lsp + 2] == b'|-':  # type: ignore
         # We are on a row separator line.
-        m = FIRST_LINEBREAK(shadow, lsp + 2)
-        pos = m.span()[0]
+        pos = FIRST_LINEBREAK(shadow, lsp + 2).start()
         pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()  # type: ignore
         lsp = _lstrip_increase(shadow, pos)
     return pos
