@@ -11,7 +11,6 @@ def test_bold():
     assert Bold("'''b'''").text == 'b'
     assert Bold("'<!---->''b'''").text == 'b'
     assert Bold("'''b").text == 'b'
-    assert Bold("'''b'''", end_token=False).text == "b'''"
 
 
 def test_italic():

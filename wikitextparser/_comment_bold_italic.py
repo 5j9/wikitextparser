@@ -18,7 +18,6 @@ ITALIC_FULLMATCH = rc(
     COMMA_COMMENT + r"'(.*?)(?>'" + COMMENT_COMMA + r'|\Z)', DOTALL
 ).fullmatch
 ITALIC_NOEND_FULLMATCH = rc(COMMA_COMMENT + r"'(.*)", DOTALL).fullmatch
-BOLD_NOEND_FULLMATCH = rc(COMMA_COMMENT * 2 + r"'(.*)", DOTALL).fullmatch
 
 
 class Comment(SubWikiText):
@@ -62,24 +61,11 @@ class BoldItalic(SubWikiText):
 
 
 class Bold(BoldItalic):
-    __slots__ = ('end_token',)
-
-    def __init__(
-        self,
-        string: str | MutableSequence[str],
-        _type_to_spans: TypeToSpans | None = None,
-        _span: list[int] | None = None,
-        _type: str | int | None = None,
-        end_token: bool = True,
-    ):
-        super().__init__(string, _type_to_spans, _span, _type)
-        self.end_token = end_token
+    __slots__ = ()
 
     @property
     def _match(self) -> Match[str]:
-        if self.end_token:
-            return BOLD_FULLMATCH(self.string)  # type: ignore
-        return BOLD_NOEND_FULLMATCH(self.string)  # type: ignore
+        return BOLD_FULLMATCH(self.string)  # type: ignore
 
 
 class Italic(BoldItalic):
