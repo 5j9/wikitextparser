@@ -73,6 +73,12 @@ def test_set_level():
     assert '== t ==\ntext' == s.string
 
 
+def test_set_level_with_carriage_return():
+    s = Section('=== t ===\r\ntext')
+    s.level = 2
+    assert '== t ==\r\ntext' == s.string
+
+
 def test_template_at_the_start():
     ts = Section('{{t}}').templates
     assert ts[0].string == '{{t}}'
