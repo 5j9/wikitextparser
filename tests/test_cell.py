@@ -102,3 +102,9 @@ def test_cell_attrs_using_table_match():
     c = parse('text\n{|\n!a=b| c\n|}').tables[0].cells(0, 0)
     assert c is not None
     assert c.attrs == {'a': 'b'}
+
+
+def test_newline_cell_with_sep_not_at_position_0():
+    c = Cell('\r ! 00', True)
+    c.set_attr('n', 'v')
+    assert c.string == '\r ! n="v" | 00'

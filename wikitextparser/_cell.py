@@ -260,7 +260,7 @@ class Cell(SubWikiTextWithAttrs):
             return
         # There is no attributes span in this cell. Create one.
         fmt = ' {}="{}" |' if attr_value else ' {} |'
-        if shadow[0] == 10 or shadow[0] == 13:  # ord('\n'), ord('\r')
+        if shadow[0] in b'\n\r':
             self.insert(
                 cell_match.start('sep') + 1, fmt.format(attr_name, attr_value)
             )
