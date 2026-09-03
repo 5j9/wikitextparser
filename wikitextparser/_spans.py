@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable, Dict, List, Union
+from typing import Callable, Union
 
 from regex import DOTALL, IGNORECASE, REVERSE, Match, compile as rc
 
@@ -232,7 +232,7 @@ HTML_END_TAG_FINDITER = rc(
 
 
 # [stan_start: int, span_end: int, Match, byte_array]
-TypeToSpans = Dict[Union[str, int], List[List]]
+TypeToSpans = dict[Union[str, int], list[list]]
 
 
 def parse_to_spans(byte_array: bytearray) -> TypeToSpans:
