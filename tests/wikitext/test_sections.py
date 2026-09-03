@@ -1,4 +1,4 @@
-from pytest import warns
+from pytest import mark, warns
 
 from wikitextparser import WikiText, parse
 
@@ -106,10 +106,17 @@ lead
 """
 
 
-def test_top_levels_only():
-    sections = parse(text).get_sections(top_levels_only=True)
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_top_levels_only(newline):
+    sections = parse(text.replace('\n', newline)).get_sections(
+        top_levels_only=True
+    )
+
     assert len(sections) == 4
-    assert sections[2].string == '==2==\n2\n===2.1===\n2.1\n'
+    assert (
+        sections[2].string
+        == f'==2=={newline}2{newline}===2.1==={newline}2.1{newline}'
+    )
 
 
 def test_positional_args():
