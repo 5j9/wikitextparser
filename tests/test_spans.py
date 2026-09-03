@@ -632,3 +632,7 @@ def test_invalid_tag():  # 121
         [35, 49],
         [49, 61],
     ]
+
+
+def test_valid_title_chars_cr():
+    assert not bpts(b'[[\ra]]')['WikiLink']
