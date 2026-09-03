@@ -237,10 +237,17 @@ def test_set_arg():
     assert '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}' == t.string
 
 
-def test_preserve_spacing_with_only_one_arg():
-    t = Template('{{t\n  |  afadfaf =   value \n}}')
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_preserve_spacing_with_only_one_arg(newline):
+    t = Template(f'{{{{t{newline}  |  afadfaf =   value {newline}}}')
     t.set_arg('z', 'z', preserve_spacing=True)
-    assert '{{t\n  |  afadfaf =   value\n  |  z       =   z\n}}' == t.string
+
+    assert (
+        '{{t'
+        f'{newline}  |  afadfaf =   value'
+        f'{newline}  |  z       =   z'
+        f'{newline}}}' == t.string
+    )
 
 
 def test_multiline_arg():
