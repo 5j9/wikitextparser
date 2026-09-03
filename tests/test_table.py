@@ -495,6 +495,14 @@ def test_changing_cell_should_effect_the_table():
     assert t.string == '{|class=wikitable\n| c="d"|v\n|}'
 
 
+def test_newline_cell_start_with_carriage_return():
+    t = Table('{|class=wikitable\r|a=b|c\r|}')
+    c = t.cells(0, 0)
+    assert c is not None
+    c.value = 'v'
+    assert c.value == 'v'
+
+
 def test_cell_span_false():
     assert len(Table('{|class=wikitable\n|a=b|c\n|}').cells(span=False)) == 1
 

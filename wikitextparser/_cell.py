@@ -188,7 +188,7 @@ class Cell(SubWikiTextWithAttrs):
         if cache_string == string:
             return cache_match  # type: ignore
         shadow = self._shadow
-        if shadow[0] == 10 or shadow[0] == 13:  # ord('\n'), ord('\r')
+        if shadow[0] in b'\n\r':
             m: Match[bytes] = NEWLINE_CELL_MATCH(shadow)  # type: ignore
             self._header = m['sep'] == 33  # ord('!')
         elif self._header:
