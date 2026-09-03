@@ -512,11 +512,28 @@ def test_cell_span_false():
     assert len(Table('{|class=wikitable\n|a=b|c\n|}').cells(span=False)) == 1
 
 
-def test_get_get_tables():
-    assert (
-        repr(Table('{|\n|a\n|-\n{|\n|b\n|}\n|}').get_tables())
-        == "[Table('{|\\n|b\\n|}')]"
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_get_get_tables(newline):
+    table = (
+        '{|'
+        + newline
+        + '|a'
+        + newline
+        + '|-'
+        + newline
+        + '{|'
+        + newline
+        + '|b'
+        + newline
+        + '|}'
+        + newline
+        + '|}'
     )
+
+    tables = Table(table).get_tables()
+
+    assert len(tables) == 1
+    assert tables[0].string == '{|' + newline + '|b' + newline + '|}'
 
 
 def test_weird_colspan():
