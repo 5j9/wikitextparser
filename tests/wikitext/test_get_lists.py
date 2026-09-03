@@ -21,6 +21,12 @@ def test_multiline_tags():
     assert len(parse('#1<br/\n>\n#2<abc\n>\n#3').get_lists()[0].items) == 2
 
 
+def test_multiline_tags_cr():
+    i1, i2, i3 = (
+        parse('#1<br\r/>{{note}}\r#2<s\r>s</s\r>\r#3').get_lists()[0].items
+    )
+
+
 def test_definition_list_with_external_link():  # 91
     assert parse('; http://a.b :d\n').get_lists()[0].items == [
         ' http://a.b ',
