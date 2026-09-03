@@ -11,7 +11,7 @@ COMMENT_PATTERN = r'<!--[\s\S]*?(?>-->|\Z)'
 COMMA_COMMENT = r"'(?>" + COMMENT_PATTERN + r')*+'
 COMMENT_COMMA = r'(?>' + COMMENT_PATTERN + r")*+'"
 BOLD_FULLMATCH = rc(
-    COMMA_COMMENT * 2 + r"'(.*?)(?>'" + COMMENT_COMMA * 2 + r'|(?=\R|\Z))',
+    COMMA_COMMENT * 2 + r"'(.*?)(?>'" + COMMENT_COMMA * 2 + r'|\Z)',
     DOTALL,
 ).fullmatch
 ITALIC_FULLMATCH = rc(
