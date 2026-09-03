@@ -97,10 +97,10 @@ WIKILINK_PARAM_FINDITER = rc(
     rb')++\}\}\}',
     REVERSE,
 ).finditer
-image_pattern_search = rc(
-    rb'\A\[\[[ \t]*+' + regex_pattern(FILE_NAMESACE) + rb'[ \t]*+:',
+image_pattern_match = rc(
+    rb'\[\[[ \t]*+' + regex_pattern(FILE_NAMESACE) + rb'[ \t]*+:',
     IGNORECASE,
-).search
+).match
 MARKUP = b''.maketrans(b"=|[]'{}", b'\1_\2\3___')
 BRACES_PIPE_NEWLINE = b''.maketrans(b'|{}\r\n', b'_____')
 BRACKETS = b''.maketrans(b'[]', b'__')
@@ -366,7 +366,7 @@ def _parse_sub_spans(
                 ms, me = match.span()
                 if match[1] is None:
                     m0 = match[0]
-                    if image_pattern_search(m0) or b'\x02\x02' not in m0:
+                    if image_pattern_match(m0) or b'\x02\x02' not in m0:
                         wls_append([ms, me, match, byte_array[ms:me]])
                     _parse_sub_spans(
                         byte_array,
