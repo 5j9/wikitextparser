@@ -1,3 +1,5 @@
+from pytest import mark
+
 from wikitextparser import Table, WikiText
 
 # Todo: addrow, addcol, shiftrow, shiftcol, ...
@@ -354,8 +356,11 @@ def test_replace_caption_attrs():
     assert table.caption_attrs == 'new'
 
 
-def test_set_caption_attrs_before_cap():
-    table = Table('{| class="wikitable"\n|a\n|+ ignore\n|}')
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_set_caption_attrs_before_cap(newline):
+    table = Table(
+        f'{{| class="wikitable"{newline}|a{newline}|+ ignore{newline}|}}'
+    )
     table.caption_attrs = 'style=""'
     assert table.caption_attrs == 'style=""'
 
