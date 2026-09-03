@@ -1,5 +1,7 @@
 from operator import attrgetter
 
+from pytest import mark
+
 from wikitextparser import parse
 
 # noinspection PyProtectedMember
@@ -33,18 +35,58 @@ def test_two_tables():
     assert '{|\n|b\n|}' == tables[1].string
 
 
-def test_nested_tables():
-    s = 'text1\n{|class=wikitable\n|a\n|\n{|class=wikitable\n|b\n|}\n|}\ntext2'
+@mark.parametrize('newline', ['\n', '\r', '\r\n'])
+def test_nested_tables(newline):
+    s = (
+        'text1'
+        + newline
+        + '{|class=wikitable'
+        + newline
+        + '|a'
+        + newline
+        + '|'
+        + newline
+        + '{|class=wikitable'
+        + newline
+        + '|b'
+        + newline
+        + '|}'
+        + newline
+        + '|}'
+        + newline
+        + 'text2'
+    )
+
     p = parse(s)
-    assert 1 == len(p.get_tables())  # non-recursive
+
+    assert len(p.get_tables()) == 1  # non-recursive
+
     tables = p.tables  # recursive
-    assert 2 == len(tables)
+    assert len(tables) == 2
+
     table0 = tables[0]
-    assert s[6:-6] == table0.string
-    assert 0 == table0.nesting_level
+    assert table0.string == (
+        '{|class=wikitable'
+        + newline
+        + '|a'
+        + newline
+        + '|'
+        + newline
+        + '{|class=wikitable'
+        + newline
+        + '|b'
+        + newline
+        + '|}'
+        + newline
+        + '|}'
+    )
+    assert table0.nesting_level == 0
+
     table1 = tables[1]
-    assert '{|class=wikitable\n|b\n|}' == table1.string
-    assert 1 == table1.nesting_level
+    assert table1.string == (
+        '{|class=wikitable' + newline + '|b' + newline + '|}'
+    )
+    assert table1.nesting_level == 1
 
 
 def test_tables_in_different_sections():
