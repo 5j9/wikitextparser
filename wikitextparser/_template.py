@@ -5,9 +5,8 @@ from typing import TypeVar
 
 from regex import REVERSE
 
-from ._argument import Argument
+from ._argument import Argument, SubWikiTextWithArgs
 from ._comment_bold_italic import COMMENT_PATTERN
-from ._parser_function import SubWikiTextWithArgs
 from ._wikitext import WS, rc
 
 COMMENT_SUB = rc(COMMENT_PATTERN).sub
@@ -30,6 +29,7 @@ class Template(SubWikiTextWithArgs):
 
     _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
+    _ignore_equals = False
 
     @property
     def _content_span(self) -> tuple[int, int]:
@@ -172,7 +172,7 @@ class Template(SubWikiTextWithArgs):
 
     def set_arg(
         self,
-        name: str,
+        name: str | None,
         value: str,
         positional: bool | None = None,
         before: str | None = None,
@@ -191,20 +191,28 @@ class Template(SubWikiTextWithArgs):
           If it's None, do what seems more appropriate.
         """
         args = (*reversed(self.arguments),)
-        arg = get_arg(name, args)
-        # Updating an existing argument.
-        if arg:
-            if positional:
-                arg.positional = positional
-            if preserve_spacing:
-                val = arg.value
-                arg.value = val.replace(val.strip(WS), value, 1)
-            else:
-                arg.value = value
-            return
+        if name is not None:
+            arg = get_arg(name, args)
+            # Updating an existing argument.
+            if arg:
+                if positional == True:
+                    arg.positional = True
+                # if positional == False but arg.positional == true, then
+                # positional.setter of SubWikiText will raise an exception
+                if preserve_spacing:
+                    val = arg.value
+                    arg.value = val.replace(val.strip(WS), value, 1)
+                else:
+                    arg.value = value
+                return
         # Adding a new argument
-        if not name and positional is None:
+        if not name:
             positional = True
+        else:
+            if positional and not is_positive_integer(name):
+                positional = False
+            if positional and get_last_idx_positional_args(args) != int(name) - 1:
+                positional = False
         # Calculate the whitespace needed before arg-name and after arg-value.
         if not positional and preserve_spacing and args:
             before_names = []
@@ -232,6 +240,7 @@ class Template(SubWikiTextWithArgs):
             # Ignore preserve_spacing for positional args.
             addstring = '|' + value
         else:
+            assert(name) # To keep the compiler happy
             if preserve_spacing:
                 addstring = (
                     '|'
@@ -309,6 +318,11 @@ class Template(SubWikiTextWithArgs):
     def templates(self) -> list[Template]:
         return super().templates[1:]
 
+def is_positive_integer(x):
+    try:
+        return int(x) > 0
+    except ValueError:
+        return False
 
 def mode(list_: list[T]) -> T:
     """Return the most common item in the list.
@@ -341,3 +355,10 @@ def get_arg(name: str, args: Iterable[Argument]) -> Argument | None:
         if arg.name.strip(WS) == name.strip(WS):
             return arg
     return None
+
+def get_last_idx_positional_args(args: Iterable[Argument]) -> int:
+    idx = 0
+    for arg in args:
+        if arg.positional:
+            idx += 1
+    return idx

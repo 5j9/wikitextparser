@@ -290,11 +290,13 @@ def test_multi_set_positional_args():
     assert '{{t|p|q}}' == t.string
 
 
-@mark.xfail
 def test_invalid_position():
     t = Template('{{t}}')
     t.set_arg('2', 'a', positional=True)
     assert '{{t|2=a}}' == t.string
+    t = Template('{{t}}')
+    t.set_arg('v', 'a', positional=True)
+    assert '{{t|v=a}}' == t.string
 
 
 def test_force_new_to_positional_when_old_is_keyword():

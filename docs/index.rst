@@ -41,7 +41,7 @@ SubWikiTextWithAttrs
 
 SubWikiTextWithArgs
 --------------------
-.. autoclass:: wikitextparser._parser_function.SubWikiTextWithArgs
+.. autoclass:: wikitextparser._argument.SubWikiTextWithArgs
    :members:
    :special-members:
    :show-inheritance:
