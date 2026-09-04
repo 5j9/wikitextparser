@@ -903,40 +903,21 @@ class WikiText:
             if len(args) == 1:
                 arg = args[0]
                 # the first arg is both the first and last argument
-                if arg.positional:
-                    arg.value = (
-                        newline_indent + arg.value.strip(ws) + short_indent
-                    )
-                else:
-                    # Note that we don't add spaces before and after the
-                    # '=' in parser functions because it could be part of
-                    # an ordinary string.
-                    arg.name = newline_indent + arg.name.lstrip(ws)
-                    arg.value = arg.value.rstrip(ws) + short_indent
+                arg.value = (
+                    newline_indent + arg.value.strip(ws) + short_indent
+                )
                 continue
             # Special formatting for the first argument
             arg = args[0]
-            if arg.positional:
-                arg.value = (
-                    newline_indent + arg.value.strip(ws) + newline_indent
-                )
-            else:
-                arg.name = newline_indent + arg.name.lstrip(ws)
-                arg.value = arg.value.rstrip(ws) + newline_indent
+            arg.value = (
+                newline_indent + arg.value.strip(ws) + newline_indent
+            )
             # Formatting the middle arguments
             for arg in args[1:-1]:
-                if arg.positional:
-                    arg.value = ' ' + arg.value.strip(ws) + newline_indent
-                else:
-                    arg.name = ' ' + arg.name.lstrip(ws)
-                    arg.value = arg.value.rstrip(ws) + newline_indent
+                arg.value = ' ' + arg.value.strip(ws) + newline_indent
             # Special formatting for the last argument
             arg = args[-1]
-            if arg.positional:
-                arg.value = ' ' + arg.value.strip(ws) + short_indent
-            else:
-                arg.name = ' ' + arg.name.lstrip(ws)
-                arg.value = arg.value.rstrip(ws) + short_indent
+            arg.value = ' ' + arg.value.strip(ws) + short_indent
 
         return parsed.string
 
