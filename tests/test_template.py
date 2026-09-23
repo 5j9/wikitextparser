@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, raises
 
 from wikitextparser import Template
 
@@ -235,6 +235,9 @@ def test_set_arg():
     t = Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
     t.set_arg('z', 'z', preserve_spacing=True)
     assert '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}' == t.string
+    with raises(ValueError):
+        t = Template('{{t|a|b|c}}')
+        t.set_arg('3', 'z', False)
 
 
 @mark.parametrize('newline', ['\n', '\r', '\r\n'])
@@ -343,3 +346,8 @@ def test_preserve_spacing_left_and_right():
 
 def test_invalid_normal_name():  # 105
     assert '' == Template('{{template:}}').normal_name(capitalize=True)
+
+
+def test_get_last_positional_index():
+    t = Template('{{t|a|b|c=d}}')
+    assert t.get_last_positional_index() == 2

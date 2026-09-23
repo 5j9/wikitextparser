@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, raises
 
 from wikitextparser import ParserFunction, WikiText
 
@@ -88,26 +88,26 @@ def test_tag_containing_pipe():
 
 def test_equal_in_if_expression():
     pf = ParserFunction('{{#if: 2==2 | yes | no }}')
-    pf.arguments[0].value = '3'
+    pf.set_arg("1", "3", ignore_equals=True)
     assert pf.string == '{{#if:3| yes | no }}'
 
 
 def test_has_arg():
     has_arg = ParserFunction('{{#pf:a|b=c}}').has_arg
-    assert has_arg('1') is True
-    assert has_arg('1', 'a') is True
-    assert has_arg('b') is False
-    assert has_arg('b', 'c') is False
-    assert has_arg('2') is True
-    assert has_arg('2', 'b=c') is True
-    assert has_arg('c') is False
-    assert has_arg('b', 'd') is False
+    assert has_arg('1', ignore_equals=True) is True
+    assert has_arg('1', 'a', ignore_equals=True) is True
+    assert has_arg('b', ignore_equals=True) is False
+    assert has_arg('b', 'c', ignore_equals=True) is False
+    assert has_arg('2', ignore_equals=True) is True
+    assert has_arg('2', 'b=c', ignore_equals=True) is True
+    assert has_arg('c', ignore_equals=True) is False
+    assert has_arg('b', 'd', ignore_equals=True) is False
 
 
 def test_get_arg():
     get_arg = ParserFunction('{{#pf:a|b=c}}').get_arg
-    assert ':a' == get_arg('1').string  # type: ignore
-    assert get_arg('c') is None
+    assert ':a' == get_arg('1', ignore_equals=True).string  # type: ignore
+    assert get_arg('c', ignore_equals=True) is None
 
 
 def test_name_contains_a_param_with_default():
@@ -120,28 +120,51 @@ def test_name_contains_a_param_with_default():
 
 def test_set_arg():
     t = ParserFunction('{{#pf}}')
-    t.set_arg('1', 'b')
+    t.set_arg('1', 'b', ignore_equals=True)
     assert '{{#pf:b}}' == t.string
     t = ParserFunction('{{#pf:a}}')
-    t.set_arg('1', 'b')
+    t.set_arg('1', 'b', ignore_equals=True)
     assert '{{#pf:b}}' == t.string
     t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('2', 'c')
+    t.set_arg('2', 'c', ignore_equals=True)
     assert '{{#pf:a|c}}' == t.string
     t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('4', 'c')
-    assert '{{#pf:a|b}}' == t.string
+    t.set_arg('2', 'c', True, ignore_equals=True)
+    assert '{{#pf:a|c}}' == t.string
     t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('xd', 'c')
-    assert '{{#pf:a|b}}' == t.string
+    t.set_arg('2', 'c', True, ignore_equals=False)
+    assert '{{#pf:a|c}}' == t.string
+    t = ParserFunction('{{#pf:a|b=x}}')
+    t.set_arg('2', 'c', True, ignore_equals=True)
+    assert '{{#pf:a|c}}' == t.string
+    with raises(ValueError):
+        t = ParserFunction('{{#pf:a|b}}')
+        t.set_arg('4', 'c', ignore_equals=True)
+    with raises(ValueError):
+        t = ParserFunction('{{#pf:a|b}}')
+        t.set_arg('xd', 'c', ignore_equals=True)
+    t = ParserFunction('{{#pf:a|b}}')
+    t.set_arg('4', 'c', ignore_equals=False)
+    assert '{{#pf:a|b|4=c}}' == t.string
+    t = ParserFunction('{{#pf:a|b}}')
+    t.set_arg('xd', 'c', ignore_equals=False)
+    assert '{{#pf:a|b|xd=c}}' == t.string
+    t = ParserFunction('{{#pf:a|b}}')
+    with raises(ValueError):
+        t.set_arg('2', 'c', False, ignore_equals=False)
+        assert '{{#pf:a|b|2=c}}' == t.string
+    t = ParserFunction('{{#pf:a|b}}')
+    with raises(ValueError):
+        t.set_arg('3', 'c', None, None, None, True, ignore_equals=True)
+        assert '{{#pf:a|b|c}}' == t.string
 
 
 def test_del_arg():
     t = ParserFunction('{{#pf:a}}')
-    t.del_arg('1')
+    t.del_arg('1', ignore_equals=True)
     assert '{{#pf}}' == t.string
     t = ParserFunction('{{#pf:a|b}}')
-    t.del_arg('2')
+    t.del_arg('2', ignore_equals=True)
     assert '{{#pf:a}}' == t.string
 
 
@@ -153,3 +176,9 @@ def test_lists():
         'https://a.b ',
         'd',
     ]
+
+
+def test_get_last_positional_index():
+    t = ParserFunction('{{#pf:a|b|c=d}}')
+    assert t.get_last_positional_index(ignore_equals=False) == 2
+    assert t.get_last_positional_index(ignore_equals=True) == 3

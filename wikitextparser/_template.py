@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
 from typing import TypeVar
-
-from regex import REVERSE
 
 from ._argument import Argument, SubWikiTextWithArgs
 from ._comment_bold_italic import COMMENT_PATTERN
@@ -12,9 +9,6 @@ from ._wikitext import WS, rc
 COMMENT_SUB = rc(COMMENT_PATTERN).sub
 
 TL_NAME_ARGS_FULLMATCH = rc(rb'[^|}]*+(?#name)(?<arg>\|[^|]*+)*+').fullmatch
-STARTING_WS_MATCH = rc(r'\s*+').match
-ENDING_WS_MATCH = rc(r'(?>\R[ \t]*)*+', REVERSE).match
-SPACE_AFTER_SEARCH = rc(r'\s*+(?=\|)').search
 
 T = TypeVar('T')
 
@@ -29,11 +23,7 @@ class Template(SubWikiTextWithArgs):
 
     _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
-    _ignore_equals = False
 
-    @property
-    def _content_span(self) -> tuple[int, int]:
-        return 2, -2
 
     def normal_name(
         self,
@@ -96,79 +86,26 @@ class Template(SubWikiTextWithArgs):
         name, sep, tail = name.partition('#')
         return ' '.join(name.split())
 
-    def rm_first_of_dup_args(self) -> None:
-        """Eliminate duplicate arguments by removing the first occurrences.
+    def get_last_positional_index(self) -> int:
+        return super()._get_last_positional_index(ignore_equals=False)
 
-        Remove the first occurrences of duplicate arguments, regardless of
-        their value. Result of the rendered wikitext should remain the same.
-        Warning: Some meaningful data may be removed from wikitext.
+    def get_arg(self, name: str) -> Argument | None:
+        """Return the last argument with the given name.
 
-        Also see `rm_dup_args_safe` function.
+        Return None if no argument with that name is found.
         """
-        names = set()
-        for a in reversed(self.arguments):
-            name = a.name.strip(WS)
-            if name in names:
-                del a[: len(a.string)]
-            else:
-                names.add(name)
+        return super()._get_arg(name, ignore_equals=False)
 
-    def rm_dup_args_safe(self, tag: str | None = None) -> None:
-        """Remove duplicate arguments in a safe manner.
+    def has_arg(self, name: str, value: str | None = None) -> bool:
+        """Return true if there is an arg named `name`.
 
-        Remove the duplicate arguments only in the following situations:
-            1. Both arguments have the same name AND value. (Remove one of
-                them.)
-            2. Arguments have the same name and one of them is empty. (Remove
-                the empty one.)
+        Also check equality of values if `value` is provided.
 
-        Warning: Although this is considered to be safe and no meaningful data
-            is removed from wikitext, but the result of the rendered wikitext
-            may actually change if the second arg is empty and removed but
-            the first had had a value.
-
-        If `tag` is defined, it should be a string that will be appended to
-        the value of the remaining duplicate arguments.
-
-        Also see `rm_first_of_dup_args` function.
+        Note: If you just need to get an argument and you want to LBYL, it's
+            better to get_arg directly and then check if the returned value
+            is None.
         """
-        name_to_lastarg_vals: dict[str, tuple[Argument, list[str]]] = {}
-        # Removing positional args affects their name. By reversing the list
-        # we avoid encountering those kind of args.
-        for arg in reversed(self.arguments):
-            name = arg.name.strip(WS)
-            if arg.positional:
-                # Value of keyword arguments is automatically stripped by MW.
-                val = arg.value
-            else:
-                # But it's not OK to strip whitespace in positional arguments.
-                val = arg.value.strip(WS)
-            if name in name_to_lastarg_vals:
-                # This is a duplicate argument.
-                if not val:
-                    # This duplicate argument is empty. It's safe to remove it.
-                    del arg[0 : len(arg.string)]
-                else:
-                    # Try to remove any of the detected duplicates of this
-                    # that are empty or their value equals to this one.
-                    lastarg, dup_vals = name_to_lastarg_vals[name]
-                    if val in dup_vals:
-                        del arg[0 : len(arg.string)]
-                    elif '' in dup_vals:
-                        # This happens only if the last occurrence of name has
-                        # been an empty string; other empty values will
-                        # be removed as they are seen.
-                        # In other words index of the empty argument in
-                        # dup_vals is always 0.
-                        del lastarg[0 : len(lastarg.string)]
-                        dup_vals.pop(0)
-                    else:
-                        # It was not possible to remove any of the duplicates.
-                        dup_vals.append(val)
-                        if tag:
-                            arg.value += tag
-            else:
-                name_to_lastarg_vals[name] = (arg, [val])
+        return super()._has_arg(name, value, ignore_equals=False)
 
     def set_arg(
         self,
@@ -177,188 +114,25 @@ class Template(SubWikiTextWithArgs):
         positional: bool | None = None,
         before: str | None = None,
         after: str | None = None,
-        preserve_spacing=False,
+        preserve_spacing: bool = False,
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
         - Use `positional`, `before` and `after` keyword arguments only when
-          adding a new argument.
+            adding a new argument.
         - If `before` is given, ignore `after`.
         - If neither `before` nor `after` are given and it's needed to add a
-          new argument, then append the new argument to the end.
+            new argument, then append the new argument to the end.
         - If `positional` is True, try to add the given value as a positional
-          argument. Ignore `preserve_spacing` if positional is True.
-          If it's None, do what seems more appropriate.
+            argument. Ignore `preserve_spacing` if positional is True.
+            If it's None, do what seems more appropriate.
         """
-        args = (*reversed(self.arguments),)
-        if name is not None:
-            arg = get_arg(name, args)
-            # Updating an existing argument.
-            if arg:
-                if positional == True:
-                    arg.positional = True
-                # if positional == False but arg.positional == true, then
-                # positional.setter of SubWikiText will raise an exception
-                if preserve_spacing:
-                    val = arg.value
-                    arg.value = val.replace(val.strip(WS), value, 1)
-                else:
-                    arg.value = value
-                return
-        # Adding a new argument
-        if not name:
-            positional = True
-        else:
-            if positional and not is_positive_integer(name):
-                positional = False
-            if positional and get_last_idx_positional_args(args) != int(name) - 1:
-                positional = False
-        # Calculate the whitespace needed before arg-name and after arg-value.
-        if not positional and preserve_spacing and args:
-            before_names = []
-            name_lengths = []
-            before_values = []
-            after_values = []
-            for arg in args:
-                aname = arg.name
-                name_len = len(aname)
-                name_lengths.append(name_len)
-                before_names.append(STARTING_WS_MATCH(aname)[0])  # type: ignore
-                arg_value = arg.value
-                before_values.append(STARTING_WS_MATCH(arg_value)[0])  # type: ignore
-                after_values.append(ENDING_WS_MATCH(arg_value)[0])  # type: ignore
-            pre_name_ws_mode = mode(before_names)
-            name_length_mode = mode(name_lengths)
-            post_value_ws_mode = mode(
-                [SPACE_AFTER_SEARCH(self.string)[0], *after_values[1:]]  # type: ignore
-            )
-            pre_value_ws_mode = mode(before_values)
-        else:
-            preserve_spacing = False
-        # Calculate the string that needs to be added to the Template.
-        if positional:
-            # Ignore preserve_spacing for positional args.
-            addstring = '|' + value
-        else:
-            assert(name) # To keep the compiler happy
-            if preserve_spacing:
-                addstring = (
-                    '|'
-                    + (pre_name_ws_mode + name.strip(WS)).ljust(  # type: ignore
-                        name_length_mode  # type: ignore
-                    )
-                    + '='
-                    + pre_value_ws_mode  # type: ignore
-                    + value
-                    + post_value_ws_mode  # type: ignore
-                )
-            else:
-                addstring = '|' + name + '=' + value
-        # Place the addstring in the right position.
-        if before:
-            arg = get_arg(before, args)
-            arg.insert(0, addstring)  # type: ignore
-        elif after:
-            arg = get_arg(after, args)
-            arg.insert(len(arg.string), addstring)  # type: ignore
-        else:
-            if args and not positional:
-                arg = args[0]
-                arg_string = arg.string
-                if preserve_spacing:
-                    # Insert after the last argument.
-                    # The addstring needs to be recalculated because we don't
-                    # want to change the the whitespace before final braces.
-                    # noinspection PyUnboundLocalVariable
-                    arg[0 : len(arg_string)] = (
-                        arg.string.rstrip(WS)
-                        + post_value_ws_mode  # type: ignore
-                        + addstring.rstrip(WS)
-                        + after_values[0]  # type: ignore
-                    )
-                else:
-                    arg.insert(len(arg_string), addstring)
-            else:
-                # The template has no arguments or the new arg is
-                # positional AND is to be added at the end of the template.
-                self.insert(-2, addstring)
-
-    def get_arg(self, name: str) -> Argument | None:
-        """Return the last argument with the given name.
-
-        Return None if no argument with that name is found.
-        """
-        return get_arg(name, reversed(self.arguments))
-
-    def has_arg(self, name: str, value: str | None = None) -> bool:
-        """Return true if the is an arg named `name`.
-
-        Also check equality of values if `value` is provided.
-
-        Note: If you just need to get an argument and you want to LBYL, it's
-            better to get_arg directly and then check if the returned value
-            is None.
-        """
-        for arg in reversed(self.arguments):
-            if arg.name.strip(WS) == name.strip(WS):
-                if value:
-                    if arg.positional:
-                        return arg.value == value
-                    return arg.value.strip(WS) == value.strip(WS)
-                return True
-        return False
+        super()._set_arg(name, value, positional, before, after, preserve_spacing, ignore_equals=False)
 
     def del_arg(self, name: str) -> None:
         """Delete all arguments with the given then."""
-        for arg in reversed(self.arguments):
-            if arg.name.strip(WS) == name.strip(WS):
-                del arg[:]
+        super()._del_arg(name, ignore_equals=False)
 
     @property
     def templates(self) -> list[Template]:
         return super().templates[1:]
-
-def is_positive_integer(x):
-    try:
-        return int(x) > 0
-    except ValueError:
-        return False
-
-def mode(list_: list[T]) -> T:
-    """Return the most common item in the list.
-
-    Return the first one if there are more than one most common items.
-
-    Example:
-
-    >>> mode([1,1,2,2,])
-    1
-    >>> mode([1,2,2])
-    2
-    >>> mode([])
-    ...
-    ValueError: max() arg is an empty sequence
-    """
-    return max(set(list_), key=list_.count)
-
-
-def get_arg(name: str, args: Iterable[Argument]) -> Argument | None:
-    """Return the first argument in the args that has the given name.
-
-    Return None if no such argument is found.
-
-    As the computation of self.arguments is a little costly, this
-    function was created so that other methods that have already computed
-    the arguments use it instead of calling self.get_arg directly.
-    """
-    for arg in args:
-        if arg.name.strip(WS) == name.strip(WS):
-            return arg
-    return None
-
-def get_last_idx_positional_args(args: Iterable[Argument]) -> int:
-    idx = 0
-    for arg in args:
-        if arg.positional:
-            idx += 1
-    return idx

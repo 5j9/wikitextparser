@@ -784,7 +784,7 @@ class WikiText:
                 if stripped_tl_name[0] == '{'
                 else stripped_tl_name
             )
-            args = template.arguments
+            args = list(template.arguments)
             if not args:
                 continue
             if ':' in stripped_tl_name:
@@ -889,7 +889,7 @@ class WikiText:
                 # See: [[mw:Help:Extension:ParserFunctions#Miscellaneous]]
                 # All args of #invoke are also whitespace-sensitive.
                 continue
-            args = func.arguments
+            args = list(func.arguments)
             if not args:
                 continue
             # Whitespace, including newlines, tabs, and spaces is stripped
@@ -903,21 +903,21 @@ class WikiText:
             if len(args) == 1:
                 arg = args[0]
                 # the first arg is both the first and last argument
-                arg.value = (
-                    newline_indent + arg.value.strip(ws) + short_indent
+                arg.string = arg.string[0] + (
+                    newline_indent + arg.string[1:].strip(ws) + short_indent
                 )
                 continue
             # Special formatting for the first argument
             arg = args[0]
-            arg.value = (
-                newline_indent + arg.value.strip(ws) + newline_indent
+            arg.string = arg.string[0] + (
+                newline_indent + arg.string[1:].strip(ws) + newline_indent
             )
             # Formatting the middle arguments
             for arg in args[1:-1]:
-                arg.value = ' ' + arg.value.strip(ws) + newline_indent
+                arg.string = arg.string[0] + ' ' + arg.string[1:].strip(ws) + newline_indent
             # Special formatting for the last argument
             arg = args[-1]
-            arg.value = ' ' + arg.value.strip(ws) + short_indent
+            arg.string = arg.string[0] + ' ' + arg.string[1:].strip(ws) + short_indent
 
         return parsed.string
 
