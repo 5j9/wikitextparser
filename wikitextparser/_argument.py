@@ -181,7 +181,6 @@ class SubWikiTextWithArgs(SubWikiText):
         _span: list | None = None,
         _type: str | int | None = None,
     ) -> None:
-        self._arguments_cache = tuple[Argument]()
         self._shadow_match_cache = None, None
         super().__init__(string, _type_to_spans, _span, _type)
 
@@ -199,7 +198,7 @@ class SubWikiTextWithArgs(SubWikiText):
         return self._nesting_level(('Template', 'ParserFunction'))
 
     @property
-    def arguments(self) -> tuple[Argument]:
+    def arguments(self) -> list[Argument]:
         """Parse template content. Create self.name and self.arguments."""
         cached_shadow_match, cache_string = self._shadow_match_cache
         self_string = str(self)
@@ -237,8 +236,8 @@ class SubWikiTextWithArgs(SubWikiText):
                 arguments_append(arg)
 
         self._shadow_match_cache = shadow_match, self_string
-        self._arguments_cache = tuple(arguments)
-        return self._arguments_cache
+        arguments_cache = self._arguments_cache = arguments
+        return arguments_cache
 
     def get_lists(
         self, pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]')
