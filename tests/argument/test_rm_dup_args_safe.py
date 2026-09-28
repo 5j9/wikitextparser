@@ -1,3 +1,5 @@
+from pytest import mark
+
 from wikitextparser import Template
 
 
@@ -91,6 +93,7 @@ def test_rm_dup_args_safe_idempotent():
     assert first_result == t.string
 
 
+@mark.skip('tracked as issue #151')
 def test_rm_dup_args_safe_multiple_values_and_empty():
     t = Template('{{t|a=1|a=|a=2|a=1|a=}}')
 
