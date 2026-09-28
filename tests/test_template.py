@@ -298,4 +298,4 @@ def test_invalid_normal_name():  # 105
 
 def test_get_last_positional_index():
     t = Template('{{t|a|b|c=d}}')
-    assert t.get_last_positional_index() == 2
+    assert t.get_next_positional_index() == 2

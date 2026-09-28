@@ -30,8 +30,8 @@ class ParserFunction(SubWikiTextWithArgs):
         """
         return COMMENT_SUB('', self.name).lstrip(WS).lower()
 
-    def get_last_positional_index(self, ignore_equals: bool) -> int:
-        return super()._get_last_positional_index(ignore_equals=ignore_equals)
+    def get_next_positional_index(self, ignore_equals: bool) -> int:
+        return super()._get_next_positional_index(ignore_equals=ignore_equals)
 
     def get_arg(self, name: str, *, ignore_equals: bool) -> Argument | None:
         """Return the last argument with the given name.

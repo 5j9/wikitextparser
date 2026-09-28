@@ -24,7 +24,6 @@ class Template(SubWikiTextWithArgs):
     _name_args_matcher = TL_NAME_ARGS_FULLMATCH
     _first_arg_sep = 124
 
-
     def normal_name(
         self,
         rm_namespaces=('Template',),
@@ -86,8 +85,8 @@ class Template(SubWikiTextWithArgs):
         name, sep, tail = name.partition('#')
         return ' '.join(name.split())
 
-    def get_last_positional_index(self) -> int:
-        return super()._get_last_positional_index(ignore_equals=False)
+    def get_next_positional_index(self) -> int:
+        return super()._get_next_positional_index(ignore_equals=False)
 
     def get_arg(self, name: str) -> Argument | None:
         """Return the last argument with the given name.
@@ -127,7 +126,15 @@ class Template(SubWikiTextWithArgs):
             argument. Ignore `preserve_spacing` if positional is True.
             If it's None, do what seems more appropriate.
         """
-        super()._set_arg(name, value, positional, before, after, preserve_spacing, ignore_equals=False)
+        super()._set_arg(
+            name,
+            value,
+            positional,
+            before,
+            after,
+            preserve_spacing,
+            ignore_equals=False,
+        )
 
     def del_arg(self, name: str) -> None:
         """Delete all arguments with the given then."""

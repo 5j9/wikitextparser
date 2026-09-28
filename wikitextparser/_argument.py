@@ -344,7 +344,7 @@ class SubWikiTextWithArgs(SubWikiText):
             else:
                 name_to_lastarg_vals[name] = (arg, [val])
 
-    def _get_last_positional_index(self, *, ignore_equals: bool) -> int:
+    def _get_next_positional_index(self, *, ignore_equals: bool) -> int:
         """When ignore_equals is true, all args are considered positional."""
         if ignore_equals:
             return len(self.arguments)
@@ -432,7 +432,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 return
             index = to_index(name)
             if index is None or (
-                self._get_last_positional_index(ignore_equals=ignore_equals)
+                self._get_next_positional_index(ignore_equals=ignore_equals)
                 != index
             ):
                 positional = False
