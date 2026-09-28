@@ -133,7 +133,7 @@ class Template(SubWikiTextWithArgs):
         )
 
     def del_arg(self, name: str) -> None:
-        """Delete all arguments with the given then."""
+        """Delete all arguments with the given name."""
         super()._del_arg(name, ignore_equals=False)
 
     @property

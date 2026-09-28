@@ -523,7 +523,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 self.insert(-2, addstring)
 
     def _del_arg(self, name: str, ignore_equals: bool) -> None:
-        """Delete all arguments with the given then."""
+        """Delete all arguments with the given name."""
         if ignore_equals:
             for i, arg in enumerate(self.arguments):
                 if str(i + 1) == name.strip(WS):

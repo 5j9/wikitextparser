@@ -9,7 +9,7 @@ def test_rm_dup_args_safe():
     t = Template(s)
     t.rm_dup_args_safe()
     assert s == t.string
-    # Don't remove duplicate args if the have different values
+    # Don't remove duplicate args if they have different values
     s = '{{template|year=9999|year=2000}}'
     t = Template(s)
     t.rm_dup_args_safe()
@@ -35,7 +35,7 @@ def test_rm_dup_args_safe():
     t = Template('{{t|1=v|v|1=v}}')
     t.rm_dup_args_safe()
     assert '{{t|1=v}}' == t.string
-    # If the last duplicate has a defferent value, still remove of the
+    # If the last duplicate has a different value, still remove of the
     # first two
     t = Template('{{t|1=v|v|1=u}}')
     t.rm_dup_args_safe()
