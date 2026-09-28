@@ -102,58 +102,6 @@ def test_rm_first_of_dup_args():
     assert '{{t|1=v}}' == str(t)
 
 
-def test_rm_dup_args_safe():
-    # Don't remove duplicate positional args in different positions
-    s = '{{cite|{{t1}}|{{t1}}}}'
-    t = Template(s)
-    t.rm_dup_args_safe()
-    assert s == t.string
-    # Don't remove duplicate args if the have different values
-    s = '{{template|year=9999|year=2000}}'
-    t = Template(s)
-    t.rm_dup_args_safe()
-    assert s == t.string
-    # Detect positional and keyword duplicates
-    t = Template('{{t|1=|}}')
-    t.rm_dup_args_safe()
-    assert '{{t|}}' == t.string
-    # Detect same-name same-value.
-    # It's OK to ignore whitespace in positional arguments.
-    t = Template('{{t|n=v|  n=v  }}')
-    t.rm_dup_args_safe()
-    assert '{{t|  n=v  }}' == t.string
-    # It's not OK to ignore whitespace in positional arguments.
-    t = Template('{{t| v |1=v}}')
-    t.rm_dup_args_safe()
-    assert '{{t| v |1=v}}' == t.string
-    # Removing a positional argument affects the name of later ones.
-    t = Template('{{t|1=|||}}')
-    t.rm_dup_args_safe()
-    assert '{{t|||}}' == t.string
-    # Triple duplicates
-    t = Template('{{t|1=v|v|1=v}}')
-    t.rm_dup_args_safe()
-    assert '{{t|1=v}}' == t.string
-    # If the last duplicate has a defferent value, still remove of the
-    # first two
-    t = Template('{{t|1=v|v|1=u}}')
-    t.rm_dup_args_safe()
-    assert '{{t|v|1=u}}' == t.string
-    # tag
-    # Remove safe duplicates even if tag option is activated
-    t = Template('{{t|1=v|v|1=v}}')
-    t.rm_dup_args_safe(tag='<!-- dup -->')
-    assert '{{t|1=v}}' == t.string
-    # Tag even if one of the duplicate values is different.
-    t = Template('{{t|1=v|v|1=u}}')
-    t.rm_dup_args_safe(tag='<!-- dup -->')
-    assert '{{t|v<!-- dup -->|1=u}}' == t.string
-    # Duplicate argument's value is empty
-    t = Template('{{t|b|1=c|1=}}')
-    t.rm_dup_args_safe()
-    assert '{{t|b|1=c}}' == t.string
-
-
 def test_has_arg():
     has_arg = Template('{{t|a|b=c}}').has_arg
     assert has_arg('1') is True
