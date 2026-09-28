@@ -1,4 +1,4 @@
-from pytest import mark, raises
+from pytest import mark
 
 from wikitextparser import Template
 
