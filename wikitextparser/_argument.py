@@ -442,7 +442,7 @@ class SubWikiTextWithArgs(SubWikiText):
         if ignore_equals:
             if positional is None:
                 positional = True
-            if positional is False:
+            if not positional:
                 raise ValueError(
                     'positional == False is not supported for ignore_equals == True'
                 )
