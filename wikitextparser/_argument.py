@@ -200,7 +200,7 @@ class SubWikiTextWithArgs(SubWikiText):
     @property
     def arguments(self) -> list[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        cached_shadow_match, cache_string = self._shadow_match_cache
+        _, cache_string = self._shadow_match_cache
         self_string = str(self)
         if cache_string == self_string:
             return self._arguments_cache
@@ -360,10 +360,13 @@ class SubWikiTextWithArgs(SubWikiText):
         Return None if no argument with that name is found.
         """
         if ignore_equals:
-            for i, arg in enumerate(self.arguments):
-                if str(i + 1) == name.strip(WS):
-                    return arg
-            return None
+            index = to_index(name)
+            if index is None:
+                return None
+            try:
+                return self.arguments[index]
+            except IndexError:
+                return None
         for arg in reversed(self.arguments):
             if arg.name.strip(WS) == name.strip(WS):
                 return arg
@@ -427,10 +430,10 @@ class SubWikiTextWithArgs(SubWikiText):
                 else:
                     arg.string = arg.string[0] + value
                 return
-            if (
-                not is_positive_integer(name)
-                or self._get_last_positional_index(ignore_equals=ignore_equals)
-                != int(name) - 1
+            index = to_index(name)
+            if index is None or (
+                self._get_last_positional_index(ignore_equals=ignore_equals)
+                != index
             ):
                 positional = False
         else:
@@ -531,11 +534,13 @@ class SubWikiTextWithArgs(SubWikiText):
                 del arg[:]
 
 
-def is_positive_integer(x: str) -> bool:
+def to_index(arg_name: str) -> int | None:
     try:
-        return int(x) > 0
+        int_name = int(arg_name)
     except ValueError:
-        return False
+        return None
+    if int_name > 0:
+        return int_name - 1
 
 
 def mode(list_: list[T]) -> T:

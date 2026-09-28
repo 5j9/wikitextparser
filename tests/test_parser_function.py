@@ -88,7 +88,7 @@ def test_tag_containing_pipe():
 
 def test_equal_in_if_expression():
     pf = ParserFunction('{{#if: 2==2 | yes | no }}')
-    pf.set_arg("1", "3", ignore_equals=True)
+    pf.set_arg('1', '3', ignore_equals=True)
     assert pf.string == '{{#if:3| yes | no }}'
 
 
@@ -172,7 +172,9 @@ def test_lists():
     l1, l2 = ParserFunction('{{#pf:*a\n*b|*c\n*d}}').get_lists()
     assert l1.items == ['a', 'b']
     assert l2.items == ['c', 'd']
-    assert ParserFunction('{{#pf:;https://a.b :d}}').get_lists('[;:]')[0].items == [
+    assert ParserFunction('{{#pf:;https://a.b :d}}').get_lists('[;:]')[
+        0
+    ].items == [
         'https://a.b ',
         'd',
     ]
@@ -182,3 +184,14 @@ def test_get_last_positional_index():
     t = ParserFunction('{{#pf:a|b|c=d}}')
     assert t.get_last_positional_index(ignore_equals=False) == 2
     assert t.get_last_positional_index(ignore_equals=True) == 3
+
+
+def test_ignore_equals_rejects_invalid_positional_indices():
+    t = ParserFunction('{{#pf:a|b}}')
+
+    assert t.get_arg('0', ignore_equals=True) is None
+    assert t.get_arg('-1', ignore_equals=True) is None
+    assert t.get_arg('3', ignore_equals=True) is None
+
+    assert not t.has_arg('0', ignore_equals=True)
+    assert not t.has_arg('-1', ignore_equals=True)
