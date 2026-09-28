@@ -336,6 +336,9 @@ class SubWikiTextWithArgs(SubWikiText):
                         # dup_vals is always 0.
                         del lastarg[0 : len(lastarg.string)]
                         dup_vals.pop(0)
+                        # The current value is now represented by the remaining
+                        # duplicate arguments.
+                        dup_vals.append(val)
                     else:
                         # It was not possible to remove any of the duplicates.
                         dup_vals.append(val)

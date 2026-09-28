@@ -1,6 +1,6 @@
 Unreleased
 ----------
-* 
+* Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an empty argument is present. (#151)
 
 v2.0.0 (2026-09-03)
 -------------------
