@@ -22,6 +22,7 @@ SPACE_AFTER_SEARCH = rc(r'\s*+(?=\|)').search
 
 T = TypeVar('T')
 
+
 class Argument(SubWikiText):
     """Create a new Argument Object.
 
@@ -163,7 +164,12 @@ class Argument(SubWikiText):
 class SubWikiTextWithArgs(SubWikiText):
     """Define common attributes for `Template` and `ParserFunction`."""
 
-    __slots__ = ('_arguments_cache', '_first_arg_sep', '_name_args_matcher', '_shadow_match_cache')
+    __slots__ = (
+        '_arguments_cache',
+        '_first_arg_sep',
+        '_name_args_matcher',
+        '_shadow_match_cache',
+    )
 
     _name_args_matcher: ClassVar[Callable]
     _first_arg_sep: ClassVar[int]
@@ -353,7 +359,7 @@ class SubWikiTextWithArgs(SubWikiText):
         """
         if ignore_equals:
             for i, arg in enumerate(self.arguments):
-                if str(i+1) == name.strip(WS):
+                if str(i + 1) == name.strip(WS):
                     return arg
             return None
         for arg in reversed(self.arguments):
@@ -361,7 +367,9 @@ class SubWikiTextWithArgs(SubWikiText):
                 return arg
         return None
 
-    def _has_arg(self, name: str, value: str | None, *, ignore_equals: bool) -> bool:
+    def _has_arg(
+        self, name: str, value: str | None, *, ignore_equals: bool
+    ) -> bool:
         """Return true if there is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -422,7 +430,11 @@ class SubWikiTextWithArgs(SubWikiText):
         if not name:
             positional = True
         else:
-            if not is_positive_integer(name) or self._get_last_positional_index(ignore_equals=ignore_equals) != int(name) - 1:
+            if (
+                not is_positive_integer(name)
+                or self._get_last_positional_index(ignore_equals=ignore_equals)
+                != int(name) - 1
+            ):
                 positional = False
 
         if ignore_equals == True:
@@ -465,7 +477,7 @@ class SubWikiTextWithArgs(SubWikiText):
             # Ignore preserve_spacing for positional args.
             addstring = addsep + value
         else:
-            assert(name) # To keep the compiler happy
+            assert name  # To keep the compiler happy
             if preserve_spacing:
                 addstring = (
                     addsep
@@ -512,7 +524,7 @@ class SubWikiTextWithArgs(SubWikiText):
         """Delete all arguments with the given then."""
         if ignore_equals:
             for i, arg in enumerate(self.arguments):
-                if str(i+1) == name.strip(WS):
+                if str(i + 1) == name.strip(WS):
                     del arg[:]
             return
         for arg in reversed(self.arguments):
@@ -520,11 +532,12 @@ class SubWikiTextWithArgs(SubWikiText):
                 del arg[:]
 
 
-def is_positive_integer(x):
+def is_positive_integer(x: str) -> bool:
     try:
         return int(x) > 0
     except ValueError:
         return False
+
 
 def mode(list_: list[T]) -> T:
     """Return the most common item in the list.
