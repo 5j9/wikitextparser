@@ -137,11 +137,11 @@ def test_set_arg():
     t = ParserFunction('{{#pf:a|b=x}}')
     t.set_arg('2', 'c', True, ignore_equals=True)
     assert '{{#pf:a|c}}' == t.string
+    t = ParserFunction('{{#pf:a|b}}')
     with raises(ValueError):
-        t = ParserFunction('{{#pf:a|b}}')
         t.set_arg('4', 'c', ignore_equals=True)
+    t = ParserFunction('{{#pf:a|b}}')
     with raises(ValueError):
-        t = ParserFunction('{{#pf:a|b}}')
         t.set_arg('xd', 'c', ignore_equals=True)
     t = ParserFunction('{{#pf:a|b}}')
     t.set_arg('4', 'c', ignore_equals=False)
@@ -149,14 +149,35 @@ def test_set_arg():
     t = ParserFunction('{{#pf:a|b}}')
     t.set_arg('xd', 'c', ignore_equals=False)
     assert '{{#pf:a|b|xd=c}}' == t.string
+
+
+def test_converting_positional_to_named_with_set_arg():
     t = ParserFunction('{{#pf:a|b}}')
-    with raises(ValueError):
-        t.set_arg('2', 'c', False, ignore_equals=False)
-        assert '{{#pf:a|b|2=c}}' == t.string
+    with raises(
+        ValueError,
+        match=r'Converting positional argument to keyword argument is not '
+        r'possible without knowing the new name\. You can use '
+        r'`self.name = somename` instead\.',
+    ):
+        t.set_arg('2', 'c', positional=False, ignore_equals=False)
+    t.set_arg('2', 'c', ignore_equals=False)
+    assert '{{#pf:a|c}}' == t.string
+
+
+def test_cannot_preserve_space_when_ignore_equals():
     t = ParserFunction('{{#pf:a|b}}')
-    with raises(ValueError):
-        t.set_arg('3', 'c', None, None, None, True, ignore_equals=True)
-        assert '{{#pf:a|b|c}}' == t.string
+    with raises(
+        ValueError,
+        match='preserve_spacing == True is not supported for ignore_equals == True',
+    ):
+        t.set_arg(
+            '3',
+            'c',
+            preserve_spacing=True,
+            ignore_equals=True,
+        )
+    t.set_arg('3', 'c', preserve_spacing=True, ignore_equals=False)
+    assert '{{#pf:a|b|3=c}}' == t.string
 
 
 def test_del_arg():
