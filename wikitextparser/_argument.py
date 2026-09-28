@@ -417,7 +417,7 @@ class SubWikiTextWithArgs(SubWikiText):
             # Updating an existing argument.
             if arg:
                 if not ignore_equals:
-                    if positional != None:
+                    if positional is not None:
                         arg.positional = positional
                     if preserve_spacing:
                         val = arg.value
