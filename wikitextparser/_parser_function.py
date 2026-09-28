@@ -16,11 +16,11 @@ class ParserFunction(SubWikiTextWithArgs):
 
     The string should start with {{ and end with }}.
     """
+
     __slots__ = ()
 
     _name_args_matcher = PF_NAME_ARGS_FULLMATCH
     _first_arg_sep = 58
-
 
     def normal_name(self) -> str:
         """Return normal form of self.name.
@@ -40,7 +40,9 @@ class ParserFunction(SubWikiTextWithArgs):
         """
         return super()._get_arg(name, ignore_equals=ignore_equals)
 
-    def has_arg(self, name: str, value: str | None = None, *, ignore_equals: bool) -> bool:
+    def has_arg(
+        self, name: str, value: str | None = None, *, ignore_equals: bool
+    ) -> bool:
         """Return true if there is an arg named `name`.
 
         Also check equality of values if `value` is provided.
@@ -60,7 +62,7 @@ class ParserFunction(SubWikiTextWithArgs):
         after: str | None = None,
         preserve_spacing: bool = False,
         *,
-        ignore_equals: bool
+        ignore_equals: bool,
     ) -> None:
         """Set the value for `name` argument. Add it if it doesn't exist.
 
@@ -73,10 +75,18 @@ class ParserFunction(SubWikiTextWithArgs):
             argument. Ignore `preserve_spacing` if positional is True.
             If it's None, do what seems more appropriate.
         """
-        super()._set_arg(name, value, positional, before, after, preserve_spacing, ignore_equals=ignore_equals)
+        super()._set_arg(
+            name,
+            value,
+            positional,
+            before,
+            after,
+            preserve_spacing,
+            ignore_equals=ignore_equals,
+        )
 
     def del_arg(self, name: str, *, ignore_equals: bool) -> None:
-        """Delete all arguments with the given then."""
+        """Delete all arguments with the given name."""
         super()._del_arg(name, ignore_equals=ignore_equals)
 
     @property
