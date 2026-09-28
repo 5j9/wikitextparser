@@ -323,3 +323,12 @@ def test_set_arg_can_convert_existing_keyword_to_positional():
     t = Template('{{t|  1  =  a  }}')
     t.set_arg('1', 'b', positional=True, preserve_spacing=False)
     assert '{{t|b}}' == t.string
+
+
+def test_arguments_cache_is_invalidated_by_noop_replacement():
+    t = Template('{{t|a=1|b=2}}')
+    t.arguments  # populate the cache  # noqa: B018
+
+    t[:] = t.string
+
+    assert [arg.string for arg in t.arguments] == ['', '']
