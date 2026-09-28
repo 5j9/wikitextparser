@@ -347,9 +347,11 @@ class SubWikiTextWithArgs(SubWikiText):
 
     def _get_last_positional_index(self, *, ignore_equals: bool) -> int:
         """When ignore_equals is true, all args are considered positional."""
+        if ignore_equals:
+            return len(self.arguments)
         idx = 0
         for arg in self.arguments:
-            if ignore_equals or arg.positional:
+            if arg.positional:
                 idx += 1
         return idx
 
