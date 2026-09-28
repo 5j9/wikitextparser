@@ -381,9 +381,9 @@ class SubWikiTextWithArgs(SubWikiText):
             is None.
         """
         a = self._get_arg(name, ignore_equals=ignore_equals)
-        if a == None:
+        if a is None:
             return False
-        if value == None:
+        if value is None:
             return True
         if not ignore_equals:
             return a.value.strip(WS) == value.strip(WS)
