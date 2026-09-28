@@ -138,10 +138,16 @@ def test_set_arg():
     f.set_arg('2', 'c', True, ignore_equals=True)
     assert '{{#pf:a|c}}' == f.string
     f = ParserFunction('{{#pf:a|b}}')
-    with raises(ValueError):
+    with raises(
+        ValueError,
+        match='positional == False is not supported for ignore_equals == True',
+    ):
         f.set_arg('4', 'c', ignore_equals=True)
     f = ParserFunction('{{#pf:a|b}}')
-    with raises(ValueError):
+    with raises(
+        ValueError,
+        match='positional == False is not supported for ignore_equals == True',
+    ):
         f.set_arg('xd', 'c', ignore_equals=True)
     f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('4', 'c', ignore_equals=False)
