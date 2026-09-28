@@ -476,7 +476,6 @@ class SubWikiTextWithArgs(SubWikiText):
             # Ignore preserve_spacing for positional args.
             addstring = addsep + value
         else:
-            assert name  # To keep the compiler happy
             if preserve_spacing:
                 addstring = (
                     addsep
@@ -489,6 +488,7 @@ class SubWikiTextWithArgs(SubWikiText):
                     + post_value_ws_mode  # type: ignore
                 )
             else:
+                assert name is not None  # To keep type checkers happy
                 addstring = addsep + name + '=' + value
         # Place the addstring in the right position.
         if before:
