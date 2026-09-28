@@ -183,9 +183,9 @@ def test_set_arg():
     t = Template('{{t\n  | p1   = v1\n  | p22  = v2\n}}')
     t.set_arg('z', 'z', preserve_spacing=True)
     assert '{{t\n  | p1   = v1\n  | p22  = v2\n  | z    = z\n}}' == t.string
-    with raises(ValueError):
-        t = Template('{{t|a|b|c}}')
-        t.set_arg('3', 'z', False)
+    t = Template('{{t|a|b|c}}')
+    t.set_arg('3', 'z', positional=False)
+    assert t.string == '{{t|a|b|3=z}}'
 
 
 @mark.parametrize('newline', ['\n', '\r', '\r\n'])
@@ -213,7 +213,11 @@ def test_multiline_arg():
 def test_existing_dont_preserve_space():
     t = Template('{{t\n  |  a =   v \n}}')
     t.set_arg('a', 'w', preserve_spacing=False)
-    assert '{{t\n  |  a =w}}' == t.string
+    assert '{{t\n  |a=w}}' == t.string
+
+    t = Template('{{t\n  |  a =   v \n}}')
+    t.set_arg('a', 'w', preserve_spacing=True)
+    assert '{{t\n  |  a =   w \n}}' == t.string
 
 
 def test_new_dont_preserve_space():
@@ -299,3 +303,23 @@ def test_invalid_normal_name():  # 105
 def test_get_last_positional_index():
     t = Template('{{t|a|b|c=d}}')
     assert t.get_next_positional_index() == 2
+
+
+def test_set_arg_can_convert_existing_positional_to_keyword():
+    t = Template('{{t|  a  }}')
+    t.set_arg('1', 'x', positional=False, preserve_spacing=True)
+    assert '{{t|1=  x  }}' == t.string
+
+    t = Template('{{t|  a  }}')
+    t.set_arg('1', 'x', positional=False, preserve_spacing=False)
+    assert '{{t|1=x}}' == t.string
+
+
+def test_set_arg_can_convert_existing_keyword_to_positional():
+    t = Template('{{t|  1  =  a  }}')
+    t.set_arg('1', 'b', positional=True, preserve_spacing=True)
+    assert '{{t|  b  }}' == t.string
+
+    t = Template('{{t|  1  =  a  }}')
+    t.set_arg('1', 'b', positional=True, preserve_spacing=False)
+    assert '{{t|b}}' == t.string

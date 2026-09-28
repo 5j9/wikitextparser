@@ -159,14 +159,15 @@ def test_set_arg():
 
 def test_converting_positional_to_named_with_set_arg():
     f = ParserFunction('{{#pf:a|b}}')
-    with raises(
-        ValueError,
-        match=r'Converting positional argument to keyword argument is not '
-        r'possible without knowing the new name\. You can use '
-        r'`self.name = somename` instead\.',
-    ):
-        f.set_arg('2', 'c', positional=False, ignore_equals=False)
+    f.set_arg('2', 'c', positional=False, ignore_equals=False)
+    assert '{{#pf:a|2=c}}' == f.string
+
+    f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('2', 'c', ignore_equals=False)
+    assert '{{#pf:a|c}}' == f.string
+
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('2', 'c', positional=True, ignore_equals=False)
     assert '{{#pf:a|c}}' == f.string
 
 

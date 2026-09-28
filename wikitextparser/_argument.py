@@ -420,8 +420,18 @@ class SubWikiTextWithArgs(SubWikiText):
             # Updating an existing argument.
             if arg:
                 if not ignore_equals:
-                    if positional is not None:
-                        arg.positional = positional
+                    if positional:
+                        arg.positional = True
+                    elif (
+                        positional is False or not arg.positional
+                    ):  # the second condition handles positional=None
+                        if preserve_spacing:
+                            old_name = arg.name
+                            arg.name = old_name.replace(
+                                old_name.strip(WS), name, 1
+                            )
+                        else:
+                            arg.name = name
                     if preserve_spacing:
                         val = arg.value
                         arg.value = val.replace(val.strip(WS), value, 1)
