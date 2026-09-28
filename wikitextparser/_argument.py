@@ -556,8 +556,6 @@ def to_index(arg_name: str) -> int | None:
 def mode(list_: list[T]) -> T:
     """Return the most common item in the list.
 
-    Return the first one if there are more than one most common items.
-
     Example:
 
     >>> mode([1,1,2,2,])
