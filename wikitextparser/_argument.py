@@ -427,17 +427,14 @@ class SubWikiTextWithArgs(SubWikiText):
                 else:
                     arg.string = arg.string[0] + value
                 return
-
-        # Adding a new argument
-        if not name:
-            positional = True
-        else:
             if (
                 not is_positive_integer(name)
                 or self._get_last_positional_index(ignore_equals=ignore_equals)
                 != int(name) - 1
             ):
                 positional = False
+        else:
+            positional = True
 
         if ignore_equals == True:
             if positional == None:
