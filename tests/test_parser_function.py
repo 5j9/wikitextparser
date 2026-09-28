@@ -119,65 +119,65 @@ def test_name_contains_a_param_with_default():
 
 
 def test_set_arg():
-    t = ParserFunction('{{#pf}}')
-    t.set_arg('1', 'b', ignore_equals=True)
-    assert '{{#pf:b}}' == t.string
-    t = ParserFunction('{{#pf:a}}')
-    t.set_arg('1', 'b', ignore_equals=True)
-    assert '{{#pf:b}}' == t.string
-    t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('2', 'c', ignore_equals=True)
-    assert '{{#pf:a|c}}' == t.string
-    t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('2', 'c', True, ignore_equals=True)
-    assert '{{#pf:a|c}}' == t.string
-    t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('2', 'c', True, ignore_equals=False)
-    assert '{{#pf:a|c}}' == t.string
-    t = ParserFunction('{{#pf:a|b=x}}')
-    t.set_arg('2', 'c', True, ignore_equals=True)
-    assert '{{#pf:a|c}}' == t.string
-    t = ParserFunction('{{#pf:a|b}}')
+    f = ParserFunction('{{#pf}}')
+    f.set_arg('1', 'b', ignore_equals=True)
+    assert '{{#pf:b}}' == f.string
+    f = ParserFunction('{{#pf:a}}')
+    f.set_arg('1', 'b', ignore_equals=True)
+    assert '{{#pf:b}}' == f.string
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('2', 'c', ignore_equals=True)
+    assert '{{#pf:a|c}}' == f.string
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('2', 'c', True, ignore_equals=True)
+    assert '{{#pf:a|c}}' == f.string
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('2', 'c', True, ignore_equals=False)
+    assert '{{#pf:a|c}}' == f.string
+    f = ParserFunction('{{#pf:a|b=x}}')
+    f.set_arg('2', 'c', True, ignore_equals=True)
+    assert '{{#pf:a|c}}' == f.string
+    f = ParserFunction('{{#pf:a|b}}')
     with raises(ValueError):
-        t.set_arg('4', 'c', ignore_equals=True)
-    t = ParserFunction('{{#pf:a|b}}')
+        f.set_arg('4', 'c', ignore_equals=True)
+    f = ParserFunction('{{#pf:a|b}}')
     with raises(ValueError):
-        t.set_arg('xd', 'c', ignore_equals=True)
-    t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('4', 'c', ignore_equals=False)
-    assert '{{#pf:a|b|4=c}}' == t.string
-    t = ParserFunction('{{#pf:a|b}}')
-    t.set_arg('xd', 'c', ignore_equals=False)
-    assert '{{#pf:a|b|xd=c}}' == t.string
+        f.set_arg('xd', 'c', ignore_equals=True)
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('4', 'c', ignore_equals=False)
+    assert '{{#pf:a|b|4=c}}' == f.string
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('xd', 'c', ignore_equals=False)
+    assert '{{#pf:a|b|xd=c}}' == f.string
 
 
 def test_converting_positional_to_named_with_set_arg():
-    t = ParserFunction('{{#pf:a|b}}')
+    f = ParserFunction('{{#pf:a|b}}')
     with raises(
         ValueError,
         match=r'Converting positional argument to keyword argument is not '
         r'possible without knowing the new name\. You can use '
         r'`self.name = somename` instead\.',
     ):
-        t.set_arg('2', 'c', positional=False, ignore_equals=False)
-    t.set_arg('2', 'c', ignore_equals=False)
-    assert '{{#pf:a|c}}' == t.string
+        f.set_arg('2', 'c', positional=False, ignore_equals=False)
+    f.set_arg('2', 'c', ignore_equals=False)
+    assert '{{#pf:a|c}}' == f.string
 
 
 def test_cannot_preserve_space_when_ignore_equals():
-    t = ParserFunction('{{#pf:a|b}}')
+    f = ParserFunction('{{#pf:a|b}}')
     with raises(
         ValueError,
         match='preserve_spacing == True is not supported for ignore_equals == True',
     ):
-        t.set_arg(
+        f.set_arg(
             '3',
             'c',
             preserve_spacing=True,
             ignore_equals=True,
         )
-    t.set_arg('3', 'c', preserve_spacing=True, ignore_equals=False)
-    assert '{{#pf:a|b|3=c}}' == t.string
+    f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=False)
+    assert '{{#pf:a|b|3=c}}' == f.string
 
 
 def test_del_arg():
