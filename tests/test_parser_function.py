@@ -140,13 +140,13 @@ def test_set_arg():
     f = ParserFunction('{{#pf:a|b}}')
     with raises(
         ValueError,
-        match='positional == False is not supported for ignore_equals == True',
+        match='positional == False is incompatible with ignore_equals == True',
     ):
         f.set_arg('4', 'c', ignore_equals=True)
     f = ParserFunction('{{#pf:a|b}}')
     with raises(
         ValueError,
-        match='positional == False is not supported for ignore_equals == True',
+        match='positional == False is incompatible with ignore_equals == True',
     ):
         f.set_arg('xd', 'c', ignore_equals=True)
     f = ParserFunction('{{#pf:a|b}}')

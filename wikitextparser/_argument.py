@@ -444,7 +444,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 positional = True
             if not positional:
                 raise ValueError(
-                    'positional == False is not supported for ignore_equals == True'
+                    'positional == False is incompatible with ignore_equals == True'
                 )
             if preserve_spacing:
                 raise ValueError(
