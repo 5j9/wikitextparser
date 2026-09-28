@@ -213,7 +213,7 @@ def test_get_last_positional_index():
     assert t.get_next_positional_index(ignore_equals=True) == 3
 
 
-def test_ignore_equals_rejects_invalid_positional_indices():
+def test_ignore_equals_rejects_invalid_indices():
     t = ParserFunction('{{#pf:a|b}}')
 
     assert t.get_arg('0', ignore_equals=True) is None
