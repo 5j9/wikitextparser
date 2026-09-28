@@ -132,3 +132,19 @@ def test_rm_dup_args_safe_whitespace_only_positional_value():
 
     # The positional "   " is not an empty value.
     assert '{{t|a=1|   |1=1}}' == t.string
+
+
+def test_arguments_cache_is_invalidated_by_argument_string_mutation():
+    t = Template('{{t|a=1|b=2}}')
+    arguments = t.arguments
+
+    arguments[0].string = '|x=1|y=2'
+
+    new_arguments = t.arguments
+
+    assert new_arguments is not arguments
+    assert [arg.string for arg in new_arguments] == [
+        '|x=1',
+        '|y=2',
+        '|b=2',
+    ]
