@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import TypeVar
-
 from ._argument import Argument, SubWikiTextWithArgs
 from ._comment_bold_italic import COMMENT_PATTERN
 from ._wikitext import WS, rc
@@ -9,8 +7,6 @@ from ._wikitext import WS, rc
 COMMENT_SUB = rc(COMMENT_PATTERN).sub
 
 TL_NAME_ARGS_FULLMATCH = rc(rb'[^|}]*+(?#name)(?<arg>\|[^|]*+)*+').fullmatch
-
-T = TypeVar('T')
 
 
 class Template(SubWikiTextWithArgs):
