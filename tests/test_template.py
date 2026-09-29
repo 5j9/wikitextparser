@@ -332,3 +332,9 @@ def test_arguments_cache_is_invalidated_by_noop_replacement():
     t[:] = t.string
 
     assert [arg.string for arg in t.arguments] == ['|a=1', '|b=2']
+
+
+def test_has_arg_positional_value_whitespace_is_significant():
+    t = Template('{{t| v }}')
+    assert t.has_arg('1', ' v ')
+    assert not t.has_arg('1', 'v')

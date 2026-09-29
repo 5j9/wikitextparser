@@ -392,6 +392,8 @@ class SubWikiTextWithArgs(SubWikiText):
         if value is None:
             return True
         if not ignore_equals:
+            if a.positional:
+                return a.value == value
             return a.value.strip(WS) == value.strip(WS)
         return a.string[1:].strip(WS) == value.strip(WS)
 
