@@ -1,6 +1,15 @@
 Unreleased
 ----------
 * Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an empty argument is present. (#151)
+* Fixed ``Template.set_arg(None, value)`` raising ``AttributeError``; it now appends a positional argument.
+* Fixed ``Template.has_arg`` ignoring whitespace differences in positional argument values.
+* Added ``ParserFunction.set_arg``, ``get_arg``, ``has_arg``, and ``del_arg``
+  with an ``ignore_equals`` parameter for treating all arguments as positional.
+* Made ``get_next_positional_index`` public on ``Template`` and ``ParserFunction``.
+* ``Template.set_arg(..., positional=True)`` now raises ``ValueError`` when the
+  name is not the next positional index, instead of silently adding a keyword argument.
+* ``Template.set_arg(..., positional=False)`` on an existing positional argument
+  now converts it to a keyword argument.
 
 v2.0.0 (2026-09-03)
 -------------------
