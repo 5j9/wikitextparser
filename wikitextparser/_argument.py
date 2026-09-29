@@ -404,7 +404,7 @@ class SubWikiTextWithArgs(SubWikiText):
         positional: bool | None,
         before: str | None,
         after: str | None,
-        preserve_spacing: bool | None,
+        preserve_spacing: bool,
         *,
         ignore_equals: bool,
     ) -> None:
