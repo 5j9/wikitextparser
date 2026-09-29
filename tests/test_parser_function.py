@@ -223,3 +223,17 @@ def test_ignore_equals_rejects_invalid_indices():
 
     assert not t.has_arg('0', ignore_equals=True)
     assert not t.has_arg('-1', ignore_equals=True)
+
+
+def test_removing_first_positional_arg():
+    f = ParserFunction('{{#f:a=a|b=b|c=c}}')
+    f.del_arg('1', ignore_equals=True)
+    # The result is odd and invalid.
+    assert f.string == '{{#f|b=b|c=c}}'
+
+
+def test_removing_first_keyword_arg():
+    f = ParserFunction('{{#f:a=a|b=b|c=c}}')
+    f.del_arg('a', ignore_equals=False)
+    # The result is odd and invalid.
+    assert f.string == '{{#f|b=b|c=c}}'
