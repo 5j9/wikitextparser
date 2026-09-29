@@ -294,6 +294,16 @@ class SubWikiTextWithArgs(SubWikiText):
         If `tag` is defined, it should be a string that will be appended to
         the value of the remaining duplicate arguments.
 
+        Note: The argument that replaces an empty last occurrence survives
+            but is not tagged. Example::
+
+                >>> t = Template('{{t|a=1|a=2|a=}}')
+                >>> t.rm_dup_args_safe(tag='<!-- dup -->')
+                >>> t.string
+                '{{t|a=1<!-- dup -->|a=2}}'
+
+        This behavior may change in the future.
+
         Also see `rm_first_of_dup_args` function.
         """
         name_to_lastarg_vals: dict[str, tuple[Argument, list[str]]] = {}
