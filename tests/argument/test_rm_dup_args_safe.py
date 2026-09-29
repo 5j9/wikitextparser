@@ -107,11 +107,11 @@ def test_rm_dup_args_safe_multiple_duplicate_groups_with_tag():
     assert '{{t|a=2<!-- dup -->|a=1|b=4<!-- dup -->|b=3}}' == t.string
 
 
-def test_arguments_cache_is_invalidated_by_rm_dup_args_safe():
+def test_arguments_after_rm_dup_args_safe():
     t = Template('{{t|a=1|a=1}}')
 
     arguments = t.arguments
-    assert t.arguments is arguments
+    assert t.arguments is not arguments
     assert len(arguments) == 2
 
     t.rm_dup_args_safe()

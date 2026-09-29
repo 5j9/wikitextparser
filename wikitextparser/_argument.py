@@ -165,10 +165,8 @@ class SubWikiTextWithArgs(SubWikiText):
     """Define common attributes for `Template` and `ParserFunction`."""
 
     __slots__ = (
-        '_arguments_cache',
         '_first_arg_sep',
         '_name_args_matcher',
-        '_shadow_match_cache',
     )
 
     _name_args_matcher: ClassVar[Callable]
@@ -181,7 +179,6 @@ class SubWikiTextWithArgs(SubWikiText):
         _span: list | None = None,
         _type: str | int | None = None,
     ) -> None:
-        self._shadow_match_cache = None, None
         super().__init__(string, _type_to_spans, _span, _type)
 
     @property
@@ -200,11 +197,6 @@ class SubWikiTextWithArgs(SubWikiText):
     @property
     def arguments(self) -> list[Argument]:
         """Parse template content. Create self.name and self.arguments."""
-        _, cache_string = self._shadow_match_cache
-        self_string = str(self)
-        if cache_string == self_string:
-            return self._arguments_cache
-
         shadow = self._shadow
         shadow_match = self._name_args_matcher(shadow, 2, -2)
         split_spans = shadow_match.spans('arg')
@@ -235,9 +227,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 arg._span_data[3] = shadow[arg_self_start:arg_self_end]
                 arguments_append(arg)
 
-        self._shadow_match_cache = shadow_match, self_string
-        arguments_cache = self._arguments_cache = arguments
-        return arguments_cache
+        return arguments
 
     def get_lists(
         self, pattern: str | Iterable[str] = (r'\#', r'\*', '[:;]')
