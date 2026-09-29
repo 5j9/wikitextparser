@@ -331,4 +331,4 @@ def test_arguments_cache_is_invalidated_by_noop_replacement():
 
     t[:] = t.string
 
-    assert [arg.string for arg in t.arguments] == ['', '']
+    assert [arg.string for arg in t.arguments] == ['|a=1', '|b=2']
