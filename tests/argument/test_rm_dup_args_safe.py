@@ -145,3 +145,11 @@ def test_arguments_cache_is_invalidated_by_argument_string_mutation():
         '|y=2',
         '|b=2',
     ]
+
+
+def test_rm_dup_args_safe_tag_empty_lastarg_duplicate_survivor():
+    # Case 5: last arg is empty; the other two are identical.
+    # One survives, untagged (sole survivor).
+    t = Template('{{t|a=1|a=1|a=}}')
+    t.rm_dup_args_safe(tag='<!-- dup -->')
+    assert t.string == '{{t|a=1}}'
