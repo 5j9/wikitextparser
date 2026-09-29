@@ -312,10 +312,10 @@ class SubWikiTextWithArgs(SubWikiText):
         for arg in reversed(self.arguments):
             name = arg.name.strip(WS)
             if arg.positional:
-                # Value of keyword arguments is automatically stripped by MW.
+                # Whitespace around positional arguments is not stripped.
                 val = arg.value
             else:
-                # But it's not OK to strip whitespace in positional arguments.
+                # Value of keyword arguments is automatically stripped by MW.
                 val = arg.value.strip(WS)
             if name in name_to_lastarg_vals:
                 # This is a duplicate argument.
