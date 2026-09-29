@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import mark, raises
 
 from wikitextparser import Template
 
@@ -167,10 +167,6 @@ def test_set_arg():
     t = Template('{{t}}')
     t.set_arg('1', 'b')
     assert '{{t|1=b}}' == t.string
-    # Force keyword
-    t = Template('{{t}}')
-    t.set_arg('1', 'b', positional=False)
-    assert '{{t|1=b}}' == t.string
     # Arg already exist, positional
     t = Template('{{t|a}}')
     t.set_arg('1', 'b', preserve_spacing=False)
@@ -186,6 +182,12 @@ def test_set_arg():
     t = Template('{{t|a|b|c}}')
     t.set_arg('3', 'z', positional=False)
     assert t.string == '{{t|a|b|3=z}}'
+
+
+def test_set_arg_force_keyword():
+    t = Template('{{t}}')
+    t.set_arg('1', 'b', positional=False)
+    assert '{{t|1=b}}' == t.string
 
 
 @mark.parametrize('newline', ['\n', '\r', '\r\n'])
@@ -247,11 +249,15 @@ def test_multi_set_positional_args():
 
 def test_invalid_position():
     t = Template('{{t}}')
-    t.set_arg('2', 'a', positional=True)
-    assert '{{t|2=a}}' == t.string
+    with raises(ValueError) as err:
+        t.set_arg('2', 'a', positional=True)
+    assert err.value.args[0] == "cannot set arg '2' in positional form"
+
     t = Template('{{t}}')
-    t.set_arg('v', 'a', positional=True)
-    assert '{{t|v=a}}' == t.string
+    with raises(ValueError) as err:
+        t.set_arg('v', 'a', positional=True)
+    assert err.value.args[0] == "cannot set arg 'v' in positional form"
+    assert '{{t}}' == t.string
 
 
 def test_force_new_to_positional_when_old_is_keyword():
@@ -338,3 +344,12 @@ def test_has_arg_positional_value_whitespace_is_significant():
     t = Template('{{t| v }}')
     assert t.has_arg('1', ' v ')
     assert not t.has_arg('1', 'v')
+
+
+def test_set_arg_with_none_name():
+    t = Template('{{t|a}}')
+    t.set_arg(None, 'x')
+    assert t.string == '{{t|a|x}}'
+    t = Template('{{t|a}}')
+    t.set_arg(None, 'x', positional=True)
+    assert t.string == '{{t|a|x}}'

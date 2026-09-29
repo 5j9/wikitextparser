@@ -74,6 +74,10 @@ class ParserFunction(SubWikiTextWithArgs):
         - If `positional` is True, try to add the given value as a positional
             argument. Ignore `preserve_spacing` if positional is True.
             If it's None, do what seems more appropriate.
+        - if `ignore_equals` is True, treat all current arguments as
+            positional, even if they contain an `=` sign. It has no
+            effect the new value being positional or not. Use `positional`
+            for that purpose.
         """
         super()._set_arg(
             name,

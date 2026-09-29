@@ -121,7 +121,7 @@ def test_name_contains_a_param_with_default():
 def test_set_arg():
     f = ParserFunction('{{#pf}}')
     f.set_arg('1', 'b', ignore_equals=True)
-    assert '{{#pf:b}}' == f.string
+    assert '{{#pf:1=b}}' == f.string
     f = ParserFunction('{{#pf:a}}')
     f.set_arg('1', 'b', ignore_equals=True)
     assert '{{#pf:b}}' == f.string
@@ -138,23 +138,29 @@ def test_set_arg():
     f.set_arg('2', 'c', True, ignore_equals=True)
     assert '{{#pf:a|c}}' == f.string
     f = ParserFunction('{{#pf:a|b}}')
-    with raises(
-        ValueError,
-        match='positional == False is incompatible with ignore_equals == True',
-    ):
-        f.set_arg('4', 'c', ignore_equals=True)
-    f = ParserFunction('{{#pf:a|b}}')
-    with raises(
-        ValueError,
-        match='positional == False is incompatible with ignore_equals == True',
-    ):
-        f.set_arg('xd', 'c', ignore_equals=True)
-    f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('4', 'c', ignore_equals=False)
     assert '{{#pf:a|b|4=c}}' == f.string
     f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('xd', 'c', ignore_equals=False)
     assert '{{#pf:a|b|xd=c}}' == f.string
+
+
+def test_set_arg_ignore_equals_keyword_name():
+    f = ParserFunction('{{#f:a|b}}')
+    f.set_arg('xd', 'c', ignore_equals=True)
+    assert f.string == '{{#f:a|b|xd=c}}'
+
+
+def test_set_arg_no_ignore_equals_non_existing_positional_name():
+    f = ParserFunction('{{#f:a|b}}')
+    f.set_arg('4', 'c', ignore_equals=False)
+    assert f.string == '{{#f:a|b|4=c}}'
+
+
+def test_set_arg_ignore_equals_non_existing_positional_name():
+    f = ParserFunction('{{#f:a|b}}')
+    f.set_arg('4', 'c', ignore_equals=True)
+    assert f.string == '{{#f:a|b|4=c}}'
 
 
 def test_converting_positional_to_named_with_set_arg():
@@ -171,19 +177,31 @@ def test_converting_positional_to_named_with_set_arg():
     assert '{{#pf:a|c}}' == f.string
 
 
-def test_cannot_preserve_space_when_ignore_equals():
+def test_set_arg_preserve_spacing_ignore_equals():
     f = ParserFunction('{{#pf:a|b}}')
-    with raises(
-        ValueError,
-        match='preserve_spacing == True is not supported for ignore_equals == True',
-    ):
-        f.set_arg(
-            '3',
-            'c',
-            preserve_spacing=True,
-            ignore_equals=True,
-        )
+    f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=True)
+    assert '{{#pf:a|b|3=c}}' == f.string
+
+
+def test_set_arg_preserve_spacing_no_ignore_equals_no_positional():
+    f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=False)
+    assert '{{#pf:a|b|3=c}}' == f.string
+
+
+def test_set_arg_preserve_spacing_no_ignore_equals_positional():
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg(
+        '3', 'c', preserve_spacing=True, ignore_equals=False, positional=True
+    )
+    assert '{{#pf:a|b|c}}' == f.string
+
+
+def test_set_arg_preserve_spacing_no_ignore_equals_false_positional():
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg(
+        '3', 'c', preserve_spacing=True, ignore_equals=False, positional=False
+    )
     assert '{{#pf:a|b|3=c}}' == f.string
 
 
@@ -237,3 +255,30 @@ def test_removing_first_keyword_arg():
     f.del_arg('a', ignore_equals=False)
     # The result is odd and invalid.
     assert f.string == '{{#f|b=b|c=c}}'
+
+
+def test_get_the_just_set():
+    f = ParserFunction('{{#f:a|b}}')
+    f.set_arg('xd', 'c', ignore_equals=True)  # you named it 'xd'
+    assert f.string == '{{#f:a|b|xd=c}}'
+    # but it's not findable by that name
+    assert f.get_arg('xd', ignore_equals=True) is None
+    arg = f.get_arg('xd', ignore_equals=False)
+    assert arg is not None and arg.string == '|xd=c'
+    arg = f.get_arg('3', ignore_equals=True)
+    assert arg is not None
+    assert arg.string == '|xd=c'
+
+
+def test_set_arg_ignore_equals_numeric_keyword_add_is_not_positionally_findable():
+    f = ParserFunction('{{#pf:a|b}}')
+    f.set_arg('4', 'c', ignore_equals=True)  # keyword add
+    assert f.string == '{{#pf:a|b|4=c}}'
+    assert f.get_arg('4', ignore_equals=True) is None  # index 4 doesn't exist
+    arg = f.get_arg('4', ignore_equals=False)
+    assert arg is not None and arg.string == '|4=c'
+    # positional=True is strict and raises for a non-next index
+    with raises(ValueError):
+        ParserFunction('{{#pf:a|b}}').set_arg(
+            '4', 'c', ignore_equals=True, positional=True
+        )
