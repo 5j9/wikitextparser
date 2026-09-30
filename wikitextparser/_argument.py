@@ -478,7 +478,7 @@ class SubWikiTextWithArgs(SubWikiText):
             name_length_mode = mode(name_lengths)
             self_name = self.name
             post_value_ws_mode = mode(
-                [self_name[len(self_name.rstrip()) :], *after_values[1:]]  # type: ignore
+                [self_name[len(self_name.rstrip()) :], *after_values[1:]]
             )
             pre_value_ws_mode = mode(before_values)
         else:
