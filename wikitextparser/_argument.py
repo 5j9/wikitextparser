@@ -16,7 +16,6 @@ ARG_SHADOW_FULLMATCH = rc(
     + rb'\R)?+)*+)(?:\Z|(?<eq>=)(?<post_eq>.*+))',
     DOTALL,
 ).fullmatch
-STARTING_WS_MATCH = rc(r'\s*+').match
 ENDING_WS_MATCH = rc(r'(?>\R[ \t]*)*+', REVERSE).match
 
 T = TypeVar('T')
@@ -468,11 +467,10 @@ class SubWikiTextWithArgs(SubWikiText):
             after_values = []
             for arg in reversed(self.arguments):
                 aname = arg.name
-                name_len = len(aname)
-                name_lengths.append(name_len)
-                before_names.append(STARTING_WS_MATCH(aname)[0])  # type: ignore
+                name_lengths.append(len(aname))
+                before_names.append(aname[: -len(aname.lstrip(WS))])
                 arg_value = arg.value
-                before_values.append(STARTING_WS_MATCH(arg_value)[0])  # type: ignore
+                before_values.append(arg_value[: -len(arg_value.lstrip(WS))])
                 after_values.append(ENDING_WS_MATCH(arg_value)[0])  # type: ignore
             pre_name_ws_mode = mode(before_names)
             name_length_mode = mode(name_lengths)
