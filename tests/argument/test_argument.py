@@ -162,3 +162,20 @@ def test_set_arg_after_nonexistent_raises():
     t = Template('{{t|a|b|c}}')
     with raises(ValueError, match="no argument named 'nope'"):
         t.set_arg('x', 'v', after='nope')
+
+
+def test_mode_tie_breaks_by_first_occurrence():
+    from wikitextparser._argument import mode
+
+    # All counts equal -> first occurrence wins, deterministically.
+    assert mode(['a', 'b', 'c']) == 'a'
+    assert mode(['b', 'a', 'c']) == 'b'
+    assert mode(['c', 'b', 'a']) == 'c'
+
+    # A clear winner still wins regardless of position.
+    assert mode(['a', 'b', 'b']) == 'b'
+    assert mode(['b', 'b', 'a']) == 'b'
+
+    # Ties among the most common -> first of the tied maxima.
+    assert mode(['a', 'a', 'b', 'b', 'c']) == 'a'
+    assert mode(['b', 'b', 'a', 'a', 'c']) == 'b'

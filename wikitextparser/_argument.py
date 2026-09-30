@@ -561,6 +561,9 @@ def to_index(arg_name: str) -> int | None:
 def mode(list_: list[T]) -> T:
     """Return the most common item in the list.
 
+    Ties are broken by first occurrence in the list (deterministic,
+    unlike the previous ``set``-based implementation).
+
     Example:
 
     >>> mode([1,1,2,2,])
@@ -571,4 +574,4 @@ def mode(list_: list[T]) -> T:
     ...
     ValueError: max() arg is an empty sequence
     """
-    return max(set(list_), key=list_.count)
+    return max({k: None for k in list_}, key=list_.count)
