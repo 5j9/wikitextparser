@@ -503,10 +503,18 @@ class SubWikiTextWithArgs(SubWikiText):
         # Place the addstring in the right position.
         if before:
             arg = self._get_arg(before, ignore_equals=ignore_equals)
-            arg.insert(0, addstring)  # type: ignore
+            if arg is None:
+                raise ValueError(
+                    f'no argument named {before!r} to insert before'
+                )
+            arg.insert(0, addstring)
         elif after:
             arg = self._get_arg(after, ignore_equals=ignore_equals)
-            arg.insert(len(arg.string), addstring)  # type: ignore
+            if arg is None:
+                raise ValueError(
+                    f'no argument named {after!r} to insert after'
+                )
+            arg.insert(len(arg.string), addstring)
         else:
             if len(self.arguments) > 0 and not positional:
                 arg = self.arguments[-1]

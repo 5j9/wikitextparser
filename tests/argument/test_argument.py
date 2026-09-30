@@ -150,3 +150,15 @@ def test_set_arg_can_convert_existing_keyword_to_positional():
     t = Template('{{t|1=a}}')
     t.set_arg('1', 'b', positional=True)
     assert '{{t|b}}' == t.string
+
+
+def test_set_arg_before_nonexistent_raises():
+    t = Template('{{t|a|b|c}}')
+    with raises(ValueError, match="no argument named 'nope'"):
+        t.set_arg('x', 'v', before='nope')
+
+
+def test_set_arg_after_nonexistent_raises():
+    t = Template('{{t|a|b|c}}')
+    with raises(ValueError, match="no argument named 'nope'"):
+        t.set_arg('x', 'v', after='nope')
