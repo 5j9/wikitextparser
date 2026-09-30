@@ -282,3 +282,9 @@ def test_set_arg_ignore_equals_numeric_keyword_add_is_not_positionally_findable(
         ParserFunction('{{#pf:a|b}}').set_arg(
             '4', 'c', ignore_equals=True, positional=True
         )
+
+
+def test_set_arg_preserve_spacing_single_arg_pf():
+    f = ParserFunction('{{#f:a}}')
+    f.set_arg('2', 'x', preserve_spacing=True, ignore_equals=True)
+    assert f.string == '{{#f:a|2=x}}'

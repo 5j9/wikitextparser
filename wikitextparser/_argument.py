@@ -18,7 +18,6 @@ ARG_SHADOW_FULLMATCH = rc(
 ).fullmatch
 STARTING_WS_MATCH = rc(r'\s*+').match
 ENDING_WS_MATCH = rc(r'(?>\R[ \t]*)*+', REVERSE).match
-SPACE_AFTER_SEARCH = rc(r'\s*+(?=\|)').search
 
 T = TypeVar('T')
 
@@ -477,8 +476,9 @@ class SubWikiTextWithArgs(SubWikiText):
                 after_values.append(ENDING_WS_MATCH(arg_value)[0])  # type: ignore
             pre_name_ws_mode = mode(before_names)
             name_length_mode = mode(name_lengths)
+            self_name = self.name
             post_value_ws_mode = mode(
-                [SPACE_AFTER_SEARCH(self.string)[0], *after_values[1:]]  # type: ignore
+                [self_name[len(self_name.rstrip()) :], *after_values[1:]]  # type: ignore
             )
             pre_value_ws_mode = mode(before_values)
         else:
