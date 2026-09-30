@@ -481,6 +481,8 @@ class SubWikiTextWithArgs(SubWikiText):
                 [SPACE_AFTER_SEARCH(self.string)[0], *after_values[1:]]  # type: ignore
             )
             pre_value_ws_mode = mode(before_values)
+        else:
+            preserve_spacing = False
         # Calculate the string that needs to be added to the Template.
         addsep = chr(self._first_arg_sep) if len(self.arguments) == 0 else '|'
         if positional:

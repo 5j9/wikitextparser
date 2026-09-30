@@ -364,3 +364,13 @@ def test_set_arg_preserve_spacing_tie_uses_first_occurrence():
     assert t.string == '{{t|\ta=v|  b=w|  c=X}}'
 
 
+def test_set_arg_preserve_spacing_empty_template_does_not_crash():
+    t = Template('{{t}}')
+    t.set_arg('1', 'x', preserve_spacing=True)
+    assert t.string == '{{t|1=x}}'
+
+
+def test_set_arg_preserve_spacing_empty_named():
+    t = Template('{{t}}')
+    t.set_arg('n', 'x', preserve_spacing=True)
+    assert t.string == '{{t|n=x}}'
