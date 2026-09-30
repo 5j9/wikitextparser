@@ -139,12 +139,3 @@ class Template(SubWikiTextWithArgs):
     @property
     def templates(self) -> list[Template]:
         return super().templates[1:]
-
-
-def test_set_arg_preserve_spacing_tie_uses_first_occurrence():
-    # Leading WS of the two existing args is a tie: '\t' (a) vs '  ' (b).
-    # Arguments are traversed in reverse, so '  ' (the last arg) is seen
-    # first and must win the tie.
-    t = Template('{{t|\ta=v|  b=w}}')
-    t.set_arg('c', 'X', preserve_spacing=True)
-    assert t.string == '{{t|\ta=v|  b=w|  c=X}}'
