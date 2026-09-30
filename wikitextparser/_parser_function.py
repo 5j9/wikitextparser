@@ -30,7 +30,7 @@ class ParserFunction(SubWikiTextWithArgs):
         """
         return COMMENT_SUB('', self.name).lstrip(WS).lower()
 
-    def get_next_positional_index(self, ignore_equals: bool) -> int:
+    def get_next_positional_index(self, *, ignore_equals: bool) -> int:
         return super()._get_next_positional_index(ignore_equals=ignore_equals)
 
     def get_arg(self, name: str, *, ignore_equals: bool) -> Argument | None:
