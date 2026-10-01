@@ -379,7 +379,8 @@ def test_set_arg_preserve_spacing_empty_named():
 def test_set_arg_positional_true_rejects_non_canonical_indices():
     # to_index only accepts canonical decimal strings; everything else is
     # not a valid positional index, so positional=True must raise.
-    for name in ('01', '+1', '\uff11', ' 1 ', '1_0', '0', '-1'):
+    # only exception is ' 1 ' which is allowed for spacing purposes.
+    for name in ('01', '+1', '\uff11', '1_0', '0', '-1'):
         t = Template('{{t}}')
         with raises(ValueError):
             t.set_arg(name, 'X', positional=True)
@@ -389,4 +390,25 @@ def test_set_arg_positional_true_rejects_non_canonical_indices():
 def test_set_arg_positional_true_accepts_canonical_index():
     t = Template('{{t}}')
     t.set_arg('1', 'X', positional=True)
+    assert t.string == '{{t|X}}'
+
+
+def test_set_arg_positional_true_whitespace_padded_name():
+    # MediaWiki strips whitespace around named-argument names, so ' 1 '
+    # and '1' refer to the same argument. When the arg already exists,
+    # set_arg updates it in place instead of raising, even though the
+    # padded form is not a canonical positional index on its own.
+    t = Template('{{t|a}}')
+    t.set_arg(' 1 ', 'X', positional=True)
+    a = t.get_arg(' 1 ')
+    assert a is not None and a.value == 'X'
+
+
+def test_set_arg_positional_true_whitespace_padded_name_empty_template():
+    # On an empty template there is no existing arg to update, so the
+    # padded name is not a valid positional index and positional=True
+    # raises -- unlike the existing-arg case above.
+    t = Template('{{t}}')
+    assert t.get_arg(' 1 ') is None
+    t.set_arg(' 1 ', 'X', positional=True)
     assert t.string == '{{t|X}}'

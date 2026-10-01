@@ -442,8 +442,8 @@ class SubWikiTextWithArgs(SubWikiText):
                 else:
                     arg.string = arg.string[0] + value
                 return
-            index = to_index(name)
             if positional or positional is None:
+                index = to_index(name.strip(WS))
                 if index is None or (
                     self._get_next_positional_index(
                         ignore_equals=ignore_equals
