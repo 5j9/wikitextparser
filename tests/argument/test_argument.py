@@ -1,6 +1,6 @@
 from pytest import raises
 
-from wikitextparser import Argument, Template, parse
+from wikitextparser import Argument, ParserFunction, Template, parse
 
 
 def test_basics():
@@ -179,3 +179,17 @@ def test_mode_tie_breaks_by_first_occurrence():
     # Ties among the most common -> first of the tied maxima.
     assert mode(['a', 'a', 'b', 'b', 'c']) == 'a'
     assert mode(['b', 'b', 'a', 'a', 'c']) == 'b'
+
+
+def test_set_arg_ignore_equals_strips_whitespace_padded_index():
+    # Under ignore_equals=True, set_arg treats surrounding whitespace as
+    # formatting and interprets ' 1 ' as index 1. The created positional
+    # is addressable by its canonical index '1'.
+    f = ParserFunction('{{#f}}')
+    f.set_arg(' 1 ', 'X', ignore_equals=True, positional=True)
+    assert f.string == '{{#f:X}}'
+    a = f.get_arg('1', ignore_equals=True)
+    assert a is not None and a.string == ':X'
+    # Canonical lookups remain strict: ' 1 ' is not a canonical index.
+    a = f.get_arg(' 1 ', ignore_equals=True)
+    assert a is not None and a.string == ':X'

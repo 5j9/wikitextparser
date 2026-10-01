@@ -246,8 +246,7 @@ def test_ignore_equals_rejects_invalid_indices():
 def test_removing_first_positional_arg():
     f = ParserFunction('{{#f:a=a|b=b|c=c}}')
     f.del_arg('1', ignore_equals=True)
-    # The result is odd and invalid.
-    assert f.string == '{{#f|b=b|c=c}}'
+    assert f.string == '{{#f:b=b|c=c}}'
 
 
 def test_removing_first_keyword_arg():
@@ -310,16 +309,25 @@ def test_del_arg_ignore_equals_numeric_boundary_names():
 def test_ignore_equals_canonical_indices_only():
     # Only canonical decimal strings ('1', '2', ...) address positional
     # arguments. Forms that Python's int() would accept but MediaWiki treats
-    # as literal names ('01', '+1', fullwidth '１', whitespace-padded) must
-    # NOT be treated as indices by get/has/del/set.
-    aliases = ('01', '+1', '\uff11', ' 1 ', '1 ', '1_0', '1.0')
-    for name in aliases:
+    # as literal names ('01', '+1', fullwidth '１') must
+    # NOT be treated as indices by get/has/del/set. The only exception is
+    # whitespace-padded name. Since a name is always stripped in MW, i.e.
+    # positional args have no WS and keyword args are stripped, we can ignore
+    # WS for lookup.
+    bad_aliases = ('01', '+1', '\uff11', '1_0', '1.0')
+    for name in bad_aliases:
         f = ParserFunction('{{#pf:a|b|c}}')
         assert f.get_arg(name, ignore_equals=True) is None, name
         assert f.has_arg(name, ignore_equals=True) is False, name
         f.del_arg(name, ignore_equals=True)
         assert f.string == '{{#pf:a|b|c}}', name
-
+    for name in (' 1 ', '1 ', ' 1'):
+        f = ParserFunction('{{#pf:a|b|c}}')
+        a = f.get_arg(name, ignore_equals=True)
+        assert a is not None and a.value == 'a'
+        assert f.has_arg(name, ignore_equals=True) is True, name
+        f.del_arg(name, ignore_equals=True)
+        assert f.string == '{{#pf:b|c}}', name
     # Invalid / out-of-range indices behave the same way.
     for name in ('0', '-1', '4', '', 'v'):
         f = ParserFunction('{{#pf:a|b|c}}')
@@ -338,3 +346,21 @@ def test_ignore_equals_canonical_indices_only():
         f2.del_arg(name, ignore_equals=True)
         remaining = ParserFunction(f2.string).arguments
         assert arg not in [a.string for a in remaining], name
+
+
+def test_del_arg_ignore_equals_promotes_separator_with_whitespace_and_nested():
+    # Deleting the first PF arg promotes the next separator to ':', even
+    # when the second arg has surrounding whitespace, a comment, or a
+    # nested template, and even when the deleted arg is long.
+    cases = {
+        '{{#f:a |b=c}}': '{{#f:b=c}}',
+        '{{#f:a <!--x-->|b=c}}': '{{#f:b=c}}',
+        '{{#f:a|{{u|v}}=c}}': '{{#f:{{u|v}}=c}}',
+        '{{#f:a| b = c }}': '{{#f: b = c }}',
+        '{{#f:aaaaaaaaaa|b=c}}': '{{#f:b=c}}',
+        '{{#f:a|b|c|d}}': '{{#f:b|c|d}}',
+    }
+    for src, expected in cases.items():
+        f = ParserFunction(src)
+        f.del_arg('1', ignore_equals=True)
+        assert f.string == expected, src

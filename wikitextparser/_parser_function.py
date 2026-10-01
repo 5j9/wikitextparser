@@ -91,7 +91,11 @@ class ParserFunction(SubWikiTextWithArgs):
 
     def del_arg(self, name: str, *, ignore_equals: bool) -> None:
         """Delete all arguments with the given name."""
-        super()._del_arg(name, ignore_equals=ignore_equals)
+        stripped_name, args = super()._del_arg(
+            name, ignore_equals=ignore_equals
+        )
+        if stripped_name == '1' and len(args) > 1:
+            args[1][:1] = ':'
 
     @property
     def parser_functions(self) -> list[ParserFunction]:

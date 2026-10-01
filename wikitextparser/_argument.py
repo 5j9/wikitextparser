@@ -360,8 +360,9 @@ class SubWikiTextWithArgs(SubWikiText):
 
         Return None if no argument with that name is found.
         """
+        stripped_name = name.strip(WS)
         if ignore_equals:
-            index = to_index(name)
+            index = to_index(stripped_name)
             if index is None:
                 return None
             try:
@@ -369,7 +370,7 @@ class SubWikiTextWithArgs(SubWikiText):
             except IndexError:
                 return None
         for arg in reversed(self.arguments):
-            if arg.name.strip(WS) == name.strip(WS):
+            if arg.name.strip(WS) == stripped_name:
                 return arg
         return None
 
@@ -537,19 +538,24 @@ class SubWikiTextWithArgs(SubWikiText):
                 # positional AND is to be added at the end of the template.
                 self.insert(-2, addstring)
 
-    def _del_arg(self, name: str, ignore_equals: bool) -> None:
+    def _del_arg(
+        self, name: str, ignore_equals: bool
+    ) -> tuple[str, list[Argument]]:
         """Delete all arguments with the given name."""
+        stripped_name = name.strip(WS)
+        args = self.arguments
         if ignore_equals:
-            index = to_index(name)
+            index = to_index(stripped_name)
             if index is not None:
                 try:
                     del self.arguments[index][:]
                 except IndexError:
                     pass
-            return
-        for arg in reversed(self.arguments):
-            if arg.name.strip(WS) == name.strip(WS):
+            return stripped_name, args
+        for arg in reversed(args):
+            if arg.name.strip(WS) == stripped_name:
                 del arg[:]
+        return stripped_name, args
 
 
 def to_index(arg_name: str) -> int | None:
