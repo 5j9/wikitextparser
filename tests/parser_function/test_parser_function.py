@@ -252,8 +252,7 @@ def test_removing_first_positional_arg():
 def test_removing_first_keyword_arg():
     f = ParserFunction('{{#f:a=a|b=b|c=c}}')
     f.del_arg('a', ignore_equals=False)
-    # The result is odd and invalid.
-    assert f.string == '{{#f|b=b|c=c}}'
+    assert f.string == '{{#f:b=b|c=c}}'
 
 
 def test_get_the_just_set():
@@ -364,3 +363,9 @@ def test_del_arg_ignore_equals_promotes_separator_with_whitespace_and_nested():
         f = ParserFunction(src)
         f.del_arg('1', ignore_equals=True)
         assert f.string == expected, src
+
+
+def test_del_arg_no_ignore_equals_promotes_second_arg():
+    f = ParserFunction('{{#f:a=1|b=2}}')
+    f.del_arg('a', ignore_equals=False)
+    assert f.string == '{{#f:b=2}}'

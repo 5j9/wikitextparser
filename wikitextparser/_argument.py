@@ -538,9 +538,7 @@ class SubWikiTextWithArgs(SubWikiText):
                 # positional AND is to be added at the end of the template.
                 self.insert(-2, addstring)
 
-    def _del_arg(
-        self, name: str, ignore_equals: bool
-    ) -> tuple[str, list[Argument]]:
+    def _del_arg(self, name: str, ignore_equals: bool) -> list[Argument]:
         """Delete all arguments with the given name."""
         stripped_name = name.strip(WS)
         args = self.arguments
@@ -551,11 +549,11 @@ class SubWikiTextWithArgs(SubWikiText):
                     del self.arguments[index][:]
                 except IndexError:
                     pass
-            return stripped_name, args
+            return args
         for arg in reversed(args):
             if arg.name.strip(WS) == stripped_name:
                 del arg[:]
-        return stripped_name, args
+        return args
 
 
 def to_index(arg_name: str) -> int | None:
