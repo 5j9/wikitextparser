@@ -288,3 +288,53 @@ def test_set_arg_preserve_spacing_single_arg_pf():
     f = ParserFunction('{{#f:a}}')
     f.set_arg('2', 'x', preserve_spacing=True, ignore_equals=True)
     assert f.string == '{{#f:a|2=x}}'
+
+
+def test_del_arg_ignore_equals_numeric_boundary_names():
+    # get_arg/has_arg use to_index (int-based); del_arg must agree.
+    for name in ('01', '+1', '\uff11'):  # '01', '+1', fullwidth '１'
+        f = ParserFunction('{{#pf:a|b|c}}')
+        assert f.get_arg(name, ignore_equals=True) is None
+        assert f.has_arg(name, ignore_equals=True) is False
+        f.del_arg(name, ignore_equals=True)
+        assert f.string == '{{#pf:a|b|c}}', name
+
+    # out-of-range / invalid indices: get_arg is None, del_arg is a no-op
+    for name in ('0', '-1', '4'):
+        f = ParserFunction('{{#pf:a|b|c}}')
+        assert f.get_arg(name, ignore_equals=True) is None
+        f.del_arg(name, ignore_equals=True)
+        assert f.string == '{{#pf:a|b|c}}', name
+
+
+def test_ignore_equals_canonical_indices_only():
+    # Only canonical decimal strings ('1', '2', ...) address positional
+    # arguments. Forms that Python's int() would accept but MediaWiki treats
+    # as literal names ('01', '+1', fullwidth '１', whitespace-padded) must
+    # NOT be treated as indices by get/has/del/set.
+    aliases = ('01', '+1', '\uff11', ' 1 ', '1 ', '1_0', '1.0')
+    for name in aliases:
+        f = ParserFunction('{{#pf:a|b|c}}')
+        assert f.get_arg(name, ignore_equals=True) is None, name
+        assert f.has_arg(name, ignore_equals=True) is False, name
+        f.del_arg(name, ignore_equals=True)
+        assert f.string == '{{#pf:a|b|c}}', name
+
+    # Invalid / out-of-range indices behave the same way.
+    for name in ('0', '-1', '4', '', 'v'):
+        f = ParserFunction('{{#pf:a|b|c}}')
+        assert f.get_arg(name, ignore_equals=True) is None, name
+        f.del_arg(name, ignore_equals=True)
+        assert f.string == '{{#pf:a|b|c}}', name
+
+    # Canonical indices do address positional args, consistently across
+    # get/has/del.
+    for name, arg in (('1', ':a'), ('2', '|b'), ('3', '|c')):
+        f = ParserFunction('{{#pf:a|b|c}}')
+        a = f.get_arg(name, ignore_equals=True)
+        assert a is not None and a.string == arg, name
+        assert f.has_arg(name, ignore_equals=True) is True, name
+        f2 = ParserFunction('{{#pf:a|b|c}}')
+        f2.del_arg(name, ignore_equals=True)
+        remaining = ParserFunction(f2.string).arguments
+        assert arg not in [a.string for a in remaining], name

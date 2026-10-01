@@ -540,9 +540,12 @@ class SubWikiTextWithArgs(SubWikiText):
     def _del_arg(self, name: str, ignore_equals: bool) -> None:
         """Delete all arguments with the given name."""
         if ignore_equals:
-            for i, arg in enumerate(self.arguments):
-                if str(i + 1) == name.strip(WS):
-                    del arg[:]
+            index = to_index(name)
+            if index is not None:
+                try:
+                    del self.arguments[index][:]
+                except IndexError:
+                    pass
             return
         for arg in reversed(self.arguments):
             if arg.name.strip(WS) == name.strip(WS):
@@ -554,7 +557,7 @@ def to_index(arg_name: str) -> int | None:
         int_name = int(arg_name)
     except ValueError:
         return None
-    if int_name > 0:
+    if int_name > 0 and str(int_name) == arg_name:
         return int_name - 1
 
 

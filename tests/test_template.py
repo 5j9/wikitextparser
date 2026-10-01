@@ -374,3 +374,19 @@ def test_set_arg_preserve_spacing_empty_named():
     t = Template('{{t}}')
     t.set_arg('n', 'x', preserve_spacing=True)
     assert t.string == '{{t|n=x}}'
+
+
+def test_set_arg_positional_true_rejects_non_canonical_indices():
+    # to_index only accepts canonical decimal strings; everything else is
+    # not a valid positional index, so positional=True must raise.
+    for name in ('01', '+1', '\uff11', ' 1 ', '1_0', '0', '-1'):
+        t = Template('{{t}}')
+        with raises(ValueError):
+            t.set_arg(name, 'X', positional=True)
+        assert t.string == '{{t}}', name
+
+
+def test_set_arg_positional_true_accepts_canonical_index():
+    t = Template('{{t}}')
+    t.set_arg('1', 'X', positional=True)
+    assert t.string == '{{t|X}}'
