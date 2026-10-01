@@ -1,15 +1,28 @@
 Unreleased
 ----------
-* Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an empty argument is present. (#151)
-* Fixed ``Template.set_arg(None, value)`` raising ``AttributeError``; it now appends a positional argument.
-* Fixed ``Template.has_arg`` ignoring whitespace differences in positional argument values.
+* Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an
+  empty argument is present. (#151)
+* Fixed ``Template.set_arg(None, value)`` raising ``AttributeError``; it now
+  appends a positional argument.
+* Fixed ``Template.has_arg`` ignoring whitespace differences in positional
+  argument values.
 * Added ``ParserFunction.set_arg``, ``get_arg``, ``has_arg``, and ``del_arg``
   with an ``ignore_equals`` parameter for treating all arguments as positional.
-* Made ``get_next_positional_index`` public on ``Template`` and ``ParserFunction``.
+* Added ``get_next_positional_index`` to ``Template`` and ``ParserFunction``.
 * ``Template.set_arg(..., positional=True)`` now raises ``ValueError`` when the
-  name is not the next positional index, instead of silently adding a keyword argument.
-* ``Template.set_arg(..., positional=False)`` on an existing positional argument
-  now converts it to a keyword argument.
+  name does not denote the next positional index, instead of silently adding a
+  keyword argument.
+* ``Template.set_arg(..., positional=False)`` on an existing positional
+  argument now converts it to a keyword argument.
+* ``set_arg(..., before=...)`` / ``after=...`` now raise ``ValueError`` when
+  the referenced argument does not exist.
+* Argument names are now whitespace-insensitive for lookup and deletion in all
+  modes: ``' 1 '`` and ``'1'`` refer to the same argument. Only canonical
+  decimal strings are treated as positional indices (``'01'``, ``'+1'`` and
+  fullwidth digits are literal names, matching MediaWiki).
+* ``ParserFunction.del_arg`` now promotes the next argument's separator from
+  ``|`` to ``:`` when the first argument is deleted, keeping the parser
+  function well-formed.
 
 v2.0.0 (2026-09-03)
 -------------------
