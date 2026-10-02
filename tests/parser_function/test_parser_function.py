@@ -121,7 +121,7 @@ def test_name_contains_a_param_with_default():
 def test_set_arg():
     f = ParserFunction('{{#pf}}')
     f.set_arg('1', 'b', ignore_equals=True)
-    assert '{{#pf:1=b}}' == f.string
+    assert '{{#pf:b}}' == f.string
     f = ParserFunction('{{#pf:a}}')
     f.set_arg('1', 'b', ignore_equals=True)
     assert '{{#pf:b}}' == f.string
@@ -180,13 +180,13 @@ def test_converting_positional_to_named_with_set_arg():
 def test_set_arg_preserve_spacing_ignore_equals():
     f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=True)
-    assert '{{#pf:a|b|3=c}}' == f.string
+    assert '{{#pf:a|b|c}}' == f.string
 
 
 def test_set_arg_preserve_spacing_no_ignore_equals_no_positional():
     f = ParserFunction('{{#pf:a|b}}')
     f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=False)
-    assert '{{#pf:a|b|3=c}}' == f.string
+    assert '{{#pf:a|b|c}}' == f.string
 
 
 def test_set_arg_preserve_spacing_no_ignore_equals_positional():
@@ -279,7 +279,7 @@ def test_set_arg_ignore_equals_numeric_keyword_add_is_not_positionally_findable(
 def test_set_arg_preserve_spacing_single_arg_pf():
     f = ParserFunction('{{#f:a}}')
     f.set_arg('2', 'x', preserve_spacing=True, ignore_equals=True)
-    assert f.string == '{{#f:a|2=x}}'
+    assert f.string == '{{#f:a|x}}'
 
 
 def test_del_arg_ignore_equals_numeric_boundary_names():

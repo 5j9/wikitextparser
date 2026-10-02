@@ -1,4 +1,4 @@
-from pytest import raises
+from pytest import mark, param, raises
 
 from wikitextparser import Argument, ParserFunction, Template, parse
 
@@ -193,3 +193,144 @@ def test_set_arg_ignore_equals_strips_whitespace_padded_index():
     # Canonical lookups remain strict: ' 1 ' is not a canonical index.
     a = f.get_arg(' 1 ', ignore_equals=True)
     assert a is not None and a.string == ':X'
+
+
+@mark.parametrize(
+    'src, name, value, kwargs, expected',
+    [
+        # --- Template, positional=None, name IS the next positional index ---
+        # 1. all existing args positional -> mode=positional -> new arg positional
+        param(
+            '{{t|a|b}}',
+            '3',
+            'c',
+            {},
+            '{{t|a|b|c}}',
+            id='all-positional-next-name',
+        ),
+        # 2. all existing args keyword -> mode=keyword -> new arg keyword
+        param(
+            '{{t|1=a|2=b}}',
+            '3',
+            'c',
+            {},
+            '{{t|1=a|2=b|3=c}}',
+            id='all-keyword-next-name',
+        ),
+        # 3. tie (1 pos, 1 kw) -> last-arg kind wins (kw) -> new arg keyword
+        param(
+            '{{t|a|1=b}}',
+            '2',
+            'c',
+            {},
+            '{{t|a|1=b|2=c}}',
+            id='tie-last-arg-keyword',
+        ),
+        # 4. majority positional (2 pos, 1 kw) -> new arg positional
+        param(
+            '{{t|a|b|1=c}}',
+            '3',
+            'd',
+            {},
+            '{{t|a|b|1=c|d}}',
+            id='majority-positional-next-name',
+        ),
+        # --- Template, positional=None, name is NOT the next positional index ---
+        # 5. name doesn't match -> fall back to keyword regardless of mode
+        param(
+            '{{t|a|b}}',
+            '5',
+            'c',
+            {},
+            '{{t|a|b|5=c}}',
+            id='non-next-name-falls-back-to-keyword',
+        ),
+        # --- Collision: name resolves to an EXISTING arg -> update, no mode ---
+        # 6. keyword '2=c' already exists; new positional would also be named 2.
+        #    Existing-arg branch wins: overwrite the keyword.
+        param(
+            '{{t|a|1=b|2=c}}',
+            '2',
+            'd',
+            {},
+            '{{t|a|1=b|2=d}}',
+            id='existing-name-updates-in-place',
+        ),
+        # --- Explicit positional=True must win (and raise if impossible) ---
+        # 7. name IS next index -> positional
+        param(
+            '{{t|a|b}}',
+            '3',
+            'c',
+            {'positional': True},
+            '{{t|a|b|c}}',
+            id='explicit-positional-next-name',
+        ),
+        # 8. name is NOT next index -> raise
+        param(
+            '{{t|a|b}}',
+            '5',
+            'c',
+            {'positional': True},
+            ValueError,
+            id='explicit-positional-non-next-name-raises',
+        ),
+        # --- Explicit positional=False must win ---
+        # 9. even though name IS next index and mode would say positional
+        param(
+            '{{t|a|b}}',
+            '3',
+            'c',
+            {'positional': False},
+            '{{t|a|b|3=c}}',
+            id='explicit-keyword-wins',
+        ),
+        # --- ParserFunction, ignore_equals=True ---
+        # 10. name == next slot -> mode is degenerate (all positional) -> positional
+        param(
+            '{{#f:a|b}}',
+            '3',
+            'c',
+            {'ignore_equals': True},
+            '{{#f:a|b|c}}',
+            id='pf-ie-matching-name-positional',
+        ),
+        # 11. name != next slot -> keyword (fall back)
+        param(
+            '{{#f:a|b}}',
+            '4',
+            'c',
+            {'ignore_equals': True},
+            '{{#f:a|b|4=c}}',
+            id='pf-ie-non-matching-name-keyword',
+        ),
+        param(
+            '{{#f:a|b=c}}',
+            '3',
+            'd',
+            {'ignore_equals': True},
+            '{{#f:a|b=c|d}}',
+            id='pf-ie-eq-arg-matching-name-positional',
+        ),
+    ],
+)
+def test_set_arg_positional_none_mode(src, name, value, kwargs, expected):
+    cls = ParserFunction if '#f' in src else Template
+    t = cls(src)
+    if expected is ValueError:
+        with raises(ValueError):
+            t.set_arg(name, value, **kwargs)
+        return
+    t.set_arg(name, value, **kwargs)
+    assert t.string == expected
+
+
+def test_set_arg_ie_true_preserve_spacing_matching_name_ignores_spacing():
+    # Under ignore_equals=True and positional=None, a name that denotes the
+    # next slot yields a positional argument, so preserve_spacing is ignored
+    # (see the _set_arg docstring: "Ignore preserve_spacing if positional is
+    # True"). Pinned so a future change that starts honoring spacing here is
+    # noticed.
+    f = ParserFunction('{{#pf: a | b }}')
+    f.set_arg('3', 'c', preserve_spacing=True, ignore_equals=True)
+    assert f.string == '{{#pf: a | b |c}}'

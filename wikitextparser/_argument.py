@@ -418,6 +418,7 @@ class SubWikiTextWithArgs(SubWikiText):
             argument. Ignore `preserve_spacing` if positional is True.
             If it's None, do what seems more appropriate.
         """
+        args: list[Argument] | None = None
         if name is not None:
             arg = self._get_arg(name, ignore_equals=ignore_equals)
             # Updating an existing argument.
@@ -456,17 +457,34 @@ class SubWikiTextWithArgs(SubWikiText):
                             f'cannot set arg {name!r} in positional form'
                         )
                     positional = False
+                elif positional is None:
+                    if ignore_equals:
+                        positional = True
+                    else:
+                        args = self.arguments
+                        if not args:
+                            # no precedent; keyword (matches current behavior)
+                            positional = False
+                        else:
+                            # Mirror the existing args' kind. reversed() so that, on a
+                            # tie, mode()'s first-occurrence rule picks the last arg's
+                            # kind (the common "positional first, then keyword" style).
+                            positional = mode(
+                                [arg.positional for arg in reversed(args)]
+                            )
         else:
             name = f'{self._get_next_positional_index(ignore_equals=ignore_equals) + 1}'
             positional = True
 
         # Calculate the whitespace needed before arg-name and after arg-value.
-        if not positional and preserve_spacing and len(self.arguments) > 0:
+        if args is None:
+            args = self.arguments
+        if not positional and preserve_spacing and len(args) > 0:
             before_names = []
             name_lengths = []
             before_values = []
             after_values = []
-            for arg in reversed(self.arguments):
+            for arg in reversed(args):
                 aname = arg.name
                 name_lengths.append(len(aname))
                 before_names.append(aname[: -len(aname.lstrip(WS))])
@@ -483,7 +501,7 @@ class SubWikiTextWithArgs(SubWikiText):
         else:
             preserve_spacing = False
         # Calculate the string that needs to be added to the Template.
-        addsep = chr(self._first_arg_sep) if len(self.arguments) == 0 else '|'
+        addsep = chr(self._first_arg_sep) if len(args) == 0 else '|'
         if positional:
             # Ignore preserve_spacing for positional args.
             addstring = addsep + value
@@ -517,8 +535,8 @@ class SubWikiTextWithArgs(SubWikiText):
                 )
             arg.insert(len(arg.string), addstring)
         else:
-            if len(self.arguments) > 0 and not positional:
-                arg = self.arguments[-1]
+            if len(args) > 0 and not positional:
+                arg = args[-1]
                 arg_string = arg.string
                 if preserve_spacing:
                     # Insert after the last argument.

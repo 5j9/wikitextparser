@@ -9,6 +9,13 @@ Unreleased
 * Added ``ParserFunction.set_arg``, ``get_arg``, ``has_arg``, and ``del_arg``
   with an ``ignore_equals`` parameter for treating all arguments as positional.
 * Added ``get_next_positional_index`` to ``Template`` and ``ParserFunction``.
+* ``set_arg(..., positional=None)`` now mirrors the existing arguments when
+  adding a new argument: if the name denotes the next positional index and the
+  existing arguments are mostly positional, the new argument is added as
+  positional (ties broken by the last argument's kind). This is a cosmetic
+  change versus previous releases — the argument's effective name and value are
+  unchanged, but it may be rendered positional where it was previously
+  rendered as a keyword argument.
 * ``Template.set_arg(..., positional=True)`` now raises ``ValueError`` when the
   name does not denote the next positional index, instead of silently adding a
   keyword argument.
