@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from bisect import insort
 from collections.abc import Callable, Iterable, MutableSequence
+from dataclasses import dataclass
 from typing import ClassVar, TypeVar
 
 from regex import DOTALL, REVERSE, Match
@@ -157,6 +158,15 @@ class Argument(SubWikiText):
                 - len(ls_post_eq),
             )
         return bytearray(shadow_match[0][1:]), self._span_data[0] + 1
+
+
+@dataclass(frozen=True, slots=True)
+class ArgSpacing:
+    before_name: str
+    name_length: int
+    before_value: str
+    after_value: str
+    last_arg_after_value: str
 
 
 class SubWikiTextWithArgs(SubWikiText):
@@ -345,12 +355,14 @@ class SubWikiTextWithArgs(SubWikiText):
             else:
                 name_to_lastarg_vals[name] = (arg, [val])
 
-    def _get_next_positional_index(self, *, ignore_equals: bool) -> int:
+    def _get_next_positional_index(
+        self, *, ignore_equals: bool, args: list[Argument]
+    ) -> int:
         """When ignore_equals is true, all args are considered positional."""
         if ignore_equals:
-            return len(self.arguments)
+            return len(args)
         idx = 0
-        for arg in self.arguments:
+        for arg in args:
             if arg.positional:
                 idx += 1
         return idx
@@ -418,108 +430,219 @@ class SubWikiTextWithArgs(SubWikiText):
             argument. Ignore `preserve_spacing` if positional is True.
             If it's None, do what seems more appropriate.
         """
-        args: list[Argument] | None = None
-        if name is not None:
-            arg = self._get_arg(name, ignore_equals=ignore_equals)
-            # Updating an existing argument.
-            if arg is not None:
-                if not ignore_equals:
-                    if positional:
-                        arg.positional = True
-                    elif (
-                        positional is False or not arg.positional
-                    ):  # the second condition handles positional=None
-                        if preserve_spacing:
-                            old_name = arg.name
-                            arg.name = old_name.replace(
-                                old_name.strip(WS), name, 1
-                            )
-                        else:
-                            arg.name = name
-                    if preserve_spacing:
-                        val = arg.value
-                        arg.value = val.replace(val.strip(WS), value, 1)
-                    else:
-                        arg.value = value
-                else:
-                    arg.string = arg.string[0] + value
-                return
-            if positional or positional is None:
-                index = to_index(name.strip(WS))
-                if index is None or (
-                    self._get_next_positional_index(
-                        ignore_equals=ignore_equals
-                    )
-                    != index
-                ):
-                    if positional:
-                        raise ValueError(
-                            f'cannot set arg {name!r} in positional form'
-                        )
-                    positional = False
-                elif positional is None:
-                    if ignore_equals:
-                        positional = True
-                    else:
-                        args = self.arguments
-                        if not args:
-                            # no precedent; keyword (matches current behavior)
-                            positional = False
-                        else:
-                            # Mirror the existing args' kind. reversed() so that, on a
-                            # tie, mode()'s first-occurrence rule picks the last arg's
-                            # kind (the common "positional first, then keyword" style).
-                            positional = mode(
-                                [arg.positional for arg in reversed(args)]
-                            )
-        else:
-            name = f'{self._get_next_positional_index(ignore_equals=ignore_equals) + 1}'
-            positional = True
+        if self._update_existing_arg(
+            name,
+            value,
+            positional,
+            preserve_spacing,
+            ignore_equals=ignore_equals,
+        ):
+            return
 
-        # Calculate the whitespace needed before arg-name and after arg-value.
-        if args is None:
-            args = self.arguments
-        if not positional and preserve_spacing and len(args) > 0:
-            before_names = []
-            name_lengths = []
-            before_values = []
-            after_values = []
-            for arg in reversed(args):
-                aname = arg.name
-                name_lengths.append(len(aname))
-                before_names.append(aname[: -len(aname.lstrip(WS))])
-                arg_value = arg.value
-                before_values.append(arg_value[: -len(arg_value.lstrip(WS))])
-                after_values.append(ENDING_WS_MATCH(arg_value)[0])  # type: ignore
-            pre_name_ws_mode = mode(before_names)
-            name_length_mode = mode(name_lengths)
-            self_name = self.name
-            post_value_ws_mode = mode(
-                [self_name[len(self_name.rstrip()) :], *after_values[1:]]
-            )
-            pre_value_ws_mode = mode(before_values)
-        else:
-            preserve_spacing = False
-        # Calculate the string that needs to be added to the Template.
-        addsep = chr(self._first_arg_sep) if len(args) == 0 else '|'
+        args = self.arguments
+        name, positional = self._resolve_new_arg(
+            name, positional, args, ignore_equals=ignore_equals
+        )
+
+        spacing = self._get_arg_spacing(args, positional, preserve_spacing)
+
+        addstring = self._make_arg_string(
+            name, value, positional, spacing, has_args=bool(args)
+        )
+
+        self._insert_arg(
+            addstring,
+            before,
+            after,
+            args,
+            positional,
+            spacing,
+            ignore_equals=ignore_equals,
+        )
+
+    def _update_existing_arg(
+        self,
+        name: str | None,
+        value: str,
+        positional: bool | None,
+        preserve_spacing: bool,
+        *,
+        ignore_equals: bool,
+    ) -> bool:
+        if name is None:
+            return False
+
+        arg = self._get_arg(name, ignore_equals=ignore_equals)
+        if arg is None:
+            return False
+
+        if ignore_equals:
+            arg.string = arg.string[0] + value
+            return True
+
+        self._update_arg_name(arg, name, positional, preserve_spacing)
+        self._update_arg_value(arg, value, preserve_spacing)
+        return True
+
+    def _update_arg_name(
+        self,
+        arg: Argument,
+        name: str,
+        positional: bool | None,
+        preserve_spacing: bool,
+    ) -> None:
         if positional:
-            # Ignore preserve_spacing for positional args.
-            addstring = addsep + value
-        else:
+            arg.positional = True
+        elif positional is False or not arg.positional:
             if preserve_spacing:
-                addstring = (
-                    addsep
-                    + (pre_name_ws_mode + name.strip(WS)).ljust(  # type: ignore
-                        name_length_mode  # type: ignore
-                    )
-                    + '='
-                    + pre_value_ws_mode  # type: ignore
-                    + value
-                    + post_value_ws_mode  # type: ignore
+                old_name = arg.name
+                arg.name = old_name.replace(
+                    old_name.strip(WS),
+                    name,
+                    1,
                 )
             else:
-                addstring = addsep + name + '=' + value
-        # Place the addstring in the right position.
+                arg.name = name
+
+    def _update_arg_value(
+        self,
+        arg: Argument,
+        value: str,
+        preserve_spacing: bool,
+    ) -> None:
+        if preserve_spacing:
+            old_value = arg.value
+            arg.value = old_value.replace(
+                old_value.strip(WS),
+                value,
+                1,
+            )
+        else:
+            arg.value = value
+
+    def _resolve_new_arg(
+        self,
+        name: str | None,
+        positional: bool | None,
+        args: list[Argument],
+        *,
+        ignore_equals: bool,
+    ) -> tuple[str, bool]:
+        if name is None:
+            return (
+                str(
+                    self._get_next_positional_index(
+                        ignore_equals=ignore_equals, args=args
+                    )
+                    + 1
+                ),
+                True,
+            )
+
+        index = to_index(name.strip(WS))
+        is_next_positional = (
+            index is not None
+            and self._get_next_positional_index(
+                ignore_equals=ignore_equals, args=args
+            )
+            == index
+        )
+
+        if positional:
+            if not is_next_positional:
+                raise ValueError(f'cannot set arg {name!r} in positional form')
+            return name, True
+
+        if positional is False or not is_next_positional:
+            return name, False
+
+        # positional is None and the name can be represented positionally.
+        if ignore_equals:
+            return name, True
+
+        if not args:
+            # no precedent; keyword (matches current behavior)
+            return name, False
+
+        # Mirror the existing args' kind. reversed() so that, on a tie,
+        # mode()'s first-occurrence rule picks the last arg's kind.
+        return name, mode([arg.positional for arg in reversed(args)])
+
+    def _get_arg_spacing(
+        self,
+        args: list[Argument],
+        positional: bool,
+        preserve_spacing: bool,
+    ) -> ArgSpacing | None:
+        if positional or not preserve_spacing or not args:
+            return None
+
+        before_names: list[str] = []
+        name_lengths: list[int] = []
+        before_values: list[str] = []
+        after_values: list[str] = []
+
+        for arg in reversed(args):
+            arg_name = arg.name
+            name_lengths.append(len(arg_name))
+            before_names.append(arg_name[: -len(arg_name.lstrip(WS))])
+
+            arg_value = arg.value
+            before_values.append(arg_value[: -len(arg_value.lstrip(WS))])
+            after_values.append(
+                ENDING_WS_MATCH(arg_value)[0]  # type: ignore
+            )
+
+        return ArgSpacing(
+            before_name=mode(before_names),
+            name_length=mode(name_lengths),
+            before_value=mode(before_values),
+            after_value=mode(
+                [
+                    self.name[len(self.name.rstrip()) :],
+                    *after_values[1:],
+                ]
+            ),
+            last_arg_after_value=after_values[0],
+        )
+
+    def _make_arg_string(
+        self,
+        name: str,
+        value: str,
+        positional: bool,
+        spacing: ArgSpacing | None,
+        *,
+        has_args: bool,
+    ) -> str:
+        addsep = '|' if has_args else chr(self._first_arg_sep)
+
+        if positional:
+            return addsep + value
+
+        if spacing is None:
+            return addsep + name + '=' + value
+
+        return (
+            addsep
+            + (spacing.before_name + name.strip(WS)).ljust(spacing.name_length)
+            + '='
+            + spacing.before_value
+            + value
+            + spacing.after_value
+        )
+
+    def _insert_arg(
+        self,
+        addstring: str,
+        before: str | None,
+        after: str | None,
+        args: list[Argument],
+        positional: bool,
+        spacing: ArgSpacing | None,
+        *,
+        ignore_equals: bool,
+    ) -> None:
         if before:
             arg = self._get_arg(before, ignore_equals=ignore_equals)
             if arg is None:
@@ -527,34 +650,45 @@ class SubWikiTextWithArgs(SubWikiText):
                     f'no argument named {before!r} to insert before'
                 )
             arg.insert(0, addstring)
-        elif after:
+            return
+
+        if after:
             arg = self._get_arg(after, ignore_equals=ignore_equals)
             if arg is None:
                 raise ValueError(
                     f'no argument named {after!r} to insert after'
                 )
             arg.insert(len(arg.string), addstring)
-        else:
-            if len(args) > 0 and not positional:
-                arg = args[-1]
-                arg_string = arg.string
-                if preserve_spacing:
-                    # Insert after the last argument.
-                    # The addstring needs to be recalculated because we don't
-                    # want to change the the whitespace before final braces.
-                    # noinspection PyUnboundLocalVariable
-                    arg[0 : len(arg_string)] = (
-                        arg.string.rstrip(WS)
-                        + post_value_ws_mode  # type: ignore
-                        + addstring.rstrip(WS)
-                        + after_values[0]  # type: ignore
-                    )
-                else:
-                    arg.insert(len(arg_string), addstring)
-            else:
-                # The template has no arguments or the new arg is
-                # positional AND is to be added at the end of the template.
-                self.insert(-2, addstring)
+            return
+
+        self._append_arg(addstring, args, positional, spacing)
+
+    def _append_arg(
+        self,
+        addstring: str,
+        args: list[Argument],
+        positional: bool,
+        spacing: ArgSpacing | None,
+    ) -> None:
+        if not args or positional:
+            self.insert(-2, addstring)
+            return
+
+        arg = args[-1]
+        arg_string = arg.string
+
+        if spacing is None:
+            arg.insert(len(arg_string), addstring)
+            return
+
+        # Insert after the last argument while preserving the whitespace
+        # before the template's closing braces.
+        arg[0 : len(arg_string)] = (
+            arg.string.rstrip(WS)
+            + spacing.after_value
+            + addstring.rstrip(WS)
+            + spacing.last_arg_after_value
+        )
 
     def _del_arg(self, name: str, ignore_equals: bool) -> list[Argument]:
         """Delete all arguments with the given name."""
