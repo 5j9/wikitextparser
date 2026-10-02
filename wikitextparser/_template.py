@@ -81,9 +81,6 @@ class Template(SubWikiTextWithArgs):
         name, sep, tail = name.partition('#')
         return ' '.join(name.split())
 
-    def get_next_positional_index(self) -> int:
-        return super()._get_next_positional_index(ignore_equals=False)
-
     def get_arg(self, name: str) -> Argument | None:
         """Return the last argument with the given name.
 

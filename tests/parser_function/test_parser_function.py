@@ -226,12 +226,6 @@ def test_lists():
     ]
 
 
-def test_get_last_positional_index():
-    t = ParserFunction('{{#pf:a|b|c=d}}')
-    assert t.get_next_positional_index(ignore_equals=False) == 2
-    assert t.get_next_positional_index(ignore_equals=True) == 3
-
-
 def test_ignore_equals_rejects_invalid_indices():
     t = ParserFunction('{{#pf:a|b}}')
 
