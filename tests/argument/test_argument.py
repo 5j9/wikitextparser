@@ -232,8 +232,16 @@ def test_set_arg_ignore_equals_strips_whitespace_padded_index():
             '3',
             'd',
             {},
-            '{{t|a|b|1=c|d}}',
-            id='majority-positional-next-name',
+            '{{t|a|b|1=c|3=d}}',
+            id='trailing-keyword-wins',
+        ),
+        param(
+            '{{t|1=a|2=b|c}}',
+            '3',
+            'd',
+            {},
+            '{{t|1=a|2=b|c|d}}',
+            id='last-arg-positional-wins',
         ),
         # --- Template, positional=None, name is NOT the next positional index ---
         # 5. name doesn't match -> fall back to keyword regardless of mode

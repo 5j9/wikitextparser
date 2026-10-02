@@ -70,14 +70,11 @@ class ParserFunction(SubWikiTextWithArgs):
             new argument, then append the new argument to the end.
         - If `positional` is True, add the given value as a positional
             argument and ignore `preserve_spacing`.
-            If `positional` is None (the default), mirror the existing
-            arguments when the name is the next positional index: add as
-            positional when they are mostly positional (ties broken by the
-            last argument), otherwise as a keyword.
+        - If positional is None (the default), mirror the kind of the last
+            existing argument when the name is the next positional index
+            (positional if the last arg is positional, keyword otherwise).
         - if `ignore_equals` is True, treat all current arguments as
-            positional, even if they contain an `=` sign. It has no
-            effect the new value being positional or not. Use `positional`
-            for that purpose.
+            positional, even if they contain an `=` sign.
         """
         super()._set_arg(
             name,

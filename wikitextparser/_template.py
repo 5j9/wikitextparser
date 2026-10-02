@@ -117,10 +117,9 @@ class Template(SubWikiTextWithArgs):
             new argument, then append the new argument to the end.
         - If `positional` is True, add the given value as a positional
             argument and ignore `preserve_spacing`.
-            If `positional` is None (the default), mirror the existing
-            arguments when the name is the next positional index: add as
-            positional when they are mostly positional (ties broken by the
-            last argument), otherwise as a keyword.
+        - If positional is None (the default), mirror the kind of the last
+            existing argument when the name is the next positional index
+            (positional if the last arg is positional, keyword otherwise).
         """
         super()._set_arg(
             name,
