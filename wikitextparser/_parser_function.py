@@ -68,9 +68,12 @@ class ParserFunction(SubWikiTextWithArgs):
         - If `before` is given, ignore `after`.
         - If neither `before` nor `after` are given and it's needed to add a
             new argument, then append the new argument to the end.
-        - If `positional` is True, try to add the given value as a positional
-            argument. Ignore `preserve_spacing` if positional is True.
-            If it's None, do what seems more appropriate.
+        - If `positional` is True, add the given value as a positional
+            argument and ignore `preserve_spacing`.
+            If `positional` is None (the default), mirror the existing
+            arguments when the name is the next positional index: add as
+            positional when they are mostly positional (ties broken by the
+            last argument), otherwise as a keyword.
         - if `ignore_equals` is True, treat all current arguments as
             positional, even if they contain an `=` sign. It has no
             effect the new value being positional or not. Use `positional`
