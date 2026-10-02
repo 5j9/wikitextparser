@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from bisect import insort
 from collections.abc import Callable, Iterable, MutableSequence
-from dataclasses import dataclass
-from typing import ClassVar, TypeVar
+from typing import ClassVar, NamedTuple, TypeVar
 
 from regex import DOTALL, REVERSE, Match
 
@@ -160,8 +159,7 @@ class Argument(SubWikiText):
         return bytearray(shadow_match[0][1:]), self._span_data[0] + 1
 
 
-@dataclass(frozen=True, slots=True)
-class ArgSpacing:
+class ArgSpacing(NamedTuple):
     before_name: str
     name_length: int
     before_value: str
