@@ -8,7 +8,6 @@ Unreleased
   argument values.
 * Added ``ParserFunction.set_arg``, ``get_arg``, ``has_arg``, and ``del_arg``
   with an ``ignore_equals`` parameter for treating all arguments as positional.
-* Added ``get_next_positional_index`` to ``Template`` and ``ParserFunction``.
 * ``set_arg(..., positional=None)`` now mirrors the existing arguments when
   adding a new argument: if the name denotes the next positional index and the
   existing arguments are mostly positional, the new argument is added as
