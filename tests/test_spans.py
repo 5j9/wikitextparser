@@ -395,7 +395,7 @@ def test_invalid_nested_wikilinks():
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
-        'WikiLink': [[5, 10]],
+        'WikiLink': [[0, 13], [5, 10]],
         'Comment': [],
         'ExtensionTag': [],
     } == bpts(b'[[L| [[S]] ]]')
@@ -406,7 +406,7 @@ def test_invalid_nested_wikilinks_in_ref():
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
-        'WikiLink': [[10, 15]],
+        'WikiLink': [[5, 18], [10, 15]],
         'Comment': [],
         'ExtensionTag': [[0, 24]],
     } == bpts(b'<ref>[[L| [[S]] ]]</ref>')

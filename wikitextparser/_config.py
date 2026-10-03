@@ -378,6 +378,3 @@ KNOWN_FILE_EXTENSIONS = {
     'xbm',
     'xcf',
 }
-
-
-FILE_NAMESACE = ['file', 'image']

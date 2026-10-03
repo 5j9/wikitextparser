@@ -29,7 +29,10 @@ Unreleased
 * ``ParserFunction.del_arg`` now promotes the next argument's separator from
   ``|`` to ``:`` when the first argument is deleted, keeping the parser
   function well-formed.
-
+* `wikilinks` once again returns image wikilinks containing nested wikilinks.
+  This may be useful for users who want to inspect or modify images, while
+  remaining harmless for typical wikilink processing where links are filtered
+  before modification.
 v2.0.0 (2026-09-03)
 -------------------
 * Minimum required Python version is now 3.9.
