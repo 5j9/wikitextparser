@@ -1,4 +1,4 @@
-from pytest import mark
+from pytest import raises
 
 from wikitextparser import Section
 
@@ -49,10 +49,14 @@ def test_del_title():
     del s.title  # no change, no exception
 
 
-@mark.xfail
 def test_lead_set_title():
     s = Section('lead text')
-    s.title = ' newtitle '
+    with raises(RuntimeError) as e:
+        s.title = ' newtitle '
+    assert (
+        str(e.value)
+        == "Can't set title for a lead section. Try adding it to contents."
+    )
 
 
 def test_set_contents():
