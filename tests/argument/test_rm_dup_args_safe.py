@@ -160,3 +160,11 @@ def test_rm_dup_args_safe_tag_empty_lastarg_duplicate_survivor():
     t = Template('{{t|a=1|a=1|a=}}')
     t.rm_dup_args_safe(tag='<!-- dup -->')
     assert t.string == '{{t|a=1}}'
+
+
+def test_rm_dup_args_safe_tag_not_idempotent():
+    t = Template('{{t|a=1|a=2|a=1}}')
+    t.rm_dup_args_safe(tag='X')
+    assert t.string == '{{t|a=2X|a=1}}'
+    t.rm_dup_args_safe(tag='X')
+    assert t.string == '{{t|a=2X|a=1}}'
