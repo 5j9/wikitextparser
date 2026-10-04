@@ -293,10 +293,18 @@ class SubWikiTextWithArgs(SubWikiText):
         Also see `rm_dup_args_safe` function.
         """
         names = set()
+        args = self.arguments
+        last_idx = self._get_next_positional_index(ignore_equals=False, args=args)
         for a in reversed(self.arguments):
             name = a.name.strip(WS)
             if name in names:
-                del a[: len(a.string)]
+                if a.positional:
+                    if int(name) == last_idx:
+                        del a[: len(a.string)]
+                        last_idx -= 1
+                    # else, do not delete a positional argument if it shifts the rest
+                else:
+                    del a[: len(a.string)]
             else:
                 names.add(name)
 
@@ -329,46 +337,103 @@ class SubWikiTextWithArgs(SubWikiText):
 
         Also see `rm_first_of_dup_args` function.
         """
-        name_to_lastarg_vals: dict[str, tuple[Argument, list[str]]] = {}
-        # Removing positional args affects their name. By reversing the list
-        # we avoid encountering those kind of args.
-        for arg in reversed(self.arguments):
+        key_to_lastargs: dict[str, list[tuple[Argument, str]]] = {}
+        pos_to_lastarg: dict[str, tuple[Argument, str]] = {}
+        args = self.arguments
+        last_idx = self._get_next_positional_index(ignore_equals=False, args=args)
+        # Iterate from right to left (last to first)
+        for arg in reversed(args):
             name = arg.name.strip(WS)
-            if arg.positional:
-                # Whitespace around positional arguments is not stripped.
+            positional = arg.positional
+            val = None
+            deleted = False
+            if positional:
+                # 1. Is positional
                 val = arg.value
-            else:
-                # Value of keyword arguments is automatically stripped by MW.
-                val = arg.value.strip(WS)
-            if name in name_to_lastarg_vals:
-                # This is a duplicate argument.
-                if not val:
-                    # This duplicate argument is empty. It's safe to remove it.
-                    del arg[0 : len(arg.string)]
-                else:
-                    # Try to remove any of the detected duplicates of this
-                    # that are empty or their value equals to this one.
-                    lastarg, dup_vals = name_to_lastarg_vals[name]
-                    if val in dup_vals:
+                lastargs = key_to_lastargs.get(name)
+                if lastargs:
+                    # 1.1 Is positional and there was a key argument at right:
+                    if not val and int(name) == last_idx:
+                        # 1.1.1 if empty, delete only if it is the last positional
                         del arg[0 : len(arg.string)]
-                    elif '' in dup_vals:
-                        # This happens only if the last occurrence of name has
-                        # been an empty string; other empty values will
-                        # be removed as they are seen.
-                        # In other words index of the empty argument in
-                        # dup_vals is always 0.
-                        del lastarg[0 : len(lastarg.string)]
-                        dup_vals.pop(0)
-                        # The current value is now represented by the remaining
-                        # duplicate arguments.
-                        dup_vals.append(val)
+                        deleted = True
+                        last_idx -= 1
                     else:
-                        # It was not possible to remove any of the duplicates.
-                        dup_vals.append(val)
-                        if tag:
+                        # 1.1.2 in any other case, try to delete the keyword arguments
+                        k = 0
+                        for b in list(lastargs):
+                            if b[1] == val or not b[1]:
+                                del b[0][0 : len(b[0].string)]
+                                lastargs.pop(k)
+                                deleted = True
+                            else:
+                                k += 1
+
+                        # couldn't delete argument: add to seen arguments list
+                        if not deleted and tag and not arg.value.endswith(tag):
                             arg.value += tag
+                        pos_to_lastarg[name] = (arg, val)
+                else:
+                    # 1.2 Is positional and there is no key argument at the right
+                    # add to seen arguments list
+                    pos_to_lastarg[name] = (arg, val)
             else:
-                name_to_lastarg_vals[name] = (arg, [val])
+                # 2. Is keyword
+                val = arg.value.strip(WS)
+                lastargs = key_to_lastargs.get(name)
+                lastarg = pos_to_lastarg.get(name)
+                if not val and (lastargs or lastarg):
+                    # 2.1 If empty, delete it
+                    del arg[0 : len(arg.string)]
+                    deleted = True
+                else:
+                    # 2.2 If not empty
+                    if not lastargs and not lastarg:
+                        # 2.2.1 If there is no seen argument before,
+                        # add to seen arguments list
+                        if name not in key_to_lastargs:
+                            key_to_lastargs[name] = [(arg, val)]
+                        else:
+                            key_to_lastargs[name].append((arg, val))
+                    else:
+                        # 2.2.2 If there is seen argument before (either pos or key)
+                        if lastargs:
+                            #2.2.2.1 If key, try to delete current argument if it is equal
+                            # to some of the previous ones
+                            k = 0
+                            for b in list(lastargs):
+                                if b[1] == val:
+                                    del arg[0 : len(arg.string)]
+                                    deleted = True
+                                    break
+                                if not b[1]:
+                                    del b[0][0 : len(b[0].string)]
+                                    lastargs.pop(k)
+                                    deleted = True
+                                else:
+                                    k += 1
+                        if lastarg:
+                            # 2.2.2.2 If positional
+                            if not lastarg[1] and int(lastarg[0].name) == last_idx:
+                                # 2.2.2.2.1 If last argument is empty and is the last positional index
+                                # Delete last argument
+                                del lastarg[0][0 : len(lastarg[0].string)]
+                                del pos_to_lastarg[name]
+                                deleted = True
+                                last_idx -= 1
+                            elif lastarg[1] == val:
+                                # 2.2.2.2.2 If last argument is not empty but is equal to current argument
+                                # Delete current argument
+                                del arg[0 : len(arg.string)]
+                                deleted = True
+
+                        # Couldn't delete the repeated argument
+                        if not deleted and tag and not arg.value.endswith(tag):
+                            arg.value += tag
+                        if name not in key_to_lastargs:
+                            key_to_lastargs[name] = [(arg, val)]
+                        else:
+                            key_to_lastargs[name].append((arg, val))
 
     def _get_next_positional_index(
         self, *, ignore_equals: bool, args: list[Argument]
