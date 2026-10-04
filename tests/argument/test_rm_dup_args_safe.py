@@ -32,7 +32,7 @@ def test_rm_dup_args_safe():
     # Triple duplicates
     t = Template('{{t|1=v|v|1=v}}')
     t.rm_dup_args_safe()
-    assert '{{t|1=v}}' == t.string
+    assert '{{t|v}}' == t.string
     # If the last duplicate has a different value, still remove of the
     # first two
     t = Template('{{t|1=v|v|1=u}}')
@@ -42,7 +42,7 @@ def test_rm_dup_args_safe():
     # Remove safe duplicates even if tag option is activated
     t = Template('{{t|1=v|v|1=v}}')
     t.rm_dup_args_safe(tag='<!-- dup -->')
-    assert '{{t|1=v}}' == t.string
+    assert '{{t|v}}' == t.string
     # Tag even if one of the duplicate values is different.
     t = Template('{{t|1=v|v|1=u}}')
     t.rm_dup_args_safe(tag='<!-- dup -->')
@@ -51,6 +51,13 @@ def test_rm_dup_args_safe():
     t = Template('{{t|b|1=c|1=}}')
     t.rm_dup_args_safe()
     assert '{{t|b|1=c}}' == t.string
+    # Do not shift positional arguments
+    t = Template('{{t|v|v|1=v}}')
+    t.rm_dup_args_safe()
+    assert t.string == '{{t|v|v}}'
+    t = Template('{{t||v|1=}}')
+    t.rm_dup_args_safe()
+    assert t.string == '{{t||v}}'
 
 
 def test_rm_dup_args_safe_cached_arguments():

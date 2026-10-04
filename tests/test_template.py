@@ -100,7 +100,10 @@ def test_rm_first_of_dup_args():
     t = Template('{{t|1=v|v|1=v}}')
     t.rm_first_of_dup_args()
     assert '{{t|1=v}}' == str(t)
-
+    # Do not shift positional arguments
+    t = Template('{{t|v|1=v|u}}')
+    t.rm_first_of_dup_args()
+    assert '{{t|v|1=v|u}}' == t.string
 
 def test_has_arg():
     has_arg = Template('{{t|a|b=c}}').has_arg
