@@ -27,16 +27,36 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
         run: python -c "import sys; print(sys.version)"
+      - name: Install uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
       - name: Install packages
         run: |
-          python -m pip install --upgrade pip
-          pip install -e . pytest-cov
+          uv pip install --system -e . pytest-cov
       - name: Generate coverage report
         run: pytest --cov=wikitextparser tests --cov-report=xml --cov-fail-under=80
       - name: Upload coverage to Codecov
-        # https://github.com/codecov/codecov-action
         uses: codecov/codecov-action@v4
         with:
           files: ./coverage.xml
           env_vars: OS,PYTHON
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set Up Python 3.14
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install project
+        run: uv pip install --system -e .
+
+      - name: Run Pyrefly
+        run: uvx pyrefly check
