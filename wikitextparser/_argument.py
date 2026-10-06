@@ -391,10 +391,7 @@ class SubWikiTextWithArgs(SubWikiText):
                     if not lastargs and not lastarg:
                         # 2.2.1 If there is no seen argument before,
                         # add to seen arguments list
-                        if name not in key_to_lastargs:
-                            key_to_lastargs[name] = [(arg, val)]
-                        else:
-                            key_to_lastargs[name].append((arg, val))
+                        key_to_lastargs[name] = [(arg, val)]
                     else:
                         # 2.2.2 If there is seen argument before (either pos or key)
                         if lastargs:
