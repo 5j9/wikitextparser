@@ -58,6 +58,12 @@ def test_rm_dup_args_safe():
     t = Template('{{t||v|1=}}')
     t.rm_dup_args_safe()
     assert t.string == '{{t||v}}'
+    t = Template('{{t|u|v||1=u|2=v|3=w|3=y}}')
+    t.rm_dup_args_safe()
+    assert '{{t|u|v|3=w|3=y}}' == t.string
+    t = Template('{{t|3=y|u|v|}}')
+    t.rm_dup_args_safe()
+    assert '{{t|3=y|u|v}}' == t.string
 
 
 def test_rm_dup_args_safe_cached_arguments():
