@@ -33,7 +33,7 @@ class WikiLink(SubWikiText):
         if cached_match is not None and cached_match.string == shadow:
             return cached_match
         self._cached_match = match = FULLMATCH(shadow)
-        return match  # type: ignore
+        return match
 
     @property
     def target(self) -> str:

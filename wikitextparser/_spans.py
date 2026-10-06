@@ -368,17 +368,14 @@ def _parse_sub_spans(
         *HTML_END_TAG_FINDITER(byte_array, start, end),
     )
     for match in start_and_end_tags:
-        # pyrefly: ignore [missing-attribute]
-        ms, me = match.span()
+        ms, me = match.span()  # type: ignore
         byte_array[ms:me] = byte_array[ms:me].translate(BRACKETS)
     while True:
         while True:
             match: Match | None = None
             for match in WIKILINK_PARAM_FINDITER(byte_array, start, end):
-                # pyrefly: ignore [missing-attribute]
-                ms, me = match.span()
-                # pyrefly: ignore [unsupported-operation]
-                if match[1] is None:
+                ms, me = match.span()  # type: ignore
+                if match[1] is None:  # type: ignore
                     wls_append(SpanData(ms, me, match, byte_array[ms:me]))
                     _parse_sub_spans(
                         byte_array,
@@ -406,14 +403,11 @@ def _parse_sub_spans(
             if match is None:
                 break
         for match in PF_TL_FINDITER(byte_array, start, end):
-            # pyrefly: ignore [missing-attribute]
-            ms, me = match.span()
-            # pyrefly: ignore [unsupported-operation]
-            if match[1] is not None:
+            ms, me = match.span()  # type: ignore
+            if match[1] is not None:  # type: ignore
                 pfs_append(SpanData(ms, me, match, byte_array[ms:me]))
                 byte_array[ms:me] = b'X' * (me - ms)
-            # pyrefly: ignore [unsupported-operation]
-            elif match[2] is not None:  # invalid template name
+            elif match[2] is not None:  # invalid template name  # type: ignore
                 byte_array[ms:me] = b'_' * (me - ms)
                 byte_array[ms + 1] = 123
                 continue
@@ -423,6 +417,5 @@ def _parse_sub_spans(
         if match is None:
             break
     for match in start_and_end_tags:
-        # pyrefly: ignore [missing-attribute]
-        ms, me = match.span()
+        ms, me = match.span()  # type: ignore
         byte_array[ms:me] = byte_array[ms:me].translate(BRACES_PIPE_NEWLINE)

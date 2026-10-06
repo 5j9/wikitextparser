@@ -2,7 +2,7 @@ import cProfile
 from functools import partial
 from timeit import repeat
 
-import mwparserfromhell as mwp
+import mwparserfromhell as mwp  # type: ignore
 
 import wikitextparser as wtp
 

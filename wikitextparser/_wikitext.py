@@ -6,6 +6,7 @@ from html import unescape
 from itertools import islice
 from operator import attrgetter
 from typing import (
+    TYPE_CHECKING,
     Callable,
     overload,
 )
@@ -323,7 +324,7 @@ class WikiText:
         if isinstance(key, int):
             if key < 0:
                 key += se - ss
-                if key < 0:  # type: ignore
+                if key < 0:
                     raise IndexError('index out of range')
             elif key >= se - ss:
                 raise IndexError('index out of range')
@@ -1360,12 +1361,12 @@ class WikiText:
         if top_levels_only:
             assert level is None
             assert include_subsections
-            full_match: Match[bytes] = SECTIONS_TOP_LEVELS_ONLY(shadow)  # type: ignore
+            full_match: Match[bytes] = SECTIONS_TOP_LEVELS_ONLY(shadow)
             return self._section_spans_to_sections(
                 full_match.spans('section'), shadow
             )
 
-        full_match = SECTIONS_FULLMATCH(shadow)  # type: ignore
+        full_match = SECTIONS_FULLMATCH(shadow)
         section_spans = full_match.spans('section')
         levels = [len(eq) for eq in full_match.captures('equals')]
 
@@ -1638,8 +1639,7 @@ class SubWikiText(WikiText):
             # noinspection PyDunderSlots,PyUnresolvedReferences
             self._type = _type
             super().__init__(string, _type_to_spans)
-            # pyrefly: ignore [bad-assignment]
-            self._span_data = _span
+            self._span_data = _span  # type: ignore
 
     def _subspans(self, type_: str) -> list[SpanData]:
         """Yield all the sub-span indices excluding self._span."""
@@ -1743,17 +1743,16 @@ plain_text_doc = """
 WikiText.plain_text.__doc__ += plain_text_doc  # type: ignore
 remove_markup.__doc__ += plain_text_doc  # type: ignore
 
-if __name__ == '__main__':
-    # To make PyCharm happy! http://stackoverflow.com/questions/41524090
-    from ._comment_bold_italic import Bold, Comment, Italic
-    from ._externallink import ExternalLink
-    from ._parameter import Parameter
-    from ._parser_function import ParserFunction
-    from ._section import Section
-    from ._table import Table
-    from ._tag import Tag
-    from ._template import Template
-    from ._wikilink import WikiLink
-    from ._wikilist import LIST_PATTERN_FORMAT, WikiList
+if TYPE_CHECKING:
+    from ._comment_bold_italic import Bold, Comment, Italic  # noqa: TC004
+    from ._externallink import ExternalLink  # noqa: TC004
+    from ._parameter import Parameter  # noqa: TC004
+    from ._parser_function import ParserFunction  # noqa: TC004
+    from ._section import Section  # noqa: TC004
+    from ._table import Table  # noqa: TC004
+    from ._tag import Tag  # noqa: TC004
+    from ._template import Template  # noqa: TC004
+    from ._wikilink import WikiLink  # noqa: TC004
+    from ._wikilist import LIST_PATTERN_FORMAT, WikiList  # noqa: TC004
 
     ExtensionTag = Tag

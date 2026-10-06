@@ -67,7 +67,7 @@ class Bold(BoldItalic):
 
     @property
     def _match(self) -> Match[str]:
-        return BOLD_FULLMATCH(self.string)  # type: ignore
+        return BOLD_FULLMATCH(self.string)
 
 
 class Italic(BoldItalic):
@@ -92,5 +92,5 @@ class Italic(BoldItalic):
     @property
     def _match(self) -> Match[str]:
         if self.end_token:
-            return ITALIC_FULLMATCH(self.string)  # type: ignore
-        return ITALIC_NOEND_FULLMATCH(self.string)  # type: ignore
+            return ITALIC_FULLMATCH(self.string)
+        return ITALIC_NOEND_FULLMATCH(self.string)

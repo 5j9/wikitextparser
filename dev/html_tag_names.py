@@ -2,9 +2,9 @@ from collections import Counter
 from itertools import chain
 from json import loads
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # type: ignore
 from regex import findall
-from requests import get, post
+from requests import get, post  # type: ignore
 
 
 def parse(text: str) -> str:

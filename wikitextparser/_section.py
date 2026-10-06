@@ -12,7 +12,9 @@ class Section(SubWikiText):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._header_match_cache = None, None
+        self._header_match_cache: (
+            tuple[Match, bytearray] | tuple[None, None]
+        ) = None, None
 
     @property
     def _header_match(self):

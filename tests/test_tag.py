@@ -64,7 +64,7 @@ def test_start_tag_patterns():
 def test_end_tag_patterns():
     assert rc(END_TAG_PATTERN.replace(b'{name}', b'p')).search(
         b'</p>'
-    ).groupdict() == {'end_tag': b'</p>'}  # type: ignore
+    ).groupdict() == {'end_tag': b'</p>'}
 
 
 @mark.xfail

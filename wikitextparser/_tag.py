@@ -150,8 +150,7 @@ class Tag(SubWikiTextWithAttrs):
         self._match_cache = match, string
         return match
 
-    # pyrefly: ignore [bad-assignment]
-    _attrs_match = _match
+    _attrs_match = _match  # type: ignore
 
     @property
     def name(self) -> str:

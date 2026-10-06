@@ -62,7 +62,7 @@ class Argument(SubWikiText):
             parent._shadow[spand_data.start - ps : spand_data.end - ps]
         )
         self._shadow_match_cache = shadow_match, self_string
-        return shadow_match  # type: ignore
+        return shadow_match
 
     @property
     def name(self) -> str:
@@ -604,9 +604,7 @@ class SubWikiTextWithArgs(SubWikiText):
 
             arg_value = arg.value
             before_values.append(arg_value[: -len(arg_value.lstrip(WS))])
-            after_values.append(
-                ENDING_WS_MATCH(arg_value)[0]  # type: ignore
-            )
+            after_values.append(ENDING_WS_MATCH(arg_value)[0])
 
         return ArgSpacing(
             before_name=mode(before_names),

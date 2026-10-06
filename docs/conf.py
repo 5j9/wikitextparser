@@ -66,11 +66,13 @@ author = ''
 with open(
     join(repo_dir, 'wikitextparser', '__init__.py'), encoding='utf8'
 ) as f:
-    version = search(
+    m = search(
         r'^__version__ = [\'"]([^\'"]*)[\'"]',
         f.read(),
         MULTILINE,
-    ).group(1)  # type: ignore
+    )
+    assert m is not None
+    version = m[1]
 # The full version, including alpha/beta/rc tags.
 release = version
 

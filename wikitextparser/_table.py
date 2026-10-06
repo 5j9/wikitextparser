@@ -113,7 +113,7 @@ class Table(SubWikiTextWithAttrs):
             return [[]]
         # Start of the first row
         match_table = []
-        pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()  # type: ignore
+        pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
         rsp = _row_separator_increase(table_shadow, pos)
         pos = -1
         while pos != rsp:
@@ -140,7 +140,7 @@ class Table(SubWikiTextWithAttrs):
                             match_row.append(m)
                             pos = m.end()
                             m = INLINE_HAEDER_CELL_MATCH(table_shadow, pos)
-                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()  # type: ignore
+                    pos = FIRST_NON_CAPTION_LINE(table_shadow, pos).start()
                     m = NEWLINE_CELL_MATCH(table_shadow, pos)
             rsp = _row_separator_increase(table_shadow, pos)
         return match_table
@@ -185,7 +185,7 @@ class Table(SubWikiTextWithAttrs):
         strip: bool = ...,
     ) -> list[list[str | None]]: ...
 
-    def data(  # type: ignore
+    def data(
         self,
         span: bool = True,
         row: int | None = None,
@@ -235,7 +235,7 @@ class Table(SubWikiTextWithAttrs):
                     s, e = m.span('attrs')
                     captures = ATTRS_MATCH(
                         string.encode('ascii', 'replace'), s, e
-                    ).captures  # type: ignore
+                    ).captures
                     row_attrs_append(
                         dict(
                             zip(
@@ -326,7 +326,7 @@ class Table(SubWikiTextWithAttrs):
                     # Also ATTRS_MATCH should match against the cell string
                     # so that it can be used easily as cache later in Cells.
                     attrs_match = ATTRS_MATCH(shadow[ms:me], s - ms, e - ms)
-                    captures = attrs_match.captures  # type: ignore
+                    captures = attrs_match.captures
                     row_attrs_append(  # type: ignore
                         dict(
                             zip(captures('attr_name'), captures('attr_value'))
@@ -382,8 +382,7 @@ class Table(SubWikiTextWithAttrs):
         self.insert(m.end(), '|+' + newcaption + m[0].decode())
 
     @property
-    # pyrefly: ignore [bad-override]
-    def _attrs_match(self) -> Any:
+    def _attrs_match(self) -> Any:  # type: ignore
         cache_match, cache_string = self._attrs_match_cache
         string = self.string
         if cache_string == string:
@@ -430,7 +429,7 @@ class Table(SubWikiTextWithAttrs):
         append = attrs.append
         for row_match in FIND_ROWS(shadow):
             s, e = row_match.span(1)
-            spans = ATTRS_MATCH(shadow, s, e).spans  # type: ignore
+            spans = ATTRS_MATCH(shadow, s, e).spans
             append(
                 {
                     string[ns:ne]: string[vs:ve]
@@ -588,11 +587,11 @@ def _row_separator_increase(shadow: bytearray, pos: int) -> int:
     Also skips any semi-caption lines before and after the separator.
     """
     # General format of row separators: r'\|-[^\n]*\n'
-    ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()  # type: ignore
+    ncl = FIRST_NON_CAPTION_LINE(shadow, pos).start()
     lsp = _lstrip_increase(shadow, ncl)
     while shadow[lsp : lsp + 2] == b'|-':  # type: ignore
         # We are on a row separator line.
         pos = FIRST_LINEBREAK(shadow, lsp + 2).start()
-        pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()  # type: ignore
+        pos = FIRST_NON_CAPTION_LINE(shadow, pos).start()
         lsp = _lstrip_increase(shadow, pos)
     return pos
