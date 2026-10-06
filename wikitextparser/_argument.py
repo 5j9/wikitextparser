@@ -360,19 +360,31 @@ class SubWikiTextWithArgs(SubWikiText):
                         last_idx -= 1
                     else:
                         # 1.1.2 in any other case, try to delete the keyword arguments
+                        # check also that semantics are not modified (except for empty values)
                         k = 0
                         for b in list(lastargs):
-                            if b[1] == val or not b[1]:
+                            if not b[1] or (b[1] == val and (k > 0 or len(lastargs) == 1 or b[1] == lastargs[1][1])):
                                 del b[0][0 : len(b[0].string)]
                                 lastargs.pop(k)
                                 deleted = True
                             else:
                                 k += 1
 
-                        # couldn't delete argument: add to seen arguments list
-                        if not deleted and tag and not arg.value.endswith(tag):
-                            arg.value += tag
-                        pos_to_lastarg[name] = (arg, val)
+                        if not deleted:
+                            # One last try: keyword couln't be removed because it would change semantics
+                            # Try to delete current argument
+                            if lastargs[0][1] == val and int(name) == last_idx:
+                                del arg[0 : len(arg.string)]
+                                deleted = True
+                                last_idx -= 1
+                            else:
+                                # Couldn't delete neither previous arguments nor current
+                                if tag and not arg.value.endswith(tag):
+                                    arg.value += tag
+                                pos_to_lastarg[name] = (arg, val)
+                        else:
+                            # Could delete any of the keyword arguments, the current argument remains
+                            pos_to_lastarg[name] = (arg, val)
                 else:
                     # 1.2 Is positional and there is no key argument at the right
                     # add to seen arguments list

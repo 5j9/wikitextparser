@@ -174,3 +174,12 @@ def test_rm_dup_args_safe_tag_not_idempotent():
     assert t.string == '{{t|a=2X|a=1}}'
     t.rm_dup_args_safe(tag='X')
     assert t.string == '{{t|a=2X|a=1}}'
+
+
+def test_dont_change_arg1_value_from_x_to_y():
+    t = Template('{{t|x|1=y|1=x}}')
+    t.rm_dup_args_safe()
+    assert t.string == '{{t|1=y|1=x}}'
+    t = Template('{{t|x|y|1=y|1=x}}')
+    t.rm_dup_args_safe()
+    assert t.string == '{{t|x|y|1=y|1=x}}'
