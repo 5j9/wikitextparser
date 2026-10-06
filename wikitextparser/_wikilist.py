@@ -5,6 +5,8 @@ from operator import attrgetter
 
 from regex import Match, escape, fullmatch
 
+from wikitextparser._spans import SpanData
+
 from ._spans import TypeToSpans
 from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
@@ -49,7 +51,7 @@ class WikiList(SubWikiText):
         pattern: str,
         _match: Match | None = None,
         _type_to_spans: TypeToSpans | None = None,
-        _span: list[int] | None = None,
+        _span: SpanData | None = None,
         _type: str | None = None,
     ) -> None:
         super().__init__(string, _type_to_spans, _span, _type)
@@ -158,7 +160,7 @@ class WikiList(SubWikiText):
             # Only return sub-lists that are within the given item
             match = self._match
             fullitem_spans = match.spans('fullitem')
-            ss = self._span_data[0]
+            ss = self._span_data.start
             ms = match.start()
             s, e = fullitem_spans[i]
             e -= ms - ss
@@ -166,8 +168,8 @@ class WikiList(SubWikiText):
             for ptrn in patterns:
                 for lst in get_lists(self_pattern + ptrn):
                     # noinspection PyProtectedMember
-                    ls, le, _, _ = lst._span_data
-                    if s <= ls and le <= e:
+                    sd = lst._span_data
+                    if s <= sd.start and sd.end <= e:
                         sublists_append(lst)
         sublists.sort(key=attrgetter('_span_data'))
         return sublists

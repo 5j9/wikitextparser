@@ -12,7 +12,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from regex import DOTALL, VERBOSE
+from regex import DOTALL, VERBOSE, Match
+
+from wikitextparser._spans import SpanData
 
 from ._spans import ATTRS_PATTERN, END_TAG_PATTERN, SPACE_CHARS
 from ._wikitext import SubWikiText, rc
@@ -55,6 +57,7 @@ class SubWikiTextWithAttrs(SubWikiText):
     """
 
     __slots__ = ('_attrs_match',)
+    _attrs_match: Match
 
     @property
     def attrs(self) -> dict[str, str]:
@@ -130,6 +133,7 @@ class SubWikiTextWithAttrs(SubWikiText):
 
 class Tag(SubWikiTextWithAttrs):
     __slots__ = ('_match_cache',)
+    _match_cache: tuple[Match, str] | tuple[None, None]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -146,6 +150,7 @@ class Tag(SubWikiTextWithAttrs):
         self._match_cache = match, string
         return match
 
+    # pyrefly: ignore [bad-assignment]
     _attrs_match = _match
 
     @property
@@ -193,15 +198,20 @@ class Tag(SubWikiTextWithAttrs):
     @property
     def parsed_contents(self) -> SubWikiText:
         """Return the contents as a SubWikiText object."""
-        ss, _, _, byte_array = self._span_data
+        ss, byte_array = (sd := self._span_data).start, sd.byte_array
         s, e = self._match.span('contents')
         tts = self._type_to_spans
         spans = tts.setdefault('SubWikiText', [])
         ps, pe = span_tuple = ss + s, ss + e
         try:
-            i = [(s[0], s[1]) for s in spans].index(span_tuple)
+            i = [(s.start, s.end) for s in spans].index(span_tuple)
         except ValueError:
-            span = [ps, pe, None, byte_array[s:e]]
+            span = SpanData(
+                ps,
+                pe,
+                None,
+                byte_array[s:e] if byte_array is not None else None,
+            )
             spans.append(span)
             spans.sort()
         else:

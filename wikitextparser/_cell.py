@@ -4,6 +4,8 @@ from collections.abc import MutableSequence
 
 from regex import DOTALL, VERBOSE, Match
 
+from wikitextparser._spans import SpanData
+
 from ._spans import ATTRS_MATCH, TypeToSpans
 from ._tag import SubWikiTextWithAttrs
 from ._wikitext import rc
@@ -149,7 +151,7 @@ class Cell(SubWikiTextWithAttrs):
         string: str | MutableSequence[str],
         header: bool = False,
         _type_to_spans: TypeToSpans | None = None,
-        _span: list | None = None,
+        _span: SpanData | None = None,
         _type: int | None = None,
         _match: Match | None = None,
         _attrs_match: Match | None = None,

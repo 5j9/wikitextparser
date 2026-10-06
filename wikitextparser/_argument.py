@@ -6,6 +6,8 @@ from typing import ClassVar, NamedTuple, TypeVar
 
 from regex import DOTALL, REVERSE, Match
 
+from wikitextparser._spans import SpanData
+
 from ._spans import TypeToSpans
 from ._wikilist import WikiList
 from ._wikitext import SECTION_HEADING, WS, SubWikiText, rc
@@ -36,13 +38,16 @@ class Argument(SubWikiText):
         self,
         string: str | MutableSequence[str],
         _type_to_spans: TypeToSpans | None = None,
-        _span: list[int] | None = None,
+        _span: SpanData | None = None,
         _type: str | int | None = None,
         _parent: SubWikiTextWithArgs | None = None,
     ):
         super().__init__(string, _type_to_spans, _span, _type)
         self._parent = _parent or self
-        self._shadow_match_cache = None, None
+        self._shadow_match_cache: tuple[bytearray | None, str | None] = (
+            None,
+            None,
+        )
 
     @property
     def _shadow_match(self) -> Match[bytes]:
@@ -50,10 +55,12 @@ class Argument(SubWikiText):
         self_string = str(self)
         if cache_string == self_string:
             return cached_shadow_match  # type: ignore
-        ss, se, _, _ = self._span_data
+        spand_data = self._span_data
         parent = self._parent
-        ps = parent._span_data[0]
-        shadow_match = ARG_SHADOW_FULLMATCH(parent._shadow[ss - ps : se - ps])
+        ps = parent._span_data.start
+        shadow_match = ARG_SHADOW_FULLMATCH(
+            parent._shadow[spand_data.start - ps : spand_data.end - ps]
+        )
         self._shadow_match_cache = shadow_match, self_string
         return shadow_match  # type: ignore
 
@@ -64,7 +71,7 @@ class Argument(SubWikiText):
         getter: return the position as a string, for positional arguments.
         setter: convert it to keyword argument if positional.
         """
-        ss = self._span_data[0]
+        ss = self._span_data.start
         shadow_match = self._shadow_match
         if shadow_match['eq']:
             s, e = shadow_match.span('pre_eq')
@@ -72,11 +79,16 @@ class Argument(SubWikiText):
         # positional argument
         position = 1
         parent_find = self._parent._shadow.find
-        parent_start = self._parent._span_data[0]
-        for s, e, _, _ in self._type_to_spans[self._type]:
-            if ss <= s:
+        parent_start = self._parent._span_data.start
+        for spand_data in self._type_to_spans[self._type]:
+            if ss <= (s := spand_data.start):
                 break
-            if parent_find(b'=', s - parent_start, e - parent_start) != -1:
+            if (
+                parent_find(
+                    b'=', s - parent_start, spand_data.end - parent_start
+                )
+                != -1
+            ):
                 # This is a keyword argument.
                 continue
             # This is a preceding positional argument.
@@ -151,12 +163,12 @@ class Argument(SubWikiText):
             ls_post_eq = post_eq.lstrip()
             return (
                 bytearray(ls_post_eq),
-                self._span_data[0]
+                self._span_data.start
                 + shadow_match.start('post_eq')
                 + len(post_eq)
                 - len(ls_post_eq),
             )
-        return bytearray(shadow_match[0][1:]), self._span_data[0] + 1
+        return bytearray(shadow_match[0][1:]), self._span_data.start + 1
 
 
 class ArgSpacing(NamedTuple):
@@ -182,7 +194,7 @@ class SubWikiTextWithArgs(SubWikiText):
         self,
         string: str | MutableSequence[str],
         _type_to_spans: TypeToSpans | None = None,
-        _span: list | None = None,
+        _span: SpanData | None = None,
         _type: str | int | None = None,
     ) -> None:
         super().__init__(string, _type_to_spans, _span, _type)
@@ -211,26 +223,31 @@ class SubWikiTextWithArgs(SubWikiText):
         if split_spans:
             arguments_append = arguments.append
             type_to_spans = self._type_to_spans
-            ss, se, _, _ = span = self._span_data
+            span = self._span_data
+            ss = span.start
             type_ = id(span)
             lststr = self._lststr
             arg_spans = type_to_spans.setdefault(type_, [])
-            span_tuple_to_span_get = {(s[0], s[1]): s for s in arg_spans}.get
+            span_tuple_to_span_get = {
+                (s.start, s.end): s for s in arg_spans
+            }.get
             for arg_self_start, arg_self_end in split_spans:
                 # todo: add byte array
-                s, e, _, _ = arg_span = [
+                arg_span = SpanData(
                     ss + arg_self_start,
                     ss + arg_self_end,
                     None,
                     None,
-                ]
-                old_span = span_tuple_to_span_get((s, e))
+                )
+                old_span = span_tuple_to_span_get(
+                    (arg_span.start, arg_span.end)
+                )
                 if old_span is None:
                     insort(arg_spans, arg_span)
                 else:
                     arg_span = old_span
                 arg = Argument(lststr, type_to_spans, arg_span, type_, self)
-                arg._span_data[3] = shadow[arg_self_start:arg_self_end]
+                arg._span_data.byte_array = shadow[arg_self_start:arg_self_end]
                 arguments_append(arg)
 
         return arguments

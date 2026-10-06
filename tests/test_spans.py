@@ -5,12 +5,14 @@ from pytest import mark
 from wikitextparser import WikiText, parse
 
 # noinspection PyProtectedMember
-from wikitextparser._spans import PF_TL_FINDITER, TypeToSpans, parse_to_spans
+from wikitextparser._spans import PF_TL_FINDITER, parse_to_spans
 
 
-def bytearray_parse_to_spans(bytes_: bytes) -> TypeToSpans:
+def bytearray_parse_to_spans(
+    bytes_: bytes,
+) -> dict[str | int, list[tuple[int, int]]]:
     return {
-        k: [i[:2] for i in v]  # no need for match and byte_array
+        k: [(i.start, i.end) for i in v]  # no need for match and byte_array
         for k, v in parse_to_spans(bytearray(bytes_)).items()
     }
 
@@ -34,9 +36,9 @@ def test_template_name_cannot_be_empty():
 # noinspection PyProtectedMember
 def test_template_in_template():
     assert bpts(b'{{cite|{{t1}}|{{t2}}}}')['Template'] == [
-        [0, 22],
-        [7, 13],
-        [14, 20],
+        (0, 22),
+        (7, 13),
+        (14, 20),
     ]
 
 
@@ -45,32 +47,32 @@ def test_textmixed_multitemplate():
     assert bpts(
         b'text1{{cite|{{t1}}|{{t2}}}}text2{{cite|{{t3}}|{{t4}}}}text3'
     )['Template'] == [
-        [5, 27],
-        [12, 18],
-        [19, 25],
-        [32, 54],
-        [39, 45],
-        [46, 52],
+        (5, 27),
+        (12, 18),
+        (19, 25),
+        (32, 54),
+        (39, 45),
+        (46, 52),
     ]
 
 
 # noinspection PyProtectedMember
 def test_multiline_mutitemplate():
     assert bpts(b'{{cite\n    |{{t1}}\n    |{{t2}}}}')['Template'] == [
-        [0, 32],
-        [12, 18],
-        [24, 30],
+        (0, 32),
+        (12, 18),
+        (24, 30),
     ]
 
 
 # noinspection PyProtectedMember
 def test_lacks_ending_braces():
-    assert [[7, 13], [14, 20]] == bpts(b'{{cite|{{t1}}|{{t2}}')['Template']
+    assert [(7, 13), (14, 20)] == bpts(b'{{cite|{{t1}}|{{t2}}')['Template']
 
 
 # noinspection PyProtectedMember
 def test_lacks_starting_braces():
-    assert [[5, 11], [12, 18]] == bpts(b'cite|{{t1}}|{{t2}}}}')['Template']
+    assert [(5, 11), (12, 18)] == bpts(b'cite|{{t1}}|{{t2}}}}')['Template']
 
 
 # noinspection PyProtectedMember
@@ -81,15 +83,15 @@ def test_no_template_for_braces_around_wikilink():
 # noinspection PyProtectedMember
 def test_template_inside_parameter():
     d = bpts(b'{{{1|{{colorbox|yellow|text1}}}}}')
-    assert [[5, 30]], d['Template']
-    assert [[0, 33]], d['Parameter']
+    assert [(5, 30)], d['Template']
+    assert [(0, 33)], d['Parameter']
 
 
 # noinspection PyProtectedMember
 def test_parameter_inside_template():
     d = bpts(b'{{colorbox|yellow|{{{1|defualt_text}}}}}')
-    assert [[0, 40]] == d['Template']
-    assert [[18, 38]] == d['Parameter']
+    assert [(0, 40)] == d['Template']
+    assert [(18, 38)] == d['Parameter']
 
 
 # noinspection PyProtectedMember
@@ -101,9 +103,9 @@ def test_template_name_cannot_contain_newline():
 
 # noinspection PyProtectedMember
 def test_unicode_template():
-    ((a, b, _, _),) = WikiText('{{\nرنگ\n|متن}}')._type_to_spans['Template']
-    assert a == 0
-    assert b == 13
+    (span_data,) = WikiText('{{\nرنگ\n|متن}}')._type_to_spans['Template']
+    assert span_data.start == 0
+    assert span_data.end == 13
 
 
 # noinspection PyProtectedMember
@@ -113,11 +115,11 @@ def test_invoking_a_named_ref_is_not_a_ref_start():
     [[mw:Help:Extension:Cite]] may be helpful, too.
 
     """
-    ((a, b, _, _),) = WikiText(
+    (span_data,) = WikiText(
         '{{text|1=v<ref name=n/>}}\ntext.<ref name=n>r</ref>'
     )._type_to_spans['Template']
-    assert a == 0
-    assert b == 25
+    assert span_data.start == 0
+    assert span_data.end == 25
 
 
 # noinspection PyProtectedMember
@@ -132,35 +134,33 @@ def test_invalid_refs_that_should_not_produce_any_template():
 
 # noinspection PyProtectedMember
 def test_unicode_parser_function():
-    ((a, b, _, _),) = WikiText('{{#اگر:|فلان}}')._type_to_spans[
-        'ParserFunction'
-    ]
-    assert a == 0
-    assert b == 14
+    (span_data,) = WikiText('{{#اگر:|فلان}}')._type_to_spans['ParserFunction']
+    assert span_data.start == 0
+    assert span_data.end == 14
 
 
 # noinspection PyProtectedMember
 def test_unicode_parameters():
-    (a, b, _, _), (c, d, _, _) = WikiText(
-        '{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}'
-    )._type_to_spans['Parameter']
-    assert a == 0
-    assert b == 30
-    assert c == 9
-    assert d == 27
+    sd1, sd2 = WikiText('{{{پارا۱|{{{پارا۲|پيشفرض}}}}}}')._type_to_spans[
+        'Parameter'
+    ]
+    assert sd1.start == 0
+    assert sd1.end == 30
+    assert sd2.start == 9
+    assert sd2.end == 27
 
 
 # noinspection PyProtectedMember
 def test_image_containing_wikilink():
-    (a, b, _, _), (c, d, _, _), (e, f, _, _) = parse(
+    sd1, sd2, sd3 = parse(
         '[[File:xyz.jpg|thumb|1px|txt1 [[wikilink1]] txt2 [[Wikilink2]].]]'
     )._type_to_spans['WikiLink']
-    assert a == 0
-    assert b == 65
-    assert c == 30
-    assert d == 43
-    assert e == 49
-    assert f == 62
+    assert sd1.start == 0
+    assert sd1.end == 65
+    assert sd2.start == 30
+    assert sd2.end == 43
+    assert sd3.start == 49
+    assert sd3.end == 62
 
 
 def test_extracting_sections():
@@ -337,9 +337,9 @@ def test_parser_function_regex():
 
 # noinspection PyProtectedMember
 def test_wikilinks_inside_exttags():
-    ((s, e, _, _),) = WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
-    assert s == 5
-    assert e == 10
+    (sd,) = WikiText('<ref>[[w]]</ref>')._type_to_spans['WikiLink']
+    assert sd.start == 5
+    assert sd.end == 10
 
 
 def test_single_brace_in_tl():
@@ -371,7 +371,7 @@ def test_params_are_extracted_before_parser_functions():
 def test_single_brace_after_pf_remove():
     assert {
         'Parameter': [],
-        'ParserFunction': [[4, 17]],
+        'ParserFunction': [(4, 17)],
         'Template': [],
         'WikiLink': [],
         'Comment': [],
@@ -384,9 +384,9 @@ def test_nested_wikilinks_in_ref():
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
-        'WikiLink': [[5, 40], [30, 38]],
+        'WikiLink': [(5, 40), (30, 38)],
         'Comment': [],
-        'ExtensionTag': [[0, 46]],
+        'ExtensionTag': [(0, 46)],
     } == bpts(b'<ref>[[File:Example.jpg|thumb|[[Link]]]]</ref>')
 
 
@@ -395,7 +395,7 @@ def test_invalid_nested_wikilinks():
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
-        'WikiLink': [[0, 13], [5, 10]],
+        'WikiLink': [(0, 13), (5, 10)],
         'Comment': [],
         'ExtensionTag': [],
     } == bpts(b'[[L| [[S]] ]]')
@@ -406,9 +406,9 @@ def test_invalid_nested_wikilinks_in_ref():
         'Parameter': [],
         'ParserFunction': [],
         'Template': [],
-        'WikiLink': [[5, 18], [10, 15]],
+        'WikiLink': [(5, 18), (10, 15)],
         'Comment': [],
-        'ExtensionTag': [[0, 24]],
+        'ExtensionTag': [(0, 24)],
     } == bpts(b'<ref>[[L| [[S]] ]]</ref>')
 
 
@@ -416,8 +416,8 @@ def test_nested_parser_functions_containing_param():
     assert {
         'Comment': [],
         'ExtensionTag': [],
-        'Parameter': [[18, 25]],
-        'ParserFunction': [[0, 31], [9, 28]],
+        'Parameter': [(18, 25)],
+        'ParserFunction': [(0, 31), (9, 28)],
         'Template': [],
         'WikiLink': [],
     } == bpts(b'{{#if: | {{#expr: {{{p}}} }} }}')
@@ -427,7 +427,7 @@ def test_eliminate_invalid_templates_after_extracting_params():
     assert {
         'Comment': [],
         'ExtensionTag': [],
-        'Parameter': [[0, 9]],
+        'Parameter': [(0, 9)],
         'ParserFunction': [],
         'Template': [],
         'WikiLink': [],
@@ -440,18 +440,18 @@ def test_invalid_table_in_template():
         'ExtensionTag': [],
         'Parameter': [],
         'ParserFunction': [],
-        'Template': [[0, 17]],
+        'Template': [(0, 17)],
         'WikiLink': [],
     } == bpts(b'{{t|\n{|a\n|b\n|}\n}}')
 
 
 def test_nested_template_with_unmatched_leading_brace():
-    assert [0, 21] == bpts(b'{{text|{{{text|a}} }}')['Template'][0]
+    assert (0, 21) == bpts(b'{{text|{{{text|a}} }}')['Template'][0]
 
 
 def test_wikilink_with_extra_brackets():
-    assert [0, 7] == bpts(b'[[a|b]]]')['WikiLink'][0]
-    assert [0, 9] == bpts(b'[[a|[b]]]')['WikiLink'][0]
+    assert (0, 7) == bpts(b'[[a|b]]]')['WikiLink'][0]
+    assert (0, 9) == bpts(b'[[a|[b]]]')['WikiLink'][0]
     assert not bpts(b'[[[a|b]]')['WikiLink']
     assert not bpts(b'[[[a]|b]]')['WikiLink']
 
@@ -459,47 +459,47 @@ def test_wikilink_with_extra_brackets():
 def test_templates_before_tags():
     # assuming that templates do not exist
     # could be the other way around
-    assert bpts(b'{{z|<s }}>a</s>c}}')['Template'][0] == [0, 9]
-    assert bpts(b'{{z|<s>}}</s>}}')['Template'][0] == [0, 9]
+    assert bpts(b'{{z|<s }}>a</s>c}}')['Template'][0] == (0, 9)
+    assert bpts(b'{{z|<s>}}</s>}}')['Template'][0] == (0, 9)
     assert bpts(b'{{z<s }}>}}</s }}>}}')['Template'] == []
-    assert bpts(b'<s {{z|a}}></s>')['Template'][0] == [3, 10]
+    assert bpts(b'<s {{z|a}}></s>')['Template'][0] == (3, 10)
 
 
 def test_wikilinks_priority():
     assert bpts(  # wikilinks are valid inside templates, params, pfs, or tags
         b'<s>{{text|{{ #if: {{{3|}}} || {{{1|[[a|a]]}}} }}}}</s>'
-    )['WikiLink'][0] == [35, 42]
+    )['WikiLink'][0] == (35, 42)
     # but the tag must be valid
-    assert bpts(b'[[target|t<z ]]|>e</z x|]]>t]]')['WikiLink'][0] == [0, 15]
+    assert bpts(b'[[target|t<z ]]|>e</z x|]]>t]]')['WikiLink'][0] == (0, 15)
 
     # tags before wikilinks (tags are allowed in the text part)
-    assert bpts(b'[[target|<s>t]]</s>')['WikiLink'][0] == [0, 15]
+    assert bpts(b'[[target|<s>t]]</s>')['WikiLink'][0] == (0, 15)
     # the end of a wikilink cannot be inside a tag (start and end tags
     # are tokenized before wikilinks)
-    assert bpts(b'[[a|b<s ]]|>c</s d|]]>e]]')['WikiLink'][0] == [0, 25]
+    assert bpts(b'[[a|b<s ]]|>c</s d|]]>e]]')['WikiLink'][0] == (0, 25)
 
     # wikilinks before templates
-    assert bpts(b'[[w|{{z]]}}')['WikiLink'][0] == [0, 9]
+    assert bpts(b'[[w|{{z]]}}')['WikiLink'][0] == (0, 9)
     # Non-existing templates are not valid inside wikilinks. Ignore them.
     # todo: an option to not ignore templates?
-    assert bpts(b'[[a|{{z}}]]')['WikiLink'][0] == [0, 11]
+    assert bpts(b'[[a|{{z}}]]')['WikiLink'][0] == (0, 11)
 
     # params are *processed* before wikilinks
     # todo: an option to not ignore params?
-    assert bpts(b'[[a{{{1}}}]]')['WikiLink'][0] == [0, 12]
-    assert bpts(b'[[a|{{{1}}}]]')['WikiLink'][0] == [0, 13]
+    assert bpts(b'[[a{{{1}}}]]')['WikiLink'][0] == (0, 12)
+    assert bpts(b'[[a|{{{1}}}]]')['WikiLink'][0] == (0, 13)
     # it's hard to tell if the wikilink should span till 13 or 10
-    assert bpts(b'[[a{{{1|]]}}}]]')['WikiLink'][0] == [0, 15]  # ?
+    assert bpts(b'[[a{{{1|]]}}}]]')['WikiLink'][0] == (0, 15)  # ?
     # todo: interesting linktrail case
     # the end of span could be at 11, depends on the value of {{{1}}}
-    assert bpts(b'[[a|{{{1|]]}}}]]')['WikiLink'][0] == [0, 16]  # ?
+    assert bpts(b'[[a|{{{1|]]}}}]]')['WikiLink'][0] == (0, 16)  # ?
 
     # pfs are *processed* before wikilinks
     # todo: an option to not ignore pfs?
     # the outer one is not a wikilink actually
     assert bpts(b'[[file:a.jpg|thumb|[[a{{#if:||}}]]]]')['WikiLink'] == [
-        [0, 36],
-        [19, 34],
+        (0, 36),
+        (19, 34),
     ]
 
 
@@ -539,23 +539,23 @@ def test_t253476_2():
 def test_wikilinks_and_params_cannot_overlap():
     # wikilink prevents param
     d = bpts(b'{{{P|[[a|b}}}]]')
-    assert d['WikiLink'] == [[5, 15]]
+    assert d['WikiLink'] == [(5, 15)]
     assert not d['Parameter']
     # param prevents wikilink
     d = bpts(b'[[a|{{{P|]]b}}}')
-    assert d['Parameter'] == [[4, 15]]
+    assert d['Parameter'] == [(4, 15)]
     assert not d['WikiLink']
     # -> whichever comes last is processes first
 
 
 def test_param_containing_curly_brace():
-    assert bpts(b'{{{p|{}}}')['Parameter'] == [[0, 9]]
-    assert bpts(b'{{{p|}d}}}')['Parameter'] == [[0, 10]]
+    assert bpts(b'{{{p|{}}}')['Parameter'] == [(0, 9)]
+    assert bpts(b'{{{p|}d}}}')['Parameter'] == [(0, 10)]
 
 
 def test_comment_in_template_name():
-    assert bpts(b'{{t\n<!---->|p}}')['Template'] == [[0, 15]]
-    assert bpts(b'{{<!---->\nt|p}}')['Template'] == [[0, 15]]
+    assert bpts(b'{{t\n<!---->|p}}')['Template'] == [(0, 15)]
+    assert bpts(b'{{<!---->\nt|p}}')['Template'] == [(0, 15)]
     assert not bpts(b'{{_<!---->}}')['Template']
 
 
@@ -580,33 +580,33 @@ def test_nested_tag_extensions():
 
 def test_unclosed_comment():
     # contents if {{t}} does not matter
-    assert bpts(b'a<!--{{t}}')['Comment'] == [[1, 10]]
+    assert bpts(b'a<!--{{t}}')['Comment'] == [(1, 10)]
     # comments and extension tags have the same parsing priority
     s = bpts(b'a<ref>b<!--c</ref>d-->')
-    assert s['ExtensionTag'] == [[1, 18]]
-    assert s['Comment'] == [[7, 12]]
+    assert s['ExtensionTag'] == [(1, 18)]
+    assert s['Comment'] == [(7, 12)]
     s = bpts(b'a<!--<ref>b-->c</ref>d')
     assert not s['ExtensionTag']
-    assert s['Comment'] == [[1, 14]]
+    assert s['Comment'] == [(1, 14)]
     s = bpts(b'<ref>a</ref><!--</ref>-->')
-    assert s['ExtensionTag'] == [[0, 12]]
-    assert s['Comment'] == [[12, 25]]
+    assert s['ExtensionTag'] == [(0, 12)]
+    assert s['Comment'] == [(12, 25)]
 
 
 def test_nested_extags_and_comment_spans():
     s = bpts(b'<noinclude><ref>a<!----></ref>b<!----></noinclude>')
-    assert s['ExtensionTag'] == [[0, 50], [11, 30]]
-    assert s['Comment'] == [[17, 24], [31, 38]]
+    assert s['ExtensionTag'] == [(0, 50), (11, 30)]
+    assert s['Comment'] == [(17, 24), (31, 38)]
 
 
 def test_treat_magic_words_without_arguments_as_parser_functions():
     s = bpts(b'{{NAMESPACE:MediaWiki}}\n{{NAMESPACE}}\n{{NAMESPACE|2}}')
-    assert s['ParserFunction'] == [[0, 23], [24, 37]]
-    assert s['Template'] == [[38, 53]]
+    assert s['ParserFunction'] == [(0, 23), (24, 37)]
+    assert s['Template'] == [(38, 53)]
 
 
 def test_extension_tags_are_case_insensitive():
-    assert bpts(b'<ref></Ref>')['ExtensionTag'] == [[0, 11]]
+    assert bpts(b'<ref></Ref>')['ExtensionTag'] == [(0, 11)]
 
 
 def test_no_wikilink_allowed_in_template_name():
@@ -628,10 +628,7 @@ def test_invalid_reverse_pipe_trick2():
 def test_invalid_tag():  # 121
     assert bpts(
         b'<ref[oanda.com, March 9, 2022]/ref><ref name=cp/><ref>a</ref>'
-    )['ExtensionTag'] == [
-        [35, 49],
-        [49, 61],
-    ]
+    )['ExtensionTag'] == [(35, 49), (49, 61)]
 
 
 def test_valid_title_chars_cr():

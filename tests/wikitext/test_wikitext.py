@@ -1,6 +1,7 @@
 from pytest import raises
 
 from wikitextparser import Template, WikiText, parse
+from wikitextparser._spans import SpanData
 
 # noinspection PyProtectedMember
 from wikitextparser._wikitext import DEAD_INDEX, WS, DeadIndexError
@@ -187,7 +188,7 @@ def test_spans_are_closed_properly():
     #     WikiText('{{text|1={{#if:|}}\n\n}}').pformat(),
     # )
     wt = WikiText('')
-    wt._type_to_spans = {'ParserFunction': [[16, 25, None, None]]}
+    wt._type_to_spans = {'ParserFunction': [SpanData(16, 25, None, None)]}
     # noinspection PyProtectedMember
     wt._close_subspans(16, 27)
     # noinspection PyProtectedMember
@@ -196,11 +197,10 @@ def test_spans_are_closed_properly():
 
 def test_rm_start_not_equal_to_self_start():
     wt = WikiText('t{{a}}')
-    wt._type_to_spans = {'Templates': [[1, 6]]}
-    # noinspection PyProtectedMember
+    wt._type_to_spans = {'Templates': [SpanData(1, 6, None, None)]}
     wt._close_subspans(5, 6)
     # noinspection PyProtectedMember
-    assert wt._type_to_spans == {'Templates': [[1, 6]]}
+    assert wt._type_to_spans == {'Templates': [SpanData(1, 6, None, None)]}
 
 
 # _expand_span_update

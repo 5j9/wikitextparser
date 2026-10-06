@@ -77,7 +77,8 @@ def test_extension_tags_are_not_lost_in_shadows():
 
 def test_same_tags_end():
     # noinspection PyProtectedMember
-    assert WikiText('<s></s><s></s>').get_tags()[0]._span_data[:2] == [0, 7]
+    sd = WikiText('<s></s><s></s>').get_tags()[0]._span_data
+    assert (sd.start, sd.end) == (0, 7)
 
 
 def test_pre():  # 46
