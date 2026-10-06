@@ -1743,7 +1743,7 @@ plain_text_doc = """
 WikiText.plain_text.__doc__ += plain_text_doc  # type: ignore
 remove_markup.__doc__ += plain_text_doc  # type: ignore
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from ._comment_bold_italic import Bold, Comment, Italic  # noqa: TC004
     from ._externallink import ExternalLink  # noqa: TC004
     from ._parameter import Parameter  # noqa: TC004
