@@ -205,6 +205,7 @@ class WikiText:
     _type = 'WikiText'
 
     __slots__ = '_lststr', '_span_data', '_type_to_spans'
+    _span_data: list
 
     def __init__(
         self,
