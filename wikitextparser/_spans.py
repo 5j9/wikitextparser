@@ -20,6 +20,7 @@ from ._config import (
 
 @dataclass
 class SpanData:
+    __slots__ = ('byte_array', 'end', 'match', 'start')
     start: int
     end: int
     match: Match | None
