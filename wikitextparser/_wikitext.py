@@ -381,19 +381,15 @@ class WikiText:
         for type_, value_spans in parse_to_spans(val_ba).items():
             tts = type_to_spans[type_]
             for span_data in value_spans:
-                try:
-                    insort_right(
-                        tts,
-                        SpanData(
-                            abs_start + span_data.start,
-                            abs_start + span_data.end,
-                            span_data.match,
-                            span_data.byte_array,
-                        ),
-                    )
-                except TypeError:
-                    # already exists which has lead to comparing Matches
-                    continue
+                insort_right(
+                    tts,
+                    SpanData(
+                        abs_start + span_data.start,
+                        abs_start + span_data.end,
+                        span_data.match,
+                        span_data.byte_array,
+                    ),
+                )
 
     def __delitem__(self, key: slice | int) -> None:
         """Remove the specified range or character from self.string.
