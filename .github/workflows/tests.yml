@@ -47,16 +47,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Set Up Python 3.14
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.14"
-
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
+      - name: Set Up Python 3.14
+        run: uv python install 3.14
+
       - name: Install project
-        run: uv pip install --system -e .
+        run: uv sync
 
       - name: Run Pyrefly
         run: uvx pyrefly check
