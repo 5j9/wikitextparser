@@ -105,6 +105,7 @@ def test_rm_first_of_dup_args():
     t.rm_first_of_dup_args()
     assert '{{t|v|1=v|u}}' == t.string
 
+
 def test_has_arg():
     has_arg = Template('{{t|a|b=c}}').has_arg
     assert has_arg('1') is True
