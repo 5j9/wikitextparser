@@ -294,7 +294,9 @@ class SubWikiTextWithArgs(SubWikiText):
         """
         names = set()
         args = self.arguments
-        last_idx = self._get_next_positional_index(ignore_equals=False, args=args)
+        last_idx = self._get_next_positional_index(
+            ignore_equals=False, args=args
+        )
         for a in reversed(self.arguments):
             name = a.name.strip(WS)
             if name in names:
@@ -340,7 +342,9 @@ class SubWikiTextWithArgs(SubWikiText):
         key_to_lastargs: dict[str, list[tuple[Argument, str]]] = {}
         pos_to_lastarg: dict[str, tuple[Argument, str]] = {}
         args = self.arguments
-        last_idx = self._get_next_positional_index(ignore_equals=False, args=args)
+        last_idx = self._get_next_positional_index(
+            ignore_equals=False, args=args
+        )
         # Iterate from right to left (last to first)
         for arg in reversed(args):
             name = arg.name.strip(WS)
@@ -363,7 +367,14 @@ class SubWikiTextWithArgs(SubWikiText):
                         # check also that semantics are not modified (except for empty values)
                         k = 0
                         for b in list(lastargs):
-                            if not b[1] or (b[1] == val and (k > 0 or len(lastargs) == 1 or b[1] == lastargs[1][1])):
+                            if not b[1] or (
+                                b[1] == val
+                                and (
+                                    k > 0
+                                    or len(lastargs) == 1
+                                    or b[1] == lastargs[1][1]
+                                )
+                            ):
                                 del b[0][0 : len(b[0].string)]
                                 lastargs.pop(k)
                                 deleted = True
@@ -371,7 +382,7 @@ class SubWikiTextWithArgs(SubWikiText):
                                 k += 1
 
                         if not deleted:
-                            # One last try: keyword couln't be removed because it would change semantics
+                            # One last try: keyword couldn't be removed because it would change semantics
                             # Try to delete current argument
                             if lastargs[0][1] == val and int(name) == last_idx:
                                 del arg[0 : len(arg.string)]
@@ -407,7 +418,7 @@ class SubWikiTextWithArgs(SubWikiText):
                     else:
                         # 2.2.2 If there is seen argument before (either pos or key)
                         if lastargs:
-                            #2.2.2.1 If key, try to delete current argument if it is equal
+                            # 2.2.2.1 If key, try to delete current argument if it is equal
                             # to some of the previous ones
                             k = 0
                             for b in list(lastargs):
@@ -423,7 +434,10 @@ class SubWikiTextWithArgs(SubWikiText):
                                     k += 1
                         if lastarg:
                             # 2.2.2.2 If positional
-                            if not lastarg[1] and int(lastarg[0].name) == last_idx:
+                            if (
+                                not lastarg[1]
+                                and int(lastarg[0].name) == last_idx
+                            ):
                                 # 2.2.2.2.1 If last argument is empty and is the last positional index
                                 # Delete last argument
                                 del lastarg[0][0 : len(lastarg[0].string)]
