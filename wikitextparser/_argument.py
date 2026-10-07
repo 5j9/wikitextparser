@@ -349,7 +349,6 @@ class SubWikiTextWithArgs(SubWikiText):
         for arg in reversed(args):
             name = arg.name.strip(WS)
             positional = arg.positional
-            val = None
             deleted = False
             if positional:
                 # 1. Is positional
