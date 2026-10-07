@@ -2,6 +2,12 @@ Unreleased
 ----------
 * Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an
   empty argument is present. (#151)
+* Fixed ``Template.rm_dup_args_safe`` and ``Template.rm_first_of_dup_args``
+  removing positional arguments in a way that could shift later positional
+  arguments and change the rendered result. Positional arguments are now only
+  removed when doing so is safe. (#152)
+* Fixed ``Template.rm_dup_args_safe`` appending its ``tag`` to an argument that
+  already ended with the tag, which made repeated calls non-idempotent. (#156)
 * Fixed ``Template.set_arg(None, value)`` raising ``AttributeError``; it now
   appends a positional argument.
 * Fixed ``Template.has_arg`` ignoring whitespace differences in positional
@@ -33,6 +39,7 @@ Unreleased
   This may be useful for users who want to inspect or modify images, while
   remaining harmless for typical wikilink processing where links are filtered
   before modification.
+
 v2.0.0 (2026-09-03)
 -------------------
 * Minimum required Python version is now 3.9.
