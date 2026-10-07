@@ -324,8 +324,8 @@ class SubWikiTextWithArgs(SubWikiText):
             may actually change if the second arg is empty and removed but
             the first had had a value.
 
-        If `tag` is defined, it should be a string that will be appended to
-        the value of the remaining duplicate arguments.
+        If `tag` is defined, it is appended to the value of the remaining
+            duplicate arguments, unless the value already ends with `tag`.
 
         Note: The argument that replaces an empty last occurrence survives
             but is not tagged. Example::
