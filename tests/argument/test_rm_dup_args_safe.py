@@ -1,3 +1,5 @@
+from pytest import mark
+
 from wikitextparser import Template
 
 
@@ -183,3 +185,19 @@ def test_dont_change_arg1_value_from_x_to_y():
     t = Template('{{t|x|y|1=y|1=x}}')
     t.rm_dup_args_safe()
     assert t.string == '{{t|x|y|1=y|1=x}}'
+
+
+@mark.xfail(
+    reason='rm_dup_args_safe leaves a redundant |1=x '
+    'when a later |1=y already overrides |x; '
+    '{{t|x|1=y|1=x}} or {{t|1=y|1=x}} would be '
+    'preferable (see #159 discussion)',
+    strict=False,
+)
+def test_rm_dup_args_safe_redundant_key_after_positional():
+    # |x and |1=x are genuine duplicates (name=1, value=x). |1=x could be
+    # removed safely because |1=y already overrides |x, so arg 1 renders
+    # as y either way. Current code leaves the text unchanged.
+    t = Template('{{t|x|y|1=y|1=x}}')
+    t.rm_dup_args_safe()
+    assert t.string == '{{t|1=y|1=x}}'
