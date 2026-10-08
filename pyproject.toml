@@ -74,9 +74,10 @@ unfixable = ["F401"]  # unused-import
 combine-as-imports = true
 
 [tool.pytest]
-addopts = ["--quiet", "--tb=short"]
-truncation_limit_lines = '0'
-truncation_limit_chars = '0'
+addopts = ["--quiet", "--tb=short", "--report-chars=N"]
+truncation_limit_lines = 0
+truncation_limit_chars = 0
+
 [tool.pyright]
 typeCheckingMode = 'standard'
 reportDeprecated = "warning"
