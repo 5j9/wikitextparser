@@ -1,3 +1,7 @@
+Unreleased
+----------
+* 
+
 v3.0.0 (2026-10-08)
 -------------------
 * Fixed ``Template.rm_dup_args_safe`` not removing multiple duplicates when an
