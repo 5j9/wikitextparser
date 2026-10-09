@@ -1456,8 +1456,7 @@ class WikiText:
 
                 - `'\#'` means top-level ordered lists
                 - `'\#\*'` means unordred lists inside an ordered one
-                - Currently definition lists are not well supported, but you
-                    can use `'[:;]'` as their pattern.
+                - `'[:;]'` means definition lists
 
             Tips and tricks:
 

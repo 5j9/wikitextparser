@@ -21,22 +21,33 @@ SUBLIST_WITH_SECOND_PATTERN = (
     rb')*+'
 )
 LIST_PATTERN_FORMAT = (
-    rb'(?<fullitem>(?<=\R|\A)'
-    rb'(?<pattern>{pattern})'
-    rb'(?>'
-    rb'(?(?<=;\s*+)'
-    # mark inline definition as an item
-    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>[^\r\n]*+))?+'
-    rb'(?>\R|\Z)' + SUBLIST_PATTERN + rb'|'
-    # non-definition
-    rb'(?>'
-    rb'(?<item>)'
-    + SUBLIST_WITH_SECOND_PATTERN
-    + rb'|(?<item>[^\r\n]*+)(?>\R|\Z)'
-    + SUBLIST_PATTERN
-    + rb')'
-    rb')'
-    rb'))++'
+    rb'(?<fullitem>'
+        rb'(?<=\R|\A|(?>\R|\A)[*#;:]*;[^\r\n:]+)'
+        rb'(?<pattern>{pattern})'
+            rb'(?(?<=(?>\R|\A)[*#;:]*)'
+                # First case: Normal item with bullet at newline
+                rb'(?>'
+                    rb'(?<item>)'
+                    + SUBLIST_WITH_SECOND_PATTERN +
+                rb'|'
+                    rb'(?<item>'
+                        rb'(?(?<=;)'
+                        rb'[^\r\n:]*+'
+                        rb'|'
+                        rb'[^\r\n]*+'
+                        rb')'
+                    rb')'
+                    rb'(?>\R|\Z)?+'
+                    + SUBLIST_PATTERN +
+                rb')'
+            rb'|'
+                # Second case: Inline ":" definition item
+                rb'(?<=:)'
+                rb'(?<item>[^\r\n]*+)'
+                rb'(?>\R|\Z)'
+                + SUBLIST_PATTERN +
+            rb')'
+    rb')++'
 )
 
 
