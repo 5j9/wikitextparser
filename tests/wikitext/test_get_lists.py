@@ -95,20 +95,20 @@ def test_listitems_with_different_patterns():
     assert [li.items for li in lists] == [['b'], ['c'], ['d'], ['e']]
 
 
-@mark.xfail
 def test_dl_with_second_pattern():
     # <dl>
-    #     <dt>a</dt>
-    #     <dd>
+    #     <dt>
     #         <dl>
-    #             <dt>1</dt>
+    #             <dt>a</dt>
+    #             <dd>1</dd>
     #             <dt>b</dt>
     #             <dd>2</dd>
     #         </dl>
-    #     </dd>
-    # </dl>
-    # <dl>
+    #     </dt>
     #     <dt>c</dt>
     #     <dd>3</dd>
     # </dl>
-    assert len(parse(';;a:1\n;;b:2\n;c:3\n').get_lists()) == 2
+    l0 = parse(';;a:1\n;;b:2\n;c:3\n').get_lists()
+    assert l0[0].fullitems == [';;a:1\n;;b:2\n', ';c', ':3\n']
+    assert l0[0].items == ['', 'c', '3']
+    assert [l.string for l in l0[0].sublists()] == [';;a:1\n;;b:2\n']

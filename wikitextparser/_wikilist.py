@@ -21,22 +21,32 @@ SUBLIST_WITH_SECOND_PATTERN = (
     rb')*+'
 )
 LIST_PATTERN_FORMAT = (
-    rb'(?<fullitem>(?<=\R|\A)'
-    rb'(?<pattern>{pattern})'
-    rb'(?>'
-    rb'(?(?<=;\s*+)'
-    # mark inline definition as an item
-    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>[^\r\n]*+))?+'
-    rb'(?>\R|\Z)' + SUBLIST_PATTERN + rb'|'
-    # non-definition
-    rb'(?>'
-    rb'(?<item>)'
-    + SUBLIST_WITH_SECOND_PATTERN
-    + rb'|(?<item>[^\r\n]*+)(?>\R|\Z)'
-    + SUBLIST_PATTERN
-    + rb')'
-    rb')'
-    rb'))++'
+    rb'(?<fullitem>'
+        rb'(?<ipattern>(?:{pattern}|:))'
+        rb'(?<=(?>\R|\A)(?<pattern>{pattern})(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?(?<=(?>\R|\A){pattern})'
+            # First case: Normal item with bullet at newline
+            rb'(?>'
+                rb'(?<item>)'
+                + SUBLIST_WITH_SECOND_PATTERN +
+            rb'|'
+                rb'(?<item>'
+                    rb'(?(?<=; *)'
+                    rb'[^\r\n:]*+'
+                    rb'|'
+                    rb'[^\r\n]*+'
+                    rb')'
+                rb')'
+                rb'(?>\R|\Z)?+'
+                + SUBLIST_PATTERN +
+            rb')'
+        rb'|'
+            # Second case: Inline ":" definition item
+            rb'(?<item>[^\r\n]*+)'
+            rb'(?>\R|\Z)'
+            + SUBLIST_PATTERN +
+        rb')'
+    rb')++'
 )
 
 
@@ -62,7 +72,7 @@ class WikiList(SubWikiText):
             self._match_cache = (
                 fullmatch(
                     LIST_PATTERN_FORMAT.replace(
-                        b'{pattern}', pattern.encode(), 1
+                        b'{pattern}', pattern.encode()
                     ),
                     self._list_shadow,
                 ),
@@ -87,7 +97,7 @@ class WikiList(SubWikiText):
             return cache_match  # type: ignore
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
-                b'{pattern}', self.pattern.encode(), 1
+                b'{pattern}', self.pattern.encode()
             ),
             self._list_shadow,
         )

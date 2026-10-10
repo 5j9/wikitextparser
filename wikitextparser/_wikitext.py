@@ -1456,8 +1456,7 @@ class WikiText:
 
                 - `'\#'` means top-level ordered lists
                 - `'\#\*'` means unordred lists inside an ordered one
-                - Currently definition lists are not well supported, but you
-                    can use `'[:;]'` as their pattern.
+                - `'[:;]'` means definition lists
 
             Tips and tricks:
 
@@ -1487,7 +1486,7 @@ class WikiText:
                 shadow[s:e] = b'_' * (e - s)
         for ptrn in patterns:
             for m in finditer(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode(), 1),
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode()),
                 shadow,
             ):
                 ms, me = m.span()
