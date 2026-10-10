@@ -1485,10 +1485,12 @@ class WikiText:
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
         for ptrn in patterns:
-            for m in finditer(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode(), 1),
-                shadow,
-            ):
+            rx = LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode())
+            if ':' in ptrn and ';' in ptrn:
+                rx = rx.replace(b'{inline dots}', b':')
+            else:
+                rx = rx.replace(b'{inline dots}', rb'\A(?<!\A)')
+            for m in finditer(rx, shadow):
                 ms, me = m.span()
                 s, e = ss + ms, ss + me
                 old_span = span_tuple_to_span_get((s, e))
