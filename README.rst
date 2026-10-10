@@ -132,7 +132,7 @@ All WikiLink properties support get, set, and delete operations. Categories are 
                 in ["category", "κατηγορία"]
         ]
     >>> categories
-    [WikiLink('[[Category:Foo]]'), WikiLink('[[Category:Bar]]')]
+    [WikiLink('[[Category:Foo]]'), WikiLink('[[Κατηγορία:Bar]]')]
 
 Sections
 --------

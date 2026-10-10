@@ -67,9 +67,9 @@ def test_subitems_for_the_second_item():
 
 def test_link_in_definition_list():
     wl = WikiList('; https://github.com : definition', pattern=r'[:;]\s*')
-    assert wl.items == [' https://github.com ', ' definition']
+    assert wl.items == ['https://github.com ', ' definition']
     wl = WikiList('; https://a.b : c https://d.e : f', pattern=r'[:;]\s*')
-    assert wl.items == [' https://a.b ', ' c https://d.e : f']
+    assert wl.items == ['https://a.b ', ' c https://d.e : f']
 
 
 def test_mixed_definition_lists():
@@ -84,17 +84,17 @@ def test_mixed_definition_lists():
         pattern=r'[:;]\s*',
     )
     assert wl.items == [
-        ' Mixed definition lists',
-        ' item 1 ',
+        'Mixed definition lists',
+        'item 1 ',
         ' definition',
-        ' item 2 ',
-        ' back to the main list',
+        'item 2 ',
+        'back to the main list',
     ]
 
 
 def test_order_definition_lists():
     wl = WikiList('; Item 1 : definition 1\n', pattern=r'[:;]\s*')
-    assert wl.items == [' Item 1 ', ' definition 1']
+    assert wl.items == ['Item 1 ', ' definition 1']
     assert wl.fullitems == ['; Item 1 ', ': definition 1\n']
 
 

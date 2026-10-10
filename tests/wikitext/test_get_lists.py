@@ -111,3 +111,4 @@ def test_dl_with_second_pattern():
     l0 = parse(';;a:1\n;;b:2\n;c:3\n').get_lists()
     assert l0[0].fullitems == [';;a:1\n;;b:2\n', ';c', ':3\n']
     assert l0[0].items == ['', 'c', '3']
+    assert [l.string for l in l0[0].sublists()] == [';;a:1\n;;b:2\n']

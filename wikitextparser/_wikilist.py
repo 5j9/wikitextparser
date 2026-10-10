@@ -22,31 +22,30 @@ SUBLIST_WITH_SECOND_PATTERN = (
 )
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>'
-        rb'(?<=\R|\A|(?>\R|\A)[*#;:]*;[^\r\n:]+)'
-        rb'(?<pattern>{pattern})'
-            rb'(?(?<=(?>\R|\A)[*#;:]*)'
-                # First case: Normal item with bullet at newline
-                rb'(?>'
-                    rb'(?<item>)'
-                    + SUBLIST_WITH_SECOND_PATTERN +
-                rb'|'
-                    rb'(?<item>'
-                        rb'(?(?<=;)'
-                        rb'[^\r\n:]*+'
-                        rb'|'
-                        rb'[^\r\n]*+'
-                        rb')'
-                    rb')'
-                    rb'(?>\R|\Z)?+'
-                    + SUBLIST_PATTERN +
-                rb')'
+        rb'(?<ipattern>(?:{pattern}|{inline dots}))'
+        rb'(?<=(?>\R|\A)(?<pattern>{pattern})(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?(?<=(?>\R|\A){pattern})'
+            # First case: Normal item with bullet at newline
+            rb'(?>'
+                rb'(?<item>)'
+                + SUBLIST_WITH_SECOND_PATTERN +
             rb'|'
-                # Second case: Inline ":" definition item
-                rb'(?<=:)'
-                rb'(?<item>[^\r\n]*+)'
-                rb'(?>\R|\Z)'
+                rb'(?<item>'
+                    rb'(?(?<=; *)'
+                    rb'[^\r\n:]*+'
+                    rb'|'
+                    rb'[^\r\n]*+'
+                    rb')'
+                rb')'
+                rb'(?>\R|\Z)?+'
                 + SUBLIST_PATTERN +
             rb')'
+        rb'|'
+            # Second case: Inline ":" definition item
+            rb'(?<item>[^\r\n]*+)'
+            rb'(?>\R|\Z)'
+            + SUBLIST_PATTERN +
+        rb')'
     rb')++'
 )
 
@@ -70,13 +69,13 @@ class WikiList(SubWikiText):
         if _match:
             self._match_cache = _match, self.string
         else:
+            rx = LIST_PATTERN_FORMAT.replace(b'{pattern}', pattern.encode())
+            if ':' in pattern and ';' in pattern:
+                rx = rx.replace(b'{inline dots}', b':')
+            else:
+                rx = rx.replace(b'{inline dots}', rb'\A(?<!\A)')
             self._match_cache = (
-                fullmatch(
-                    LIST_PATTERN_FORMAT.replace(
-                        b'{pattern}', pattern.encode(), 1
-                    ),
-                    self._list_shadow,
-                ),
+                fullmatch(rx, self._list_shadow),
                 self.string,
             )
 
@@ -96,12 +95,12 @@ class WikiList(SubWikiText):
         string = self.string
         if cache_string == string:
             return cache_match  # type: ignore
-        cache_match = fullmatch(
-            LIST_PATTERN_FORMAT.replace(
-                b'{pattern}', self.pattern.encode(), 1
-            ),
-            self._list_shadow,
-        )
+        rx = LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode())
+        if ':' in self.pattern and ';' in self.pattern:
+            rx = rx.replace(b'{inline dots}', rb':')
+        else:
+            rx = rx.replace(b'{inline dots}', rb'\A(?<!\A)')
+        cache_match = fullmatch(rx, self._list_shadow)
         self._match_cache = cache_match, string
         return cache_match  # type: ignore
 
