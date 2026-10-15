@@ -20,6 +20,7 @@ SUBLIST_WITH_SECOND_PATTERN = (
     rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)'
     rb')*+'
 )
+# fmt: off
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>'
         rb'(?<ipattern>(?:{pattern}|:))'
@@ -48,6 +49,7 @@ LIST_PATTERN_FORMAT = (
         rb')'
     rb')++'
 )
+# fmt: on
 
 
 class WikiList(SubWikiText):
@@ -96,9 +98,7 @@ class WikiList(SubWikiText):
         if cache_string == string:
             return cache_match  # type: ignore
         cache_match = fullmatch(
-            LIST_PATTERN_FORMAT.replace(
-                b'{pattern}', self.pattern.encode()
-            ),
+            LIST_PATTERN_FORMAT.replace(b'{pattern}', self.pattern.encode()),
             self._list_shadow,
         )
         self._match_cache = cache_match, string
