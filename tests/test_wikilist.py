@@ -185,3 +185,16 @@ def test_multiline_with_carriage_return():
     assert wikilist.items == [' list item a', ' list item b', ' list item c']
     sublist = wikilist.sublists(1, r'#')[0]
     assert sublist.items == [' sub-list of b']
+
+
+def test_inline_definition_with_semicolon_only_pattern():
+    # pattern=';' means only ';' lines start a list. The ':' that follows
+    # the term is still an inline definition marker and must be recognized.
+    wl = WikiList(';foo:bar\n', pattern=r';')
+    assert wl.items == ['foo', 'bar']
+    assert wl.fullitems == [';foo', ':bar\n']
+
+
+def test_nested_semicolon_list_inline_definition():
+    wl = WikiList(';a\n;b:c\n', pattern=r';')
+    assert wl.items == ['a', 'b', 'c']
