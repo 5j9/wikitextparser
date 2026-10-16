@@ -114,6 +114,12 @@ def test_dl_with_second_pattern():
     assert [l.string for l in l0[0].sublists()] == [';;a:1\n;;b:2\n']
 
 
-def test_dl_with_nested_tag():
+def test_dl_with_nested_elements():
     l0 = parse(';<b style=\"display: inline\">bold</b>').get_lists()
     assert l0[0].fullitems == [';<b style="display: inline">bold</b>']
+    l0 = parse(";'''1:00''':bar\n").get_lists()
+    assert l0[0].fullitems == [";'''1:00'''", ":bar\n"]
+    l0 = parse(";''1:00'':bar\n").get_lists()
+    assert l0[0].fullitems == [";''1:00''", ":bar\n"]
+    l0 = parse(";[[Category:foo]]:bar\n").get_lists()
+    assert l0[0].fullitems == [';[[Category:foo]]', ':bar\n']
