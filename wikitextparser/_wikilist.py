@@ -24,7 +24,7 @@ SUBLIST_WITH_SECOND_PATTERN = (
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>'
         rb'(?<ipattern>(?:{pattern}|:))'
-        rb'(?<=(?>\R|\A)(?<pattern>{pattern})(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?<=(?>\R|\A)(?<pattern>{pattern})(?:[^\r\n:]+:)??)'
         rb'(?(?<=(?>\R|\A){pattern})'
             # First case: Normal item with bullet at newline
             rb'(?>'
