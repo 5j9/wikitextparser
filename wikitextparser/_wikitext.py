@@ -1484,6 +1484,10 @@ class WikiText:
             for m in EXTERNAL_LINK_FINDITER(shadow):
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
+            for tag in self.get_tags():
+                s, e = tag.span
+                shadow[s:e] = b'_' * (e - s)
+
         for ptrn in patterns:
             for m in finditer(
                 LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode()),

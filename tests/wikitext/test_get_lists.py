@@ -112,3 +112,8 @@ def test_dl_with_second_pattern():
     assert l0[0].fullitems == [';;a:1\n;;b:2\n', ';c', ':3\n']
     assert l0[0].items == ['', 'c', '3']
     assert [l.string for l in l0[0].sublists()] == [';;a:1\n;;b:2\n']
+
+
+def test_dl_with_nested_tag():
+    l0 = parse(';<b style=\"display: inline\">bold</b>').get_lists()
+    assert l0[0].fullitems == [';<b style="display: inline">bold</b>']
