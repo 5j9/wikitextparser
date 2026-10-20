@@ -39,7 +39,9 @@ from ._spans import (
     END_TAG_PATTERN,
     EXTERNAL_LINK_URL_TAIL,
     INVALID_URL_CHARS,
+    PF_TL_FINDITER,
     START_TAG_PATTERN,
+    WIKILINK_PARAM_FINDITER,
     TypeToSpans,
     parse_to_spans,
     rc,
@@ -1456,8 +1458,7 @@ class WikiText:
 
                 - `'\#'` means top-level ordered lists
                 - `'\#\*'` means unordred lists inside an ordered one
-                - Currently definition lists are not well supported, but you
-                    can use `'[:;]'` as their pattern.
+                - `'[:;]'` means definition lists
 
             Tips and tricks:
 
@@ -1482,12 +1483,28 @@ class WikiText:
         span_tuple_to_span_get = {(s.start, s.end): s for s in spans}.get
         shadow, ss = self._lists_shadow_ss
         if any(':' in pattern for pattern in patterns):
+            for wikilink in self.wikilinks: # WIKILINK_PARAM_FINDITER does not work at this point
+                s, e = wikilink.span
+                shadow[s:e] = b'_' * (e - s)
+            for parameter in self.parameters:
+                s, e = parameter.span
+                shadow[s:e] = b'_' * (e - s)
             for m in EXTERNAL_LINK_FINDITER(shadow):
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
+            for tag in self.get_tags():
+                s, e = tag.span
+                shadow[s:e] = b'_' * (e - s)
+            for m in BOLD_FINDITER(shadow):
+                s, e = m.span()
+                shadow[s:e] = b'_' * (e - s)
+            for m in ITALIC_FINDITER(shadow):
+                s, e = m.span()
+                shadow[s:e] = b'_' * (e - s)
+
         for ptrn in patterns:
             for m in finditer(
-                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode(), 1),
+                LIST_PATTERN_FORMAT.replace(b'{pattern}', ptrn.encode()),
                 shadow,
             ):
                 ms, me = m.span()

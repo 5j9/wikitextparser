@@ -12,31 +12,41 @@ from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
 SUBLIST_PATTERN = (
-    rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
+    rb'(?>(?<=\R|\A)\0*+' rb'(?<pattern_>(?P=pattern))' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
 )
 SUBLIST_WITH_SECOND_PATTERN = (
     rb'[*#;:][^\r\n]*+(?>\R|\Z)'
     rb'(?>'
-    rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)'
+    rb'\0*+(?<pattern_>(?P=pattern))[*#;:][^\r\n]*+(?>\R|\Z)'
     rb')*+'
 )
 LIST_PATTERN_FORMAT = (
-    rb'(?<fullitem>(?<=\R|\A)'
-    rb'(?<pattern>{pattern})'
-    rb'(?>'
-    rb'(?(?<=;\s*+)'
-    # mark inline definition as an item
-    rb'(?<item>[^:\r\n]*+)(?<fullitem>:(?<item>[^\r\n]*+))?+'
-    rb'(?>\R|\Z)' + SUBLIST_PATTERN + rb'|'
-    # non-definition
-    rb'(?>'
-    rb'(?<item>)'
-    + SUBLIST_WITH_SECOND_PATTERN
-    + rb'|(?<item>[^\r\n]*+)(?>\R|\Z)'
-    + SUBLIST_PATTERN
-    + rb')'
-    rb')'
-    rb'))++'
+    rb'(?<fullitem>'
+        rb'\0*+(?<pattern>(?:{pattern}|:))'
+        rb'(?<=(?>\R|\A)\0*+{pattern}(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?(?<=(?>\R|\A)\0*+{pattern})'
+            # First case: Normal item with bullet at newline
+            rb'(?>'
+                rb'(?<item>)'
+                + SUBLIST_WITH_SECOND_PATTERN +
+            rb'|'
+                rb'(?<item>'
+                    rb'(?(?<=; *)'
+                    rb'[^\r\n:]*+'
+                    rb'|'
+                    rb'[^\r\n]*+'
+                    rb')'
+                rb')'
+                rb'(?>\R|\Z)?+'
+                + SUBLIST_PATTERN +
+            rb')'
+        rb'|'
+            # Second case: Inline ":" definition item
+            rb'(?<item>[^\r\n]*+)'
+            rb'(?>\R|\Z)'
+            + SUBLIST_PATTERN +
+        rb')'
+    rb')++'
 )
 
 
@@ -62,7 +72,7 @@ class WikiList(SubWikiText):
             self._match_cache = (
                 fullmatch(
                     LIST_PATTERN_FORMAT.replace(
-                        b'{pattern}', pattern.encode(), 1
+                        b'{pattern}', pattern.encode()
                     ),
                     self._list_shadow,
                 ),
@@ -87,7 +97,7 @@ class WikiList(SubWikiText):
             return cache_match  # type: ignore
         cache_match = fullmatch(
             LIST_PATTERN_FORMAT.replace(
-                b'{pattern}', self.pattern.encode(), 1
+                b'{pattern}', self.pattern.encode()
             ),
             self._list_shadow,
         )
@@ -178,7 +188,9 @@ class WikiList(SubWikiText):
         """Convert to another list type by replacing starting pattern."""
         match = self._match
         ms = match.start()
-        for s, e in reversed(match.spans('pattern')):
+        spans = match.spans('pattern') + match.spans('pattern_')
+        spans.sort(reverse=True)
+        for s, e in spans:
             self[s - ms : e - ms] = newstart
         self.pattern = escape(newstart)
 
