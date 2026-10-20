@@ -12,19 +12,19 @@ from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
 SUBLIST_PATTERN = (
-    rb'(?>(?<=\R|\A)' rb'(?<pattern_>(?P=pattern))' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
+    rb'(?>(?<=\R|\A)\0*+' rb'(?<pattern_>(?P=pattern))' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
 )
 SUBLIST_WITH_SECOND_PATTERN = (
     rb'[*#;:][^\r\n]*+(?>\R|\Z)'
     rb'(?>'
-    rb'(?<pattern_>(?P=pattern))[*#;:][^\r\n]*+(?>\R|\Z)'
+    rb'\0*+(?<pattern_>(?P=pattern))[*#;:][^\r\n]*+(?>\R|\Z)'
     rb')*+'
 )
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>'
-        rb'(?<pattern>(?:{pattern}|:))'
-        rb'(?<=(?>\R|\A){pattern}(?:(?<=; *)[^\r\n:]+:)??)'
-        rb'(?(?<=(?>\R|\A){pattern})'
+        rb'\0*+(?<pattern>(?:{pattern}|:))'
+        rb'(?<=(?>\R|\A)\0*+{pattern}(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?(?<=(?>\R|\A)\0*+{pattern})'
             # First case: Normal item with bullet at newline
             rb'(?>'
                 rb'(?<item>)'

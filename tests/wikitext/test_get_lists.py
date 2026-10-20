@@ -162,3 +162,12 @@ def test_dl_with_nested_elements():
     assert l0[0].fullitems == [';{{t|:a|b=:c}}', ':bar\n']
     l0 = parse(";{{#if:a|b|c}}:bar\n").get_lists()
     assert l0[0].fullitems == [';{{#if:a|b|c}}', ':bar\n']
+
+def test_get_lists_with_comments():
+    l0 = parse('<!--c1-->*a\n<!--c2--><!--c3--><!--c4-->*b').get_lists()
+    assert l0[0].fullitems == ['<!--c1-->*a\n', '<!--c2--><!--c3--><!--c4-->*b']
+    l0 = parse('<!--c1-->*a\n<!--c2--><!--c3--><!--c4-->*b\n<!--c5-->**b1').get_lists()
+    assert l0[0].fullitems == ['<!--c1-->*a\n', '<!--c2--><!--c3--><!--c4-->*b\n<!--c5-->**b1']
+    assert l0[0].sublists(1)[0].fullitems == ['<!--c5-->**b1']
+    l0 = parse('<!--c1-->*a\n<!--c2--><!--c3--><!--c4-->*b\n<!--c5-->*<!--c6-->*b1').get_lists()
+    assert l0[0].fullitems == ['<!--c1-->*a\n', '<!--c2--><!--c3--><!--c4-->*b\n', '<!--c5-->*<!--c6-->*b1']
