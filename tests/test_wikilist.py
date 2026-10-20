@@ -96,6 +96,9 @@ def test_order_definition_lists():
     wl = WikiList('; Item 1 : definition 1\n', pattern=r'[:;]\s*')
     assert wl.items == ['Item 1 ', ' definition 1']
     assert wl.fullitems == ['; Item 1 ', ': definition 1\n']
+    wl = WikiList(';Item 1\n: definition 1\n', pattern=r'[:;]\s*')
+    assert wl.items == ['Item 1', 'definition 1']
+    assert wl.fullitems == [';Item 1\n', ': definition 1\n']
 
 
 def test_travese_mixed_list_completely():

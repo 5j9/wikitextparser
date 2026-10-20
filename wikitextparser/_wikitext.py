@@ -1492,9 +1492,6 @@ class WikiText:
             for m in EXTERNAL_LINK_FINDITER(shadow):
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
-            for m in PF_TL_FINDITER(shadow):
-                s, e = m.span()
-                shadow[s:e] = b'_' * (e - s)
             for tag in self.get_tags():
                 s, e = tag.span
                 shadow[s:e] = b'_' * (e - s)
