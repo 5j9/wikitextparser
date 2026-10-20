@@ -39,6 +39,7 @@ from ._spans import (
     END_TAG_PATTERN,
     EXTERNAL_LINK_URL_TAIL,
     INVALID_URL_CHARS,
+    PF_TL_FINDITER,
     START_TAG_PATTERN,
     WIKILINK_PARAM_FINDITER,
     TypeToSpans,
@@ -1485,7 +1486,13 @@ class WikiText:
             for wikilink in self.wikilinks: # WIKILINK_PARAM_FINDITER does not work at this point
                 s, e = wikilink.span
                 shadow[s:e] = b'_' * (e - s)
+            for parameter in self.parameters:
+                s, e = parameter.span
+                shadow[s:e] = b'_' * (e - s)
             for m in EXTERNAL_LINK_FINDITER(shadow):
+                s, e = m.span()
+                shadow[s:e] = b'_' * (e - s)
+            for m in PF_TL_FINDITER(shadow):
                 s, e = m.span()
                 shadow[s:e] = b'_' * (e - s)
             for tag in self.get_tags():

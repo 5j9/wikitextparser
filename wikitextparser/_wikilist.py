@@ -12,18 +12,18 @@ from ._wikitext import EXTERNAL_LINK_FINDITER, SubWikiText
 
 # See includes/parser/BlockLevelPass.php for how MW parses list blocks.
 SUBLIST_PATTERN = (
-    rb'(?>(?<=\R|\A)' rb'(?&pattern)' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
+    rb'(?>(?<=\R|\A)' rb'(?<pattern_>(?P=pattern))' rb'[:;#*][^\r\n]*+' rb'(?>\R|\Z)' rb')*+'
 )
 SUBLIST_WITH_SECOND_PATTERN = (
     rb'[*#;:][^\r\n]*+(?>\R|\Z)'
     rb'(?>'
-    rb'(?&pattern)[*#;:][^\r\n]*+(?>\R|\Z)'
+    rb'(?<pattern_>(?P=pattern))[*#;:][^\r\n]*+(?>\R|\Z)'
     rb')*+'
 )
 LIST_PATTERN_FORMAT = (
     rb'(?<fullitem>'
-        rb'(?<ipattern>(?:{pattern}|:))'
-        rb'(?<=(?>\R|\A)(?<pattern>{pattern})(?:(?<=; *)[^\r\n:]+:)??)'
+        rb'(?<pattern>(?:{pattern}|:))'
+        rb'(?<=(?>\R|\A){pattern}(?:(?<=; *)[^\r\n:]+:)??)'
         rb'(?(?<=(?>\R|\A){pattern})'
             # First case: Normal item with bullet at newline
             rb'(?>'
@@ -188,7 +188,9 @@ class WikiList(SubWikiText):
         """Convert to another list type by replacing starting pattern."""
         match = self._match
         ms = match.start()
-        for s, e in reversed(match.spans('pattern')):
+        spans = match.spans('pattern') + match.spans('pattern_')
+        spans.sort(reverse=True)
+        for s, e in spans:
             self[s - ms : e - ms] = newstart
         self.pattern = escape(newstart)
 
